@@ -39,6 +39,7 @@ class QuoteGenerationService:
         pricing_model: dict,
         job_types: Optional[list] = None,
         terms: Optional[dict] = None,
+        correction_examples: Optional[list] = None,
     ) -> dict:
         """
         Generate a quote from a voice transcription.
@@ -49,6 +50,7 @@ class QuoteGenerationService:
             pricing_model: The contractor's pricing model
             job_types: List of job types the contractor has done
             terms: Standard terms and conditions
+            correction_examples: Past quote corrections for few-shot learning
 
         Returns:
             dict with the generated quote structure:
@@ -59,7 +61,7 @@ class QuoteGenerationService:
             - estimated_days, estimated_crew_size
             - confidence, questions
         """
-        # Build the prompt
+        # Build the prompt with correction examples for learning
         prompt = get_quote_generation_prompt(
             transcription=transcription,
             contractor_name=contractor.get("business_name", "Contractor"),
@@ -67,6 +69,7 @@ class QuoteGenerationService:
             pricing_notes=pricing_model.get("pricing_notes"),
             job_types=job_types,
             terms=terms,
+            correction_examples=correction_examples,
         )
 
         # Call Claude
@@ -89,6 +92,7 @@ class QuoteGenerationService:
         pricing_model: dict,
         job_types: Optional[list] = None,
         terms: Optional[dict] = None,
+        correction_examples: Optional[list] = None,
         transcription_service=None,
     ) -> dict:
         """
@@ -100,6 +104,7 @@ class QuoteGenerationService:
             pricing_model: Pricing model
             job_types: Job types
             terms: Terms and conditions
+            correction_examples: Past quote corrections for few-shot learning
             transcription_service: TranscriptionService instance
 
         Returns:
@@ -121,13 +126,14 @@ class QuoteGenerationService:
                 "audio_duration": transcription_result.get("duration", 0),
             }
 
-        # Generate the quote
+        # Generate the quote with learning from past corrections
         quote_data = await self.generate_quote(
             transcription=transcription_text,
             contractor=contractor,
             pricing_model=pricing_model,
             job_types=job_types,
             terms=terms,
+            correction_examples=correction_examples,
         )
 
         # Add transcription metadata

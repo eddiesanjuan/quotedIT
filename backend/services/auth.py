@@ -15,7 +15,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..config import settings
-from ..models.database import User, Contractor, Base, generate_uuid
+from ..models.database import User, Contractor, PricingModel, ContractorTerms, Base, generate_uuid
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 
 # Password hashing
@@ -126,6 +126,7 @@ async def get_user_by_id(db: AsyncSession, user_id: str) -> Optional[User]:
 async def register_user(db: AsyncSession, user_data: UserCreate) -> tuple[User, Contractor]:
     """
     Register a new user and create their contractor profile.
+    Also creates default pricing model and terms so they can start quoting immediately.
     Returns (user, contractor) tuple.
     """
     # Check if email already exists
@@ -155,8 +156,34 @@ async def register_user(db: AsyncSession, user_data: UserCreate) -> tuple[User, 
         owner_name=user_data.owner_name,
         phone=user_data.phone,
         is_active=True,
+        primary_trade="general",  # Default, can be updated later
     )
     db.add(contractor)
+
+    # Create default pricing model so user can start quoting immediately
+    # These are sensible defaults that the AI will learn from and adjust
+    pricing_model = PricingModel(
+        id=generate_uuid(),
+        contractor_id=contractor.id,
+        labor_rate_hourly=65.0,  # Industry average
+        helper_rate_hourly=35.0,
+        material_markup_percent=20.0,
+        minimum_job_amount=500.0,
+        pricing_knowledge={},  # Starts empty, builds from corrections
+        pricing_notes=None,
+    )
+    db.add(pricing_model)
+
+    # Create default terms
+    terms = ContractorTerms(
+        id=generate_uuid(),
+        contractor_id=contractor.id,
+        deposit_percent=50.0,
+        quote_valid_days=30,
+        labor_warranty_years=2,
+        accepted_payment_methods=["Check", "Credit Card", "Cash"],
+    )
+    db.add(terms)
 
     await db.commit()
     await db.refresh(user)
@@ -178,10 +205,11 @@ async def authenticate_user(db: AsyncSession, email: str, password: str) -> Opti
 async def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security),
     db: AsyncSession = Depends(get_db),
-) -> User:
+) -> dict:
     """
     Dependency to get the current authenticated user from JWT token.
     Use this to protect endpoints.
+    Returns a dict with user info for easy access in endpoints.
     """
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -208,11 +236,53 @@ async def get_current_user(
             detail="User account is disabled"
         )
 
-    return user
+    # Return as dict for easier access in endpoints
+    return {
+        "id": user.id,
+        "email": user.email,
+        "is_active": user.is_active,
+        "is_verified": user.is_verified,
+    }
+
+
+async def get_current_user_optional(
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(HTTPBearer(auto_error=False)),
+    db: AsyncSession = Depends(get_db),
+) -> Optional[dict]:
+    """
+    Optional version of get_current_user.
+    Returns None if no valid token, instead of raising an exception.
+    Use this for endpoints that work for both authenticated and anonymous users.
+    """
+    if credentials is None:
+        return None
+
+    token = credentials.credentials
+    payload = decode_access_token(token)
+    if payload is None:
+        return None
+
+    user_id: str = payload.get("sub")
+    if user_id is None:
+        return None
+
+    user = await get_user_by_id(db, user_id)
+    if user is None:
+        return None
+
+    if not user.is_active:
+        return None
+
+    return {
+        "id": user.id,
+        "email": user.email,
+        "is_active": user.is_active,
+        "is_verified": user.is_verified,
+    }
 
 
 async def get_current_contractor(
-    user: User = Depends(get_current_user),
+    current_user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> Contractor:
     """
@@ -220,7 +290,7 @@ async def get_current_contractor(
     Use this for contractor-specific endpoints.
     """
     result = await db.execute(
-        select(Contractor).where(Contractor.user_id == user.id)
+        select(Contractor).where(Contractor.user_id == current_user["id"])
     )
     contractor = result.scalar_one_or_none()
 

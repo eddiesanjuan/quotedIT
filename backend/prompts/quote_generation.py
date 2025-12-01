@@ -14,6 +14,7 @@ def get_quote_generation_prompt(
     pricing_notes: Optional[str] = None,
     job_types: Optional[list] = None,
     terms: Optional[dict] = None,
+    correction_examples: Optional[list] = None,
 ) -> str:
     """
     Generate the main quote generation prompt.
@@ -58,6 +59,19 @@ def get_quote_generation_prompt(
 - Labor warranty: {terms.get('labor_warranty_years', 2)} years
 """
 
+    # Format correction examples (the learning context)
+    corrections_str = ""
+    if correction_examples:
+        corrections_str = f"""
+## IMPORTANT: Learned From Past Corrections
+
+The contractor has corrected previous quotes. Learn from these examples:
+
+{_format_correction_examples(correction_examples)}
+
+Use these corrections to inform your pricing. If you see a pattern (e.g., contractor always increases demolition costs), apply that learning to this quote.
+"""
+
     return f"""You are a quoting assistant for {contractor_name}, a professional contractor.
 
 Your job is to take the contractor's voice notes about a job and produce a professional budgetary quote.
@@ -82,6 +96,8 @@ Minimum Job: ${pricing_model.get('minimum_job_amount', 500)}
 {job_types_str}
 
 {terms_str}
+
+{corrections_str}
 
 ## Your Task
 
@@ -253,3 +269,61 @@ def _format_corrections(corrections: dict) -> str:
         lines.append(f"\nContractor Note: {corrections['learning_note']}")
 
     return "\n".join(lines) if lines else "No specific corrections noted."
+
+
+def _format_correction_examples(examples: list) -> str:
+    """
+    Format correction examples for injection into the prompt.
+
+    This is the core of the learning system - showing Claude real examples
+    of what the contractor changed so it can learn patterns.
+    """
+    if not examples:
+        return "No corrections yet - this is a new contractor."
+
+    formatted = []
+    for i, ex in enumerate(examples[:5], 1):  # Max 5 examples
+        job_type = ex.get("job_type", "Unknown job")
+
+        # Format line item changes
+        changes = []
+        original_items = ex.get("original_line_items", [])
+        final_items = ex.get("final_line_items", [])
+
+        # Build a map of items for comparison
+        orig_map = {item.get("name", ""): item.get("amount", 0) for item in original_items}
+        final_map = {item.get("name", ""): item.get("amount", 0) for item in final_items}
+
+        # Find changes
+        all_items = set(orig_map.keys()) | set(final_map.keys())
+        for item_name in all_items:
+            orig_amt = orig_map.get(item_name, 0)
+            final_amt = final_map.get(item_name, 0)
+            if orig_amt != final_amt:
+                if orig_amt == 0:
+                    changes.append(f"  + Added '{item_name}': ${final_amt:.0f}")
+                elif final_amt == 0:
+                    changes.append(f"  - Removed '{item_name}' (was ${orig_amt:.0f})")
+                else:
+                    diff = final_amt - orig_amt
+                    pct = (diff / orig_amt * 100) if orig_amt else 0
+                    direction = "↑" if diff > 0 else "↓"
+                    changes.append(f"  {direction} '{item_name}': ${orig_amt:.0f} → ${final_amt:.0f} ({pct:+.0f}%)")
+
+        # Total change
+        orig_total = ex.get("original_total", 0)
+        final_total = ex.get("final_total", 0)
+        total_diff = final_total - orig_total
+        total_pct = (total_diff / orig_total * 100) if orig_total else 0
+
+        # Contractor notes
+        notes = ex.get("correction_notes", "")
+
+        example_str = f"""**Example {i}: {job_type}**
+- AI quoted: ${orig_total:.0f} → Contractor set: ${final_total:.0f} ({total_pct:+.0f}%)
+{chr(10).join(changes) if changes else "- Minor adjustments only"}
+{f'- Contractor note: "{notes}"' if notes else ""}"""
+
+        formatted.append(example_str)
+
+    return "\n\n".join(formatted)
