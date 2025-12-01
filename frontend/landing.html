@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>quoted.it - Voice to Quote for Contractors</title>
-    <meta name="description" content="Turn job site voice notes into budgetary estimates in seconds. Stop guessing, start quoting.">
+    <title>quoted.it - Voice to Quote in Seconds</title>
+    <meta name="description" content="Turn voice notes into professional budget quotes in seconds. For contractors, consultants, freelancers, and anyone who prices work.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -63,6 +63,36 @@
         .fade-in-delay-2 { animation-delay: 0.2s; }
         .fade-in-delay-3 { animation-delay: 0.3s; }
         .fade-in-delay-4 { animation-delay: 0.4s; }
+
+        /* Logo Spinner Animation */
+        .logo-spinner {
+            display: inline-block;
+            position: relative;
+            overflow: hidden;
+            height: 1.2em;
+            vertical-align: bottom;
+        }
+
+        .logo-spinner-inner {
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .logo-spinner-item {
+            height: 1.2em;
+            line-height: 1.2em;
+            font-style: italic;
+        }
+
+        .hero-logo {
+            font-family: var(--font-serif);
+            font-size: clamp(3rem, 10vw, 6rem);
+            font-weight: 400;
+            letter-spacing: -0.03em;
+            margin-bottom: 16px;
+            white-space: nowrap;
+        }
 
         /* Navigation */
         nav {
@@ -423,9 +453,12 @@
     <section class="hero">
         <div class="container">
             <div class="hero-content">
-                <h1 class="fade-in">Stop guessing.<br>Start quoting.</h1>
-                <p class="fade-in fade-in-delay-1">Turn job site voice notes into budgetary estimates in seconds. Qualify leads fast, save hours on tire-kickers.</p>
-                <a href="/app" class="cta-primary fade-in fade-in-delay-2">Start Quoting Free</a>
+                <div class="hero-logo fade-in" id="heroLogo">
+                    quoted<span class="logo-spinner"><span class="logo-spinner-inner" id="spinnerInner"><span class="logo-spinner-item">.decks</span><span class="logo-spinner-item">.consulting</span><span class="logo-spinner-item">.design</span><span class="logo-spinner-item">.roofs</span><span class="logo-spinner-item">.photos</span><span class="logo-spinner-item">.events</span><span class="logo-spinner-item">.kitchens</span><span class="logo-spinner-item">.coaching</span><span class="logo-spinner-item">.fences</span><span class="logo-spinner-item">.it</span></span></span>
+                </div>
+                <h1 class="fade-in fade-in-delay-1">Stop guessing.<br>Start quoting.</h1>
+                <p class="fade-in fade-in-delay-2">Turn voice notes into professional budget quotes in seconds. Qualify leads fast, look polished, and stop wasting time on tire-kickers.</p>
+                <a href="/app" class="cta-primary fade-in fade-in-delay-3">Start Quoting Free</a>
             </div>
         </div>
     </section>
@@ -440,17 +473,17 @@
                 <div class="step fade-in fade-in-delay-1">
                     <div class="step-number">01</div>
                     <h3>Speak</h3>
-                    <p>Describe the job naturally, just like you'd explain it to a client. No forms, no typing.</p>
+                    <p>Describe the project naturally, like you'd explain it to a colleague. No forms, no spreadsheets.</p>
                 </div>
                 <div class="step fade-in fade-in-delay-2">
                     <div class="step-number">02</div>
                     <h3>Review</h3>
-                    <p>Get a structured quote with line items. Adjust anything that needs tweaking.</p>
+                    <p>Get a structured quote with line items that match your pricing style. Adjust anything that needs tweaking.</p>
                 </div>
                 <div class="step fade-in fade-in-delay-3">
                     <div class="step-number">03</div>
                     <h3>Send</h3>
-                    <p>Export a professional PDF or share the number on the spot. Done in under a minute.</p>
+                    <p>Export a polished PDF or share the number on the spot. Done in under a minute.</p>
                 </div>
             </div>
         </div>
@@ -473,18 +506,20 @@
     <section class="who-its-for">
         <div class="container">
             <p class="section-label fade-in">Who It's For</p>
-            <h2 class="section-title fade-in fade-in-delay-1">Built for the trades</h2>
+            <h2 class="section-title fade-in fade-in-delay-1">Built for anyone who prices work</h2>
 
             <div class="trades-grid">
-                <div class="trade fade-in fade-in-delay-1">Deck Builders</div>
-                <div class="trade fade-in fade-in-delay-1">Painters</div>
-                <div class="trade fade-in fade-in-delay-2">Roofers</div>
-                <div class="trade fade-in fade-in-delay-2">Fence Installers</div>
-                <div class="trade fade-in fade-in-delay-3">General Contractors</div>
-                <div class="trade fade-in fade-in-delay-3">Landscapers</div>
+                <div class="trade fade-in fade-in-delay-1">Contractors</div>
+                <div class="trade fade-in fade-in-delay-1">Consultants</div>
+                <div class="trade fade-in fade-in-delay-2">Designers</div>
+                <div class="trade fade-in fade-in-delay-2">Photographers</div>
+                <div class="trade fade-in fade-in-delay-3">Event Planners</div>
+                <div class="trade fade-in fade-in-delay-3">Coaches</div>
+                <div class="trade fade-in fade-in-delay-3">Freelancers</div>
+                <div class="trade fade-in fade-in-delay-4">Home Services</div>
             </div>
 
-            <p class="tagline fade-in fade-in-delay-4">If you give estimates and hate paperwork, this is for you.</p>
+            <p class="tagline fade-in fade-in-delay-4">If you give estimates and hate spreadsheets, this is for you.</p>
         </div>
     </section>
 
@@ -493,8 +528,8 @@
         <div class="container">
             <div class="learning-content">
                 <p class="section-label fade-in">Smart Pricing</p>
-                <h2 class="fade-in fade-in-delay-1">Gets smarter with every job.</h2>
-                <p class="fade-in fade-in-delay-2">When you adjust quotes, the system learns your pricing patterns. Your rates, your market, your way of doing business.</p>
+                <h2 class="fade-in fade-in-delay-1">Gets smarter with every quote.</h2>
+                <p class="fade-in fade-in-delay-2">When you adjust quotes, the system learns your pricing patterns. Your rates, your market, your way of doing business. The more you use it, the better it gets.</p>
             </div>
         </div>
     </section>
@@ -511,11 +546,56 @@
     <!-- Footer -->
     <footer>
         <a href="/" class="footer-logo">quoted<span>.it</span></a>
-        <p class="footer-text">Voice to quote for contractors.</p>
+        <p class="footer-text">Voice to quote in seconds.</p>
     </footer>
 
-    <!-- Scroll Animation -->
+    <!-- Scroll Animation & Logo Spinner -->
     <script>
+        // Logo Spinner Animation - slot machine effect
+        (function() {
+            const spinnerInner = document.getElementById('spinnerInner');
+            if (!spinnerInner) return;
+
+            const items = spinnerInner.querySelectorAll('.logo-spinner-item');
+            const itemCount = items.length;
+            const itemHeight = 1.2; // em units
+            let currentIndex = 0;
+
+            // Timing for slot machine effect (starts fast, slows down)
+            const timings = [
+                80, 80, 80, 80, 80,    // Fast
+                100, 100, 100, 100,    // Medium-fast
+                120, 140, 160,         // Slowing down
+                200, 250, 300,         // Slower
+                400, 500,              // Much slower
+                700, 900, 1200         // Final slowdown
+            ];
+
+            let timingIndex = 0;
+
+            function spin() {
+                currentIndex = (currentIndex + 1) % itemCount;
+                spinnerInner.style.transform = `translateY(-${currentIndex * itemHeight}em)`;
+
+                // Check if we're at the last item (.it) and near end of timing
+                const isLastItem = currentIndex === itemCount - 1;
+
+                if (timingIndex < timings.length - 1) {
+                    timingIndex++;
+                    setTimeout(spin, timings[timingIndex]);
+                } else if (!isLastItem) {
+                    // Keep spinning slowly until we land on .it
+                    setTimeout(spin, 1200);
+                }
+                // If isLastItem and timingIndex is at end, stop - we've landed on .it
+            }
+
+            // Start spinner after page load + hero animation
+            setTimeout(() => {
+                spin();
+            }, 800);
+        })();
+
         // Intersection Observer for fade-in animations
         const observerOptions = {
             threshold: 0.1,

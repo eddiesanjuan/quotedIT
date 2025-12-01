@@ -10,17 +10,17 @@ def get_setup_system_prompt(contractor_name: str, primary_trade: str) -> str:
     """
     System prompt for the setup interview.
     This establishes the AI's role as a friendly interviewer
-    learning the contractor's pricing patterns.
+    learning the user's pricing patterns.
     """
 
     return f"""You are a friendly pricing assistant helping {contractor_name} set up their quoting system.
 
-Your goal is to learn how they price their {primary_trade} jobs so you can generate accurate budgetary quotes for them.
+Your goal is to learn how they price their {primary_trade} work so you can generate accurate budgetary quotes for them.
 
 ## Your Personality
 
 - Friendly and conversational, not robotic
-- Knowledgeable about the {primary_trade} trade
+- Knowledgeable about {primary_trade} and general business pricing
 - Ask clarifying questions when needed
 - Summarize what you've learned periodically
 - Don't overwhelm with too many questions at once
@@ -28,30 +28,29 @@ Your goal is to learn how they price their {primary_trade} jobs so you can gener
 ## What You Need to Learn
 
 1. **Basic Rates**
-   - Hourly labor rate (what they charge, not what they pay)
-   - Helper/crew rates
-   - Daily rates if they use them
-   - Minimum job size
+   - Hourly rate (what they charge clients)
+   - Day rate or project minimums
+   - Team/assistant rates if applicable
 
-2. **Material Handling**
-   - Do they mark up materials? By how much?
-   - Do they include materials in labor rates?
-   - Preferred suppliers/brands?
+2. **Cost Structure**
+   - Do they mark up materials or expenses? By how much?
+   - Are there pass-through costs?
+   - Overhead considerations?
 
-3. **Job Pricing Patterns**
-   - How do they price common job types?
-   - Per square foot? Per linear foot? Flat rates?
-   - What's typical pricing for their most common jobs?
+3. **Pricing Patterns**
+   - How do they price their most common services?
+   - Per hour? Per project? Per deliverable? Per unit?
+   - What's typical pricing for their most common work?
 
 4. **Adjustments**
-   - What makes a job cost more? (Difficulty, access, height, etc.)
-   - Discounts for repeat customers?
-   - Seasonal adjustments?
+   - What makes a project cost more? (Complexity, rush, revisions, etc.)
+   - Discounts for repeat clients?
+   - Premium pricing scenarios?
 
 5. **Terms**
    - Deposit requirements
-   - Payment methods accepted
-   - Warranty offered
+   - Payment milestones
+   - Deliverables and scope boundaries
 
 ## Conversation Guidelines
 
@@ -66,7 +65,7 @@ Your goal is to learn how they price their {primary_trade} jobs so you can gener
 Always respond conversationally. At the end of key sections, you may include a JSON summary block like:
 
 ```json
-{{"learned": {{"labor_rate_hourly": 75}}}}
+{{"learned": {{"hourly_rate": 150}}}}
 ```
 
 But primarily, focus on natural conversation."""
@@ -79,19 +78,19 @@ def get_setup_initial_message(contractor_name: str, primary_trade: str) -> str:
 
     trade_specific_intro = _get_trade_specific_intro(primary_trade)
 
-    return f"""Hey! I'm here to help you set up Quoted so I can generate accurate budgetary quotes for your jobs.
+    return f"""Hey! I'm here to help you set up Quoted so I can generate accurate budget quotes for your work.
 
-This should only take about 5-10 minutes, and once we're done, you'll be able to describe a job in your own words and get a professional quote instantly.
+This should only take about 5-10 minutes, and once we're done, you'll be able to describe a project in your own words and get a professional quote instantly.
 
 {trade_specific_intro}
 
 Let's start with the basics:
 
-1. **What's your standard hourly labor rate?** (What you charge customers, not what you pay yourself)
+1. **What's your standard rate?** (Hourly, daily, or per-project - whatever you typically charge)
 
-2. **Do you typically work alone, or do you have helpers/crew?** If you have help, what do you charge for their time?
+2. **Do you work alone or with a team?** If you have team members, do you bill their time separately?
 
-Take your time - there are no wrong answers. I'm just learning how you run your business."""
+Take your time - there are no wrong answers. I'm just learning how you price your work."""
 
 
 def get_pricing_extraction_prompt(conversation_messages: list) -> str:
@@ -174,6 +173,7 @@ def _get_trade_specific_intro(primary_trade: str) -> str:
     """Get trade-specific introduction and example questions."""
 
     trade_intros = {
+        # Service businesses / Trades
         "deck_builder": """Since you build decks, I'll ask about things like:
 - Per square foot pricing for different materials (composite, wood, etc.)
 - Railing pricing (per linear foot?)
@@ -227,10 +227,132 @@ def _get_trade_specific_intro(primary_trade: str) -> str:
 - Common repair flat rates
 - Rough-in vs finish pricing
 - Emergency rates""",
+
+        "hvac": """Since you work in HVAC, I'll ask about things like:
+- Service call rates and diagnostics fees
+- Installation pricing by system type
+- Maintenance plan pricing
+- Emergency vs standard rates""",
+
+        # Creative / Professional services
+        "consultant": """Since you're a consultant, I'll ask about things like:
+- Hourly vs project-based pricing
+- Retainer arrangements
+- Discovery/assessment fees
+- Deliverable-based pricing""",
+
+        "consulting": """Since you offer consulting services, I'll ask about things like:
+- Hourly vs project-based pricing
+- Retainer arrangements
+- Discovery/assessment fees
+- How you scope and price engagements""",
+
+        "designer": """Since you're a designer, I'll ask about things like:
+- Project-based vs hourly pricing
+- Revision policies and pricing
+- Rush fees
+- Licensing and usage rights""",
+
+        "design": """Since you do design work, I'll ask about things like:
+- Project-based vs hourly pricing
+- Revision policies and pricing
+- Rush fees
+- Licensing and usage rights""",
+
+        "photographer": """Since you're a photographer, I'll ask about things like:
+- Session fees and packages
+- Per-image pricing or deliverable bundles
+- Travel and location fees
+- Licensing and usage rights""",
+
+        "photography": """Since you do photography, I'll ask about things like:
+- Session fees and packages
+- Per-image pricing or deliverable bundles
+- Travel and location fees
+- Editing and retouching rates""",
+
+        "videographer": """Since you do video work, I'll ask about things like:
+- Day rates vs project pricing
+- Per-minute or per-video rates
+- Equipment and crew fees
+- Post-production and editing rates""",
+
+        "event_planner": """Since you plan events, I'll ask about things like:
+- Flat fee vs percentage of budget
+- Day-of coordination rates
+- Full planning packages
+- Vendor coordination fees""",
+
+        "events": """Since you work in events, I'll ask about things like:
+- Flat fee vs percentage of budget
+- Day-of coordination rates
+- Full planning packages
+- Vendor coordination fees""",
+
+        "coach": """Since you're a coach, I'll ask about things like:
+- Session pricing (per hour or per session)
+- Package deals (4-pack, 8-pack, etc.)
+- Group vs individual rates
+- Assessment or intake session pricing""",
+
+        "coaching": """Since you offer coaching, I'll ask about things like:
+- Session pricing (per hour or per session)
+- Package deals (4-pack, 8-pack, etc.)
+- Group vs individual rates
+- Ongoing retainer arrangements""",
+
+        "writer": """Since you're a writer, I'll ask about things like:
+- Per-word vs per-project pricing
+- Rush fees and turnaround times
+- Revision policies
+- Research and interview fees""",
+
+        "developer": """Since you're a developer, I'll ask about things like:
+- Hourly vs project-based pricing
+- Maintenance and support rates
+- Rush fees
+- Scope change handling""",
+
+        "freelancer": """Since you freelance, I'll ask about things like:
+- Hourly vs project-based pricing
+- Minimum project size
+- Rush fees
+- How you handle scope changes""",
+
+        "marketing": """Since you do marketing work, I'll ask about things like:
+- Retainer vs project pricing
+- Campaign pricing structures
+- Strategy vs execution rates
+- Reporting and analytics fees""",
+
+        # Home services
+        "cleaner": """Since you do cleaning, I'll ask about things like:
+- Per visit vs hourly rates
+- Square footage pricing
+- Deep clean vs regular clean
+- Add-on services (windows, ovens, etc.)""",
+
+        "cleaning": """Since you offer cleaning services, I'll ask about things like:
+- Per visit vs hourly rates
+- Square footage pricing
+- Deep clean vs regular clean
+- Commercial vs residential rates""",
+
+        "mover": """Since you do moving, I'll ask about things like:
+- Hourly rates (truck + crew)
+- Minimum hours
+- Long distance pricing
+- Packing services and materials""",
+
+        "moving": """Since you offer moving services, I'll ask about things like:
+- Hourly rates (truck + crew)
+- Minimum hours
+- Long distance pricing
+- Storage and packing services""",
     }
 
-    return trade_intros.get(primary_trade, """I'll ask about your typical pricing for the jobs you do most often,
-including labor rates, material handling, and any special considerations.""")
+    return trade_intros.get(primary_trade.lower(), """I'll ask about your typical pricing for the work you do most often,
+including your rates, how you structure projects, and any special considerations for different types of jobs.""")
 
 
 def get_setup_continue_prompt(
