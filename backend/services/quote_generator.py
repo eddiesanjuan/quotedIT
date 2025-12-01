@@ -142,6 +142,76 @@ class QuoteGenerationService:
 
         return quote_data
 
+    async def detect_job_type(self, transcription: str) -> str:
+        """
+        Quick first-pass to detect job type from transcription.
+        Uses a fast, cheap model call to categorize before full quote generation.
+
+        Returns a standardized job_type string like:
+        - deck_composite, deck_wood, deck_repair
+        - fence_wood, fence_vinyl, fence_chain_link
+        - paint_exterior, paint_interior
+        - roofing, siding, concrete, electrical, plumbing
+        - general (fallback)
+        """
+        detection_prompt = """Analyze this contractor voice note and identify the PRIMARY job type.
+
+Voice note: "{transcription}"
+
+Return ONLY a single job_type code from this list (pick the closest match):
+- deck_composite (Trex, TimberTech, composite decking)
+- deck_wood (pressure treated, cedar, redwood decking)
+- deck_repair (deck repairs, board replacement, railing fixes)
+- fence_wood (wood privacy fence, picket fence, cedar fence)
+- fence_vinyl (vinyl/PVC fence)
+- fence_chain_link (chain link, metal fence)
+- paint_exterior (exterior house painting, siding paint)
+- paint_interior (interior room painting, walls, ceilings)
+- roofing (roof replacement, shingles, roof repair)
+- siding (siding installation, vinyl siding, hardie board)
+- concrete (driveway, patio, sidewalk, foundation)
+- electrical (wiring, panel, outlets, lighting)
+- plumbing (pipes, fixtures, water heater)
+- remodel_kitchen (kitchen renovation, cabinets, counters)
+- remodel_bathroom (bathroom renovation, tile, shower)
+- remodel_basement (basement finishing, egress)
+- landscaping (grading, retaining walls, drainage)
+- general (if none of the above fit)
+
+Respond with ONLY the job_type code, nothing else.""".format(transcription=transcription)
+
+        try:
+            # Use haiku for speed and cost - this is just classification
+            message = self.client.messages.create(
+                model="claude-3-haiku-20240307",
+                max_tokens=50,
+                messages=[{"role": "user", "content": detection_prompt}],
+            )
+            job_type = message.content[0].text.strip().lower()
+
+            # Validate it's a known type, fallback to general
+            valid_types = [
+                "deck_composite", "deck_wood", "deck_repair",
+                "fence_wood", "fence_vinyl", "fence_chain_link",
+                "paint_exterior", "paint_interior",
+                "roofing", "siding", "concrete", "electrical", "plumbing",
+                "remodel_kitchen", "remodel_bathroom", "remodel_basement",
+                "landscaping", "general"
+            ]
+
+            if job_type not in valid_types:
+                # Try to match partial
+                for vt in valid_types:
+                    if vt in job_type or job_type in vt:
+                        return vt
+                return "general"
+
+            return job_type
+
+        except Exception as e:
+            # On error, return general - don't block quote generation
+            return "general"
+
     async def _call_claude(self, prompt: str) -> str:
         """Make a call to Claude API."""
         try:

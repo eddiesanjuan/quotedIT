@@ -163,10 +163,21 @@ async def generate_quote(request: QuoteRequest, current_user: dict = Depends(get
                 "accepted_payment_methods": terms.accepted_payment_methods,
             }
 
-        # Fetch past correction examples for few-shot learning
-        correction_examples = await db.get_correction_examples(contractor.id)
+        # PASS 1: Detect job type from transcription (fast, cheap call)
+        detected_job_type = await quote_service.detect_job_type(request.transcription)
 
-        # Generate the quote using AI with learning from past corrections
+        # PASS 2: Fetch type-specific correction examples for few-shot learning
+        # First try to get examples for this specific job type
+        correction_examples = await db.get_correction_examples(
+            contractor.id,
+            job_type=detected_job_type
+        )
+
+        # If no type-specific corrections, fall back to general corrections
+        if not correction_examples:
+            correction_examples = await db.get_correction_examples(contractor.id)
+
+        # PASS 3: Generate quote with type-filtered context
         quote_data = await quote_service.generate_quote(
             transcription=request.transcription,
             contractor=contractor_dict,
@@ -174,6 +185,10 @@ async def generate_quote(request: QuoteRequest, current_user: dict = Depends(get
             terms=terms_dict,
             correction_examples=correction_examples,
         )
+
+        # Ensure detected job_type is used if AI didn't return one
+        if not quote_data.get("job_type"):
+            quote_data["job_type"] = detected_job_type
 
         # Save to database
         quote = await db.create_quote(
@@ -264,22 +279,42 @@ async def generate_quote_from_audio(
                     "accepted_payment_methods": terms.accepted_payment_methods,
                 }
 
-            # Fetch past correction examples for few-shot learning
-            correction_examples = await db.get_correction_examples(contractor.id)
+            # STEP 1: Transcribe the audio first
+            transcription_result = await transcription_service.transcribe(tmp_path)
+            transcription_text = transcription_result.get("text", "")
 
-            # Generate quote from audio with learning from past corrections
-            quote_data = await quote_service.generate_quote_from_audio(
-                audio_file_path=tmp_path,
+            if not transcription_text.strip():
+                raise HTTPException(status_code=400, detail="No speech detected in audio")
+
+            # STEP 2: Detect job type from transcription (fast, cheap call)
+            detected_job_type = await quote_service.detect_job_type(transcription_text)
+
+            # STEP 3: Fetch type-specific correction examples for few-shot learning
+            correction_examples = await db.get_correction_examples(
+                contractor.id,
+                job_type=detected_job_type
+            )
+
+            # Fall back to general corrections if no type-specific ones
+            if not correction_examples:
+                correction_examples = await db.get_correction_examples(contractor.id)
+
+            # STEP 4: Generate quote with type-filtered context
+            quote_data = await quote_service.generate_quote(
+                transcription=transcription_text,
                 contractor=contractor_dict,
                 pricing_model=pricing_dict,
                 terms=terms_dict,
                 correction_examples=correction_examples,
-                transcription_service=transcription_service,
             )
 
-            # Check for errors
-            if quote_data.get("error"):
-                raise HTTPException(status_code=400, detail=quote_data["error"])
+            # Add audio metadata
+            quote_data["audio_duration"] = transcription_result.get("duration", 0)
+            quote_data["transcription_confidence"] = transcription_result.get("confidence")
+
+            # Ensure detected job_type is used if AI didn't return one
+            if not quote_data.get("job_type"):
+                quote_data["job_type"] = detected_job_type
 
             # Save to database
             quote = await db.create_quote(
