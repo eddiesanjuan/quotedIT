@@ -86,8 +86,13 @@ frontend_path = Path(__file__).parent.parent / "frontend"
 
 if frontend_path.exists():
     @app.get("/")
-    async def serve_frontend():
-        """Serve the frontend HTML."""
+    async def serve_landing():
+        """Serve the landing page."""
+        return FileResponse(frontend_path / "landing.html")
+
+    @app.get("/app")
+    async def serve_app():
+        """Serve the main application."""
         return FileResponse(frontend_path / "index.html")
 
     # Mount static files (CSS, JS, images if any)
