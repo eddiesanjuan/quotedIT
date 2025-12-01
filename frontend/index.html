@@ -3,243 +3,341 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quoted - Voice to Quote</title>
+    <title>quoted.it - Voice to Quote</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #141414;
+            --bg-card: #1a1a1a;
+            --bg-elevated: #222222;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --text-muted: #666666;
+            --accent: #ffffff;
+            --accent-hover: #e0e0e0;
+            --border: rgba(255, 255, 255, 0.1);
+            --border-hover: rgba(255, 255, 255, 0.2);
+            --success: #4ade80;
+            --warning: #fbbf24;
+            --error: #f87171;
+            --font-serif: 'Playfair Display', Georgia, serif;
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
         }
 
+        html {
+            font-size: 16px;
+        }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            font-family: var(--font-sans);
+            background: var(--bg-primary);
             min-height: 100vh;
-            color: #fff;
-            padding: 20px;
+            color: var(--text-primary);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        .animate-in {
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+
+        .animate-in-delayed {
+            animation: fadeIn 0.6s ease-out 0.2s forwards;
+            opacity: 0;
+        }
+
+        /* Layout */
         .container {
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
+            padding: 0 24px;
         }
 
-        header {
-            text-align: center;
-            margin-bottom: 40px;
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            padding: 24px 40px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            background: linear-gradient(to bottom, var(--bg-primary) 0%, transparent 100%);
         }
 
-        .header-left h1 {
-            font-size: 2rem;
+        .logo {
+            font-family: var(--font-serif);
+            font-size: 1.5rem;
+            font-weight: 500;
+            letter-spacing: -0.02em;
+            color: var(--text-primary);
+            text-decoration: none;
         }
 
-        .header-left .subtitle {
-            color: #a0a0a0;
-            font-size: 0.9rem;
+        .logo span {
+            font-style: italic;
         }
 
-        .user-info {
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 32px;
+        }
+
+        .nav-user {
             text-align: right;
         }
 
-        .user-info .business-name {
-            font-weight: 600;
-            color: #4ecdc4;
+        .nav-user .business-name {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-primary);
         }
 
-        .user-info .logout-btn {
+        .nav-user .logout-btn {
             background: none;
             border: none;
-            color: #a0a0a0;
+            color: var(--text-secondary);
             cursor: pointer;
-            font-size: 0.85rem;
-            margin-top: 5px;
+            font-size: 0.75rem;
+            font-family: var(--font-sans);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            transition: color 0.3s ease;
+            margin-top: 4px;
         }
 
-        .user-info .logout-btn:hover {
-            color: #e94560;
+        .nav-user .logout-btn:hover {
+            color: var(--text-primary);
         }
 
+        /* Main Content */
+        main {
+            min-height: 100vh;
+            padding-top: 120px;
+            padding-bottom: 80px;
+        }
+
+        /* Cards */
         .card {
-            background: rgba(255, 255, 255, 0.05);
+            background: var(--bg-card);
             border-radius: 16px;
-            padding: 30px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            margin-bottom: 24px;
+            border: 1px solid var(--border);
+            transition: border-color 0.3s ease;
         }
 
-        .card h2 {
-            font-size: 1.3rem;
-            margin-bottom: 20px;
-            color: #e0e0e0;
+        .card:hover {
+            border-color: var(--border-hover);
+        }
+
+        .card-title {
+            font-family: var(--font-serif);
+            font-size: 1.75rem;
+            font-weight: 500;
+            margin-bottom: 24px;
+            letter-spacing: -0.02em;
+        }
+
+        /* Typography */
+        h1 {
+            font-family: var(--font-serif);
+            font-size: clamp(2.5rem, 8vw, 4.5rem);
+            font-weight: 400;
+            line-height: 1.1;
+            letter-spacing: -0.03em;
+        }
+
+        h2 {
+            font-family: var(--font-serif);
+            font-size: 2rem;
+            font-weight: 400;
+            letter-spacing: -0.02em;
+        }
+
+        h3 {
+            font-family: var(--font-sans);
+            font-size: 1.125rem;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+
+        .hero-text {
+            font-family: var(--font-serif);
+            font-size: clamp(2rem, 6vw, 3.5rem);
+            font-weight: 400;
+            line-height: 1.2;
+            letter-spacing: -0.02em;
+            margin-bottom: 48px;
+        }
+
+        .hero-text em {
+            font-style: italic;
         }
 
         /* Auth Forms */
         .auth-container {
-            max-width: 400px;
-            margin: 60px auto;
+            max-width: 440px;
+            margin: 0 auto;
+            padding-top: 60px;
         }
 
-        .auth-container h1 {
+        .auth-header {
             text-align: center;
-            margin-bottom: 10px;
+            margin-bottom: 48px;
         }
 
-        .auth-container .subtitle {
-            text-align: center;
-            color: #a0a0a0;
-            margin-bottom: 30px;
+        .auth-header h1 {
+            margin-bottom: 16px;
         }
 
         .auth-tabs {
             display: flex;
-            margin-bottom: 20px;
+            margin-bottom: 32px;
+            border-radius: 8px;
+            overflow: hidden;
+            background: var(--bg-secondary);
         }
 
         .auth-tab {
             flex: 1;
-            padding: 12px;
-            background: rgba(255, 255, 255, 0.05);
+            padding: 14px 24px;
+            background: transparent;
             border: none;
-            color: #a0a0a0;
+            color: var(--text-secondary);
             cursor: pointer;
-            font-size: 1rem;
-            transition: all 0.3s;
-        }
-
-        .auth-tab:first-child {
-            border-radius: 8px 0 0 8px;
-        }
-
-        .auth-tab:last-child {
-            border-radius: 0 8px 8px 0;
+            font-family: var(--font-sans);
+            font-size: 0.875rem;
+            font-weight: 500;
+            letter-spacing: 0.02em;
+            transition: all 0.3s ease;
         }
 
         .auth-tab.active {
-            background: rgba(78, 205, 196, 0.2);
-            color: #4ecdc4;
+            background: var(--text-primary);
+            color: var(--bg-primary);
         }
 
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
 
         .form-group label {
             display: block;
-            margin-bottom: 5px;
-            color: #a0a0a0;
-            font-size: 0.9rem;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+            font-size: 0.8125rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
         }
 
-        .form-group input {
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
             width: 100%;
-            padding: 12px 15px;
+            padding: 14px 18px;
             border-radius: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            background: rgba(0, 0, 0, 0.2);
-            color: #fff;
+            border: 1px solid var(--border);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
             font-size: 1rem;
-        }
-
-        .form-group input::placeholder {
-            color: #666;
-        }
-
-        .form-group input:focus {
-            outline: none;
-            border-color: #4ecdc4;
-        }
-
-        /* Voice Input Section */
-        .voice-section {
-            text-align: center;
-        }
-
-        .record-btn {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            border: none;
-            background: linear-gradient(145deg, #e94560, #c23a51);
-            color: white;
-            font-size: 1rem;
-            cursor: pointer;
+            font-family: var(--font-sans);
             transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(233, 69, 96, 0.4);
         }
 
-        .record-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 6px 20px rgba(233, 69, 96, 0.5);
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+            color: var(--text-muted);
         }
 
-        .record-btn.recording {
-            background: linear-gradient(145deg, #ff6b6b, #ee5a5a);
-            animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(233, 69, 96, 0.7); }
-            70% { box-shadow: 0 0 0 20px rgba(233, 69, 96, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(233, 69, 96, 0); }
-        }
-
-        .record-instructions {
-            margin-top: 20px;
-            color: #a0a0a0;
-        }
-
-        /* Text Input */
-        .text-input {
-            margin-top: 30px;
-            padding-top: 30px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .text-input label {
-            display: block;
-            margin-bottom: 10px;
-            color: #a0a0a0;
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--text-primary);
+            background: var(--bg-elevated);
         }
 
         textarea {
-            width: 100%;
             min-height: 120px;
-            padding: 15px;
-            border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            background: rgba(0, 0, 0, 0.2);
-            color: #fff;
-            font-size: 1rem;
             resize: vertical;
+            line-height: 1.6;
         }
 
-        textarea::placeholder {
-            color: #666;
-        }
-
+        /* Buttons */
         .btn {
-            display: inline-block;
-            padding: 12px 30px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 14px 32px;
             border-radius: 8px;
             border: none;
-            font-size: 1rem;
+            font-family: var(--font-sans);
+            font-size: 0.875rem;
+            font-weight: 500;
+            letter-spacing: 0.02em;
             cursor: pointer;
             transition: all 0.3s ease;
-            margin-top: 15px;
         }
 
         .btn-primary {
-            background: linear-gradient(145deg, #4ecdc4, #44a08d);
-            color: white;
+            background: var(--text-primary);
+            color: var(--bg-primary);
         }
 
         .btn-primary:hover {
+            background: var(--accent-hover);
             transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(78, 205, 196, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
         }
 
         .btn-primary:disabled {
@@ -249,25 +347,110 @@
         }
 
         .btn-secondary {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: transparent;
+            color: var(--text-primary);
+            border: 1px solid var(--border);
         }
 
         .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.2);
+            background: var(--bg-elevated);
+            border-color: var(--border-hover);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--text-secondary);
+            padding: 10px 16px;
+        }
+
+        .btn-ghost:hover {
+            color: var(--text-primary);
         }
 
         .btn-block {
-            display: block;
+            display: flex;
             width: 100%;
         }
 
-        /* Loading State */
+        /* Voice Input */
+        .voice-section {
+            text-align: center;
+            padding: 60px 40px;
+        }
+
+        .record-btn {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            border: 2px solid var(--text-primary);
+            background: transparent;
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .record-btn::before {
+            content: '';
+            position: absolute;
+            inset: 4px;
+            border-radius: 50%;
+            background: transparent;
+            transition: all 0.4s ease;
+        }
+
+        .record-btn:hover {
+            background: var(--text-primary);
+            color: var(--bg-primary);
+        }
+
+        .record-btn.recording {
+            background: var(--text-primary);
+            color: var(--bg-primary);
+            animation: pulse 2s infinite;
+        }
+
+        .record-btn.recording::before {
+            background: var(--error);
+            inset: 50px;
+        }
+
+        .record-instructions {
+            margin-top: 24px;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .text-divider {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            margin: 48px 0;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+        }
+
+        .text-divider::before,
+        .text-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        /* Loading */
         .loading {
             display: none;
             text-align: center;
-            padding: 40px;
+            padding: 80px 40px;
         }
 
         .loading.active {
@@ -275,20 +458,23 @@
         }
 
         .spinner {
-            width: 50px;
-            height: 50px;
-            border: 3px solid rgba(255, 255, 255, 0.1);
-            border-top-color: #4ecdc4;
+            width: 48px;
+            height: 48px;
+            border: 2px solid var(--border);
+            border-top-color: var(--text-primary);
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
+            margin: 0 auto 24px;
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        .loading-text {
+            font-family: var(--font-serif);
+            font-size: 1.25rem;
+            font-style: italic;
+            color: var(--text-secondary);
         }
 
-        /* Quote Display */
+        /* Quote Result */
         .quote-result {
             display: none;
         }
@@ -300,68 +486,90 @@
         .quote-header {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
+            align-items: flex-start;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .quote-header h2 {
+            font-family: var(--font-serif);
+            font-size: 2rem;
         }
 
         .confidence-badge {
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 0.85rem;
+            padding: 6px 16px;
+            border-radius: 100px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
         }
 
         .confidence-high {
-            background: rgba(78, 205, 196, 0.2);
-            color: #4ecdc4;
+            background: rgba(74, 222, 128, 0.15);
+            color: var(--success);
+            border: 1px solid rgba(74, 222, 128, 0.3);
         }
 
         .confidence-medium {
-            background: rgba(255, 193, 7, 0.2);
-            color: #ffc107;
+            background: rgba(251, 191, 36, 0.15);
+            color: var(--warning);
+            border: 1px solid rgba(251, 191, 36, 0.3);
         }
 
         .confidence-low {
-            background: rgba(233, 69, 96, 0.2);
-            color: #e94560;
+            background: rgba(248, 113, 113, 0.15);
+            color: var(--error);
+            border: 1px solid rgba(248, 113, 113, 0.3);
         }
 
         .job-description {
-            padding: 15px;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 8px;
-            margin-bottom: 20px;
-            line-height: 1.6;
+            padding: 24px;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            margin-bottom: 32px;
+            line-height: 1.7;
+            color: var(--text-secondary);
+            border-left: 3px solid var(--text-primary);
         }
 
         /* Line Items */
         .line-items {
-            margin-bottom: 20px;
+            margin-bottom: 32px;
         }
 
         .line-item {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            padding: 12px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            align-items: flex-start;
+            padding: 20px 0;
+            border-bottom: 1px solid var(--border);
         }
 
         .line-item:last-child {
             border-bottom: none;
         }
 
+        .line-item-info {
+            flex: 1;
+        }
+
         .line-item-name {
             font-weight: 500;
+            margin-bottom: 4px;
         }
 
         .line-item-desc {
-            font-size: 0.85rem;
-            color: #a0a0a0;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
         }
 
         .line-item-amount {
-            font-weight: 600;
-            font-size: 1.1rem;
+            font-family: var(--font-serif);
+            font-size: 1.25rem;
+            font-weight: 500;
+            margin-left: 24px;
         }
 
         /* Total */
@@ -369,59 +577,84 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 20px;
-            background: rgba(78, 205, 196, 0.1);
-            border-radius: 10px;
-            margin-top: 20px;
+            padding: 32px;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            margin-top: 32px;
         }
 
         .total-label {
-            font-size: 1.2rem;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-secondary);
         }
 
         .total-amount {
-            font-size: 2rem;
-            font-weight: 700;
-            color: #4ecdc4;
+            font-family: var(--font-serif);
+            font-size: 3rem;
+            font-weight: 500;
+            letter-spacing: -0.02em;
         }
 
         /* Notes */
         .quote-notes {
-            margin-top: 20px;
-            padding: 15px;
-            background: rgba(255, 193, 7, 0.1);
-            border-radius: 8px;
-            border-left: 3px solid #ffc107;
+            margin-top: 32px;
+            padding: 24px;
+            background: rgba(251, 191, 36, 0.08);
+            border-radius: 12px;
+            border-left: 3px solid var(--warning);
         }
 
         .quote-notes h4 {
-            margin-bottom: 10px;
-            color: #ffc107;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--warning);
+            margin-bottom: 12px;
         }
 
-        /* Actions */
-        .quote-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 30px;
+        .quote-notes p {
+            color: var(--text-secondary);
+            line-height: 1.7;
         }
 
         /* Transcription */
         .transcription {
-            margin-top: 20px;
-            padding: 15px;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 8px;
+            margin-top: 32px;
+            padding: 24px;
+            background: var(--bg-secondary);
+            border-radius: 12px;
             font-style: italic;
-            color: #888;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            line-height: 1.7;
         }
 
-        /* Error/Success Message */
+        .transcription::before {
+            content: '"';
+            font-family: var(--font-serif);
+            font-size: 2rem;
+            color: var(--text-muted);
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        /* Quote Actions */
+        .quote-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 40px;
+            flex-wrap: wrap;
+        }
+
+        /* Messages */
         .message {
             display: none;
-            padding: 15px;
+            padding: 16px 20px;
             border-radius: 8px;
-            margin-top: 20px;
+            margin-top: 24px;
+            font-size: 0.875rem;
         }
 
         .message.active {
@@ -429,33 +662,86 @@
         }
 
         .message.error {
-            background: rgba(233, 69, 96, 0.2);
-            color: #e94560;
+            background: rgba(248, 113, 113, 0.1);
+            color: var(--error);
+            border: 1px solid rgba(248, 113, 113, 0.2);
         }
 
         .message.success {
-            background: rgba(78, 205, 196, 0.2);
-            color: #4ecdc4;
+            background: rgba(74, 222, 128, 0.1);
+            color: var(--success);
+            border: 1px solid rgba(74, 222, 128, 0.2);
         }
 
         /* Onboarding */
         .onboarding-notice {
-            background: rgba(78, 205, 196, 0.1);
-            border: 1px solid rgba(78, 205, 196, 0.3);
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 20px;
             text-align: center;
         }
 
-        .onboarding-notice h3 {
-            color: #4ecdc4;
-            margin-bottom: 10px;
+        .onboarding-intro {
+            max-width: 500px;
+            margin: 0 auto;
         }
 
-        .onboarding-notice p {
-            color: #a0a0a0;
-            margin-bottom: 15px;
+        .onboarding-intro h3 {
+            font-family: var(--font-serif);
+            font-size: 1.75rem;
+            font-weight: 400;
+            margin-bottom: 16px;
+        }
+
+        .onboarding-intro p {
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+            line-height: 1.7;
+        }
+
+        .onboarding-intro ul {
+            text-align: left;
+            margin: 24px 0 40px;
+            padding-left: 0;
+            list-style: none;
+        }
+
+        .onboarding-intro li {
+            padding: 16px 20px;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            margin-bottom: 12px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .onboarding-intro li strong {
+            color: var(--text-primary);
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .onboarding-options {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* Quick Setup Form */
+        #quickSetupForm {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        #quickSetupForm h3 {
+            font-family: var(--font-serif);
+            font-size: 1.5rem;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+
+        #quickSetupForm > p {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-bottom: 32px;
         }
 
         /* Onboarding Chat */
@@ -469,76 +755,112 @@
             display: block;
         }
 
+        .chat-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .chat-header h3 {
+            font-family: var(--font-serif);
+            font-size: 1.5rem;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+
+        .chat-header p {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
         .chat-messages {
             max-height: 400px;
             overflow-y: auto;
-            padding: 15px;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 10px;
-            margin-bottom: 15px;
+            padding: 20px;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            margin-bottom: 20px;
         }
 
         .chat-message {
-            margin-bottom: 15px;
-            padding: 12px 15px;
+            margin-bottom: 16px;
+            padding: 16px 20px;
             border-radius: 12px;
             max-width: 85%;
+            animation: fadeIn 0.3s ease-out;
         }
 
         .chat-message.assistant {
-            background: rgba(78, 205, 196, 0.2);
-            border: 1px solid rgba(78, 205, 196, 0.3);
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
             margin-right: auto;
         }
 
         .chat-message.user {
-            background: rgba(233, 69, 96, 0.2);
-            border: 1px solid rgba(233, 69, 96, 0.3);
+            background: var(--text-primary);
+            color: var(--bg-primary);
             margin-left: auto;
         }
 
         .chat-message .role {
-            font-size: 0.75rem;
-            color: #a0a0a0;
-            margin-bottom: 5px;
+            font-size: 0.625rem;
+            color: var(--text-muted);
+            margin-bottom: 6px;
             text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .chat-message.user .role {
+            color: var(--text-muted);
         }
 
         .chat-input-area {
             display: flex;
-            gap: 10px;
+            gap: 12px;
             align-items: flex-end;
         }
 
         .chat-input-area textarea {
             flex: 1;
-            min-height: 60px;
+            min-height: 56px;
             max-height: 120px;
             resize: none;
+            padding: 16px;
         }
 
         .chat-actions {
             display: flex;
             flex-direction: column;
-            gap: 5px;
+            gap: 8px;
         }
 
         .chat-btn {
-            padding: 10px 15px;
-            border-radius: 8px;
-            border: none;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: 1px solid var(--border);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
             cursor: pointer;
-            font-size: 0.9rem;
-            transition: all 0.3s;
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .chat-btn:hover {
+            background: var(--bg-elevated);
+            border-color: var(--border-hover);
         }
 
         .chat-btn.send {
-            background: #4ecdc4;
-            color: white;
+            background: var(--text-primary);
+            color: var(--bg-primary);
+            border-color: var(--text-primary);
         }
 
         .chat-btn.send:hover {
-            background: #3dbdb5;
+            background: var(--accent-hover);
         }
 
         .chat-btn.send:disabled {
@@ -546,63 +868,57 @@
             cursor: not-allowed;
         }
 
-        .chat-btn.done {
-            background: rgba(78, 205, 196, 0.2);
-            color: #4ecdc4;
-            border: 1px solid rgba(78, 205, 196, 0.3);
-        }
-
-        .chat-btn.done:hover {
-            background: rgba(78, 205, 196, 0.3);
-        }
-
-        .chat-btn.voice {
-            background: rgba(233, 69, 96, 0.2);
-            color: #e94560;
-            border: 1px solid rgba(233, 69, 96, 0.3);
-        }
-
-        .chat-btn.voice:hover {
-            background: rgba(233, 69, 96, 0.3);
-        }
-
-        .chat-btn.voice.recording {
-            background: #e94560;
-            color: white;
+        .chat-btn.recording {
+            background: var(--error);
+            border-color: var(--error);
             animation: pulse 1.5s infinite;
         }
 
-        .onboarding-intro {
-            text-align: left;
-        }
-
-        .onboarding-intro ul {
-            margin: 15px 0;
-            padding-left: 20px;
-        }
-
-        .onboarding-intro li {
-            margin-bottom: 8px;
-            color: #c0c0c0;
-        }
-
-        .onboarding-options {
+        .chat-footer {
             display: flex;
-            gap: 15px;
-            justify-content: center;
+            gap: 12px;
             margin-top: 20px;
+            justify-content: center;
         }
 
+        .chat-btn-text {
+            padding: 12px 24px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text-primary);
+            cursor: pointer;
+            font-family: var(--font-sans);
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .chat-btn-text:hover {
+            background: var(--bg-elevated);
+        }
+
+        .chat-btn-text.done {
+            background: var(--text-primary);
+            color: var(--bg-primary);
+            border-color: var(--text-primary);
+        }
+
+        .chat-btn-text.done:hover {
+            background: var(--accent-hover);
+        }
+
+        /* Typing Indicator */
         .typing-indicator {
             display: flex;
             gap: 4px;
-            padding: 10px 15px;
+            padding: 12px 16px;
         }
 
         .typing-indicator span {
             width: 8px;
             height: 8px;
-            background: #4ecdc4;
+            background: var(--text-muted);
             border-radius: 50%;
             animation: typing 1.4s infinite;
         }
@@ -616,11 +932,11 @@
         }
 
         @keyframes typing {
-            0%, 60%, 100% { transform: translateY(0); }
-            30% { transform: translateY(-5px); }
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+            30% { transform: translateY(-6px); opacity: 1; }
         }
 
-        /* Hide sections by default */
+        /* Views */
         .view {
             display: none;
         }
@@ -632,24 +948,28 @@
         /* Issue Reporter */
         .issue-fab {
             position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 56px;
-            height: 56px;
+            bottom: 32px;
+            right: 32px;
+            width: 48px;
+            height: 48px;
             border-radius: 50%;
-            background: #e94560;
-            border: none;
-            color: white;
-            font-size: 24px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            font-size: 1.25rem;
             cursor: pointer;
-            box-shadow: 0 4px 12px rgba(233, 69, 96, 0.4);
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: all 0.3s ease;
             z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .issue-fab:hover {
-            transform: scale(1.1);
-            box-shadow: 0 6px 16px rgba(233, 69, 96, 0.5);
+            background: var(--bg-elevated);
+            border-color: var(--border-hover);
+            color: var(--text-primary);
+            transform: scale(1.05);
         }
 
         .issue-modal {
@@ -659,10 +979,12 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(4px);
             z-index: 1001;
             justify-content: center;
             align-items: center;
+            padding: 24px;
         }
 
         .issue-modal.active {
@@ -670,18 +992,22 @@
         }
 
         .issue-modal-content {
-            background: #1a1a2e;
+            background: var(--bg-card);
             border-radius: 16px;
-            padding: 30px;
-            width: 90%;
+            padding: 40px;
+            width: 100%;
             max-width: 500px;
             max-height: 90vh;
             overflow-y: auto;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--border);
+            animation: fadeIn 0.3s ease-out;
         }
 
         .issue-modal h3 {
-            margin-bottom: 20px;
+            font-family: var(--font-serif);
+            font-size: 1.5rem;
+            font-weight: 400;
+            margin-bottom: 24px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -690,68 +1016,144 @@
         .issue-modal .close-btn {
             background: none;
             border: none;
-            color: #a0a0a0;
-            font-size: 24px;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
             cursor: pointer;
+            transition: color 0.3s ease;
+            line-height: 1;
         }
 
-        .issue-form label {
-            display: block;
-            margin-bottom: 5px;
-            color: #a0a0a0;
-            font-size: 0.9rem;
-        }
-
-        .issue-form input,
-        .issue-form textarea,
-        .issue-form select {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 15px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
-            background: rgba(255, 255, 255, 0.05);
-            color: #fff;
-            font-size: 1rem;
-        }
-
-        .issue-form textarea {
-            min-height: 100px;
-            resize: vertical;
+        .issue-modal .close-btn:hover {
+            color: var(--text-primary);
         }
 
         .issue-form .form-row {
-            display: flex;
-            gap: 15px;
-        }
-
-        .issue-form .form-row > div {
-            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
         }
 
         .issue-success {
             text-align: center;
-            padding: 30px;
+            padding: 40px 20px;
         }
 
         .issue-success .checkmark {
-            font-size: 48px;
-            color: #4ecdc4;
-            margin-bottom: 15px;
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: rgba(74, 222, 128, 0.15);
+            color: var(--success);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            margin: 0 auto 24px;
+        }
+
+        .issue-success h3 {
+            justify-content: center;
+            margin-bottom: 12px;
+        }
+
+        .issue-success p {
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+        }
+
+        /* Footer */
+        .footer {
+            padding: 40px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+        }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            nav {
+                padding: 16px 20px;
+            }
+
+            .container {
+                padding: 0 16px;
+            }
+
+            main {
+                padding-top: 100px;
+            }
+
+            .card {
+                padding: 24px;
+            }
+
+            .voice-section {
+                padding: 40px 24px;
+            }
+
+            .record-btn {
+                width: 120px;
+                height: 120px;
+            }
+
+            .quote-total {
+                padding: 24px;
+                flex-direction: column;
+                text-align: center;
+                gap: 12px;
+            }
+
+            .total-amount {
+                font-size: 2.5rem;
+            }
+
+            .quote-actions {
+                flex-direction: column;
+            }
+
+            .quote-actions .btn {
+                width: 100%;
+            }
+
+            .issue-form .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .onboarding-options {
+                flex-direction: column;
+            }
+
+            .onboarding-options .btn {
+                width: 100%;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
+    <!-- Navigation -->
+    <nav>
+        <a href="/" class="logo">quoted<span>.it</span></a>
+        <div class="nav-right" id="navRight" style="display: none;">
+            <div class="nav-user">
+                <div class="business-name" id="businessNameDisplay"></div>
+                <button class="logout-btn" onclick="logout()">Sign Out</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
         <!-- Auth View -->
         <div class="view auth-container" id="authView">
-            <h1>Quoted</h1>
-            <p class="subtitle">Voice to Quote in Seconds</p>
+            <div class="auth-header animate-in">
+                <h1>Voice to quote<br>in seconds.</h1>
+                <p class="subtitle" style="margin-top: 16px;">Turn job site visits into professional estimates instantly.</p>
+            </div>
 
-            <div class="card">
+            <div class="card animate-in-delayed">
                 <div class="auth-tabs">
-                    <button class="auth-tab active" id="loginTab" onclick="showAuthTab('login')">Login</button>
-                    <button class="auth-tab" id="registerTab" onclick="showAuthTab('register')">Register</button>
+                    <button class="auth-tab active" id="loginTab" onclick="showAuthTab('login')">Sign In</button>
+                    <button class="auth-tab" id="registerTab" onclick="showAuthTab('register')">Create Account</button>
                 </div>
 
                 <!-- Login Form -->
@@ -762,9 +1164,9 @@
                     </div>
                     <div class="form-group">
                         <label>Password</label>
-                        <input type="password" id="loginPassword" placeholder="Your password" required>
+                        <input type="password" id="loginPassword" placeholder="Enter your password" required>
                     </div>
-                    <button type="submit" class="btn btn-primary btn-block" id="loginBtn">Login</button>
+                    <button type="submit" class="btn btn-primary btn-block" id="loginBtn">Sign In</button>
                 </form>
 
                 <!-- Register Form -->
@@ -787,7 +1189,7 @@
                     </div>
                     <div class="form-group">
                         <label>Password</label>
-                        <input type="password" id="registerPassword" placeholder="Choose a password" required minlength="8">
+                        <input type="password" id="registerPassword" placeholder="Create a password" required minlength="8">
                     </div>
                     <button type="submit" class="btn btn-primary btn-block" id="registerBtn">Create Account</button>
                 </form>
@@ -798,29 +1200,24 @@
 
         <!-- Main App View -->
         <div class="view" id="appView">
-            <header>
-                <div class="header-left">
-                    <h1>Quoted</h1>
-                    <p class="subtitle">Voice to Quote in Seconds</p>
-                </div>
-                <div class="user-info">
-                    <div class="business-name" id="businessNameDisplay"></div>
-                    <button class="logout-btn" onclick="logout()">Logout</button>
-                </div>
-            </header>
-
-            <!-- Onboarding Notice (shown if no pricing model) -->
-            <div class="card" id="onboardingNotice" style="display: none;">
+            <!-- Onboarding Notice -->
+            <div class="card onboarding-notice" id="onboardingNotice" style="display: none;">
                 <!-- Intro Screen -->
                 <div id="onboardingIntro" class="onboarding-intro">
-                    <h3 style="color: #4ecdc4; text-align: center; margin-bottom: 15px;">Welcome! Let's Set Up Your Pricing</h3>
-                    <p style="color: #a0a0a0; text-align: center;">
-                        Before you can generate quotes, I need to learn how you price your work.
-                    </p>
+                    <h3>Let's learn how you price.</h3>
+                    <p>Before generating quotes, I need to understand your pricing model. Choose how you'd like to set this up.</p>
+
                     <ul>
-                        <li><strong>Voice Interview (Recommended):</strong> Have a quick conversation where I'll ask about your rates, materials, and how you typically price jobs. Takes 2-5 minutes.</li>
-                        <li><strong>Quick Setup:</strong> Enter basic rates manually. You can always teach me more later.</li>
+                        <li>
+                            <strong>Voice Interview</strong>
+                            Have a quick conversation where I'll ask about your rates, materials, and typical pricing. Takes 2-5 minutes.
+                        </li>
+                        <li>
+                            <strong>Quick Setup</strong>
+                            Enter your basic rates manually. You can always teach me more later.
+                        </li>
                     </ul>
+
                     <div class="onboarding-options">
                         <button class="btn btn-primary" onclick="startOnboardingInterview()">Start Voice Interview</button>
                         <button class="btn btn-secondary" onclick="showQuickSetup()">Quick Setup</button>
@@ -828,14 +1225,13 @@
                 </div>
 
                 <!-- Quick Setup Form -->
-                <div id="quickSetupForm" style="display: none; text-align: left;">
-                    <h3 style="color: #4ecdc4; margin-bottom: 15px;">Quick Setup</h3>
-                    <p style="color: #a0a0a0; margin-bottom: 20px; font-size: 0.9rem;">
-                        Enter your basic rates. You can teach me more details later through a voice conversation.
-                    </p>
+                <div id="quickSetupForm" style="display: none;">
+                    <h3>Quick Setup</h3>
+                    <p>Enter your basic rates. You can refine these through quotes over time.</p>
+
                     <div class="form-group">
-                        <label>What's your primary trade?</label>
-                        <select id="primaryTrade" style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(0,0,0,0.3); color: white; border: 1px solid rgba(255,255,255,0.2);">
+                        <label>Primary Trade</label>
+                        <select id="primaryTrade">
                             <option value="deck_builder">Deck Builder</option>
                             <option value="general_contractor">General Contractor</option>
                             <option value="painter">Painter</option>
@@ -848,50 +1244,53 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Your hourly labor rate ($)</label>
+                        <label>Hourly Labor Rate ($)</label>
                         <input type="number" id="hourlyRate" placeholder="85" value="85">
                     </div>
                     <div class="form-group">
-                        <label>Minimum job amount ($)</label>
+                        <label>Minimum Job Amount ($)</label>
                         <input type="number" id="minimumJob" placeholder="500" value="500">
                     </div>
                     <div class="form-group">
-                        <label>Deposit percentage (%)</label>
+                        <label>Deposit Percentage (%)</label>
                         <input type="number" id="depositPercent" placeholder="50" value="50">
                     </div>
-                    <div style="display: flex; gap: 10px; margin-top: 20px;">
+
+                    <div style="display: flex; gap: 12px; margin-top: 32px;">
                         <button class="btn btn-secondary" onclick="showOnboardingIntro()">Back</button>
-                        <button class="btn btn-primary" style="flex: 1;" onclick="completeQuickSetup()">Save & Start Quoting</button>
+                        <button class="btn btn-primary" style="flex: 1;" onclick="completeQuickSetup()">Save & Start</button>
                     </div>
                 </div>
 
                 <!-- Interview Chat -->
                 <div id="onboardingChat" class="onboarding-chat">
-                    <h3 style="color: #4ecdc4; margin-bottom: 15px; text-align: center;">Pricing Interview</h3>
-                    <p style="color: #a0a0a0; margin-bottom: 15px; font-size: 0.9rem; text-align: center;">
-                        Tell me about how you price your work. Type or use voice.
-                    </p>
-
-                    <div class="chat-messages" id="chatMessages">
-                        <!-- Messages will be added here -->
+                    <div class="chat-header">
+                        <h3>Pricing Interview</h3>
+                        <p>Tell me about how you price your work. Type or use voice.</p>
                     </div>
+
+                    <div class="chat-messages" id="chatMessages"></div>
 
                     <div class="chat-input-area">
                         <textarea
                             id="chatInput"
-                            placeholder="Type your response or click the mic to speak..."
+                            placeholder="Type your response..."
                             onkeydown="handleChatKeydown(event)"
                         ></textarea>
                         <div class="chat-actions">
-                            <button class="chat-btn voice" id="chatVoiceBtn" onclick="toggleChatVoice()">🎤</button>
-                            <button class="chat-btn send" id="chatSendBtn" onclick="sendChatMessage()">Send</button>
+                            <button class="chat-btn" id="chatVoiceBtn" onclick="toggleChatVoice()" title="Voice input">
+                                <span>🎤</span>
+                            </button>
+                            <button class="chat-btn send" id="chatSendBtn" onclick="sendChatMessage()" title="Send">
+                                <span>→</span>
+                            </button>
                         </div>
                     </div>
 
-                    <div style="display: flex; gap: 10px; margin-top: 15px; justify-content: center;">
-                        <button class="btn btn-secondary" onclick="showOnboardingIntro()">Cancel</button>
-                        <button class="chat-btn done" id="finishInterviewBtn" onclick="finishInterview()" style="display: none;">
-                            Done - Save My Pricing
+                    <div class="chat-footer">
+                        <button class="chat-btn-text" onclick="showOnboardingIntro()">Cancel</button>
+                        <button class="chat-btn-text done" id="finishInterviewBtn" onclick="finishInterview()" style="display: none;">
+                            Finish & Save
                         </button>
                     </div>
                 </div>
@@ -899,29 +1298,30 @@
 
             <!-- Input Section -->
             <div class="card voice-section" id="inputSection">
-                <h2>Describe the Job</h2>
+                <h2 class="card-title" style="font-family: var(--font-serif); font-weight: 400;">Describe the job.</h2>
 
                 <button class="record-btn" id="recordBtn" onclick="toggleRecording()">
-                    <span id="recordBtnText">Hold to<br>Record</span>
+                    <span id="recordBtnText">Record</span>
                 </button>
                 <p class="record-instructions" id="recordInstructions">
-                    Click and hold to record your voice note
+                    Click to start recording your voice note
                 </p>
 
-                <div class="text-input">
-                    <label>Or type your job description:</label>
+                <div class="text-divider">or type it out</div>
+
+                <div style="text-align: left;">
                     <textarea
                         id="jobDescription"
-                        placeholder="Example: It's a 20 by 16 composite deck, Trex Select in Pebble Grey. Need to demo the old wood deck first. Standard aluminum railing, about 40 linear feet. Three steps down to the yard. Customer is John Smith at 456 Oak Lane..."
+                        placeholder="It's a 20 by 16 composite deck, Trex Select in Pebble Grey. Need to demo the old wood deck first. Standard aluminum railing, about 40 linear feet. Three steps down to the yard..."
                     ></textarea>
-                    <button class="btn btn-primary" onclick="generateQuote()">Generate Quote</button>
+                    <button class="btn btn-primary" onclick="generateQuote()" style="margin-top: 16px;">Generate Quote</button>
                 </div>
             </div>
 
             <!-- Loading State -->
             <div class="card loading" id="loadingSection">
                 <div class="spinner"></div>
-                <p>Generating your quote...</p>
+                <p class="loading-text">Generating your quote...</p>
             </div>
 
             <!-- Error Message -->
@@ -956,10 +1356,10 @@
                 </div>
             </div>
         </div>
-    </div>
+    </main>
 
     <!-- Issue Reporter FAB -->
-    <button class="issue-fab" onclick="openIssueModal()" title="Report an issue">!</button>
+    <button class="issue-fab" onclick="openIssueModal()" title="Report an issue">?</button>
 
     <!-- Issue Reporter Modal -->
     <div class="issue-modal" id="issueModal">
@@ -970,49 +1370,53 @@
                     <button class="close-btn" onclick="closeIssueModal()">&times;</button>
                 </h3>
                 <form class="issue-form" onsubmit="submitIssue(event)">
-                    <label for="issueTitle">What's the problem?</label>
-                    <input type="text" id="issueTitle" placeholder="Brief description of the issue" required>
+                    <div class="form-group">
+                        <label>What's the problem?</label>
+                        <input type="text" id="issueTitle" placeholder="Brief description" required>
+                    </div>
 
-                    <label for="issueDescription">Tell us more</label>
-                    <textarea id="issueDescription" placeholder="What happened? What did you expect to happen?" required></textarea>
+                    <div class="form-group">
+                        <label>Tell us more</label>
+                        <textarea id="issueDescription" placeholder="What happened? What did you expect?" required></textarea>
+                    </div>
 
                     <div class="form-row">
-                        <div>
-                            <label for="issueCategory">Category</label>
+                        <div class="form-group">
+                            <label>Category</label>
                             <select id="issueCategory">
-                                <option value="bug">Bug / Something broken</option>
-                                <option value="ui_issue">Display / UI issue</option>
-                                <option value="pricing_issue">Pricing / Quote issue</option>
-                                <option value="feature_request">Feature request</option>
+                                <option value="bug">Bug</option>
+                                <option value="ui_issue">Display Issue</option>
+                                <option value="pricing_issue">Pricing Issue</option>
+                                <option value="feature_request">Feature Request</option>
                                 <option value="other">Other</option>
                             </select>
                         </div>
-                        <div>
-                            <label for="issueSeverity">Severity</label>
+                        <div class="form-group">
+                            <label>Severity</label>
                             <select id="issueSeverity">
-                                <option value="low">Low - Minor annoyance</option>
-                                <option value="medium" selected>Medium - Affects my work</option>
-                                <option value="high">High - Blocking me</option>
-                                <option value="critical">Critical - Data loss/security</option>
+                                <option value="low">Low</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="high">High</option>
+                                <option value="critical">Critical</option>
                             </select>
                         </div>
                     </div>
 
-                    <label for="issueSteps">Steps to reproduce (optional)</label>
-                    <textarea id="issueSteps" placeholder="1. Go to...&#10;2. Click on...&#10;3. See error"></textarea>
+                    <div class="form-group">
+                        <label>Steps to reproduce (optional)</label>
+                        <textarea id="issueSteps" placeholder="1. Go to...&#10;2. Click on...&#10;3. See error"></textarea>
+                    </div>
 
-                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">
-                        Submit Issue
-                    </button>
+                    <button type="submit" class="btn btn-primary btn-block">Submit</button>
                 </form>
             </div>
 
             <div id="issueSuccessView" class="issue-success" style="display: none;">
-                <div class="checkmark">&#10003;</div>
+                <div class="checkmark">✓</div>
                 <h3>Thanks for reporting!</h3>
-                <p style="color: #a0a0a0; margin-bottom: 20px;">
-                    We'll look into this and may fix it automatically.<br>
-                    Issue ID: <span id="submittedIssueId"></span>
+                <p>
+                    We'll look into this.<br>
+                    Issue ID: <strong id="submittedIssueId"></strong>
                 </p>
                 <button class="btn btn-secondary" onclick="closeIssueModal()">Close</button>
             </div>
@@ -1020,7 +1424,7 @@
     </div>
 
     <script>
-        // Configuration - will be set based on environment
+        // Configuration
         const API_BASE = window.location.hostname === 'localhost'
             ? 'http://localhost:8000/api'
             : window.location.origin + '/api';
@@ -1032,7 +1436,7 @@
         let mediaRecorder = null;
         let audioChunks = [];
 
-        // Initialize app
+        // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             if (authToken && currentUser) {
                 showAppView();
@@ -1058,7 +1462,7 @@
             const btn = document.getElementById('loginBtn');
 
             btn.disabled = true;
-            btn.textContent = 'Logging in...';
+            btn.textContent = 'Signing in...';
 
             try {
                 const response = await fetch(`${API_BASE}/auth/login`, {
@@ -1073,11 +1477,9 @@
                     throw new Error(data.detail || 'Login failed');
                 }
 
-                // Save auth
                 authToken = data.access_token;
                 localStorage.setItem('quoted_token', authToken);
 
-                // Get user info
                 await fetchUserInfo();
                 showAppView();
 
@@ -1085,7 +1487,7 @@
                 showAuthMessage(err.message, 'error');
             } finally {
                 btn.disabled = false;
-                btn.textContent = 'Login';
+                btn.textContent = 'Sign In';
             }
         }
 
@@ -1118,11 +1520,9 @@
                     throw new Error(result.detail || 'Registration failed');
                 }
 
-                // Save auth
                 authToken = result.access_token;
                 localStorage.setItem('quoted_token', authToken);
 
-                // Get user info
                 await fetchUserInfo();
                 showAppView();
 
@@ -1159,17 +1559,19 @@
         function showAuthView() {
             document.getElementById('authView').classList.add('active');
             document.getElementById('appView').classList.remove('active');
+            document.getElementById('navRight').style.display = 'none';
         }
 
         async function showAppView() {
             document.getElementById('authView').classList.remove('active');
             document.getElementById('appView').classList.add('active');
+            document.getElementById('navRight').style.display = 'flex';
 
             if (currentUser) {
                 document.getElementById('businessNameDisplay').textContent = currentUser.business_name || currentUser.email;
             }
 
-            // Check if they have a pricing model set up
+            // Check pricing model
             try {
                 const response = await fetch(`${API_BASE}/contractors/${currentUser.contractor_id}/pricing`, {
                     headers: { 'Authorization': `Bearer ${authToken}` },
@@ -1177,17 +1579,14 @@
 
                 if (response.ok) {
                     const pricing = await response.json();
-                    // If no pricing knowledge, show onboarding notice
                     const hasPricing = pricing && pricing.pricing_knowledge && Object.keys(pricing.pricing_knowledge).length > 0;
                     document.getElementById('onboardingNotice').style.display = hasPricing ? 'none' : 'block';
                     document.getElementById('inputSection').style.display = hasPricing ? 'block' : 'none';
                 } else {
-                    // No pricing model - show onboarding
                     document.getElementById('onboardingNotice').style.display = 'block';
                     document.getElementById('inputSection').style.display = 'none';
                 }
             } catch (err) {
-                // Default to showing onboarding notice for new users
                 document.getElementById('onboardingNotice').style.display = 'block';
                 document.getElementById('inputSection').style.display = 'none';
             }
@@ -1204,7 +1603,7 @@
             document.getElementById('authMessage').classList.remove('active');
         }
 
-        // Recording functionality
+        // Recording
         async function toggleRecording() {
             const btn = document.getElementById('recordBtn');
             const btnText = document.getElementById('recordBtnText');
@@ -1213,7 +1612,7 @@
             if (mediaRecorder && mediaRecorder.state === 'recording') {
                 mediaRecorder.stop();
                 btn.classList.remove('recording');
-                btnText.innerHTML = 'Hold to<br>Record';
+                btnText.textContent = 'Record';
                 instructions.textContent = 'Processing...';
             } else {
                 try {
@@ -1233,16 +1632,16 @@
 
                     mediaRecorder.start();
                     btn.classList.add('recording');
-                    btnText.innerHTML = 'Click to<br>Stop';
+                    btnText.textContent = 'Stop';
                     instructions.textContent = 'Recording... Click again when done';
                 } catch (err) {
-                    console.error('Error accessing microphone:', err);
-                    showError('Could not access microphone. Please allow microphone access and try again.');
+                    console.error('Microphone error:', err);
+                    showError('Could not access microphone. Please allow access and try again.');
                 }
             }
         }
 
-        // Send audio to API
+        // Send audio
         async function sendAudioForQuote(audioBlob) {
             showLoading(true);
 
@@ -1269,7 +1668,7 @@
                 showError(err.message);
             } finally {
                 showLoading(false);
-                document.getElementById('recordInstructions').textContent = 'Click and hold to record your voice note';
+                document.getElementById('recordInstructions').textContent = 'Click to start recording your voice note';
             }
         }
 
@@ -1312,12 +1711,13 @@
             }
         }
 
-        // Create a line item element safely
+        // Create line item element
         function createLineItemElement(item) {
             const itemEl = document.createElement('div');
             itemEl.className = 'line-item';
 
             const infoDiv = document.createElement('div');
+            infoDiv.className = 'line-item-info';
 
             const nameDiv = document.createElement('div');
             nameDiv.className = 'line-item-name';
@@ -1340,7 +1740,7 @@
             return itemEl;
         }
 
-        // Display the quote
+        // Display quote
         function displayQuote(quote) {
             currentQuoteId = quote.id;
 
@@ -1425,38 +1825,33 @@
             hideError();
         }
 
-        // ========== ONBOARDING FUNCTIONS ==========
+        // ========== ONBOARDING ==========
 
         let onboardingSessionId = null;
         let chatMediaRecorder = null;
         let chatAudioChunks = [];
         let messageCount = 0;
 
-        // Show the intro screen
         function showOnboardingIntro() {
             document.getElementById('onboardingIntro').style.display = 'block';
             document.getElementById('quickSetupForm').style.display = 'none';
             document.getElementById('onboardingChat').classList.remove('active');
         }
 
-        // Show quick setup form
         function showQuickSetup() {
             document.getElementById('onboardingIntro').style.display = 'none';
             document.getElementById('quickSetupForm').style.display = 'block';
             document.getElementById('onboardingChat').classList.remove('active');
         }
 
-        // Start the interview
         async function startOnboardingInterview() {
             document.getElementById('onboardingIntro').style.display = 'none';
             document.getElementById('quickSetupForm').style.display = 'none';
             document.getElementById('onboardingChat').classList.add('active');
 
-            // Clear previous messages
             document.getElementById('chatMessages').innerHTML = '';
             messageCount = 0;
 
-            // Show typing indicator
             addTypingIndicator();
 
             try {
@@ -1479,18 +1874,16 @@
                 const session = await response.json();
                 onboardingSessionId = session.session_id;
 
-                // Remove typing indicator and add the initial message
                 removeTypingIndicator();
                 addChatMessage('assistant', session.initial_message);
 
             } catch (err) {
-                console.error('Interview start error:', err);
+                console.error('Interview error:', err);
                 removeTypingIndicator();
-                addChatMessage('assistant', "I'm having trouble starting the interview. Please try again or use Quick Setup instead.");
+                addChatMessage('assistant', "Having trouble starting. Please try again or use Quick Setup.");
             }
         }
 
-        // Add a chat message to the UI
         function addChatMessage(role, content) {
             const container = document.getElementById('chatMessages');
             const msgEl = document.createElement('div');
@@ -1498,7 +1891,7 @@
 
             const roleLabel = document.createElement('div');
             roleLabel.className = 'role';
-            roleLabel.textContent = role === 'assistant' ? 'Quoted' : 'You';
+            roleLabel.textContent = role === 'assistant' ? 'quoted.it' : 'You';
 
             const contentEl = document.createElement('div');
             contentEl.textContent = content;
@@ -1507,10 +1900,8 @@
             msgEl.appendChild(contentEl);
             container.appendChild(msgEl);
 
-            // Scroll to bottom
             container.scrollTop = container.scrollHeight;
 
-            // Increment message count and show finish button after a few exchanges
             if (role === 'user') {
                 messageCount++;
                 if (messageCount >= 2) {
@@ -1519,7 +1910,6 @@
             }
         }
 
-        // Add typing indicator
         function addTypingIndicator() {
             const container = document.getElementById('chatMessages');
             const indicator = document.createElement('div');
@@ -1530,29 +1920,21 @@
             container.scrollTop = container.scrollHeight;
         }
 
-        // Remove typing indicator
         function removeTypingIndicator() {
             const indicator = document.getElementById('typingIndicator');
-            if (indicator) {
-                indicator.remove();
-            }
+            if (indicator) indicator.remove();
         }
 
-        // Send chat message
         async function sendChatMessage() {
             const input = document.getElementById('chatInput');
             const message = input.value.trim();
 
             if (!message || !onboardingSessionId) return;
 
-            // Clear input and disable send
             input.value = '';
             document.getElementById('chatSendBtn').disabled = true;
 
-            // Add user message
             addChatMessage('user', message);
-
-            // Show typing indicator
             addTypingIndicator();
 
             try {
@@ -1566,12 +1948,10 @@
                 });
 
                 if (!response.ok) {
-                    throw new Error('Failed to continue interview');
+                    throw new Error('Failed to continue');
                 }
 
                 const session = await response.json();
-
-                // Get the latest assistant message
                 const messages = session.messages;
                 const lastMessage = messages[messages.length - 1];
 
@@ -1584,13 +1964,12 @@
             } catch (err) {
                 console.error('Chat error:', err);
                 removeTypingIndicator();
-                addChatMessage('assistant', "I'm having trouble processing that. Could you try again?");
+                addChatMessage('assistant', "Having trouble. Please try again.");
             } finally {
                 document.getElementById('chatSendBtn').disabled = false;
             }
         }
 
-        // Handle enter key in chat
         function handleChatKeydown(event) {
             if (event.key === 'Enter' && !event.shiftKey) {
                 event.preventDefault();
@@ -1598,14 +1977,13 @@
             }
         }
 
-        // Toggle voice recording for chat
         async function toggleChatVoice() {
             const btn = document.getElementById('chatVoiceBtn');
 
             if (chatMediaRecorder && chatMediaRecorder.state === 'recording') {
                 chatMediaRecorder.stop();
                 btn.classList.remove('recording');
-                btn.textContent = '🎤';
+                btn.innerHTML = '<span>🎤</span>';
             } else {
                 try {
                     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -1619,20 +1997,12 @@
                     chatMediaRecorder.onstop = async () => {
                         const audioBlob = new Blob(chatAudioChunks, { type: 'audio/webm' });
                         stream.getTracks().forEach(track => track.stop());
-
-                        // For now, show a message that voice is being processed
-                        // In production, you'd send this to Whisper for transcription
                         addChatMessage('user', '[Voice message - transcription coming soon]');
-
-                        // TODO: Send to transcription API and then continue interview
-                        // const transcription = await transcribeAudio(audioBlob);
-                        // document.getElementById('chatInput').value = transcription;
-                        // sendChatMessage();
                     };
 
                     chatMediaRecorder.start();
                     btn.classList.add('recording');
-                    btn.textContent = '⏹️';
+                    btn.innerHTML = '<span>⏹</span>';
                 } catch (err) {
                     console.error('Microphone error:', err);
                     showError('Could not access microphone');
@@ -1640,7 +2010,6 @@
             }
         }
 
-        // Finish the interview and extract pricing
         async function finishInterview() {
             if (!onboardingSessionId) return;
 
@@ -1659,46 +2028,33 @@
 
                 if (!response.ok) {
                     const error = await response.json();
-                    throw new Error(error.detail || 'Failed to complete interview');
+                    throw new Error(error.detail || 'Failed to complete');
                 }
 
                 const pricingModel = await response.json();
 
                 removeTypingIndicator();
+                addChatMessage('assistant', "Your pricing is saved. You're ready to start quoting!");
 
-                // Show success message
-                addChatMessage('assistant', "Great! I've saved your pricing information. You're all set to start generating quotes!");
-
-                // Wait a moment then transition to quote input
                 setTimeout(async () => {
-                    // Save pricing to contractor
                     await savePricingToContractor(pricingModel);
-
                     document.getElementById('onboardingNotice').style.display = 'none';
                     document.getElementById('inputSection').style.display = 'block';
                 }, 2000);
 
             } catch (err) {
-                console.error('Complete interview error:', err);
+                console.error('Complete error:', err);
                 removeTypingIndicator();
-                addChatMessage('assistant', "I need a bit more information before we can finish. Tell me more about your pricing - like your hourly rate or how you price common jobs.");
+                addChatMessage('assistant', "Need more info. Tell me about your hourly rate or typical pricing.");
                 document.getElementById('finishInterviewBtn').disabled = false;
-                document.getElementById('finishInterviewBtn').textContent = 'Done - Save My Pricing';
+                document.getElementById('finishInterviewBtn').textContent = 'Finish & Save';
             }
         }
 
-        // Save extracted pricing model to contractor
         async function savePricingToContractor(pricingModel) {
-            try {
-                // The pricing model is already extracted, we just need to ensure it's saved
-                // This would typically update the contractor's pricing_model in the database
-                console.log('Pricing model saved:', pricingModel);
-            } catch (err) {
-                console.error('Error saving pricing:', err);
-            }
+            console.log('Pricing saved:', pricingModel);
         }
 
-        // Complete quick setup (form-based)
         async function completeQuickSetup() {
             const primaryTrade = document.getElementById('primaryTrade').value;
             const hourlyRate = parseFloat(document.getElementById('hourlyRate').value) || 85;
@@ -1726,7 +2082,6 @@
                     throw new Error(error.detail || 'Setup failed');
                 }
 
-                // Refresh user info and show quote input
                 await fetchUserInfo();
                 document.getElementById('onboardingNotice').style.display = 'none';
                 document.getElementById('inputSection').style.display = 'block';
@@ -1753,18 +2108,16 @@
             document.getElementById('errorMessage').classList.remove('active');
         }
 
-        // Issue Reporter Functions
+        // Issue Reporter
         function openIssueModal() {
             document.getElementById('issueModal').classList.add('active');
             document.getElementById('issueFormView').style.display = 'block';
             document.getElementById('issueSuccessView').style.display = 'none';
-            // Pre-fill current page URL
             window.currentIssuePageUrl = window.location.href;
         }
 
         function closeIssueModal() {
             document.getElementById('issueModal').classList.remove('active');
-            // Reset form
             document.getElementById('issueTitle').value = '';
             document.getElementById('issueDescription').value = '';
             document.getElementById('issueSteps').value = '';
@@ -1796,23 +2149,22 @@
                 });
 
                 if (!response.ok) {
-                    throw new Error('Failed to submit issue');
+                    throw new Error('Failed to submit');
                 }
 
                 const result = await response.json();
 
-                // Show success view
                 document.getElementById('issueFormView').style.display = 'none';
                 document.getElementById('issueSuccessView').style.display = 'block';
                 document.getElementById('submittedIssueId').textContent = result.id.substring(0, 8);
 
             } catch (err) {
-                console.error('Error submitting issue:', err);
-                alert('Failed to submit issue. Please try again.');
+                console.error('Issue submit error:', err);
+                alert('Failed to submit. Please try again.');
             }
         }
 
-        // Capture JavaScript errors for issue reports
+        // Error capture
         window.lastJsError = null;
         window.onerror = function(message, source, lineno, colno, error) {
             window.lastJsError = `${message} at ${source}:${lineno}:${colno}`;
