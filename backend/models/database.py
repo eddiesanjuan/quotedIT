@@ -320,6 +320,68 @@ class SetupConversation(Base):
     completed_at = Column(DateTime)
 
 
+class UserIssue(Base):
+    """
+    User-reported issues for autonomous Claude Code resolution.
+
+    Workflow:
+    1. User reports issue via app (creates record with status='new')
+    2. Polling script detects new issues
+    3. Claude Code agent attempts to fix
+    4. Status updated to 'in_progress', 'resolved', or 'needs_human'
+    5. Resolution details stored for user review
+    """
+    __tablename__ = "user_issues"
+
+    id = Column(String, primary_key=True, default=generate_uuid)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Who reported it (nullable for anonymous/pre-auth issues)
+    user_id = Column(String, ForeignKey("users.id"), nullable=True)
+
+    # Issue details
+    title = Column(String(255), nullable=False)
+    description = Column(Text, nullable=False)
+    category = Column(String(100))  # bug, feature_request, ui_issue, pricing_issue, etc.
+    severity = Column(String(50), default="medium")  # low, medium, high, critical
+
+    # Context for Claude Code
+    page_url = Column(String(500))  # Where the issue occurred
+    browser_info = Column(String(255))
+    error_message = Column(Text)  # Any JS errors captured
+    screenshot_url = Column(String(500))  # Optional screenshot
+    steps_to_reproduce = Column(Text)
+
+    # Processing status
+    status = Column(String(50), default="new")
+    """
+    Status flow:
+    - new: Just reported, awaiting pickup
+    - queued: Picked up by autonomous agent, waiting to process
+    - in_progress: Claude Code actively working on it
+    - resolved: Successfully fixed
+    - needs_human: Claude couldn't fix, needs human review
+    - wont_fix: Intentional behavior or out of scope
+    - duplicate: Duplicate of another issue
+    """
+
+    # Resolution tracking
+    picked_up_at = Column(DateTime)  # When autonomous agent started
+    resolved_at = Column(DateTime)
+
+    # Claude Code's work
+    agent_analysis = Column(Text)  # Claude's understanding of the issue
+    agent_solution = Column(Text)  # What Claude did to fix it
+    files_modified = Column(JSON)  # List of files changed
+    commit_hash = Column(String(64))  # Git commit if changes were made
+
+    # Human review
+    human_notes = Column(Text)
+    verified_by = Column(String)  # Admin who verified the fix
+    verified_at = Column(DateTime)
+
+
 # Database initialization
 def get_database_url(async_mode: bool = True) -> str:
     """Get database URL from config. Supports SQLite and PostgreSQL."""

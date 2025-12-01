@@ -628,6 +628,117 @@
         .view.active {
             display: block;
         }
+
+        /* Issue Reporter */
+        .issue-fab {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: #e94560;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(233, 69, 96, 0.4);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 1000;
+        }
+
+        .issue-fab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 16px rgba(233, 69, 96, 0.5);
+        }
+
+        .issue-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1001;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .issue-modal.active {
+            display: flex;
+        }
+
+        .issue-modal-content {
+            background: #1a1a2e;
+            border-radius: 16px;
+            padding: 30px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .issue-modal h3 {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .issue-modal .close-btn {
+            background: none;
+            border: none;
+            color: #a0a0a0;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .issue-form label {
+            display: block;
+            margin-bottom: 5px;
+            color: #a0a0a0;
+            font-size: 0.9rem;
+        }
+
+        .issue-form input,
+        .issue-form textarea,
+        .issue-form select {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            font-size: 1rem;
+        }
+
+        .issue-form textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .issue-form .form-row {
+            display: flex;
+            gap: 15px;
+        }
+
+        .issue-form .form-row > div {
+            flex: 1;
+        }
+
+        .issue-success {
+            text-align: center;
+            padding: 30px;
+        }
+
+        .issue-success .checkmark {
+            font-size: 48px;
+            color: #4ecdc4;
+            margin-bottom: 15px;
+        }
     </style>
 </head>
 <body>
@@ -843,6 +954,67 @@
                     <button class="btn btn-primary" onclick="downloadPdf()">Download PDF</button>
                     <button class="btn btn-secondary" onclick="newQuote()">New Quote</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Issue Reporter FAB -->
+    <button class="issue-fab" onclick="openIssueModal()" title="Report an issue">!</button>
+
+    <!-- Issue Reporter Modal -->
+    <div class="issue-modal" id="issueModal">
+        <div class="issue-modal-content">
+            <div id="issueFormView">
+                <h3>
+                    Report an Issue
+                    <button class="close-btn" onclick="closeIssueModal()">&times;</button>
+                </h3>
+                <form class="issue-form" onsubmit="submitIssue(event)">
+                    <label for="issueTitle">What's the problem?</label>
+                    <input type="text" id="issueTitle" placeholder="Brief description of the issue" required>
+
+                    <label for="issueDescription">Tell us more</label>
+                    <textarea id="issueDescription" placeholder="What happened? What did you expect to happen?" required></textarea>
+
+                    <div class="form-row">
+                        <div>
+                            <label for="issueCategory">Category</label>
+                            <select id="issueCategory">
+                                <option value="bug">Bug / Something broken</option>
+                                <option value="ui_issue">Display / UI issue</option>
+                                <option value="pricing_issue">Pricing / Quote issue</option>
+                                <option value="feature_request">Feature request</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="issueSeverity">Severity</label>
+                            <select id="issueSeverity">
+                                <option value="low">Low - Minor annoyance</option>
+                                <option value="medium" selected>Medium - Affects my work</option>
+                                <option value="high">High - Blocking me</option>
+                                <option value="critical">Critical - Data loss/security</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <label for="issueSteps">Steps to reproduce (optional)</label>
+                    <textarea id="issueSteps" placeholder="1. Go to...&#10;2. Click on...&#10;3. See error"></textarea>
+
+                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">
+                        Submit Issue
+                    </button>
+                </form>
+            </div>
+
+            <div id="issueSuccessView" class="issue-success" style="display: none;">
+                <div class="checkmark">&#10003;</div>
+                <h3>Thanks for reporting!</h3>
+                <p style="color: #a0a0a0; margin-bottom: 20px;">
+                    We'll look into this and may fix it automatically.<br>
+                    Issue ID: <span id="submittedIssueId"></span>
+                </p>
+                <button class="btn btn-secondary" onclick="closeIssueModal()">Close</button>
             </div>
         </div>
     </div>
@@ -1580,6 +1752,78 @@
         function hideError() {
             document.getElementById('errorMessage').classList.remove('active');
         }
+
+        // Issue Reporter Functions
+        function openIssueModal() {
+            document.getElementById('issueModal').classList.add('active');
+            document.getElementById('issueFormView').style.display = 'block';
+            document.getElementById('issueSuccessView').style.display = 'none';
+            // Pre-fill current page URL
+            window.currentIssuePageUrl = window.location.href;
+        }
+
+        function closeIssueModal() {
+            document.getElementById('issueModal').classList.remove('active');
+            // Reset form
+            document.getElementById('issueTitle').value = '';
+            document.getElementById('issueDescription').value = '';
+            document.getElementById('issueSteps').value = '';
+            document.getElementById('issueCategory').value = 'bug';
+            document.getElementById('issueSeverity').value = 'medium';
+        }
+
+        async function submitIssue(event) {
+            event.preventDefault();
+
+            const issueData = {
+                title: document.getElementById('issueTitle').value,
+                description: document.getElementById('issueDescription').value,
+                category: document.getElementById('issueCategory').value,
+                severity: document.getElementById('issueSeverity').value,
+                steps_to_reproduce: document.getElementById('issueSteps').value || null,
+                page_url: window.currentIssuePageUrl || window.location.href,
+                browser_info: navigator.userAgent,
+                error_message: window.lastJsError || null
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/issues/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(issueData)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to submit issue');
+                }
+
+                const result = await response.json();
+
+                // Show success view
+                document.getElementById('issueFormView').style.display = 'none';
+                document.getElementById('issueSuccessView').style.display = 'block';
+                document.getElementById('submittedIssueId').textContent = result.id.substring(0, 8);
+
+            } catch (err) {
+                console.error('Error submitting issue:', err);
+                alert('Failed to submit issue. Please try again.');
+            }
+        }
+
+        // Capture JavaScript errors for issue reports
+        window.lastJsError = null;
+        window.onerror = function(message, source, lineno, colno, error) {
+            window.lastJsError = `${message} at ${source}:${lineno}:${colno}`;
+        };
+
+        // Close modal on outside click
+        document.getElementById('issueModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeIssueModal();
+            }
+        });
     </script>
 </body>
 </html>
