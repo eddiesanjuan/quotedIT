@@ -1,0 +1,1585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quoted - Voice to Quote</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #fff;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left h1 {
+            font-size: 2rem;
+        }
+
+        .header-left .subtitle {
+            color: #a0a0a0;
+            font-size: 0.9rem;
+        }
+
+        .user-info {
+            text-align: right;
+        }
+
+        .user-info .business-name {
+            font-weight: 600;
+            color: #4ecdc4;
+        }
+
+        .user-info .logout-btn {
+            background: none;
+            border: none;
+            color: #a0a0a0;
+            cursor: pointer;
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+
+        .user-info .logout-btn:hover {
+            color: #e94560;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .card h2 {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            color: #e0e0e0;
+        }
+
+        /* Auth Forms */
+        .auth-container {
+            max-width: 400px;
+            margin: 60px auto;
+        }
+
+        .auth-container h1 {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .auth-container .subtitle {
+            text-align: center;
+            color: #a0a0a0;
+            margin-bottom: 30px;
+        }
+
+        .auth-tabs {
+            display: flex;
+            margin-bottom: 20px;
+        }
+
+        .auth-tab {
+            flex: 1;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: none;
+            color: #a0a0a0;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .auth-tab:first-child {
+            border-radius: 8px 0 0 8px;
+        }
+
+        .auth-tab:last-child {
+            border-radius: 0 8px 8px 0;
+        }
+
+        .auth-tab.active {
+            background: rgba(78, 205, 196, 0.2);
+            color: #4ecdc4;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #a0a0a0;
+            font-size: 0.9rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.2);
+            color: #fff;
+            font-size: 1rem;
+        }
+
+        .form-group input::placeholder {
+            color: #666;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #4ecdc4;
+        }
+
+        /* Voice Input Section */
+        .voice-section {
+            text-align: center;
+        }
+
+        .record-btn {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(145deg, #e94560, #c23a51);
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(233, 69, 96, 0.4);
+        }
+
+        .record-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(233, 69, 96, 0.5);
+        }
+
+        .record-btn.recording {
+            background: linear-gradient(145deg, #ff6b6b, #ee5a5a);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(233, 69, 96, 0.7); }
+            70% { box-shadow: 0 0 0 20px rgba(233, 69, 96, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(233, 69, 96, 0); }
+        }
+
+        .record-instructions {
+            margin-top: 20px;
+            color: #a0a0a0;
+        }
+
+        /* Text Input */
+        .text-input {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .text-input label {
+            display: block;
+            margin-bottom: 10px;
+            color: #a0a0a0;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.2);
+            color: #fff;
+            font-size: 1rem;
+            resize: vertical;
+        }
+
+        textarea::placeholder {
+            color: #666;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 30px;
+            border-radius: 8px;
+            border: none;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(145deg, #4ecdc4, #44a08d);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(78, 205, 196, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-block {
+            display: block;
+            width: 100%;
+        }
+
+        /* Loading State */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #4ecdc4;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Quote Display */
+        .quote-result {
+            display: none;
+        }
+
+        .quote-result.active {
+            display: block;
+        }
+
+        .quote-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .confidence-badge {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+
+        .confidence-high {
+            background: rgba(78, 205, 196, 0.2);
+            color: #4ecdc4;
+        }
+
+        .confidence-medium {
+            background: rgba(255, 193, 7, 0.2);
+            color: #ffc107;
+        }
+
+        .confidence-low {
+            background: rgba(233, 69, 96, 0.2);
+            color: #e94560;
+        }
+
+        .job-description {
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        /* Line Items */
+        .line-items {
+            margin-bottom: 20px;
+        }
+
+        .line-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .line-item:last-child {
+            border-bottom: none;
+        }
+
+        .line-item-name {
+            font-weight: 500;
+        }
+
+        .line-item-desc {
+            font-size: 0.85rem;
+            color: #a0a0a0;
+        }
+
+        .line-item-amount {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        /* Total */
+        .quote-total {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: rgba(78, 205, 196, 0.1);
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .total-label {
+            font-size: 1.2rem;
+        }
+
+        .total-amount {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #4ecdc4;
+        }
+
+        /* Notes */
+        .quote-notes {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255, 193, 7, 0.1);
+            border-radius: 8px;
+            border-left: 3px solid #ffc107;
+        }
+
+        .quote-notes h4 {
+            margin-bottom: 10px;
+            color: #ffc107;
+        }
+
+        /* Actions */
+        .quote-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        /* Transcription */
+        .transcription {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            font-style: italic;
+            color: #888;
+        }
+
+        /* Error/Success Message */
+        .message {
+            display: none;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .message.active {
+            display: block;
+        }
+
+        .message.error {
+            background: rgba(233, 69, 96, 0.2);
+            color: #e94560;
+        }
+
+        .message.success {
+            background: rgba(78, 205, 196, 0.2);
+            color: #4ecdc4;
+        }
+
+        /* Onboarding */
+        .onboarding-notice {
+            background: rgba(78, 205, 196, 0.1);
+            border: 1px solid rgba(78, 205, 196, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .onboarding-notice h3 {
+            color: #4ecdc4;
+            margin-bottom: 10px;
+        }
+
+        .onboarding-notice p {
+            color: #a0a0a0;
+            margin-bottom: 15px;
+        }
+
+        /* Onboarding Chat */
+        .onboarding-chat {
+            display: none;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .onboarding-chat.active {
+            display: block;
+        }
+
+        .chat-messages {
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .chat-message {
+            margin-bottom: 15px;
+            padding: 12px 15px;
+            border-radius: 12px;
+            max-width: 85%;
+        }
+
+        .chat-message.assistant {
+            background: rgba(78, 205, 196, 0.2);
+            border: 1px solid rgba(78, 205, 196, 0.3);
+            margin-right: auto;
+        }
+
+        .chat-message.user {
+            background: rgba(233, 69, 96, 0.2);
+            border: 1px solid rgba(233, 69, 96, 0.3);
+            margin-left: auto;
+        }
+
+        .chat-message .role {
+            font-size: 0.75rem;
+            color: #a0a0a0;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .chat-input-area {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+
+        .chat-input-area textarea {
+            flex: 1;
+            min-height: 60px;
+            max-height: 120px;
+            resize: none;
+        }
+
+        .chat-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .chat-btn {
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+
+        .chat-btn.send {
+            background: #4ecdc4;
+            color: white;
+        }
+
+        .chat-btn.send:hover {
+            background: #3dbdb5;
+        }
+
+        .chat-btn.send:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .chat-btn.done {
+            background: rgba(78, 205, 196, 0.2);
+            color: #4ecdc4;
+            border: 1px solid rgba(78, 205, 196, 0.3);
+        }
+
+        .chat-btn.done:hover {
+            background: rgba(78, 205, 196, 0.3);
+        }
+
+        .chat-btn.voice {
+            background: rgba(233, 69, 96, 0.2);
+            color: #e94560;
+            border: 1px solid rgba(233, 69, 96, 0.3);
+        }
+
+        .chat-btn.voice:hover {
+            background: rgba(233, 69, 96, 0.3);
+        }
+
+        .chat-btn.voice.recording {
+            background: #e94560;
+            color: white;
+            animation: pulse 1.5s infinite;
+        }
+
+        .onboarding-intro {
+            text-align: left;
+        }
+
+        .onboarding-intro ul {
+            margin: 15px 0;
+            padding-left: 20px;
+        }
+
+        .onboarding-intro li {
+            margin-bottom: 8px;
+            color: #c0c0c0;
+        }
+
+        .onboarding-options {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 10px 15px;
+        }
+
+        .typing-indicator span {
+            width: 8px;
+            height: 8px;
+            background: #4ecdc4;
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-5px); }
+        }
+
+        /* Hide sections by default */
+        .view {
+            display: none;
+        }
+
+        .view.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Auth View -->
+        <div class="view auth-container" id="authView">
+            <h1>Quoted</h1>
+            <p class="subtitle">Voice to Quote in Seconds</p>
+
+            <div class="card">
+                <div class="auth-tabs">
+                    <button class="auth-tab active" id="loginTab" onclick="showAuthTab('login')">Login</button>
+                    <button class="auth-tab" id="registerTab" onclick="showAuthTab('register')">Register</button>
+                </div>
+
+                <!-- Login Form -->
+                <form id="loginForm" onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="loginEmail" placeholder="you@company.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="loginPassword" placeholder="Your password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block" id="loginBtn">Login</button>
+                </form>
+
+                <!-- Register Form -->
+                <form id="registerForm" style="display: none;" onsubmit="handleRegister(event)">
+                    <div class="form-group">
+                        <label>Business Name</label>
+                        <input type="text" id="registerBusiness" placeholder="Your Company Name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Your Name</label>
+                        <input type="text" id="registerName" placeholder="John Smith">
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="registerEmail" placeholder="you@company.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Phone</label>
+                        <input type="tel" id="registerPhone" placeholder="(555) 123-4567">
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="registerPassword" placeholder="Choose a password" required minlength="8">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block" id="registerBtn">Create Account</button>
+                </form>
+
+                <div class="message" id="authMessage"></div>
+            </div>
+        </div>
+
+        <!-- Main App View -->
+        <div class="view" id="appView">
+            <header>
+                <div class="header-left">
+                    <h1>Quoted</h1>
+                    <p class="subtitle">Voice to Quote in Seconds</p>
+                </div>
+                <div class="user-info">
+                    <div class="business-name" id="businessNameDisplay"></div>
+                    <button class="logout-btn" onclick="logout()">Logout</button>
+                </div>
+            </header>
+
+            <!-- Onboarding Notice (shown if no pricing model) -->
+            <div class="card" id="onboardingNotice" style="display: none;">
+                <!-- Intro Screen -->
+                <div id="onboardingIntro" class="onboarding-intro">
+                    <h3 style="color: #4ecdc4; text-align: center; margin-bottom: 15px;">Welcome! Let's Set Up Your Pricing</h3>
+                    <p style="color: #a0a0a0; text-align: center;">
+                        Before you can generate quotes, I need to learn how you price your work.
+                    </p>
+                    <ul>
+                        <li><strong>Voice Interview (Recommended):</strong> Have a quick conversation where I'll ask about your rates, materials, and how you typically price jobs. Takes 2-5 minutes.</li>
+                        <li><strong>Quick Setup:</strong> Enter basic rates manually. You can always teach me more later.</li>
+                    </ul>
+                    <div class="onboarding-options">
+                        <button class="btn btn-primary" onclick="startOnboardingInterview()">Start Voice Interview</button>
+                        <button class="btn btn-secondary" onclick="showQuickSetup()">Quick Setup</button>
+                    </div>
+                </div>
+
+                <!-- Quick Setup Form -->
+                <div id="quickSetupForm" style="display: none; text-align: left;">
+                    <h3 style="color: #4ecdc4; margin-bottom: 15px;">Quick Setup</h3>
+                    <p style="color: #a0a0a0; margin-bottom: 20px; font-size: 0.9rem;">
+                        Enter your basic rates. You can teach me more details later through a voice conversation.
+                    </p>
+                    <div class="form-group">
+                        <label>What's your primary trade?</label>
+                        <select id="primaryTrade" style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(0,0,0,0.3); color: white; border: 1px solid rgba(255,255,255,0.2);">
+                            <option value="deck_builder">Deck Builder</option>
+                            <option value="general_contractor">General Contractor</option>
+                            <option value="painter">Painter</option>
+                            <option value="landscaper">Landscaper</option>
+                            <option value="roofer">Roofer</option>
+                            <option value="electrician">Electrician</option>
+                            <option value="plumber">Plumber</option>
+                            <option value="hvac">HVAC</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Your hourly labor rate ($)</label>
+                        <input type="number" id="hourlyRate" placeholder="85" value="85">
+                    </div>
+                    <div class="form-group">
+                        <label>Minimum job amount ($)</label>
+                        <input type="number" id="minimumJob" placeholder="500" value="500">
+                    </div>
+                    <div class="form-group">
+                        <label>Deposit percentage (%)</label>
+                        <input type="number" id="depositPercent" placeholder="50" value="50">
+                    </div>
+                    <div style="display: flex; gap: 10px; margin-top: 20px;">
+                        <button class="btn btn-secondary" onclick="showOnboardingIntro()">Back</button>
+                        <button class="btn btn-primary" style="flex: 1;" onclick="completeQuickSetup()">Save & Start Quoting</button>
+                    </div>
+                </div>
+
+                <!-- Interview Chat -->
+                <div id="onboardingChat" class="onboarding-chat">
+                    <h3 style="color: #4ecdc4; margin-bottom: 15px; text-align: center;">Pricing Interview</h3>
+                    <p style="color: #a0a0a0; margin-bottom: 15px; font-size: 0.9rem; text-align: center;">
+                        Tell me about how you price your work. Type or use voice.
+                    </p>
+
+                    <div class="chat-messages" id="chatMessages">
+                        <!-- Messages will be added here -->
+                    </div>
+
+                    <div class="chat-input-area">
+                        <textarea
+                            id="chatInput"
+                            placeholder="Type your response or click the mic to speak..."
+                            onkeydown="handleChatKeydown(event)"
+                        ></textarea>
+                        <div class="chat-actions">
+                            <button class="chat-btn voice" id="chatVoiceBtn" onclick="toggleChatVoice()">🎤</button>
+                            <button class="chat-btn send" id="chatSendBtn" onclick="sendChatMessage()">Send</button>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 10px; margin-top: 15px; justify-content: center;">
+                        <button class="btn btn-secondary" onclick="showOnboardingIntro()">Cancel</button>
+                        <button class="chat-btn done" id="finishInterviewBtn" onclick="finishInterview()" style="display: none;">
+                            Done - Save My Pricing
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Section -->
+            <div class="card voice-section" id="inputSection">
+                <h2>Describe the Job</h2>
+
+                <button class="record-btn" id="recordBtn" onclick="toggleRecording()">
+                    <span id="recordBtnText">Hold to<br>Record</span>
+                </button>
+                <p class="record-instructions" id="recordInstructions">
+                    Click and hold to record your voice note
+                </p>
+
+                <div class="text-input">
+                    <label>Or type your job description:</label>
+                    <textarea
+                        id="jobDescription"
+                        placeholder="Example: It's a 20 by 16 composite deck, Trex Select in Pebble Grey. Need to demo the old wood deck first. Standard aluminum railing, about 40 linear feet. Three steps down to the yard. Customer is John Smith at 456 Oak Lane..."
+                    ></textarea>
+                    <button class="btn btn-primary" onclick="generateQuote()">Generate Quote</button>
+                </div>
+            </div>
+
+            <!-- Loading State -->
+            <div class="card loading" id="loadingSection">
+                <div class="spinner"></div>
+                <p>Generating your quote...</p>
+            </div>
+
+            <!-- Error Message -->
+            <div class="message error" id="errorMessage"></div>
+
+            <!-- Quote Result -->
+            <div class="card quote-result" id="quoteResult">
+                <div class="quote-header">
+                    <h2>Budgetary Estimate</h2>
+                    <span class="confidence-badge" id="confidenceBadge">High Confidence</span>
+                </div>
+
+                <div class="job-description" id="jobDescriptionDisplay"></div>
+
+                <div class="line-items" id="lineItems"></div>
+
+                <div class="quote-total">
+                    <span class="total-label">Estimated Total</span>
+                    <span class="total-amount" id="totalAmount">$0</span>
+                </div>
+
+                <div class="quote-notes" id="quoteNotes" style="display: none;">
+                    <h4>Notes</h4>
+                    <p id="notesContent"></p>
+                </div>
+
+                <div class="transcription" id="transcriptionDisplay" style="display: none;"></div>
+
+                <div class="quote-actions">
+                    <button class="btn btn-primary" onclick="downloadPdf()">Download PDF</button>
+                    <button class="btn btn-secondary" onclick="newQuote()">New Quote</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration - will be set based on environment
+        const API_BASE = window.location.hostname === 'localhost'
+            ? 'http://localhost:8000/api'
+            : window.location.origin + '/api';
+
+        // State
+        let authToken = localStorage.getItem('quoted_token');
+        let currentUser = JSON.parse(localStorage.getItem('quoted_user') || 'null');
+        let currentQuoteId = null;
+        let mediaRecorder = null;
+        let audioChunks = [];
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', () => {
+            if (authToken && currentUser) {
+                showAppView();
+            } else {
+                showAuthView();
+            }
+        });
+
+        // Auth tab switching
+        function showAuthTab(tab) {
+            document.getElementById('loginTab').classList.toggle('active', tab === 'login');
+            document.getElementById('registerTab').classList.toggle('active', tab === 'register');
+            document.getElementById('loginForm').style.display = tab === 'login' ? 'block' : 'none';
+            document.getElementById('registerForm').style.display = tab === 'register' ? 'block' : 'none';
+            hideAuthMessage();
+        }
+
+        // Handle login
+        async function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const btn = document.getElementById('loginBtn');
+
+            btn.disabled = true;
+            btn.textContent = 'Logging in...';
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password }),
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.detail || 'Login failed');
+                }
+
+                // Save auth
+                authToken = data.access_token;
+                localStorage.setItem('quoted_token', authToken);
+
+                // Get user info
+                await fetchUserInfo();
+                showAppView();
+
+            } catch (err) {
+                showAuthMessage(err.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Login';
+            }
+        }
+
+        // Handle registration
+        async function handleRegister(e) {
+            e.preventDefault();
+            const btn = document.getElementById('registerBtn');
+
+            const data = {
+                email: document.getElementById('registerEmail').value,
+                password: document.getElementById('registerPassword').value,
+                business_name: document.getElementById('registerBusiness').value,
+                owner_name: document.getElementById('registerName').value || null,
+                phone: document.getElementById('registerPhone').value || null,
+            };
+
+            btn.disabled = true;
+            btn.textContent = 'Creating account...';
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data),
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.detail || 'Registration failed');
+                }
+
+                // Save auth
+                authToken = result.access_token;
+                localStorage.setItem('quoted_token', authToken);
+
+                // Get user info
+                await fetchUserInfo();
+                showAppView();
+
+            } catch (err) {
+                showAuthMessage(err.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Create Account';
+            }
+        }
+
+        // Fetch user info
+        async function fetchUserInfo() {
+            const response = await fetch(`${API_BASE}/auth/me`, {
+                headers: { 'Authorization': `Bearer ${authToken}` },
+            });
+
+            if (response.ok) {
+                currentUser = await response.json();
+                localStorage.setItem('quoted_user', JSON.stringify(currentUser));
+            }
+        }
+
+        // Logout
+        function logout() {
+            authToken = null;
+            currentUser = null;
+            localStorage.removeItem('quoted_token');
+            localStorage.removeItem('quoted_user');
+            showAuthView();
+        }
+
+        // View switching
+        function showAuthView() {
+            document.getElementById('authView').classList.add('active');
+            document.getElementById('appView').classList.remove('active');
+        }
+
+        async function showAppView() {
+            document.getElementById('authView').classList.remove('active');
+            document.getElementById('appView').classList.add('active');
+
+            if (currentUser) {
+                document.getElementById('businessNameDisplay').textContent = currentUser.business_name || currentUser.email;
+            }
+
+            // Check if they have a pricing model set up
+            try {
+                const response = await fetch(`${API_BASE}/contractors/${currentUser.contractor_id}/pricing`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` },
+                });
+
+                if (response.ok) {
+                    const pricing = await response.json();
+                    // If no pricing knowledge, show onboarding notice
+                    const hasPricing = pricing && pricing.pricing_knowledge && Object.keys(pricing.pricing_knowledge).length > 0;
+                    document.getElementById('onboardingNotice').style.display = hasPricing ? 'none' : 'block';
+                    document.getElementById('inputSection').style.display = hasPricing ? 'block' : 'none';
+                } else {
+                    // No pricing model - show onboarding
+                    document.getElementById('onboardingNotice').style.display = 'block';
+                    document.getElementById('inputSection').style.display = 'none';
+                }
+            } catch (err) {
+                // Default to showing onboarding notice for new users
+                document.getElementById('onboardingNotice').style.display = 'block';
+                document.getElementById('inputSection').style.display = 'none';
+            }
+        }
+
+        // Auth message
+        function showAuthMessage(message, type) {
+            const el = document.getElementById('authMessage');
+            el.textContent = message;
+            el.className = 'message active ' + type;
+        }
+
+        function hideAuthMessage() {
+            document.getElementById('authMessage').classList.remove('active');
+        }
+
+        // Recording functionality
+        async function toggleRecording() {
+            const btn = document.getElementById('recordBtn');
+            const btnText = document.getElementById('recordBtnText');
+            const instructions = document.getElementById('recordInstructions');
+
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                mediaRecorder.stop();
+                btn.classList.remove('recording');
+                btnText.innerHTML = 'Hold to<br>Record';
+                instructions.textContent = 'Processing...';
+            } else {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaRecorder = new MediaRecorder(stream);
+                    audioChunks = [];
+
+                    mediaRecorder.ondataavailable = (e) => {
+                        audioChunks.push(e.data);
+                    };
+
+                    mediaRecorder.onstop = async () => {
+                        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                        await sendAudioForQuote(audioBlob);
+                        stream.getTracks().forEach(track => track.stop());
+                    };
+
+                    mediaRecorder.start();
+                    btn.classList.add('recording');
+                    btnText.innerHTML = 'Click to<br>Stop';
+                    instructions.textContent = 'Recording... Click again when done';
+                } catch (err) {
+                    console.error('Error accessing microphone:', err);
+                    showError('Could not access microphone. Please allow microphone access and try again.');
+                }
+            }
+        }
+
+        // Send audio to API
+        async function sendAudioForQuote(audioBlob) {
+            showLoading(true);
+
+            try {
+                const formData = new FormData();
+                formData.append('audio', audioBlob, 'recording.webm');
+                formData.append('contractor_id', currentUser?.contractor_id || 'default');
+
+                const response = await fetch(`${API_BASE}/quotes/generate-from-audio`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${authToken}` },
+                    body: formData,
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Failed to generate quote');
+                }
+
+                const quote = await response.json();
+                displayQuote(quote);
+            } catch (err) {
+                console.error('Error:', err);
+                showError(err.message);
+            } finally {
+                showLoading(false);
+                document.getElementById('recordInstructions').textContent = 'Click and hold to record your voice note';
+            }
+        }
+
+        // Generate quote from text
+        async function generateQuote() {
+            const transcription = document.getElementById('jobDescription').value.trim();
+
+            if (!transcription) {
+                showError('Please enter a job description');
+                return;
+            }
+
+            showLoading(true);
+
+            try {
+                const response = await fetch(`${API_BASE}/quotes/generate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`,
+                    },
+                    body: JSON.stringify({
+                        transcription: transcription,
+                        contractor_id: currentUser?.contractor_id || 'default',
+                    }),
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Failed to generate quote');
+                }
+
+                const quote = await response.json();
+                displayQuote(quote);
+            } catch (err) {
+                console.error('Error:', err);
+                showError(err.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Create a line item element safely
+        function createLineItemElement(item) {
+            const itemEl = document.createElement('div');
+            itemEl.className = 'line-item';
+
+            const infoDiv = document.createElement('div');
+
+            const nameDiv = document.createElement('div');
+            nameDiv.className = 'line-item-name';
+            nameDiv.textContent = item.name || '';
+
+            const descDiv = document.createElement('div');
+            descDiv.className = 'line-item-desc';
+            descDiv.textContent = item.description || '';
+
+            infoDiv.appendChild(nameDiv);
+            infoDiv.appendChild(descDiv);
+
+            const amountDiv = document.createElement('div');
+            amountDiv.className = 'line-item-amount';
+            amountDiv.textContent = '$' + (item.amount || 0).toLocaleString();
+
+            itemEl.appendChild(infoDiv);
+            itemEl.appendChild(amountDiv);
+
+            return itemEl;
+        }
+
+        // Display the quote
+        function displayQuote(quote) {
+            currentQuoteId = quote.id;
+
+            document.getElementById('jobDescriptionDisplay').textContent =
+                quote.job_description || 'No description provided';
+
+            const badge = document.getElementById('confidenceBadge');
+            const confidence = quote.confidence || 'medium';
+            badge.textContent = confidence.charAt(0).toUpperCase() + confidence.slice(1) + ' Confidence';
+            badge.className = 'confidence-badge confidence-' + confidence;
+
+            const lineItemsContainer = document.getElementById('lineItems');
+            lineItemsContainer.textContent = '';
+
+            if (quote.line_items && quote.line_items.length > 0) {
+                quote.line_items.forEach(item => {
+                    const itemEl = createLineItemElement(item);
+                    lineItemsContainer.appendChild(itemEl);
+                });
+            }
+
+            document.getElementById('totalAmount').textContent =
+                '$' + (quote.subtotal || 0).toLocaleString();
+
+            if (quote.notes) {
+                document.getElementById('notesContent').textContent = quote.notes;
+                document.getElementById('quoteNotes').style.display = 'block';
+            } else {
+                document.getElementById('quoteNotes').style.display = 'none';
+            }
+
+            if (quote.transcription) {
+                document.getElementById('transcriptionDisplay').textContent = quote.transcription;
+                document.getElementById('transcriptionDisplay').style.display = 'block';
+            } else {
+                document.getElementById('transcriptionDisplay').style.display = 'none';
+            }
+
+            document.getElementById('inputSection').style.display = 'none';
+            document.getElementById('quoteResult').classList.add('active');
+            hideError();
+        }
+
+        // Download PDF
+        async function downloadPdf() {
+            if (!currentQuoteId) {
+                showError('No quote to download');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/quotes/${currentQuoteId}/pdf`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${authToken}` },
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to generate PDF');
+                }
+
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'quote_' + currentQuoteId + '.pdf';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            } catch (err) {
+                console.error('Error:', err);
+                showError(err.message);
+            }
+        }
+
+        // New quote
+        function newQuote() {
+            currentQuoteId = null;
+            document.getElementById('jobDescription').value = '';
+            document.getElementById('inputSection').style.display = 'block';
+            document.getElementById('quoteResult').classList.remove('active');
+            hideError();
+        }
+
+        // ========== ONBOARDING FUNCTIONS ==========
+
+        let onboardingSessionId = null;
+        let chatMediaRecorder = null;
+        let chatAudioChunks = [];
+        let messageCount = 0;
+
+        // Show the intro screen
+        function showOnboardingIntro() {
+            document.getElementById('onboardingIntro').style.display = 'block';
+            document.getElementById('quickSetupForm').style.display = 'none';
+            document.getElementById('onboardingChat').classList.remove('active');
+        }
+
+        // Show quick setup form
+        function showQuickSetup() {
+            document.getElementById('onboardingIntro').style.display = 'none';
+            document.getElementById('quickSetupForm').style.display = 'block';
+            document.getElementById('onboardingChat').classList.remove('active');
+        }
+
+        // Start the interview
+        async function startOnboardingInterview() {
+            document.getElementById('onboardingIntro').style.display = 'none';
+            document.getElementById('quickSetupForm').style.display = 'none';
+            document.getElementById('onboardingChat').classList.add('active');
+
+            // Clear previous messages
+            document.getElementById('chatMessages').innerHTML = '';
+            messageCount = 0;
+
+            // Show typing indicator
+            addTypingIndicator();
+
+            try {
+                const response = await fetch(`${API_BASE}/onboarding/start`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`,
+                    },
+                    body: JSON.stringify({
+                        contractor_name: currentUser.business_name || currentUser.email,
+                        primary_trade: 'general',
+                    }),
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to start interview');
+                }
+
+                const session = await response.json();
+                onboardingSessionId = session.session_id;
+
+                // Remove typing indicator and add the initial message
+                removeTypingIndicator();
+                addChatMessage('assistant', session.initial_message);
+
+            } catch (err) {
+                console.error('Interview start error:', err);
+                removeTypingIndicator();
+                addChatMessage('assistant', "I'm having trouble starting the interview. Please try again or use Quick Setup instead.");
+            }
+        }
+
+        // Add a chat message to the UI
+        function addChatMessage(role, content) {
+            const container = document.getElementById('chatMessages');
+            const msgEl = document.createElement('div');
+            msgEl.className = 'chat-message ' + role;
+
+            const roleLabel = document.createElement('div');
+            roleLabel.className = 'role';
+            roleLabel.textContent = role === 'assistant' ? 'Quoted' : 'You';
+
+            const contentEl = document.createElement('div');
+            contentEl.textContent = content;
+
+            msgEl.appendChild(roleLabel);
+            msgEl.appendChild(contentEl);
+            container.appendChild(msgEl);
+
+            // Scroll to bottom
+            container.scrollTop = container.scrollHeight;
+
+            // Increment message count and show finish button after a few exchanges
+            if (role === 'user') {
+                messageCount++;
+                if (messageCount >= 2) {
+                    document.getElementById('finishInterviewBtn').style.display = 'inline-block';
+                }
+            }
+        }
+
+        // Add typing indicator
+        function addTypingIndicator() {
+            const container = document.getElementById('chatMessages');
+            const indicator = document.createElement('div');
+            indicator.className = 'chat-message assistant';
+            indicator.id = 'typingIndicator';
+            indicator.innerHTML = '<div class="typing-indicator"><span></span><span></span><span></span></div>';
+            container.appendChild(indicator);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // Remove typing indicator
+        function removeTypingIndicator() {
+            const indicator = document.getElementById('typingIndicator');
+            if (indicator) {
+                indicator.remove();
+            }
+        }
+
+        // Send chat message
+        async function sendChatMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+
+            if (!message || !onboardingSessionId) return;
+
+            // Clear input and disable send
+            input.value = '';
+            document.getElementById('chatSendBtn').disabled = true;
+
+            // Add user message
+            addChatMessage('user', message);
+
+            // Show typing indicator
+            addTypingIndicator();
+
+            try {
+                const response = await fetch(`${API_BASE}/onboarding/${onboardingSessionId}/continue`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`,
+                    },
+                    body: JSON.stringify({ message }),
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to continue interview');
+                }
+
+                const session = await response.json();
+
+                // Get the latest assistant message
+                const messages = session.messages;
+                const lastMessage = messages[messages.length - 1];
+
+                removeTypingIndicator();
+
+                if (lastMessage && lastMessage.role === 'assistant') {
+                    addChatMessage('assistant', lastMessage.content);
+                }
+
+            } catch (err) {
+                console.error('Chat error:', err);
+                removeTypingIndicator();
+                addChatMessage('assistant', "I'm having trouble processing that. Could you try again?");
+            } finally {
+                document.getElementById('chatSendBtn').disabled = false;
+            }
+        }
+
+        // Handle enter key in chat
+        function handleChatKeydown(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendChatMessage();
+            }
+        }
+
+        // Toggle voice recording for chat
+        async function toggleChatVoice() {
+            const btn = document.getElementById('chatVoiceBtn');
+
+            if (chatMediaRecorder && chatMediaRecorder.state === 'recording') {
+                chatMediaRecorder.stop();
+                btn.classList.remove('recording');
+                btn.textContent = '🎤';
+            } else {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    chatMediaRecorder = new MediaRecorder(stream);
+                    chatAudioChunks = [];
+
+                    chatMediaRecorder.ondataavailable = (e) => {
+                        chatAudioChunks.push(e.data);
+                    };
+
+                    chatMediaRecorder.onstop = async () => {
+                        const audioBlob = new Blob(chatAudioChunks, { type: 'audio/webm' });
+                        stream.getTracks().forEach(track => track.stop());
+
+                        // For now, show a message that voice is being processed
+                        // In production, you'd send this to Whisper for transcription
+                        addChatMessage('user', '[Voice message - transcription coming soon]');
+
+                        // TODO: Send to transcription API and then continue interview
+                        // const transcription = await transcribeAudio(audioBlob);
+                        // document.getElementById('chatInput').value = transcription;
+                        // sendChatMessage();
+                    };
+
+                    chatMediaRecorder.start();
+                    btn.classList.add('recording');
+                    btn.textContent = '⏹️';
+                } catch (err) {
+                    console.error('Microphone error:', err);
+                    showError('Could not access microphone');
+                }
+            }
+        }
+
+        // Finish the interview and extract pricing
+        async function finishInterview() {
+            if (!onboardingSessionId) return;
+
+            document.getElementById('finishInterviewBtn').disabled = true;
+            document.getElementById('finishInterviewBtn').textContent = 'Saving...';
+
+            addTypingIndicator();
+
+            try {
+                const response = await fetch(`${API_BASE}/onboarding/${onboardingSessionId}/complete`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                    },
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Failed to complete interview');
+                }
+
+                const pricingModel = await response.json();
+
+                removeTypingIndicator();
+
+                // Show success message
+                addChatMessage('assistant', "Great! I've saved your pricing information. You're all set to start generating quotes!");
+
+                // Wait a moment then transition to quote input
+                setTimeout(async () => {
+                    // Save pricing to contractor
+                    await savePricingToContractor(pricingModel);
+
+                    document.getElementById('onboardingNotice').style.display = 'none';
+                    document.getElementById('inputSection').style.display = 'block';
+                }, 2000);
+
+            } catch (err) {
+                console.error('Complete interview error:', err);
+                removeTypingIndicator();
+                addChatMessage('assistant', "I need a bit more information before we can finish. Tell me more about your pricing - like your hourly rate or how you price common jobs.");
+                document.getElementById('finishInterviewBtn').disabled = false;
+                document.getElementById('finishInterviewBtn').textContent = 'Done - Save My Pricing';
+            }
+        }
+
+        // Save extracted pricing model to contractor
+        async function savePricingToContractor(pricingModel) {
+            try {
+                // The pricing model is already extracted, we just need to ensure it's saved
+                // This would typically update the contractor's pricing_model in the database
+                console.log('Pricing model saved:', pricingModel);
+            } catch (err) {
+                console.error('Error saving pricing:', err);
+            }
+        }
+
+        // Complete quick setup (form-based)
+        async function completeQuickSetup() {
+            const primaryTrade = document.getElementById('primaryTrade').value;
+            const hourlyRate = parseFloat(document.getElementById('hourlyRate').value) || 85;
+            const minimumJob = parseFloat(document.getElementById('minimumJob').value) || 500;
+            const depositPercent = parseFloat(document.getElementById('depositPercent').value) || 50;
+
+            try {
+                const response = await fetch(`${API_BASE}/onboarding/quick`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`,
+                    },
+                    body: JSON.stringify({
+                        contractor_name: currentUser.business_name || currentUser.email,
+                        primary_trade: primaryTrade,
+                        labor_rate: hourlyRate,
+                        minimum_job: minimumJob,
+                        pricing_notes: `Deposit: ${depositPercent}%`,
+                    }),
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Setup failed');
+                }
+
+                // Refresh user info and show quote input
+                await fetchUserInfo();
+                document.getElementById('onboardingNotice').style.display = 'none';
+                document.getElementById('inputSection').style.display = 'block';
+
+            } catch (err) {
+                console.error('Quick setup error:', err);
+                showError('Setup failed: ' + err.message);
+            }
+        }
+
+        // UI helpers
+        function showLoading(show) {
+            document.getElementById('inputSection').style.display = show ? 'none' : 'block';
+            document.getElementById('loadingSection').classList.toggle('active', show);
+        }
+
+        function showError(message) {
+            const errorEl = document.getElementById('errorMessage');
+            errorEl.textContent = message;
+            errorEl.classList.add('active');
+        }
+
+        function hideError() {
+            document.getElementById('errorMessage').classList.remove('active');
+        }
+    </script>
+</body>
+</html>
