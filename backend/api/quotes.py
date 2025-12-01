@@ -213,6 +213,51 @@ async def generate_quote(request: QuoteRequest, current_user: dict = Depends(get
         raise HTTPException(status_code=500, detail=str(e))
 
 
+class TranscriptionResponse(BaseModel):
+    """Response from transcription endpoint."""
+    text: str
+    duration: Optional[float] = None
+
+
+@router.post("/transcribe", response_model=TranscriptionResponse)
+async def transcribe_audio(
+    audio: UploadFile = File(...),
+    current_user: dict = Depends(get_current_user),
+):
+    """
+    Transcribe audio to text without generating a quote.
+    Useful for interview/chat voice messages.
+    """
+    try:
+        # Save uploaded file temporarily
+        suffix = os.path.splitext(audio.filename)[1] or ".webm"
+        with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
+            content = await audio.read()
+            tmp.write(content)
+            tmp_path = tmp.name
+
+        try:
+            transcription_service = get_transcription_service()
+            result = await transcription_service.transcribe(tmp_path)
+
+            if not result.get("text"):
+                raise HTTPException(status_code=400, detail="No speech detected in audio")
+
+            return TranscriptionResponse(
+                text=result["text"],
+                duration=result.get("duration"),
+            )
+        finally:
+            # Clean up temp file
+            if os.path.exists(tmp_path):
+                os.unlink(tmp_path)
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.post("/generate-from-audio", response_model=QuoteResponse)
 async def generate_quote_from_audio(
     audio: UploadFile = File(...),

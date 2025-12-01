@@ -1536,13 +1536,25 @@
 
         // Fetch user info
         async function fetchUserInfo() {
-            const response = await fetch(`${API_BASE}/auth/me`, {
-                headers: { 'Authorization': `Bearer ${authToken}` },
-            });
+            try {
+                const response = await fetch(`${API_BASE}/auth/me`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` },
+                });
 
-            if (response.ok) {
-                currentUser = await response.json();
-                localStorage.setItem('quoted_user', JSON.stringify(currentUser));
+                if (response.ok) {
+                    currentUser = await response.json();
+                    localStorage.setItem('quoted_user', JSON.stringify(currentUser));
+                } else {
+                    console.error('fetchUserInfo failed:', response.status);
+                    // Clear invalid auth state
+                    if (response.status === 401) {
+                        logout();
+                    }
+                    throw new Error('Failed to fetch user info');
+                }
+            } catch (err) {
+                console.error('fetchUserInfo error:', err);
+                throw err;
             }
         }
 
@@ -1567,12 +1579,27 @@
             document.getElementById('appView').classList.add('active');
             document.getElementById('navRight').style.display = 'flex';
 
+            // Ensure we have user info
+            if (!currentUser) {
+                try {
+                    await fetchUserInfo();
+                } catch (err) {
+                    console.error('Failed to fetch user info:', err);
+                    showAuthView();
+                    return;
+                }
+            }
+
             if (currentUser) {
                 document.getElementById('businessNameDisplay').textContent = currentUser.business_name || currentUser.email;
             }
 
             // Check pricing model
             try {
+                if (!currentUser?.contractor_id) {
+                    throw new Error('No contractor ID');
+                }
+
                 const response = await fetch(`${API_BASE}/contractors/${currentUser.contractor_id}/pricing`, {
                     headers: { 'Authorization': `Bearer ${authToken}` },
                 });
@@ -1587,6 +1614,7 @@
                     document.getElementById('inputSection').style.display = 'none';
                 }
             } catch (err) {
+                console.error('Error checking pricing model:', err);
                 document.getElementById('onboardingNotice').style.display = 'block';
                 document.getElementById('inputSection').style.display = 'none';
             }
@@ -1855,6 +1883,13 @@
             addTypingIndicator();
 
             try {
+                // Ensure we have user info before proceeding
+                if (!currentUser) {
+                    await fetchUserInfo();
+                }
+
+                const contractorName = currentUser?.business_name || currentUser?.email || 'Contractor';
+
                 const response = await fetch(`${API_BASE}/onboarding/start`, {
                     method: 'POST',
                     headers: {
@@ -1862,7 +1897,7 @@
                         'Authorization': `Bearer ${authToken}`,
                     },
                     body: JSON.stringify({
-                        contractor_name: currentUser.business_name || currentUser.email,
+                        contractor_name: contractorName,
                         primary_trade: 'general',
                     }),
                 });
@@ -1908,6 +1943,8 @@
                     document.getElementById('finishInterviewBtn').style.display = 'inline-block';
                 }
             }
+
+            return msgEl;
         }
 
         function addTypingIndicator() {
@@ -1997,7 +2034,68 @@
                     chatMediaRecorder.onstop = async () => {
                         const audioBlob = new Blob(chatAudioChunks, { type: 'audio/webm' });
                         stream.getTracks().forEach(track => track.stop());
-                        addChatMessage('user', '[Voice message - transcription coming soon]');
+
+                        // Show placeholder while transcribing
+                        const placeholderMsg = addChatMessage('user', '[Transcribing voice message...]');
+
+                        try {
+                            // Send audio for transcription
+                            const formData = new FormData();
+                            formData.append('audio', audioBlob, 'voice.webm');
+
+                            const response = await fetch(`${API_BASE}/quotes/transcribe`, {
+                                method: 'POST',
+                                headers: {
+                                    'Authorization': `Bearer ${authToken}`,
+                                },
+                                body: formData,
+                            });
+
+                            if (!response.ok) {
+                                throw new Error('Transcription failed');
+                            }
+
+                            const result = await response.json();
+                            const transcribedText = result.text;
+
+                            // Update placeholder with actual text
+                            if (placeholderMsg) {
+                                placeholderMsg.querySelector('div:last-child').textContent = transcribedText;
+                            }
+
+                            // Send transcribed message to interview
+                            if (onboardingSessionId && transcribedText) {
+                                addTypingIndicator();
+
+                                const continueResponse = await fetch(`${API_BASE}/onboarding/${onboardingSessionId}/continue`, {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'Authorization': `Bearer ${authToken}`,
+                                    },
+                                    body: JSON.stringify({ message: transcribedText }),
+                                });
+
+                                if (continueResponse.ok) {
+                                    const session = await continueResponse.json();
+                                    const messages = session.messages;
+                                    const lastMessage = messages[messages.length - 1];
+
+                                    removeTypingIndicator();
+
+                                    if (lastMessage && lastMessage.role === 'assistant') {
+                                        addChatMessage('assistant', lastMessage.content);
+                                    }
+                                } else {
+                                    removeTypingIndicator();
+                                }
+                            }
+                        } catch (err) {
+                            console.error('Voice transcription error:', err);
+                            if (placeholderMsg) {
+                                placeholderMsg.querySelector('div:last-child').textContent = '[Voice transcription failed - please type your message]';
+                            }
+                        }
                     };
 
                     chatMediaRecorder.start();
@@ -2062,6 +2160,14 @@
             const depositPercent = parseFloat(document.getElementById('depositPercent').value) || 50;
 
             try {
+                // Ensure we have user info before proceeding
+                if (!currentUser) {
+                    await fetchUserInfo();
+                }
+
+                // Get contractor name with safe fallback
+                const contractorName = currentUser?.business_name || currentUser?.email || 'Contractor';
+
                 const response = await fetch(`${API_BASE}/onboarding/quick`, {
                     method: 'POST',
                     headers: {
@@ -2069,7 +2175,7 @@
                         'Authorization': `Bearer ${authToken}`,
                     },
                     body: JSON.stringify({
-                        contractor_name: currentUser.business_name || currentUser.email,
+                        contractor_name: contractorName,
                         primary_trade: primaryTrade,
                         labor_rate: hourlyRate,
                         minimum_job: minimumJob,
