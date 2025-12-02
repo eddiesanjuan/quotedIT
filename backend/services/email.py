@@ -586,6 +586,266 @@ class EmailService:
             print(f"Failed to send quote email to {to_email}: {e}")
             raise
 
+    @staticmethod
+    async def send_post_first_quote_email(
+        to_email: str,
+        contractor_name: str,
+        quote_id: str
+    ) -> Dict[str, Any]:
+        """
+        Send congratulations email after first quote (Day 1).
+        Part of RETAIN-001 engagement series.
+
+        Args:
+            to_email: Recipient email address
+            contractor_name: Name of the contractor/business
+            quote_id: ID of the first quote generated
+
+        Returns:
+            Resend API response
+        """
+        content = f"""
+            <h1>Your first quote is ready! 🎉</h1>
+
+            <p>Congratulations, {contractor_name}! You just created your first quote with Quoted.</p>
+
+            <p>Here's a quick tip to help you get even more from the platform:</p>
+
+            <div class="stat-box" style="margin: 24px 0;">
+                <div style="color: #ffffff; font-size: 18px; font-weight: 600; margin-bottom: 12px;">
+                    💡 Pro Tip: Edit Anytime
+                </div>
+                <div style="color: #e0e0e0; font-size: 15px; line-height: 1.6;">
+                    Your quotes aren't set in stone. You can edit pricing, add notes, or adjust details before sending to customers.
+                    Just go to "My Quotes" and click any quote to refine it.
+                </div>
+            </div>
+
+            <a href="https://quoted.it/app" class="button">Generate Another Quote</a>
+
+            <p class="muted" style="margin-top: 32px; padding-top: 24px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+                <strong>Love Quoted? Spread the word!</strong><br>
+                Share your referral link and earn rewards when other contractors join.
+                <a href="https://quoted.it/app?tab=referral" style="color: #a0a0a0;">Get your referral code</a>
+            </p>
+        """
+
+        html = EmailService._get_base_template().format(content=content)
+
+        try:
+            response = resend.Emails.send({
+                "from": EmailService.FROM_EMAIL,
+                "to": to_email,
+                "subject": "Your first quote is ready! 🎉",
+                "html": html,
+            })
+            return response
+        except Exception as e:
+            print(f"Failed to send post-first-quote email to {to_email}: {e}")
+            raise
+
+    @staticmethod
+    async def send_pro_tips_email(
+        to_email: str,
+        contractor_name: str
+    ) -> Dict[str, Any]:
+        """
+        Send pro tips email (Day 3).
+        Part of RETAIN-001 engagement series.
+
+        Args:
+            to_email: Recipient email address
+            contractor_name: Name of the contractor/business
+
+        Returns:
+            Resend API response
+        """
+        content = f"""
+            <h1>Pro tip: Rush job pricing in Quoted</h1>
+
+            <p>Hey {contractor_name},</p>
+
+            <p>We wanted to share a couple pro tips to help you quote smarter:</p>
+
+            <div class="stat-box" style="margin: 24px 0;">
+                <div style="color: #ffffff; font-size: 18px; font-weight: 600; margin-bottom: 12px;">
+                    ⚡ Handling Rush Jobs
+                </div>
+                <div style="color: #e0e0e0; font-size: 15px; line-height: 1.6; margin-bottom: 16px;">
+                    When a customer needs it fast, mention "rush" or "ASAP" in your voice note. Quoted will adjust pricing automatically.
+                    Standard rush markup: 15-25% depending on timeline.
+                </div>
+            </div>
+
+            <div class="stat-box" style="margin: 24px 0;">
+                <div style="color: #ffffff; font-size: 18px; font-weight: 600; margin-bottom: 12px;">
+                    📊 Material Markup Best Practices
+                </div>
+                <div style="color: #e0e0e0; font-size: 15px; line-height: 1.6;">
+                    Industry standard: 10-20% markup on materials for handling/warranty.
+                    Quoted learns your markup preferences over time as you edit quotes, so your pricing gets smarter with every job.
+                </div>
+            </div>
+
+            <a href="https://quoted.it/app" class="button">Create a Quote</a>
+
+            <p class="muted" style="margin-top: 32px; padding-top: 24px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+                <strong>Know other contractors who'd love this?</strong><br>
+                Share your referral link and we'll hook you both up with rewards.
+                <a href="https://quoted.it/app?tab=referral" style="color: #a0a0a0;">Get your referral code</a>
+            </p>
+        """
+
+        html = EmailService._get_base_template().format(content=content)
+
+        try:
+            response = resend.Emails.send({
+                "from": EmailService.FROM_EMAIL,
+                "to": to_email,
+                "subject": "Pro tip: Rush job pricing in Quoted",
+                "html": html,
+            })
+            return response
+        except Exception as e:
+            print(f"Failed to send pro tips email to {to_email}: {e}")
+            raise
+
+    @staticmethod
+    async def send_feature_reminder_email(
+        to_email: str,
+        contractor_name: str
+    ) -> Dict[str, Any]:
+        """
+        Send feature reminder email (Day 5).
+        Part of RETAIN-001 engagement series.
+
+        Args:
+            to_email: Recipient email address
+            contractor_name: Name of the contractor/business
+
+        Returns:
+            Resend API response
+        """
+        content = f"""
+            <h1>Did you know? Edit quotes anytime</h1>
+
+            <p>Hey {contractor_name},</p>
+
+            <p>Just a quick reminder about two powerful features you might not be using yet:</p>
+
+            <div class="stat-box" style="margin: 24px 0;">
+                <div style="color: #ffffff; font-size: 18px; font-weight: 600; margin-bottom: 12px;">
+                    ✏️ Quote Editing
+                </div>
+                <div style="color: #e0e0e0; font-size: 15px; line-height: 1.6;">
+                    Every quote you generate can be edited before sending. Adjust pricing, add notes, tweak line items—whatever you need.
+                    Go to "My Quotes" and click any quote to make changes.
+                </div>
+            </div>
+
+            <div class="stat-box" style="margin: 24px 0;">
+                <div style="color: #ffffff; font-size: 18px; font-weight: 600; margin-bottom: 12px;">
+                    🧠 Pricing Brain Learning
+                </div>
+                <div style="color: #e0e0e0; font-size: 15px; line-height: 1.6;">
+                    Every time you edit a quote, Quoted learns from it. Your Pricing Brain adapts to YOUR style—rush markups, material preferences, labor rates.
+                    The more you use it, the smarter it gets.
+                </div>
+            </div>
+
+            <a href="https://quoted.it/app?tab=pricing-brain" class="button">Check Your Pricing Brain</a>
+
+            <p class="muted">Want to see what Quoted has learned about your pricing style? Check your Pricing Brain dashboard.</p>
+        """
+
+        html = EmailService._get_base_template().format(content=content)
+
+        try:
+            response = resend.Emails.send({
+                "from": EmailService.FROM_EMAIL,
+                "to": to_email,
+                "subject": "Did you know? Edit quotes anytime",
+                "html": html,
+            })
+            return response
+        except Exception as e:
+            print(f"Failed to send feature reminder email to {to_email}: {e}")
+            raise
+
+    @staticmethod
+    async def send_milestone_email(
+        to_email: str,
+        contractor_name: str,
+        quote_count: int,
+        referral_code: str
+    ) -> Dict[str, Any]:
+        """
+        Send milestone celebration email (Day 10).
+        Part of RETAIN-001 engagement series.
+
+        Args:
+            to_email: Recipient email address
+            contractor_name: Name of the contractor/business
+            quote_count: Number of quotes generated
+            referral_code: User's referral code
+
+        Returns:
+            Resend API response
+        """
+        content = f"""
+            <h1>You've generated {quote_count} quotes! 📊</h1>
+
+            <p>Amazing work, {contractor_name}!</p>
+
+            <p>You've created {quote_count} quote{"s" if quote_count != 1 else ""} with Quoted. That's {quote_count} potential jobs that you quoted faster and more professionally.</p>
+
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div class="stat-value">{quote_count}</div>
+                    <div class="stat-label">Total Quotes</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value">⚡</div>
+                    <div class="stat-label">Getting Smarter</div>
+                </div>
+            </div>
+
+            <p>Your Pricing Brain is learning fast. With {quote_count} quote{"s" if quote_count != 1 else ""} under its belt, it's already adapting to your pricing style.</p>
+
+            <a href="https://quoted.it/app" class="button">Keep the Momentum Going</a>
+
+            <div style="background-color: #1a1a1a; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 24px; margin: 32px 0;">
+                <div style="color: #ffffff; font-size: 18px; font-weight: 600; margin-bottom: 12px;">
+                    💰 Share the Love, Earn Rewards
+                </div>
+                <div style="color: #e0e0e0; font-size: 15px; line-height: 1.6; margin-bottom: 16px;">
+                    Know contractors who waste time on quotes? Share your referral code and you'll both get rewarded when they sign up.
+                </div>
+                <div style="background-color: #0a0a0a; border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 4px; padding: 16px; text-align: center; font-family: 'Courier New', monospace; font-size: 20px; font-weight: 600; color: #ffffff; letter-spacing: 2px;">
+                    {referral_code}
+                </div>
+                <div style="margin-top: 16px; text-align: center;">
+                    <a href="https://quoted.it/app?tab=referral" style="color: #a0a0a0; font-size: 14px;">View your referral dashboard →</a>
+                </div>
+            </div>
+
+            <p class="muted">Questions or feedback? Hit reply—we read every message.</p>
+        """
+
+        html = EmailService._get_base_template().format(content=content)
+
+        try:
+            response = resend.Emails.send({
+                "from": EmailService.FROM_EMAIL,
+                "to": to_email,
+                "subject": f"You've generated {quote_count} quotes! 📊",
+                "html": html,
+            })
+            return response
+        except Exception as e:
+            print(f"Failed to send milestone email to {to_email}: {e}")
+            raise
+
 
 # Convenience instance
 email_service = EmailService()
