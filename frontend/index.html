@@ -4633,7 +4633,7 @@
             }
         }
 
-        function showLearningToast() {
+        function showLearningToast(message, iconEmoji) {
             let toast = document.getElementById('learningToast');
             if (!toast) {
                 toast = document.createElement('div');
@@ -4645,9 +4645,9 @@
             toast.textContent = '';
             const icon = document.createElement('span');
             icon.style.fontSize = '1.1rem';
-            icon.textContent = '🧠';
+            icon.textContent = iconEmoji || '🧠';
             const text = document.createElement('span');
-            text.textContent = 'AI learning from your correction...';
+            text.textContent = message || 'AI learning from your correction...';
             toast.appendChild(icon);
             toast.appendChild(text);
             toast.style.opacity = '1';
@@ -5267,11 +5267,11 @@
 
                 // Show success message
                 if (result.categories_added > 0) {
-                    showSuccess(`Synced ${result.categories_added} categories from your quotes!`);
+                    showLearningToast(`Synced ${result.categories_added} categories from your quotes!`, '✅');
                 } else if (result.categories_found && result.categories_found.length === 0) {
-                    showSuccess('No quotes found to sync. Generate some quotes first!');
+                    showLearningToast('No quotes found to sync. Generate some quotes first!', '📋');
                 } else {
-                    showSuccess('Categories already synced - no new categories to add.');
+                    showLearningToast('Categories already synced - no new categories to add.', '✅');
                 }
 
                 // Reload the pricing brain data
