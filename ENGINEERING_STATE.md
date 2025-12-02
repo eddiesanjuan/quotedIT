@@ -1083,11 +1083,12 @@ GET /api/billing/plans - Available pricing (public)
 
 | Date | Commit | Description | Status |
 |------|--------|-------------|--------|
-| 2025-12-02 | 1fc11fe | Fix Ensure onboarding path consistency (ONBOARD-008) | **PENDING PUSH** |
-| 2025-12-02 | 2c7244e | Add Product demo animation on landing page (UX-004) | **PENDING PUSH** |
-| 2025-12-02 | 66b25b9 | Update Improve landing page headline (UX-003) | **PENDING PUSH** |
-| 2025-12-02 | 03993dd | Fix Quick Setup form fields match industry pricing (ONBOARD-007 + ONBOARD-006) | **PENDING PUSH** |
-| 2025-12-02 | e0cb0e5 | Fix Help button navigation (BUG-001) | **PENDING PUSH** |
+| 2025-12-02 | 69ecdc3 | Fix Demo page JS error + disclaimer (BUG-004) | **DEPLOYED** |
+| 2025-12-02 | 1fc11fe | Fix Ensure onboarding path consistency (ONBOARD-008) | **DEPLOYED** |
+| 2025-12-02 | 2c7244e | Add Product demo animation on landing page (UX-004) | **DEPLOYED** |
+| 2025-12-02 | 66b25b9 | Update Improve landing page headline (UX-003) | **DEPLOYED** |
+| 2025-12-02 | 03993dd | Fix Quick Setup form fields match industry pricing (ONBOARD-007 + ONBOARD-006) | **DEPLOYED** |
+| 2025-12-02 | e0cb0e5 | Fix Help button navigation (BUG-001) | **DEPLOYED** |
 | 2025-12-02 | 8a6770f | Add Demo page frontend for try-before-signup (BUG-003) | **DEPLOYED** |
 | 2025-12-02 | 709111d | Fix Share quote email sending (BUG-002) | **DEPLOYED** |
 | 2025-12-02 | 2460980 | Update Reframe onboarding to recommend interview (UX-002) | **DEPLOYED** |
