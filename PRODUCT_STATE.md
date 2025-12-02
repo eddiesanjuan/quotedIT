@@ -197,5 +197,10 @@
 
 | Date | Decision | Rationale | Outcome |
 |------|----------|-----------|---------|
+| 2025-12-02 | Lead with qualification value prop for beta | CGO: faster activation, lower CAC, better virality | Landing page updated |
+| 2025-12-02 | Soften "30-second" to "under 2 minutes" | CPO: Real UX is 1-3 minutes end-to-end | All copy updated |
+| 2025-12-02 | Defer ballpark-only segment messaging | CMO+CGO: Validate through beta behavior first | Removed from landing |
+| 2025-12-02 | Reject "only tool you need" tagline | CMO: Sounds limited, not focused | Not implemented |
+| 2025-12-02 | Add "Qualify faster. Close more." tagline | CMO: Ranked #2, outcome-focused | Landing + emails |
 | 2025-12-01 | Position as "ballpark quotes" not final proposals | Set correct expectations, faster adoption | Landing page updated |
 | 2025-12-01 | Defer vector embeddings to post-beta | Not MVP-critical, focus on users first | Prioritized correctly |
