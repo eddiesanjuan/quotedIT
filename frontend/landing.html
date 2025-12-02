@@ -592,9 +592,29 @@
             const items = spinnerInner.querySelectorAll('.logo-spinner-item');
             const itemHeight = 0.85; // em units (matches CSS)
 
-            // Find the index of .it
+            // Fisher-Yates shuffle algorithm
+            function shuffleArray(array) {
+                const shuffled = Array.from(array);
+                for (let i = shuffled.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+                }
+                return shuffled;
+            }
+
+            // Convert NodeList to array, shuffle all items
+            const itemsArray = Array.from(items);
+            const shuffledItems = shuffleArray(itemsArray);
+
+            // Clear spinner and re-append in shuffled order (safe DOM manipulation)
+            while (spinnerInner.firstChild) {
+                spinnerInner.removeChild(spinnerInner.firstChild);
+            }
+            shuffledItems.forEach(item => spinnerInner.appendChild(item));
+
+            // Find the index of .it after shuffle
             let targetIndex = 0;
-            items.forEach((item, i) => {
+            shuffledItems.forEach((item, i) => {
                 if (item.textContent === '.it') targetIndex = i;
             });
 
