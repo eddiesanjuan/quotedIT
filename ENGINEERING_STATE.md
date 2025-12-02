@@ -69,53 +69,33 @@
 | ~~ONBOARD-008~~ | ~~Ensure Onboarding Path Consistency~~ | ~~Backend~~ | **COMPLETE** | Committed 1fc11fe |
 | ~~UX-003~~ | ~~Improve Landing Page Headline~~ | ~~Frontend~~ | **COMPLETE** | Committed 66b25b9 |
 | ~~UX-004~~ | ~~Add Product Demo Animation to Landing Page~~ | ~~Frontend~~ | **COMPLETE** | Committed 2c7244e |
-| BUG-004 | Demo Page Broken + Strategic Review | Frontend + Executive | **READY** | None |
+| ~~BUG-004~~ | ~~Demo Page Broken + Strategic Review~~ | ~~Frontend + Executive~~ | **BUG FIXED** | Strategic direction pending DECISION-005 |
 
 ---
 
-## BUG-004: Demo Page Broken + Strategic Review (READY)
+## BUG-004: Demo Page Broken + Strategic Review (BUG FIXED - DECISION PENDING)
 
 **Scope**: Frontend (2h) + Executive Council Review
 **Priority**: HIGH (broken feature + strategic concern from Founder)
 **Reported By**: Founder (2025-12-02)
 
-**Bug**: JavaScript error on demo page load:
-```
-Cannot read properties of undefined (reading 'toLocaleString')
-```
-Something is trying to format a value that doesn't exist. Likely in date/number formatting.
+**Bug**: ~~JavaScript error on demo page load~~ **FIXED**
+- Root cause: Frontend used `item.total` and `item.item` but API returns `item.amount` and `item.name`
+- Fix: Updated demo.html to use correct field names + null safety
 
 **Strategic Concern from Founder**:
 > "When I think about it, I don't know how much I really love the idea without at least a big disclaimer stating that it would not work nearly as good as it would if you had done the interview. To be honest, I don't really know how it would work without an interview."
 
-**Current Implementation**:
-- Demo uses a "generic contractor profile" (General Contractor, standard rates)
-- No personalization = quotes may be inaccurate/misleading
-- Could hurt conversion if users think "that's not how I price"
+**Current Status**:
+- ✅ Bug fixed (correct field names, null safety)
+- ✅ Disclaimer added: "Demo uses generic pricing. Sign up for personalized quotes that learn YOUR pricing."
+- ⏳ Strategic direction: DECISION-005 in DECISION_QUEUE.md
 
-**Options for Executive Council**:
+**Executive Council Result (2-2 Split)**:
+- CGO + CPO: Option B (Video/Animation) - better conversion without accuracy risk
+- CFO + CMO: Option C (Remove Demo) - focus on interview as competitive advantage
 
-**Option A: Fix Bug + Add Strong Disclaimer**
-- Fix the JS error
-- Add prominent disclaimer: "Demo uses generic pricing. Your quotes will be personalized after setup."
-- Keep feature as proof-of-concept, not accuracy demo
-
-**Option B: Fix Bug + Redesign Demo Experience**
-- Fix the JS error
-- Instead of generating a quote, show a VIDEO or ANIMATION of the real flow
-- "See how it works" rather than "try it yourself"
-- Avoids accuracy concerns entirely
-
-**Option C: Remove Demo Feature**
-- Delete /demo route
-- Focus conversion on signup → interview path
-- Less friction, clearer value prop
-
-**Implementation (if keeping)**:
-1. [ ] Debug and fix toLocaleString error in frontend/demo.html
-2. [ ] Executive Council to vote on strategic direction (A, B, or C)
-3. [ ] Implement chosen direction
-4. [ ] Test end-to-end
+**Awaiting**: Founder decision on B vs C in DECISION_QUEUE.md
 
 ---
 

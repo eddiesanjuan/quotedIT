@@ -8,6 +8,8 @@
 
 | Time | Agent | Action | Type | Result |
 |------|-------|--------|------|--------|
+| 23:45 | CEO | Cycle 8: BUG-004 bug fixed + disclaimer added + DECISION-005 queued | Type 2 | Bug fixed, strategic decision pending |
+| 23:40 | CEO | Executive Council Cycle 8 - Split 2-2 on demo strategy (B vs C) | Type 1 | DECISION-005 queued |
 | 23:30 | CEO | Cycle 7 complete - BACKLOG CLEARED - pushing to production | Type 2 | Pushing 1fc11fe |
 | 23:25 | Frontend Engineer | Implemented UX-004 (Product Demo Animation) | Type 2 | Committed 2c7244e |
 | 23:25 | Frontend Engineer | Implemented UX-003 (Landing Page Headline) | Type 2 | Committed 66b25b9 |

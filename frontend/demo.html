@@ -541,7 +541,7 @@
 <body>
     <!-- Demo Banner -->
     <div class="demo-banner">
-        🎁 Free Demo - No signup required. Limited to 3 quotes per hour.
+        ⚠️ Demo uses generic pricing. <strong>Sign up for personalized quotes that learn YOUR pricing.</strong>
     </div>
 
     <!-- Navigation -->
@@ -554,8 +554,8 @@
     <div class="container">
         <!-- Header -->
         <div class="demo-header">
-            <h1>Try Before You Sign Up</h1>
-            <p>Generate a real quote instantly. Describe any job using voice or text.</p>
+            <h1>See How It Works</h1>
+            <p>This demo uses generic contractor pricing. When you sign up, the AI will interview you to learn YOUR pricing approach.</p>
         </div>
 
         <!-- Error Message -->
@@ -793,7 +793,7 @@
 
                 const titleDiv = document.createElement('div');
                 titleDiv.className = 'line-item-title';
-                titleDiv.textContent = item.item;
+                titleDiv.textContent = item.name || '';
                 descDiv.appendChild(titleDiv);
 
                 if (item.description) {
@@ -805,7 +805,7 @@
 
                 const priceDiv = document.createElement('div');
                 priceDiv.className = 'line-item-price';
-                priceDiv.textContent = `$${item.total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                priceDiv.textContent = `$${(item.amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
                 lineItemDiv.appendChild(descDiv);
                 lineItemDiv.appendChild(priceDiv);
@@ -813,7 +813,7 @@
             });
 
             // Update total (safe - textContent)
-            document.getElementById('quoteTotal').textContent = `$${quote.total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            document.getElementById('quoteTotal').textContent = `$${(quote.total || quote.subtotal || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
             // Update notes (safe - textContent preserves newlines with white-space: pre-wrap)
             if (quote.notes) {
