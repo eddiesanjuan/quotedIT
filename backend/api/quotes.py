@@ -381,6 +381,10 @@ async def generate_quote(
             ai_generated_total=quote_data.get("subtotal", 0),
         )
 
+        # Register the category so future quotes can match against it
+        # This ensures the category list grows with usage, not just edits
+        await db.ensure_category_exists(contractor.id, detected_job_type)
+
         # Increment quote usage counter
         await BillingService.increment_quote_usage(auth_db, current_user["id"])
 
@@ -779,6 +783,10 @@ async def generate_quote_from_audio(
                 estimated_days=quote_data.get("estimated_days"),
                 ai_generated_total=quote_data.get("subtotal", 0),
             )
+
+            # Register the category so future quotes can match against it
+            # This ensures the category list grows with usage, not just edits
+            await db.ensure_category_exists(contractor.id, detected_job_type)
 
             # Increment quote usage counter
             await BillingService.increment_quote_usage(auth_db, current_user["id"])

@@ -323,6 +323,60 @@ class DatabaseService:
             await session.refresh(pricing_model)
             return pricing_model
 
+    async def ensure_category_exists(
+        self,
+        contractor_id: str,
+        category: str,
+        display_name: Optional[str] = None,
+    ) -> bool:
+        """
+        Ensure a category exists in the contractor's pricing_knowledge.
+        This is called after quote generation to register new categories
+        so they can be matched against in future quotes.
+
+        Args:
+            contractor_id: The contractor's ID
+            category: The category name (snake_case)
+            display_name: Optional human-readable name
+
+        Returns:
+            True if category was newly created, False if it already existed
+        """
+        async with async_session_factory() as session:
+            result = await session.execute(
+                select(PricingModel).where(PricingModel.contractor_id == contractor_id)
+            )
+            pricing_model = result.scalar_one_or_none()
+            if not pricing_model:
+                return False
+
+            # Get current pricing knowledge
+            pricing_knowledge = pricing_model.pricing_knowledge or {}
+
+            # Ensure categories structure exists
+            if "categories" not in pricing_knowledge:
+                pricing_knowledge["categories"] = {}
+
+            # Check if category already exists
+            if category in pricing_knowledge["categories"]:
+                return False
+
+            # Create the new category with minimal structure
+            # (no learned_adjustments yet - that comes from quote edits)
+            pricing_knowledge["categories"][category] = {
+                "display_name": display_name or category.replace("_", " ").title(),
+                "learned_adjustments": [],
+                "samples": 0,
+                "confidence": 0.5,
+            }
+
+            # Update model
+            pricing_model.pricing_knowledge = pricing_knowledge
+            pricing_model.updated_at = datetime.utcnow()
+
+            await session.commit()
+            return True
+
     # ============== TERMS OPERATIONS ==============
 
     async def create_terms(

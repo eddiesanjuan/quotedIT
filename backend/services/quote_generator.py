@@ -342,28 +342,29 @@ class QuoteGenerationService:
         # Build the detection prompt
         if existing_categories:
             categories_list = "\n".join(f"- {cat}" for cat in existing_categories)
-            detection_prompt = f"""Analyze this work description and categorize it.
+            detection_prompt = f"""Categorize this work description using an EXISTING category if possible.
 
 Description: "{transcription}"
 
 Existing categories for this business:
 {categories_list}
 
-Your task:
-1. If this matches an existing category (even if worded differently), return that exact category name
-   - Be generous with matching - prefer existing over new
-   - "brand strategy project" matches "brand_strategy"
-   - "deck job" matches "deck_composite" or "deck_wood"
+IMPORTANT: STRONGLY prefer existing categories over creating new ones.
 
-2. If truly different from all existing categories, create a short snake_case category name
-   - Keep it general (e.g., "consulting" not "strategic_growth_consulting")
-   - 2-3 words max
+Matching rules:
+- Same general type of work = match existing (artwork, art piece, painting, commission → all match "artwork")
+- Slight wording differences = match existing (16x20 canvas, 24x36 portrait → both match existing art category)
+- Similar materials/methods = match existing (oil painting, acrylic painting → both match painting category)
+- Size/price variations = match existing (small job, large job of same type → match existing)
+
+ONLY create a new category if the work is fundamentally different from ALL existing categories.
+Example: "electrical work" would NOT match "artwork" - that's truly different.
 
 Return JSON only:
-{{"category": "category_name", "is_new": false, "display_name": "Human Readable Name"}}
+{{"category": "existing_category_name_from_list", "is_new": false, "display_name": "Human Readable Name"}}
 
-If creating new: is_new should be true and provide a good display_name.
-If matching existing: is_new should be false."""
+If absolutely no existing category applies (truly different industry/trade):
+{{"category": "new_snake_case_name", "is_new": true, "display_name": "Human Readable Name"}}"""
         else:
             # No existing categories - create the first one
             detection_prompt = f"""Analyze this work description and create a category for it.
