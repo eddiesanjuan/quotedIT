@@ -1,6 +1,6 @@
 # Engineering State
 
-**Last Updated**: 2025-12-02 10:30 PST
+**Last Updated**: 2025-12-02 11:15 PST
 **Updated By**: CEO (AI)
 
 ---
@@ -17,8 +17,8 @@
 
 | Environment | URL | Status | Version |
 |-------------|-----|--------|---------|
-| **Production** | https://web-production-0550.up.railway.app | RUNNING | 7d50e73 |
-| **Custom Domain** | https://quoted.it.com | LIVE (SSL ACTIVE) | 7d50e73 |
+| **Production** | https://web-production-0550.up.railway.app | RUNNING | 5a84de5 |
+| **Custom Domain** | https://quoted.it.com | LIVE (SSL ACTIVE) | 5a84de5 |
 
 **Railway Project**: Connected to main branch, auto-deploys on push
 
@@ -112,10 +112,13 @@ GET /api/billing/plans - Available pricing (public)
 
 | Date | Commit | Description | Status |
 |------|--------|-------------|--------|
-| 2025-12-02 | b4e9fdc | Add Billing UI with pricing, usage tracking, upgrade modal | PENDING DEPLOY |
-| 2025-12-02 | 33fa641 | Add Resend email service for transactional emails | PENDING DEPLOY |
-| 2025-12-02 | cb1e311 | Add Stripe payment infrastructure for subscription billing | PENDING DEPLOY |
-| 2025-12-02 | 325fb25 | Add Terms of Service and Privacy Policy pages | PENDING DEPLOY |
+| 2025-12-02 | 5a84de5 | Add billing column migrations for existing Postgres databases | **DEPLOYED** |
+| 2025-12-02 | 6aedad1 | Add annual billing interval support | **DEPLOYED** |
+| 2025-12-02 | f871c12 | Fix pricing card field mapping (API response → frontend) | **DEPLOYED** |
+| 2025-12-02 | b4e9fdc | Add Billing UI with pricing, usage tracking, upgrade modal | **DEPLOYED** |
+| 2025-12-02 | 33fa641 | Add Resend email service for transactional emails | **DEPLOYED** |
+| 2025-12-02 | cb1e311 | Add Stripe payment infrastructure for subscription billing | **DEPLOYED** |
+| 2025-12-02 | 325fb25 | Add Terms of Service and Privacy Policy pages | **DEPLOYED** |
 | 2025-12-02 | 7d50e73 | Security hardening: SQLite issues, rate limiting, CORS, HTTPS | SUCCESS |
 | 2025-12-02 | eb290f0 | Add autonomous operations infrastructure | SUCCESS |
 | 2025-12-01 | 43af5c6 | Add quote history UI with editable line items | SUCCESS |
@@ -126,11 +129,11 @@ GET /api/billing/plans - Available pricing (public)
 
 ### Stack
 - **Backend**: FastAPI + Python 3.11
-- **Database**: SQLite (aiosqlite) - single file at `./data/quoted.db`
+- **Database**: PostgreSQL (Railway) - Production; SQLite (dev fallback)
 - **AI**: Claude Sonnet 4 (quotes) + Claude Haiku (category detection)
 - **Transcription**: OpenAI Whisper
 - **PDF**: ReportLab
-- **Hosting**: Railway (web service)
+- **Hosting**: Railway (web service + Postgres)
 
 ### Key Files
 - `backend/main.py` - FastAPI app entry
@@ -169,7 +172,7 @@ GET /api/billing/plans - Available pricing (public)
 
 | Date | Severity | Issue | Resolution | Post-mortem |
 |------|----------|-------|------------|-------------|
-| - | - | No incidents recorded | - | - |
+| 2025-12-02 | MEDIUM | Missing billing columns in Postgres (500 errors on /api/quotes) | Added auto-migrations for billing columns (5a84de5) | SQLAlchemy create_all doesn't add columns to existing tables; need explicit ALTER migrations |
 
 ---
 

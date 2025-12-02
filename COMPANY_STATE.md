@@ -1,15 +1,15 @@
 # Quoted Company State
 
-**Last Updated**: 2025-12-02 10:30 PST
+**Last Updated**: 2025-12-02 11:15 PST
 **Updated By**: CEO (AI)
 
 ---
 
 ## Current Stage
 
-**PAYMENT SYSTEM FEATURE-COMPLETE - DEPLOYMENT REQUIRED**
+**PAYMENT SYSTEM LIVE - READY FOR BETA**
 
-Full payment stack implemented: Stripe billing, Resend emails, billing UI. Ready to accept payments after deployment.
+Full payment stack deployed: Stripe billing, Resend emails, billing UI. Quoted can now accept payments.
 
 **Live URL**: https://quoted.it.com (SSL active)
 **Railway Direct**: https://web-production-0550.up.railway.app
@@ -35,11 +35,13 @@ Full payment stack implemented: Stripe billing, Resend emails, billing UI. Ready
 
 ### Technical Architecture
 
-- **Backend**: FastAPI + SQLite (aiosqlite)
+- **Backend**: FastAPI + PostgreSQL (Railway)
 - **AI**: Claude Sonnet 4 (quote generation) + Claude Haiku (category detection)
 - **Transcription**: OpenAI Whisper
-- **Deployment**: Railway (web + worker)
-- **Auth**: Session-based (cookie)
+- **Payments**: Stripe (subscriptions + checkout)
+- **Email**: Resend (transactional)
+- **Deployment**: Railway (web + Postgres)
+- **Auth**: JWT-based (Bearer token)
 
 ---
 
@@ -51,9 +53,9 @@ Full payment stack implemented: Stripe billing, Resend emails, billing UI. Ready
 | ~~Pricing Strategy~~ | **COMPLETE** | ~~CFO~~ | ~~$29/49/79 tiers approved~~ |
 | ~~Payment Infrastructure~~ | **CODE COMPLETE** | ~~Backend~~ | ~~Committed cb1e311~~ |
 | ~~Email System~~ | **CODE COMPLETE** | ~~Backend~~ | ~~Committed 33fa641~~ |
-| ~~Billing UI~~ | **CODE COMPLETE** | ~~Frontend~~ | ~~Committed b4e9fdc~~ |
-| **Deployment** | **BLOCKED** | Founder | Add env vars to Railway (5 min) |
-| Beta User Recruitment | **READY** | CGO | Start after deployment |
+| ~~Billing UI~~ | **DEPLOYED** | ~~Frontend~~ | ~~Live at quoted.it.com~~ |
+| ~~Deployment~~ | **COMPLETE** | ~~Founder~~ | ~~Env vars + webhook configured~~ |
+| Beta User Recruitment | **GO** | CGO | Start now! |
 | Vector Embeddings (RAG) | **BACKLOG** | Engineering | Not MVP-critical, defer to post-beta |
 
 ---
@@ -74,11 +76,11 @@ Full payment stack implemented: Stripe billing, Resend emails, billing UI. Ready
 
 1. ~~**Configure DNS**~~ - COMPLETE (SSL active)
 2. ~~**Define Pricing**~~ - COMPLETE ($29/49/79 tiers with usage caps)
-3. ~~**Implement Payments**~~ - CODE COMPLETE (cb1e311)
-4. ~~**Implement Email**~~ - CODE COMPLETE (33fa641)
-5. ~~**Build Billing UI**~~ - CODE COMPLETE (b4e9fdc)
-6. **Deploy Payment System** - Add env vars to Railway, configure webhook
-7. **Launch Beta** - Start recruiting after deployment
+3. ~~**Implement Payments**~~ - DEPLOYED
+4. ~~**Implement Email**~~ - DEPLOYED
+5. ~~**Build Billing UI**~~ - DEPLOYED
+6. ~~**Deploy Payment System**~~ - COMPLETE (webhook configured)
+7. **Launch Beta** - START NOW
 
 ---
 
@@ -89,8 +91,9 @@ Full payment stack implemented: Stripe billing, Resend emails, billing UI. Ready
 | ~~Stripe Account~~ | ~~Eddie to create Stripe account + verify identity~~ | ~~Founder~~ | COMPLETE ✓ |
 | ~~Resend Account~~ | ~~Eddie to create Resend account~~ | ~~Founder~~ | COMPLETE ✓ |
 | ~~API Keys~~ | ~~Share Stripe + Resend keys~~ | ~~Founder~~ | COMPLETE ✓ |
-| Railway Env Vars | Add Stripe + Resend keys to Railway production | Founder | **ACTION NEEDED** |
-| Stripe Webhook | Configure webhook at `https://quoted.it.com/api/billing/webhook` | Founder | **AFTER DEPLOY** |
+| ~~Railway Env Vars~~ | ~~Add Stripe + Resend keys to Railway~~ | ~~Founder~~ | COMPLETE ✓ |
+| ~~Stripe Webhook~~ | ~~Configure webhook~~ | ~~Founder~~ | COMPLETE ✓ |
+| *No blockers* | Payment system is live | - | - |
 
 ---
 
@@ -119,6 +122,8 @@ Full payment stack implemented: Stripe billing, Resend emails, billing UI. Ready
 | 2025-12-02 | "Under 2 minutes" is honest; "30 seconds" overpromises | CPO |
 | 2025-12-02 | Segment B (ballpark-only) has 2x better LTV:CAC but defer messaging | CFO/CMO |
 | 2025-12-02 | Learning system is key differentiator - "gets smarter with every correction" | CPO |
+| 2025-12-02 | SQLAlchemy create_all doesn't add columns to existing tables - need explicit migrations | Engineering |
+| 2025-12-02 | Railway Postgres + auto-migrations = robust production database | Engineering |
 
 ---
 
@@ -161,6 +166,7 @@ Full payment stack implemented: Stripe billing, Resend emails, billing UI. Ready
 | 2025-12-02 | 30 min | Legal + Content | Terms of Service, Privacy Policy pages, beta email sequence, knowledge infrastructure |
 | 2025-12-02 | 45 min | Executive Audit + Implementation | Multi-agent executive audit (CMO/CPO/CFO/CGO), landing page messaging updates, email sequence revision |
 | 2025-12-02 | 45 min | Payment Implementation | Full payment stack (Stripe + Resend + Billing UI) - 3 commits, feature-complete |
+| 2025-12-02 | 30 min | Post-Deploy Fixes | Fixed pricing cards, annual billing, database migrations - 3 commits, all systems operational |
 
 ---
 
