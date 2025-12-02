@@ -17,7 +17,7 @@ from sqlalchemy.orm import sessionmaker
 from ..config import settings
 from ..models.database import (
     Base, User, Contractor, PricingModel, ContractorTerms,
-    Quote, JobType, SetupConversation, UserIssue
+    Quote, JobType, SetupConversation, UserIssue, QuoteFeedback
 )
 
 
@@ -665,6 +665,147 @@ class DatabaseService:
             await session.commit()
             await session.refresh(issue)
             return issue
+
+    # ============== QUOTE FEEDBACK OPERATIONS (Enhancement 4) ==============
+
+    async def create_quote_feedback(
+        self,
+        quote_id: str,
+        overall_rating: Optional[int] = None,
+        pricing_accuracy: Optional[int] = None,
+        description_quality: Optional[int] = None,
+        line_item_completeness: Optional[int] = None,
+        timeline_accuracy: Optional[int] = None,
+        issues: Optional[List[str]] = None,
+        pricing_direction: Optional[str] = None,
+        pricing_off_by_percent: Optional[float] = None,
+        actual_total: Optional[float] = None,
+        actual_line_items: Optional[List[Dict]] = None,
+        feedback_text: Optional[str] = None,
+        improvement_suggestions: Optional[str] = None,
+        quote_was_sent: Optional[bool] = None,
+        quote_outcome: Optional[str] = None,
+    ) -> QuoteFeedback:
+        """Create feedback for a quote."""
+        async with async_session_factory() as session:
+            feedback = QuoteFeedback(
+                quote_id=quote_id,
+                overall_rating=overall_rating,
+                pricing_accuracy=pricing_accuracy,
+                description_quality=description_quality,
+                line_item_completeness=line_item_completeness,
+                timeline_accuracy=timeline_accuracy,
+                issues=issues or [],
+                pricing_direction=pricing_direction,
+                pricing_off_by_percent=pricing_off_by_percent,
+                actual_total=actual_total,
+                actual_line_items=actual_line_items,
+                feedback_text=feedback_text,
+                improvement_suggestions=improvement_suggestions,
+                quote_was_sent=quote_was_sent,
+                quote_outcome=quote_outcome,
+            )
+            session.add(feedback)
+            await session.commit()
+            await session.refresh(feedback)
+            return feedback
+
+    async def get_quote_feedback(self, quote_id: str) -> Optional[QuoteFeedback]:
+        """Get feedback for a specific quote."""
+        async with async_session_factory() as session:
+            result = await session.execute(
+                select(QuoteFeedback).where(QuoteFeedback.quote_id == quote_id)
+            )
+            return result.scalar_one_or_none()
+
+    async def update_quote_feedback(
+        self,
+        feedback_id: str,
+        **kwargs
+    ) -> Optional[QuoteFeedback]:
+        """Update quote feedback."""
+        async with async_session_factory() as session:
+            result = await session.execute(
+                select(QuoteFeedback).where(QuoteFeedback.id == feedback_id)
+            )
+            feedback = result.scalar_one_or_none()
+            if not feedback:
+                return None
+
+            for key, value in kwargs.items():
+                if hasattr(feedback, key) and value is not None:
+                    setattr(feedback, key, value)
+
+            feedback.updated_at = datetime.utcnow()
+            await session.commit()
+            await session.refresh(feedback)
+            return feedback
+
+    async def get_feedback_stats(self, contractor_id: str) -> Dict[str, Any]:
+        """Get aggregated feedback statistics for a contractor."""
+        async with async_session_factory() as session:
+            # Get all quotes for this contractor
+            quotes_result = await session.execute(
+                select(Quote.id).where(Quote.contractor_id == contractor_id)
+            )
+            quote_ids = [q for q in quotes_result.scalars().all()]
+
+            if not quote_ids:
+                return {
+                    "total_quotes": 0,
+                    "total_feedback": 0,
+                    "feedback_rate": 0,
+                    "average_rating": None,
+                    "pricing_accuracy_avg": None,
+                    "common_issues": [],
+                    "pricing_direction_breakdown": {},
+                }
+
+            # Get all feedback for these quotes
+            feedback_result = await session.execute(
+                select(QuoteFeedback).where(QuoteFeedback.quote_id.in_(quote_ids))
+            )
+            feedbacks = list(feedback_result.scalars().all())
+
+            total_quotes = len(quote_ids)
+            total_feedback = len(feedbacks)
+
+            if not feedbacks:
+                return {
+                    "total_quotes": total_quotes,
+                    "total_feedback": 0,
+                    "feedback_rate": 0,
+                    "average_rating": None,
+                    "pricing_accuracy_avg": None,
+                    "common_issues": [],
+                    "pricing_direction_breakdown": {},
+                }
+
+            # Calculate averages
+            ratings = [f.overall_rating for f in feedbacks if f.overall_rating]
+            pricing_ratings = [f.pricing_accuracy for f in feedbacks if f.pricing_accuracy]
+
+            # Count issues
+            issue_counts = {}
+            for f in feedbacks:
+                for issue in (f.issues or []):
+                    issue_counts[issue] = issue_counts.get(issue, 0) + 1
+
+            # Pricing direction breakdown
+            direction_counts = {}
+            for f in feedbacks:
+                if f.pricing_direction:
+                    direction_counts[f.pricing_direction] = direction_counts.get(f.pricing_direction, 0) + 1
+
+            return {
+                "total_quotes": total_quotes,
+                "total_feedback": total_feedback,
+                "feedback_rate": round(total_feedback / total_quotes * 100, 1) if total_quotes else 0,
+                "average_rating": round(sum(ratings) / len(ratings), 2) if ratings else None,
+                "pricing_accuracy_avg": round(sum(pricing_ratings) / len(pricing_ratings), 2) if pricing_ratings else None,
+                "common_issues": sorted(issue_counts.items(), key=lambda x: x[1], reverse=True)[:5],
+                "pricing_direction_breakdown": direction_counts,
+            }
 
 
 # Singleton pattern

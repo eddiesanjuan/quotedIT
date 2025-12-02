@@ -359,6 +359,114 @@ class LearningService:
             "within_10_percent": sum(1 for a in adjustments if a <= 10),
         }
 
+    async def process_feedback(
+        self,
+        quote_id: str,
+        feedback_data: dict,
+        original_quote: dict,
+    ) -> dict:
+        """
+        Process user feedback on a quote and extract learnings.
+
+        Unlike corrections, feedback doesn't provide exact numbers,
+        but gives signals about pricing direction and quality.
+
+        Args:
+            quote_id: ID of the quote being rated
+            feedback_data: The feedback submitted by the user
+            original_quote: The original quote data
+
+        Returns:
+            dict with extracted learnings
+        """
+        learnings = {
+            "has_learnings": False,
+            "adjustments": [],
+            "signals": [],
+        }
+
+        job_type = original_quote.get("job_type", "general")
+        original_total = original_quote.get("subtotal", 0)
+
+        # Process pricing direction feedback
+        pricing_direction = feedback_data.get("pricing_direction")
+        if pricing_direction and original_total > 0:
+            learnings["has_learnings"] = True
+
+            # Estimate adjustment based on direction
+            off_by_percent = feedback_data.get("pricing_off_by_percent", 10)
+
+            if pricing_direction == "too_high":
+                adjustment = -abs(off_by_percent) / 100
+                learnings["signals"].append({
+                    "type": "pricing_high",
+                    "job_type": job_type,
+                    "adjustment": adjustment,
+                    "message": f"User indicated price was too high by ~{off_by_percent}%"
+                })
+            elif pricing_direction == "too_low":
+                adjustment = abs(off_by_percent) / 100
+                learnings["signals"].append({
+                    "type": "pricing_low",
+                    "job_type": job_type,
+                    "adjustment": adjustment,
+                    "message": f"User indicated price was too low by ~{off_by_percent}%"
+                })
+            else:  # about_right
+                learnings["signals"].append({
+                    "type": "pricing_accurate",
+                    "job_type": job_type,
+                    "message": "User confirmed pricing was about right"
+                })
+
+        # Process actual total if provided (more reliable signal)
+        actual_total = feedback_data.get("actual_total")
+        if actual_total and original_total > 0:
+            learnings["has_learnings"] = True
+            difference = actual_total - original_total
+            percent_change = (difference / original_total) * 100
+
+            learnings["adjustments"].append({
+                "type": "total_correction",
+                "job_type": job_type,
+                "original": original_total,
+                "actual": actual_total,
+                "percent_change": percent_change,
+            })
+
+        # Process actual line items if provided
+        actual_line_items = feedback_data.get("actual_line_items", [])
+        if actual_line_items:
+            learnings["has_learnings"] = True
+            for item in actual_line_items:
+                name = item.get("name")
+                original_amount = item.get("original_amount", 0)
+                actual_amount = item.get("actual_amount", 0)
+
+                if original_amount > 0:
+                    percent_change = ((actual_amount - original_amount) / original_amount) * 100
+                    learnings["adjustments"].append({
+                        "type": "line_item_correction",
+                        "item_name": name,
+                        "job_type": job_type,
+                        "original": original_amount,
+                        "actual": actual_amount,
+                        "percent_change": percent_change,
+                    })
+
+        # Process issues (signals for learning)
+        issues = feedback_data.get("issues", [])
+        if issues:
+            learnings["has_learnings"] = True
+            for issue in issues:
+                learnings["signals"].append({
+                    "type": "issue",
+                    "issue_code": issue,
+                    "job_type": job_type,
+                })
+
+        return learnings
+
 
 # Singleton pattern
 _learning_service: Optional[LearningService] = None

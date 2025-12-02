@@ -146,7 +146,7 @@ Minimum Job: ${minimum_job}
 
 ## Your Task
 
-Based on the voice note, generate a structured quote. Extract:
+Based on the voice note, use the generate_quote tool to create a structured budgetary quote. Extract:
 
 1. **Customer Info** (if mentioned): name, address, contact
 2. **Job Description**: Clear, professional summary of the work
@@ -154,42 +154,21 @@ Based on the voice note, generate a structured quote. Extract:
 4. **Timeline**: Estimated days and crew size
 5. **Total**: Sum of all line items
 
-## Output Format
-
-Respond with valid JSON in exactly this structure:
-
-{{
-    "customer_name": "string or null",
-    "customer_address": "string or null",
-    "customer_phone": "string or null",
-    "job_type": "detected job type (e.g., composite_deck, fence_wood, paint_exterior)",
-    "job_description": "Professional 2-3 sentence description of the work",
-    "line_items": [
-        {{
-            "name": "Item name (e.g., Demolition, Framing, Decking)",
-            "description": "Brief description of this line item",
-            "amount": 0.00
-        }}
-    ],
-    "subtotal": 0.00,
-    "notes": "Any notes about assumptions or what's NOT included",
-    "estimated_days": 0,
-    "estimated_crew_size": 0,
-    "confidence": "high/medium/low - how confident you are in this estimate",
-    "questions": ["Any clarifying questions you'd ask the contractor"]
-}}
-
 ## Important Guidelines
 
 1. Use the contractor's actual pricing when available
-2. If pricing isn't clear, use reasonable industry estimates and note low confidence
-3. Round to whole dollars
+2. If pricing isn't clear, use reasonable industry estimates and set confidence to "low"
+3. Round all amounts to whole dollars
 4. Include demolition/removal only if mentioned
 5. Include permit costs only if mentioned
 6. Be conservative - it's better to estimate slightly high than low
 7. Always include at least 2-3 questions if you had to make assumptions
+8. Set confidence based on how much information you have:
+   - "high": Clear scope, contractor has pricing for this type of work
+   - "medium": Some assumptions needed, but reasonable estimates possible
+   - "low": Many unknowns, significant assumptions made
 
-Generate the quote now:"""
+Use the generate_quote tool now:"""
 
 
 def get_quote_refinement_prompt(

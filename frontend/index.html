@@ -648,6 +648,181 @@
             flex-wrap: wrap;
         }
 
+        /* Feedback Section (Enhancement 4) */
+        .feedback-section {
+            margin-top: 32px;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .feedback-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            background: var(--bg-secondary);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .feedback-header:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .feedback-header h4 {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin: 0;
+        }
+
+        .feedback-toggle {
+            font-size: 1.25rem;
+            color: var(--text-muted);
+            transition: transform 0.2s;
+        }
+
+        .feedback-toggle.open {
+            transform: rotate(45deg);
+        }
+
+        .feedback-content {
+            padding: 24px;
+            background: var(--bg-primary);
+        }
+
+        .feedback-group {
+            margin-bottom: 24px;
+        }
+
+        .feedback-group label {
+            display: block;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+
+        /* Star Rating */
+        .star-rating {
+            display: flex;
+            gap: 8px;
+        }
+
+        .star-rating .star {
+            font-size: 1.75rem;
+            color: var(--border-color);
+            cursor: pointer;
+            transition: color 0.15s, transform 0.15s;
+        }
+
+        .star-rating .star:hover,
+        .star-rating .star.active {
+            color: var(--warning);
+        }
+
+        .star-rating .star:hover {
+            transform: scale(1.1);
+        }
+
+        /* Pricing Buttons */
+        .pricing-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .pricing-btn {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .pricing-btn:hover {
+            background: var(--bg-secondary);
+            border-color: var(--text-muted);
+        }
+
+        .pricing-btn.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: var(--bg-primary);
+        }
+
+        /* Issue Checkboxes */
+        .issue-checkboxes {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+
+        .checkbox-label input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            border-radius: 4px;
+            accent-color: var(--accent);
+        }
+
+        /* Feedback Textarea */
+        .feedback-content textarea {
+            width: 100%;
+            min-height: 80px;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+            font-size: 0.875rem;
+            resize: vertical;
+        }
+
+        .feedback-content textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        /* Feedback Actions */
+        .feedback-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .feedback-status {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-left: 12px;
+        }
+
+        .feedback-status.success {
+            color: var(--success);
+        }
+
+        .feedback-status.error {
+            color: var(--error);
+        }
+
+        .feedback-status.info {
+            color: var(--primary);
+        }
+
         /* Messages */
         .message {
             display: none;
@@ -1354,6 +1529,78 @@
                     <button class="btn btn-primary" onclick="downloadPdf()">Download PDF</button>
                     <button class="btn btn-secondary" onclick="newQuote()">New Quote</button>
                 </div>
+
+                <!-- Feedback Section (Enhancement 4) -->
+                <div class="feedback-section" id="feedbackSection">
+                    <div class="feedback-header" onclick="toggleFeedback()">
+                        <h4>Rate this quote</h4>
+                        <span class="feedback-toggle" id="feedbackToggle">+</span>
+                    </div>
+
+                    <div class="feedback-content" id="feedbackContent" style="display: none;">
+                        <!-- Star Rating -->
+                        <div class="feedback-group">
+                            <label>Overall Rating</label>
+                            <div class="star-rating" id="starRating">
+                                <span class="star" data-rating="1">★</span>
+                                <span class="star" data-rating="2">★</span>
+                                <span class="star" data-rating="3">★</span>
+                                <span class="star" data-rating="4">★</span>
+                                <span class="star" data-rating="5">★</span>
+                            </div>
+                        </div>
+
+                        <!-- Quick Pricing Feedback -->
+                        <div class="feedback-group">
+                            <label>How was the pricing?</label>
+                            <div class="pricing-buttons">
+                                <button type="button" class="pricing-btn" data-direction="too_low" onclick="setPricingDirection('too_low')">
+                                    Too Low
+                                </button>
+                                <button type="button" class="pricing-btn active" data-direction="about_right" onclick="setPricingDirection('about_right')">
+                                    About Right
+                                </button>
+                                <button type="button" class="pricing-btn" data-direction="too_high" onclick="setPricingDirection('too_high')">
+                                    Too High
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Issues Checkboxes -->
+                        <div class="feedback-group">
+                            <label>Any issues?</label>
+                            <div class="issue-checkboxes">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" value="missing_items" onchange="updateIssues(this)">
+                                    Missing items
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" value="wrong_quantities" onchange="updateIssues(this)">
+                                    Wrong quantities
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" value="unclear_description" onchange="updateIssues(this)">
+                                    Unclear description
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" value="timeline_unrealistic" onchange="updateIssues(this)">
+                                    Timeline unrealistic
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Optional Text Feedback -->
+                        <div class="feedback-group">
+                            <label>Comments (optional)</label>
+                            <textarea id="feedbackText" placeholder="What could be improved?"></textarea>
+                        </div>
+
+                        <div class="feedback-actions">
+                            <button class="btn btn-primary" onclick="submitFeedback()">Submit Feedback</button>
+                            <span class="feedback-status" id="feedbackStatus"></span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </main>
@@ -1851,6 +2098,7 @@
             document.getElementById('inputSection').style.display = 'block';
             document.getElementById('quoteResult').classList.remove('active');
             hideError();
+            resetFeedbackForm();
         }
 
         // ========== ONBOARDING ==========
@@ -2271,6 +2519,198 @@
                 alert('Failed to submit. Please try again.');
             }
         }
+
+        // ========================================
+        // Feedback System (Enhancement 4)
+        // ========================================
+
+        // Feedback state
+        let feedbackState = {
+            overallRating: null,
+            pricingDirection: 'about_right',
+            issues: [],
+            submitted: false
+        };
+
+        // Initialize star rating click handlers
+        document.addEventListener('DOMContentLoaded', () => {
+            const starContainer = document.getElementById('starRating');
+            if (starContainer) {
+                starContainer.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('star')) {
+                        const rating = parseInt(e.target.dataset.rating);
+                        setStarRating(rating);
+                    }
+                });
+            }
+        });
+
+        function toggleFeedback() {
+            const content = document.getElementById('feedbackContent');
+            const toggle = document.getElementById('feedbackToggle');
+
+            if (content.style.display === 'none' || !content.style.display) {
+                content.style.display = 'block';
+                toggle.textContent = '−';
+            } else {
+                content.style.display = 'none';
+                toggle.textContent = '+';
+            }
+        }
+
+        function setStarRating(rating) {
+            feedbackState.overallRating = rating;
+            const stars = document.querySelectorAll('#starRating .star');
+
+            stars.forEach((star, index) => {
+                if (index < rating) {
+                    star.classList.add('active');
+                } else {
+                    star.classList.remove('active');
+                }
+            });
+        }
+
+        function setPricingDirection(direction) {
+            feedbackState.pricingDirection = direction;
+
+            // Update button states
+            const buttons = document.querySelectorAll('.pricing-btn');
+            buttons.forEach(btn => {
+                if (btn.dataset.direction === direction) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+        }
+
+        function updateIssues(checkbox) {
+            const value = checkbox.value;
+
+            if (checkbox.checked) {
+                if (!feedbackState.issues.includes(value)) {
+                    feedbackState.issues.push(value);
+                }
+            } else {
+                feedbackState.issues = feedbackState.issues.filter(i => i !== value);
+            }
+        }
+
+        async function submitFeedback() {
+            if (!currentQuoteId) {
+                console.error('No quote ID for feedback');
+                return;
+            }
+
+            if (feedbackState.submitted) {
+                showFeedbackStatus('Feedback already submitted', 'info');
+                return;
+            }
+
+            const feedbackText = document.getElementById('feedbackText')?.value || '';
+
+            const feedbackData = {
+                overall_rating: feedbackState.overallRating,
+                pricing_direction: feedbackState.pricingDirection,
+                issues: feedbackState.issues.length > 0 ? feedbackState.issues : null,
+                feedback_text: feedbackText || null
+            };
+
+            // Remove null values
+            Object.keys(feedbackData).forEach(key => {
+                if (feedbackData[key] === null) {
+                    delete feedbackData[key];
+                }
+            });
+
+            try {
+                const response = await fetch(`${API_BASE}/quotes/${currentQuoteId}/feedback`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify(feedbackData)
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Failed to submit feedback');
+                }
+
+                feedbackState.submitted = true;
+                showFeedbackStatus('Thank you for your feedback!', 'success');
+
+                // Collapse feedback section after success
+                setTimeout(() => {
+                    toggleFeedback();
+                }, 1500);
+
+            } catch (err) {
+                console.error('Feedback submit error:', err);
+                showFeedbackStatus('Failed to submit: ' + err.message, 'error');
+            }
+        }
+
+        function showFeedbackStatus(message, type) {
+            const statusEl = document.getElementById('feedbackStatus');
+            if (statusEl) {
+                statusEl.textContent = message;
+                statusEl.className = 'feedback-status ' + type;
+
+                // Clear after a few seconds
+                setTimeout(() => {
+                    statusEl.textContent = '';
+                    statusEl.className = 'feedback-status';
+                }, 3000);
+            }
+        }
+
+        function resetFeedbackForm() {
+            feedbackState = {
+                overallRating: null,
+                pricingDirection: 'about_right',
+                issues: [],
+                submitted: false
+            };
+
+            // Reset stars
+            document.querySelectorAll('#starRating .star').forEach(star => {
+                star.classList.remove('active');
+            });
+
+            // Reset pricing buttons
+            document.querySelectorAll('.pricing-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.direction === 'about_right');
+            });
+
+            // Reset checkboxes
+            document.querySelectorAll('.issue-checkboxes input').forEach(cb => {
+                cb.checked = false;
+            });
+
+            // Reset text
+            const feedbackText = document.getElementById('feedbackText');
+            if (feedbackText) feedbackText.value = '';
+
+            // Reset status
+            const statusEl = document.getElementById('feedbackStatus');
+            if (statusEl) {
+                statusEl.textContent = '';
+                statusEl.className = 'feedback-status';
+            }
+
+            // Collapse feedback section
+            const content = document.getElementById('feedbackContent');
+            const toggle = document.getElementById('feedbackToggle');
+            if (content) content.style.display = 'none';
+            if (toggle) toggle.textContent = '+';
+        }
+
+        // ========================================
+        // End Feedback System
+        // ========================================
 
         // Error capture
         window.lastJsError = null;

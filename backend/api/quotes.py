@@ -37,6 +37,8 @@ router = APIRouter()
 class QuoteRequest(BaseModel):
     """Request to generate a quote from text."""
     transcription: str
+    use_confidence_sampling: bool = False  # Enhancement 3: Multi-sample variance
+    num_samples: int = 3  # Number of samples for confidence sampling
 
 
 class QuoteLineItem(BaseModel):
@@ -84,6 +86,119 @@ class QuoteUpdateRequest(BaseModel):
     estimated_crew_size: Optional[int] = None
     notes: Optional[str] = None
     correction_notes: Optional[str] = None  # Why the user made changes
+
+
+# Enhancement 5: Active Learning Models
+class ClarifyingQuestion(BaseModel):
+    """A clarifying question for the user."""
+    id: str
+    question: str
+    type: str = "text"  # text, select, number
+    options: Optional[List[str]] = None
+    impact: Optional[str] = None
+    default_assumption: Optional[str] = None
+
+
+class ClarifyingQuestionsRequest(BaseModel):
+    """Request to get clarifying questions."""
+    transcription: str
+    max_questions: int = 3
+
+
+class ClarifyingQuestionsResponse(BaseModel):
+    """Response with clarifying questions."""
+    questions: List[ClarifyingQuestion]
+    reasoning: Optional[str] = None
+    missing_info: List[str] = []
+
+
+class ClarificationAnswer(BaseModel):
+    """An answer to a clarifying question."""
+    question_id: str
+    question: str
+    answer: str
+
+
+class QuoteWithClarificationsRequest(BaseModel):
+    """Request to generate quote with clarification answers."""
+    transcription: str
+    clarifications: List[ClarificationAnswer]
+
+
+# ============================================================================
+# Feedback Models (Enhancement 4)
+# ============================================================================
+
+class FeedbackIssue(str):
+    """Valid feedback issue types."""
+    PRICE_TOO_HIGH = "price_too_high"
+    PRICE_TOO_LOW = "price_too_low"
+    MISSING_ITEMS = "missing_items"
+    WRONG_QUANTITIES = "wrong_quantities"
+    UNCLEAR_DESCRIPTION = "unclear_description"
+    WRONG_JOB_TYPE = "wrong_job_type"
+    TIMELINE_UNREALISTIC = "timeline_unrealistic"
+
+
+class QuoteFeedbackRequest(BaseModel):
+    """Request to submit feedback on a quote."""
+    # Overall rating (1-5 stars)
+    overall_rating: Optional[int] = None
+
+    # Aspect ratings (1-5 each)
+    pricing_accuracy: Optional[int] = None
+    description_quality: Optional[int] = None
+    line_item_completeness: Optional[int] = None
+    timeline_accuracy: Optional[int] = None
+
+    # Issue flags
+    issues: Optional[List[str]] = None
+
+    # Quick pricing feedback
+    pricing_direction: Optional[str] = None  # "too_high", "too_low", "about_right"
+    pricing_off_by_percent: Optional[float] = None
+
+    # Actual values if known
+    actual_total: Optional[float] = None
+    actual_line_items: Optional[List[dict]] = None
+
+    # Free-form feedback
+    feedback_text: Optional[str] = None
+    improvement_suggestions: Optional[str] = None
+
+    # Context
+    quote_was_sent: Optional[bool] = None
+    quote_outcome: Optional[str] = None  # "won", "lost", "pending"
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "overall_rating": 4,
+                "pricing_direction": "about_right",
+                "issues": ["missing_items"],
+                "feedback_text": "Quote was good but forgot to include permits",
+            }
+        }
+
+
+class QuoteFeedbackResponse(BaseModel):
+    """Response for quote feedback."""
+    id: str
+    quote_id: str
+    overall_rating: Optional[int] = None
+    pricing_accuracy: Optional[int] = None
+    description_quality: Optional[int] = None
+    line_item_completeness: Optional[int] = None
+    timeline_accuracy: Optional[int] = None
+    issues: Optional[List[str]] = None
+    pricing_direction: Optional[str] = None
+    pricing_off_by_percent: Optional[float] = None
+    actual_total: Optional[float] = None
+    feedback_text: Optional[str] = None
+    improvement_suggestions: Optional[str] = None
+    quote_was_sent: Optional[bool] = None
+    quote_outcome: Optional[str] = None
+    created_at: Optional[str] = None
 
 
 def quote_to_response(quote) -> QuoteResponse:
@@ -183,14 +298,26 @@ async def generate_quote(request: QuoteRequest, current_user: dict = Depends(get
 
         # PASS 3: Generate quote with type-filtered context
         # AND category-specific learned adjustments injected into the prompt
-        quote_data = await quote_service.generate_quote(
-            transcription=request.transcription,
-            contractor=contractor_dict,
-            pricing_model=pricing_dict,
-            terms=terms_dict,
-            correction_examples=correction_examples,
-            detected_category=detected_job_type,  # For learned adjustments injection
-        )
+        # Enhancement 3: Optionally use confidence sampling for data-driven confidence
+        if request.use_confidence_sampling:
+            quote_data, variance_confidence = await quote_service.generate_quote_with_confidence(
+                transcription=request.transcription,
+                contractor=contractor_dict,
+                pricing_model=pricing_dict,
+                terms=terms_dict,
+                correction_examples=correction_examples,
+                detected_category=detected_job_type,
+                num_samples=min(max(request.num_samples, 2), 5),  # Clamp to 2-5
+            )
+        else:
+            quote_data = await quote_service.generate_quote(
+                transcription=request.transcription,
+                contractor=contractor_dict,
+                pricing_model=pricing_dict,
+                terms=terms_dict,
+                correction_examples=correction_examples,
+                detected_category=detected_job_type,  # For learned adjustments injection
+            )
 
         # Ensure detected job_type is used if AI didn't return one
         if not quote_data.get("job_type"):
@@ -217,6 +344,186 @@ async def generate_quote(request: QuoteRequest, current_user: dict = Depends(get
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============================================================================
+# Enhancement 5: Active Learning Endpoints
+# ============================================================================
+
+@router.post("/clarifying-questions", response_model=ClarifyingQuestionsResponse)
+async def get_clarifying_questions(
+    request: ClarifyingQuestionsRequest,
+    current_user: dict = Depends(get_current_user),
+):
+    """
+    Get clarifying questions to improve quote accuracy.
+
+    Enhancement 5: Active Learning - When information is ambiguous or
+    incomplete, generate targeted questions that would most improve
+    estimate accuracy.
+
+    Use this when:
+    - Initial quote has low confidence
+    - User wants more accurate estimate
+    - Description is vague or missing key details
+    """
+    try:
+        db = get_db_service()
+        quote_service = get_quote_service()
+
+        # Get contractor for this user
+        contractor = await db.get_contractor_by_user_id(current_user["id"])
+        if not contractor:
+            raise HTTPException(status_code=400, detail="Please complete onboarding first")
+
+        # Get their pricing model
+        pricing_model = await db.get_pricing_model(contractor.id)
+        if not pricing_model:
+            raise HTTPException(status_code=400, detail="Please complete onboarding first")
+
+        contractor_dict = {
+            "primary_trade": contractor.primary_trade,
+            "business_name": contractor.business_name,
+        }
+
+        pricing_dict = {
+            "pricing_knowledge": pricing_model.pricing_knowledge or {},
+        }
+
+        # Generate clarifying questions
+        result = await quote_service.generate_clarifying_questions(
+            transcription=request.transcription,
+            contractor=contractor_dict,
+            pricing_model=pricing_dict,
+            max_questions=min(max(request.max_questions, 1), 5),  # Clamp 1-5
+        )
+
+        # Convert to response model
+        questions = []
+        for q in result.get("questions", []):
+            questions.append(ClarifyingQuestion(
+                id=q.get("id", "q1"),
+                question=q.get("question", ""),
+                type=q.get("type", "text"),
+                options=q.get("options"),
+                impact=q.get("impact"),
+                default_assumption=q.get("default_assumption"),
+            ))
+
+        return ClarifyingQuestionsResponse(
+            questions=questions,
+            reasoning=result.get("reasoning"),
+            missing_info=result.get("missing_info", []),
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/generate-with-clarifications", response_model=QuoteResponse)
+async def generate_quote_with_clarifications(
+    request: QuoteWithClarificationsRequest,
+    current_user: dict = Depends(get_current_user),
+):
+    """
+    Generate a quote using the original transcription plus clarification answers.
+
+    Enhancement 5: Active Learning - After user answers clarifying questions,
+    generate a more accurate quote incorporating their answers.
+
+    Flow:
+    1. User gets low-confidence quote
+    2. User requests clarifying questions
+    3. User answers questions
+    4. This endpoint generates improved quote with that context
+    """
+    try:
+        db = get_db_service()
+        quote_service = get_quote_service()
+
+        # Get contractor for this user
+        contractor = await db.get_contractor_by_user_id(current_user["id"])
+        if not contractor:
+            raise HTTPException(status_code=400, detail="Please complete onboarding first")
+
+        # Get their pricing model
+        pricing_model = await db.get_pricing_model(contractor.id)
+        if not pricing_model:
+            raise HTTPException(status_code=400, detail="Please complete onboarding first")
+
+        # Get their terms
+        terms = await db.get_terms(contractor.id)
+
+        contractor_dict = {
+            "id": contractor.id,
+            "business_name": contractor.business_name,
+            "owner_name": contractor.owner_name,
+            "primary_trade": contractor.primary_trade,
+        }
+
+        pricing_dict = {
+            "labor_rate_hourly": pricing_model.labor_rate_hourly,
+            "helper_rate_hourly": pricing_model.helper_rate_hourly,
+            "material_markup_percent": pricing_model.material_markup_percent,
+            "minimum_job_amount": pricing_model.minimum_job_amount,
+            "pricing_knowledge": pricing_model.pricing_knowledge or {},
+            "pricing_notes": pricing_model.pricing_notes,
+        }
+
+        terms_dict = None
+        if terms:
+            terms_dict = {
+                "deposit_percent": terms.deposit_percent,
+                "quote_valid_days": terms.quote_valid_days,
+            }
+
+        # Convert clarifications to list of dicts
+        clarification_dicts = [
+            {
+                "question_id": c.question_id,
+                "question": c.question,
+                "answer": c.answer,
+            }
+            for c in request.clarifications
+        ]
+
+        # Generate quote with clarifications
+        quote_data = await quote_service.generate_quote_with_clarifications(
+            transcription=request.transcription,
+            clarifications=clarification_dicts,
+            contractor=contractor_dict,
+            pricing_model=pricing_dict,
+            terms=terms_dict,
+        )
+
+        # Save to database
+        quote = await db.create_quote(
+            contractor_id=contractor.id,
+            transcription=request.transcription,
+            job_type=quote_data.get("job_type"),
+            job_description=quote_data.get("job_description"),
+            line_items=quote_data.get("line_items", []),
+            subtotal=quote_data.get("subtotal", 0),
+            customer_name=quote_data.get("customer_name"),
+            customer_address=quote_data.get("customer_address"),
+            customer_phone=quote_data.get("customer_phone"),
+            estimated_days=quote_data.get("estimated_days"),
+            ai_generated_total=quote_data.get("subtotal", 0),
+        )
+
+        return quote_to_response(quote)
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============================================================================
+# End Enhancement 5
+# ============================================================================
 
 
 class TranscriptionResponse(BaseModel):
@@ -644,5 +951,170 @@ async def get_learning_stats(quote_id: str, current_user: dict = Depends(get_cur
     # Calculate stats
     learning_service = get_learning_service()
     stats = learning_service.calculate_accuracy_stats(quote_history)
+
+    return stats
+
+
+# ============================================================================
+# Feedback Endpoints (Enhancement 4)
+# ============================================================================
+
+def feedback_to_response(feedback) -> QuoteFeedbackResponse:
+    """Convert a QuoteFeedback model to response."""
+    return QuoteFeedbackResponse(
+        id=feedback.id,
+        quote_id=feedback.quote_id,
+        overall_rating=feedback.overall_rating,
+        pricing_accuracy=feedback.pricing_accuracy,
+        description_quality=feedback.description_quality,
+        line_item_completeness=feedback.line_item_completeness,
+        timeline_accuracy=feedback.timeline_accuracy,
+        issues=feedback.issues or [],
+        pricing_direction=feedback.pricing_direction,
+        pricing_off_by_percent=feedback.pricing_off_by_percent,
+        actual_total=feedback.actual_total,
+        feedback_text=feedback.feedback_text,
+        improvement_suggestions=feedback.improvement_suggestions,
+        quote_was_sent=feedback.quote_was_sent,
+        quote_outcome=feedback.quote_outcome,
+        created_at=feedback.created_at.isoformat() if feedback.created_at else None,
+    )
+
+
+@router.post("/{quote_id}/feedback", response_model=QuoteFeedbackResponse)
+async def submit_feedback(
+    quote_id: str,
+    feedback: QuoteFeedbackRequest,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Submit feedback on a generated quote.
+
+    This is a non-destructive way to provide feedback without editing the quote.
+    Feedback is used to improve future quote generation.
+    """
+    db = get_db_service()
+
+    # Get the quote
+    quote = await db.get_quote(quote_id)
+    if not quote:
+        raise HTTPException(status_code=404, detail="Quote not found")
+
+    # Verify ownership
+    contractor = await db.get_contractor_by_user_id(current_user["id"])
+    if not contractor or quote.contractor_id != contractor.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    # Check if feedback already exists
+    existing_feedback = await db.get_quote_feedback(quote_id)
+    if existing_feedback:
+        raise HTTPException(
+            status_code=400,
+            detail="Feedback already exists for this quote. Use PUT to update."
+        )
+
+    # Create feedback
+    feedback_data = feedback.dict(exclude_none=True)
+    new_feedback = await db.create_quote_feedback(
+        quote_id=quote_id,
+        **feedback_data
+    )
+
+    # Trigger learning from feedback if pricing direction or actual values provided
+    if feedback.pricing_direction or feedback.actual_total or feedback.actual_line_items:
+        try:
+            learning_service = get_learning_service()
+            await learning_service.process_feedback(
+                quote_id=quote_id,
+                feedback_data=feedback_data,
+                original_quote={
+                    "line_items": quote.line_items,
+                    "subtotal": quote.subtotal,
+                    "job_type": quote.job_type,
+                },
+            )
+            # Mark as processed for learning
+            await db.update_quote_feedback(
+                new_feedback.id,
+                processed_for_learning=True,
+                processed_at=datetime.utcnow()
+            )
+        except Exception as e:
+            # Don't fail feedback submission if learning fails
+            print(f"[FEEDBACK LEARNING ERROR] {e}")
+
+    return feedback_to_response(new_feedback)
+
+
+@router.put("/{quote_id}/feedback", response_model=QuoteFeedbackResponse)
+async def update_feedback(
+    quote_id: str,
+    feedback: QuoteFeedbackRequest,
+    current_user: dict = Depends(get_current_user)
+):
+    """Update existing feedback on a quote."""
+    db = get_db_service()
+
+    # Get the quote
+    quote = await db.get_quote(quote_id)
+    if not quote:
+        raise HTTPException(status_code=404, detail="Quote not found")
+
+    # Verify ownership
+    contractor = await db.get_contractor_by_user_id(current_user["id"])
+    if not contractor or quote.contractor_id != contractor.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    # Get existing feedback
+    existing_feedback = await db.get_quote_feedback(quote_id)
+    if not existing_feedback:
+        raise HTTPException(status_code=404, detail="No feedback exists for this quote")
+
+    # Update feedback
+    feedback_data = feedback.dict(exclude_none=True)
+    updated_feedback = await db.update_quote_feedback(
+        existing_feedback.id,
+        **feedback_data
+    )
+
+    return feedback_to_response(updated_feedback)
+
+
+@router.get("/{quote_id}/feedback", response_model=QuoteFeedbackResponse)
+async def get_feedback(
+    quote_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get feedback for a specific quote."""
+    db = get_db_service()
+
+    # Get the quote
+    quote = await db.get_quote(quote_id)
+    if not quote:
+        raise HTTPException(status_code=404, detail="Quote not found")
+
+    # Verify ownership
+    contractor = await db.get_contractor_by_user_id(current_user["id"])
+    if not contractor or quote.contractor_id != contractor.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    # Get feedback
+    feedback = await db.get_quote_feedback(quote_id)
+    if not feedback:
+        raise HTTPException(status_code=404, detail="No feedback for this quote")
+
+    return feedback_to_response(feedback)
+
+
+@router.get("/feedback/stats")
+async def get_feedback_stats(current_user: dict = Depends(get_current_user)):
+    """Get aggregated feedback statistics for the current user."""
+    db = get_db_service()
+
+    contractor = await db.get_contractor_by_user_id(current_user["id"])
+    if not contractor:
+        raise HTTPException(status_code=400, detail="Contractor not found")
+
+    stats = await db.get_feedback_stats(contractor.id)
 
     return stats

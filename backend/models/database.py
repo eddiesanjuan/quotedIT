@@ -296,6 +296,76 @@ class Quote(Base):
 
     # Relationship
     contractor = relationship("Contractor", back_populates="quotes")
+    feedback = relationship("QuoteFeedback", back_populates="quote", uselist=False)
+
+
+class QuoteFeedback(Base):
+    """
+    User feedback on a generated quote (Enhancement 4).
+
+    Allows users to rate quotes and provide explicit feedback without editing.
+    This powers the learning loop - feedback is used to improve future quotes.
+
+    Captures:
+    - Overall satisfaction rating (1-5 stars)
+    - Aspect ratings (pricing accuracy, description quality, etc.)
+    - Specific issues (checkboxes for common problems)
+    - Actual values if known (for calibration)
+    - Free-form text feedback
+    """
+    __tablename__ = "quote_feedback"
+
+    id = Column(String, primary_key=True, default=generate_uuid)
+    quote_id = Column(String, ForeignKey("quotes.id"), unique=True, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Overall rating (1-5 stars)
+    overall_rating = Column(Integer)  # 1 = very poor, 5 = excellent
+
+    # Aspect ratings (1-5 each, null if not rated)
+    pricing_accuracy = Column(Integer)  # How accurate was the pricing?
+    description_quality = Column(Integer)  # Was the job description good?
+    line_item_completeness = Column(Integer)  # Were all items included?
+    timeline_accuracy = Column(Integer)  # Was the timeline realistic?
+
+    # Issue flags (specific problems, can select multiple)
+    issues = Column(JSON, default=list)
+    """
+    Example:
+    ["price_too_high", "price_too_low", "missing_items", "wrong_quantities",
+     "unclear_description", "wrong_job_type", "timeline_unrealistic"]
+    """
+
+    # Pricing direction feedback (quick one-click feedback)
+    pricing_direction = Column(String(20))  # "too_high", "too_low", "about_right"
+    pricing_off_by_percent = Column(Float)  # Optional: how far off? e.g., 15.0 = 15% too high/low
+
+    # Actual values (if user knows the correct amounts)
+    actual_total = Column(Float)  # What should the total have been?
+    actual_line_items = Column(JSON)  # Corrected line items if provided
+    """
+    Example:
+    [
+        {"name": "Demolition", "actual_amount": 1200, "original_amount": 1100},
+        {"name": "Decking", "actual_amount": 4500, "original_amount": 4160}
+    ]
+    """
+
+    # Free-form feedback
+    feedback_text = Column(Text)  # Detailed notes from user
+    improvement_suggestions = Column(Text)  # What would make future quotes better?
+
+    # Context at time of feedback
+    quote_was_sent = Column(Boolean)  # Had they sent this quote to customer?
+    quote_outcome = Column(String(20))  # won, lost, pending (if known)
+
+    # Learning status
+    processed_for_learning = Column(Boolean, default=False)
+    processed_at = Column(DateTime)
+
+    # Relationship
+    quote = relationship("Quote", back_populates="feedback")
 
 
 class SetupConversation(Base):
