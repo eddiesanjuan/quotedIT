@@ -142,75 +142,113 @@ class QuoteGenerationService:
 
         return quote_data
 
-    async def detect_job_type(self, transcription: str) -> str:
+    async def detect_or_create_category(
+        self,
+        transcription: str,
+        pricing_knowledge: Optional[dict] = None,
+    ) -> dict:
         """
-        Quick first-pass to detect job type from transcription.
-        Uses a fast, cheap model call to categorize before full quote generation.
+        Dynamically detect or create a category from the transcription.
+        Uses AI to match against existing user categories or create new ones.
 
-        Returns a standardized job_type string like:
-        - deck_composite, deck_wood, deck_repair
-        - fence_wood, fence_vinyl, fence_chain_link
-        - paint_exterior, paint_interior
-        - roofing, siding, concrete, electrical, plumbing
-        - general (fallback)
+        Args:
+            transcription: The transcribed voice note
+            pricing_knowledge: User's pricing_knowledge dict with categories
+
+        Returns:
+            dict with:
+            - category: The category name (snake_case)
+            - is_new: Whether this is a newly created category
+            - display_name: Human-readable name (for new categories)
         """
-        detection_prompt = """Analyze this contractor voice note and identify the PRIMARY job type.
+        # Get existing categories from user's pricing model
+        existing_categories = []
+        if pricing_knowledge and "categories" in pricing_knowledge:
+            existing_categories = list(pricing_knowledge["categories"].keys())
 
-Voice note: "{transcription}"
+        # Build the detection prompt
+        if existing_categories:
+            categories_list = "\n".join(f"- {cat}" for cat in existing_categories)
+            detection_prompt = f"""Analyze this work description and categorize it.
 
-Return ONLY a single job_type code from this list (pick the closest match):
-- deck_composite (Trex, TimberTech, composite decking)
-- deck_wood (pressure treated, cedar, redwood decking)
-- deck_repair (deck repairs, board replacement, railing fixes)
-- fence_wood (wood privacy fence, picket fence, cedar fence)
-- fence_vinyl (vinyl/PVC fence)
-- fence_chain_link (chain link, metal fence)
-- paint_exterior (exterior house painting, siding paint)
-- paint_interior (interior room painting, walls, ceilings)
-- roofing (roof replacement, shingles, roof repair)
-- siding (siding installation, vinyl siding, hardie board)
-- concrete (driveway, patio, sidewalk, foundation)
-- electrical (wiring, panel, outlets, lighting)
-- plumbing (pipes, fixtures, water heater)
-- remodel_kitchen (kitchen renovation, cabinets, counters)
-- remodel_bathroom (bathroom renovation, tile, shower)
-- remodel_basement (basement finishing, egress)
-- landscaping (grading, retaining walls, drainage)
-- general (if none of the above fit)
+Description: "{transcription}"
 
-Respond with ONLY the job_type code, nothing else.""".format(transcription=transcription)
+Existing categories for this business:
+{categories_list}
+
+Your task:
+1. If this matches an existing category (even if worded differently), return that exact category name
+   - Be generous with matching - prefer existing over new
+   - "brand strategy project" matches "brand_strategy"
+   - "deck job" matches "deck_composite" or "deck_wood"
+
+2. If truly different from all existing categories, create a short snake_case category name
+   - Keep it general (e.g., "consulting" not "strategic_growth_consulting")
+   - 2-3 words max
+
+Return JSON only:
+{{"category": "category_name", "is_new": false, "display_name": "Human Readable Name"}}
+
+If creating new: is_new should be true and provide a good display_name.
+If matching existing: is_new should be false."""
+        else:
+            # No existing categories - create the first one
+            detection_prompt = f"""Analyze this work description and create a category for it.
+
+Description: "{transcription}"
+
+Create a short snake_case category name for this type of work:
+- Keep it general (e.g., "brand_strategy" not "full_brand_identity_package")
+- 2-3 words max
+
+Return JSON only:
+{{"category": "category_name", "is_new": true, "display_name": "Human Readable Name"}}"""
 
         try:
             # Use haiku for speed and cost - this is just classification
             message = self.client.messages.create(
                 model="claude-3-haiku-20240307",
-                max_tokens=50,
+                max_tokens=100,
                 messages=[{"role": "user", "content": detection_prompt}],
             )
-            job_type = message.content[0].text.strip().lower()
+            response_text = message.content[0].text.strip()
 
-            # Validate it's a known type, fallback to general
-            valid_types = [
-                "deck_composite", "deck_wood", "deck_repair",
-                "fence_wood", "fence_vinyl", "fence_chain_link",
-                "paint_exterior", "paint_interior",
-                "roofing", "siding", "concrete", "electrical", "plumbing",
-                "remodel_kitchen", "remodel_bathroom", "remodel_basement",
-                "landscaping", "general"
-            ]
+            # Parse JSON response
+            import json
+            # Find JSON in response
+            json_match = re.search(r'\{[^}]+\}', response_text)
+            if json_match:
+                result = json.loads(json_match.group())
+                # Ensure snake_case and lowercase
+                result["category"] = result["category"].lower().replace(" ", "_").replace("-", "_")
+                return result
 
-            if job_type not in valid_types:
-                # Try to match partial
-                for vt in valid_types:
-                    if vt in job_type or job_type in vt:
-                        return vt
-                return "general"
-
-            return job_type
+            # Fallback if JSON parsing fails
+            return {
+                "category": "general",
+                "is_new": True,
+                "display_name": "General"
+            }
 
         except Exception as e:
             # On error, return general - don't block quote generation
-            return "general"
+            return {
+                "category": "general",
+                "is_new": True,
+                "display_name": "General"
+            }
+
+    async def detect_job_type(
+        self,
+        transcription: str,
+        pricing_knowledge: Optional[dict] = None,
+    ) -> str:
+        """
+        Wrapper for backwards compatibility.
+        Calls detect_or_create_category and returns just the category name.
+        """
+        result = await self.detect_or_create_category(transcription, pricing_knowledge)
+        return result["category"]
 
     async def _call_claude(self, prompt: str) -> str:
         """Make a call to Claude API."""

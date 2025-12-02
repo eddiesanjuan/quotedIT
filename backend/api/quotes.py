@@ -163,8 +163,12 @@ async def generate_quote(request: QuoteRequest, current_user: dict = Depends(get
                 "accepted_payment_methods": terms.accepted_payment_methods,
             }
 
-        # PASS 1: Detect job type from transcription (fast, cheap call)
-        detected_job_type = await quote_service.detect_job_type(request.transcription)
+        # PASS 1: Detect category from transcription (fast, cheap call)
+        # Uses user's existing categories for fuzzy matching, or creates new ones
+        detected_job_type = await quote_service.detect_job_type(
+            request.transcription,
+            pricing_knowledge=pricing_dict.get("pricing_knowledge")
+        )
 
         # PASS 2: Fetch type-specific correction examples for few-shot learning
         # First try to get examples for this specific job type
@@ -331,8 +335,12 @@ async def generate_quote_from_audio(
             if not transcription_text.strip():
                 raise HTTPException(status_code=400, detail="No speech detected in audio")
 
-            # STEP 2: Detect job type from transcription (fast, cheap call)
-            detected_job_type = await quote_service.detect_job_type(transcription_text)
+            # STEP 2: Detect category from transcription (fast, cheap call)
+            # Uses user's existing categories for fuzzy matching, or creates new ones
+            detected_job_type = await quote_service.detect_job_type(
+                transcription_text,
+                pricing_knowledge=pricing_dict.get("pricing_knowledge")
+            )
 
             # STEP 3: Fetch type-specific correction examples for few-shot learning
             correction_examples = await db.get_correction_examples(
