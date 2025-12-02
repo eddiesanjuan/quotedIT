@@ -377,6 +377,40 @@ async def get_industries():
     }
 
 
+@router.get("/templates/{industry}")
+async def get_pricing_template(industry: str):
+    """
+    Get pricing template for specific industry.
+
+    Returns comprehensive template with recommended approaches, rate ranges,
+    common project types, and pricing tips.
+    """
+    from ..data.pricing_templates import get_template
+
+    template = get_template(industry)
+    if not template:
+        raise HTTPException(status_code=404, detail=f"Template not found for industry: {industry}")
+
+    return template
+
+
+@router.get("/templates")
+async def list_templates():
+    """
+    List all available pricing templates.
+
+    Returns basic info (key and display name) for all templates.
+    Useful for populating industry selection dropdowns.
+    """
+    from ..data.pricing_templates import list_all_templates
+
+    templates = list_all_templates()
+    return {
+        "templates": templates,
+        "count": len(templates),
+    }
+
+
 @router.get("/")
 async def list_sessions():
     """List all sessions (for debugging/demo)."""
