@@ -325,19 +325,11 @@ async def set_industry(
     """
     db = get_database_service()
 
-    # Validate industry is a known type (optional but good practice)
-    valid_industries = [
-        "deck_builder", "painter", "fence_installer", "landscaper", "electrician",
-        "plumber", "hvac", "roofer", "flooring", "tile", "concrete", "framing",
-        "drywall", "window_door", "siding", "gutters", "insulation", "garage_door",
-        "pool_spa", "masonry", "tree_service", "pressure_washing", "closet_organizer",
-        "cabinet_maker", "general_contractor"
-    ]
-
-    if request.industry not in valid_industries:
+    # Validate industry is not empty and has reasonable length
+    if not request.industry or len(request.industry) > 100:
         raise HTTPException(
             status_code=400,
-            detail=f"Invalid industry. Must be one of: {', '.join(valid_industries)}"
+            detail="Industry must be between 1 and 100 characters"
         )
 
     # Update the contractor's primary_trade field

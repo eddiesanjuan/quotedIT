@@ -1093,6 +1093,91 @@
             flex-wrap: wrap;
         }
 
+        /* Industry Selection */
+        #industrySelection {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        #industrySelection h3 {
+            font-family: var(--font-serif);
+            font-size: 1.75rem;
+            font-weight: 400;
+            margin-bottom: 12px;
+        }
+
+        #industrySelection > p {
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+            line-height: 1.7;
+        }
+
+        .industry-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 1rem;
+            margin-bottom: 24px;
+        }
+
+        .industry-card {
+            padding: 1.5rem;
+            text-align: center;
+            background: rgba(255,255,255,0.05);
+            border: 2px solid transparent;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .industry-card:hover {
+            background: rgba(255,255,255,0.08);
+            border-color: rgba(255,255,255,0.2);
+        }
+
+        .industry-card.selected {
+            border-color: #667eea;
+            background: rgba(102,126,234,0.15);
+        }
+
+        .industry-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .industry-name {
+            font-size: 0.875rem;
+            color: var(--text-primary);
+        }
+
+        .industry-other-input {
+            margin-top: 16px;
+            display: none;
+        }
+
+        .industry-other-input.active {
+            display: block;
+        }
+
+        .industry-other-input input {
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+        }
+
+        .industry-continue-btn {
+            margin-top: 24px;
+            text-align: center;
+        }
+
+        .industry-continue-btn .btn {
+            min-width: 200px;
+        }
+
         /* Quick Setup Form */
         #quickSetupForm {
             max-width: 400px;
@@ -2442,8 +2527,26 @@
         <div class="view" id="appView">
             <!-- Onboarding Notice -->
             <div class="card onboarding-notice" id="onboardingNotice" style="display: none;">
+                <!-- Industry Selection -->
+                <div id="industrySelection" style="display: none;">
+                    <h3>What type of work do you do?</h3>
+                    <p>This helps us customize your pricing setup</p>
+
+                    <div class="industry-grid" id="industryGrid">
+                        <!-- Industry cards will be inserted here by JavaScript -->
+                    </div>
+
+                    <div class="industry-other-input" id="industryOtherInput">
+                        <input type="text" id="industryOtherText" placeholder="Enter your trade or industry...">
+                    </div>
+
+                    <div class="industry-continue-btn">
+                        <button class="btn btn-primary" id="industryContinueBtn" onclick="continueFromIndustrySelection()" disabled>Continue</button>
+                    </div>
+                </div>
+
                 <!-- Intro Screen -->
-                <div id="onboardingIntro" class="onboarding-intro">
+                <div id="onboardingIntro" class="onboarding-intro" style="display: none;">
                     <h3>Let's learn how you price.</h3>
                     <p>Before generating quotes, I need to understand your pricing model. Choose how you'd like to set this up.</p>
 
@@ -3367,16 +3470,37 @@
                 if (response.ok) {
                     const pricing = await response.json();
                     const hasPricing = pricing && pricing.pricing_knowledge && Object.keys(pricing.pricing_knowledge).length > 0;
-                    document.getElementById('onboardingNotice').style.display = hasPricing ? 'none' : 'block';
-                    document.getElementById('inputSection').style.display = hasPricing ? 'block' : 'none';
+
+                    if (!hasPricing) {
+                        document.getElementById('onboardingNotice').style.display = 'block';
+                        document.getElementById('inputSection').style.display = 'none';
+
+                        // Show industry selection if no trade selected yet
+                        if (!currentUser.primary_trade || currentUser.primary_trade === 'general') {
+                            showIndustrySelection();
+                        }
+                    } else {
+                        document.getElementById('onboardingNotice').style.display = 'none';
+                        document.getElementById('inputSection').style.display = 'block';
+                    }
                 } else {
                     document.getElementById('onboardingNotice').style.display = 'block';
                     document.getElementById('inputSection').style.display = 'none';
+
+                    // Show industry selection if no trade selected yet
+                    if (!currentUser.primary_trade || currentUser.primary_trade === 'general') {
+                        showIndustrySelection();
+                    }
                 }
             } catch (err) {
                 console.error('Error checking pricing model:', err);
                 document.getElementById('onboardingNotice').style.display = 'block';
                 document.getElementById('inputSection').style.display = 'none';
+
+                // Show industry selection if no trade selected yet
+                if (!currentUser.primary_trade || currentUser.primary_trade === 'general') {
+                    showIndustrySelection();
+                }
             }
         }
 
@@ -3698,20 +3822,159 @@
         let chatMediaRecorder = null;
         let chatAudioChunks = [];
         let messageCount = 0;
+        let selectedIndustry = null;
+
+        // Industry data
+        const industries = [
+            { key: "electrician", display_name: "Electrician", icon: "⚡", category: "Electrical" },
+            { key: "plumber", display_name: "Plumber", icon: "🔧", category: "Plumbing" },
+            { key: "hvac", display_name: "HVAC", icon: "❄️", category: "HVAC" },
+            { key: "roofer", display_name: "Roofer", icon: "🏠", category: "Roofing" },
+            { key: "deck_builder", display_name: "Deck Builder", icon: "🪵", category: "Carpentry" },
+            { key: "painter", display_name: "Painter", icon: "🎨", category: "Painting" },
+            { key: "landscaper", display_name: "Landscaper", icon: "🌳", category: "Landscaping" },
+            { key: "general_contractor", display_name: "General Contractor", icon: "🔨", category: "General" },
+            { key: "flooring", display_name: "Flooring", icon: "📐", category: "Flooring" },
+            { key: "masonry", display_name: "Masonry", icon: "🧱", category: "Masonry" },
+            { key: "siding", display_name: "Siding", icon: "🏘️", category: "Siding" },
+            { key: "window_door", display_name: "Windows & Doors", icon: "🚪", category: "Windows" },
+            { key: "drywall", display_name: "Drywall", icon: "📋", category: "Drywall" },
+            { key: "tile", display_name: "Tile", icon: "🔲", category: "Tile" },
+            { key: "concrete", display_name: "Concrete", icon: "🏗️", category: "Concrete" },
+            { key: "fence", display_name: "Fencing", icon: "🪵", category: "Fencing" },
+            { key: "gutter", display_name: "Gutters", icon: "💧", category: "Gutters" },
+            { key: "insulation", display_name: "Insulation", icon: "🧊", category: "Insulation" },
+            { key: "solar", display_name: "Solar", icon: "☀️", category: "Solar" },
+            { key: "pool", display_name: "Pool & Spa", icon: "🏊", category: "Pool" },
+            { key: "demolition", display_name: "Demolition", icon: "💥", category: "Demolition" },
+            { key: "handyman", display_name: "Handyman", icon: "🛠️", category: "Handyman" },
+            { key: "remodeling", display_name: "Remodeling", icon: "🏡", category: "Remodeling" },
+            { key: "cabinet", display_name: "Cabinets", icon: "📦", category: "Cabinets" },
+            { key: "other", display_name: "Other", icon: "✨", category: "Other" }
+        ];
+
+        function showIndustrySelection() {
+            document.getElementById('industrySelection').style.display = 'block';
+            document.getElementById('onboardingIntro').style.display = 'none';
+            document.getElementById('quickSetupForm').style.display = 'none';
+            document.getElementById('onboardingChat').classList.remove('active');
+
+            // Track that user viewed industry selection
+            {% if posthog_api_key %}
+            if (window.posthog) {
+                posthog.capture('industry_selection_viewed');
+            }
+            {% endif %}
+
+            // Populate industry grid
+            const grid = document.getElementById('industryGrid');
+            grid.innerHTML = '';
+            industries.forEach(industry => {
+                const card = document.createElement('div');
+                card.className = 'industry-card';
+                card.dataset.industry = industry.key;
+
+                const icon = document.createElement('span');
+                icon.className = 'industry-icon';
+                icon.textContent = industry.icon;
+
+                const name = document.createElement('div');
+                name.className = 'industry-name';
+                name.textContent = industry.display_name;
+
+                card.appendChild(icon);
+                card.appendChild(name);
+                card.onclick = () => selectIndustry(industry.key, industry.display_name);
+                grid.appendChild(card);
+            });
+        }
+
+        function selectIndustry(key, displayName) {
+            selectedIndustry = { key, displayName };
+
+            // Update UI
+            document.querySelectorAll('.industry-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            document.querySelector(`[data-industry="${key}"]`).classList.add('selected');
+
+            // Show/hide "Other" input
+            const otherInput = document.getElementById('industryOtherInput');
+            if (key === 'other') {
+                otherInput.classList.add('active');
+                document.getElementById('industryOtherText').focus();
+            } else {
+                otherInput.classList.remove('active');
+            }
+
+            // Enable continue button
+            document.getElementById('industryContinueBtn').disabled = false;
+        }
+
+        async function continueFromIndustrySelection() {
+            if (!selectedIndustry) return;
+
+            // If "Other" is selected, get the custom text
+            let industryToSave = selectedIndustry.key;
+            if (selectedIndustry.key === 'other') {
+                const customIndustry = document.getElementById('industryOtherText').value.trim();
+                if (!customIndustry) {
+                    alert('Please enter your trade or industry');
+                    return;
+                }
+                industryToSave = customIndustry;
+            }
+
+            // Track industry selection
+            {% if posthog_api_key %}
+            if (window.posthog) {
+                posthog.capture('industry_selected', { industry: industryToSave });
+            }
+            {% endif %}
+
+            try {
+                // Save industry to contractor profile
+                const response = await fetch(`${API_BASE}/contractors/industry`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`,
+                    },
+                    body: JSON.stringify({ industry: industryToSave }),
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to save industry');
+                }
+
+                // Update current user
+                currentUser.primary_trade = industryToSave;
+
+                // Show onboarding intro
+                showOnboardingIntro();
+            } catch (err) {
+                console.error('Error saving industry:', err);
+                // Continue anyway to not block onboarding
+                showOnboardingIntro();
+            }
+        }
 
         function showOnboardingIntro() {
+            document.getElementById('industrySelection').style.display = 'none';
             document.getElementById('onboardingIntro').style.display = 'block';
             document.getElementById('quickSetupForm').style.display = 'none';
             document.getElementById('onboardingChat').classList.remove('active');
         }
 
         function showQuickSetup() {
+            document.getElementById('industrySelection').style.display = 'none';
             document.getElementById('onboardingIntro').style.display = 'none';
             document.getElementById('quickSetupForm').style.display = 'block';
             document.getElementById('onboardingChat').classList.remove('active');
         }
 
         async function startOnboardingInterview() {
+            document.getElementById('industrySelection').style.display = 'none';
             document.getElementById('onboardingIntro').style.display = 'none';
             document.getElementById('quickSetupForm').style.display = 'none';
             document.getElementById('onboardingChat').classList.add('active');
