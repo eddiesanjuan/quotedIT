@@ -5359,7 +5359,7 @@
         function createCategoryCard(category) {
             const card = document.createElement('div');
             card.className = 'category-card';
-            card.onclick = () => openEditCategoryModal(category.name);
+            card.onclick = () => openEditCategoryModal(category.category);
 
             // Header with name and confidence badge
             const header = document.createElement('div');
@@ -5368,7 +5368,7 @@
             const nameDiv = document.createElement('div');
             const name = document.createElement('div');
             name.className = 'category-name';
-            name.textContent = category.display_name || category.name;
+            name.textContent = category.display_name || category.category;
             nameDiv.appendChild(name);
             header.appendChild(nameDiv);
 
