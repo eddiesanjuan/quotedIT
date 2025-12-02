@@ -19,7 +19,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 from .config import settings
 from .models.database import init_db
-from .api import quotes, contractors, onboarding, auth, issues, billing
+from .api import quotes, contractors, onboarding, auth, issues, billing, pricing_brain
 
 
 # Rate limiter
@@ -115,6 +115,7 @@ app.include_router(contractors.router, prefix="/api/contractors", tags=["Contrac
 app.include_router(onboarding.router, prefix="/api/onboarding", tags=["Onboarding"])
 app.include_router(issues.router, prefix="/api/issues", tags=["Issues"])
 app.include_router(billing.router, prefix="/api/billing", tags=["Billing"])
+app.include_router(pricing_brain.router, prefix="/api/pricing-brain", tags=["Pricing Brain"])
 
 
 @app.get("/api/info")
