@@ -4093,10 +4093,14 @@
 
         // Create a pricing card element (safe DOM construction)
         function createPricingCard(plan) {
-            const isFeatured = plan.tier === 'Pro';
-            const price = billingPeriod === 'annual' ? plan.annual_price : plan.monthly_price;
+            // Map API fields to expected names
+            const tier = plan.name || plan.tier;
+            const monthlyPrice = plan.price_monthly || plan.monthly_price;
+            const annualPrice = plan.annual_price || Math.round(monthlyPrice * 10); // 2 months free
+            const isFeatured = tier === 'Pro';
+            const price = billingPeriod === 'annual' ? annualPrice : monthlyPrice;
             const quotesPerMonth = plan.quotes_per_month;
-            const overagePrice = plan.overage_price_per_quote.toFixed(2);
+            const overagePrice = (plan.overage_price || plan.overage_price_per_quote).toFixed(2);
 
             const card = document.createElement('div');
             card.className = `pricing-card ${isFeatured ? 'featured' : ''}`;
@@ -4104,7 +4108,7 @@
             // Plan name
             const nameEl = document.createElement('div');
             nameEl.className = 'plan-name';
-            nameEl.textContent = plan.tier;
+            nameEl.textContent = tier;
             card.appendChild(nameEl);
 
             // Price
@@ -4129,8 +4133,8 @@
             if (billingPeriod === 'annual') {
                 const annualNote = document.createElement('div');
                 annualNote.className = 'plan-annual-note';
-                const savings = (plan.monthly_price * 12 - plan.annual_price).toFixed(0);
-                annualNote.textContent = `$${plan.annual_price}/year (save $${savings})`;
+                const savings = (monthlyPrice * 12 - annualPrice).toFixed(0);
+                annualNote.textContent = `$${annualPrice}/year (save $${savings})`;
                 card.appendChild(annualNote);
             }
 
@@ -4166,8 +4170,8 @@
             // CTA button
             const btn = document.createElement('button');
             btn.className = `btn ${isFeatured ? 'btn-primary' : 'btn-secondary'}`;
-            btn.textContent = `Choose ${plan.tier}`;
-            btn.onclick = () => startCheckout(plan.tier.toLowerCase(), billingPeriod);
+            btn.textContent = `Choose ${tier}`;
+            btn.onclick = () => startCheckout(plan.id || tier.toLowerCase(), billingPeriod);
             card.appendChild(btn);
 
             return card;
