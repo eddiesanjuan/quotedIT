@@ -12,6 +12,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
 from ..services import get_onboarding_service, get_database_service
+from ..prompts import get_setup_system_prompt
 
 
 router = APIRouter()
@@ -140,10 +141,17 @@ async def continue_setup(session_id: str, request: ContinueSetupRequest):
 
         # Reconstruct session format for the service
         session_data = conversation.session_data or {}
+        contractor_name = session_data.get("contractor_name", "")
+        primary_trade = session_data.get("primary_trade", "")
+
+        # Regenerate system prompt (not stored in DB)
+        system_prompt = get_setup_system_prompt(contractor_name, primary_trade)
+
         session = {
             "session_id": conversation.id,
-            "contractor_name": session_data.get("contractor_name", ""),
-            "primary_trade": session_data.get("primary_trade", ""),
+            "contractor_name": contractor_name,
+            "primary_trade": primary_trade,
+            "system_prompt": system_prompt,
             "status": conversation.status,
             "initial_message": session_data.get("initial_message", ""),
             "messages": conversation.messages or [],
