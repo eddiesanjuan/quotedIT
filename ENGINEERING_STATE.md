@@ -45,12 +45,12 @@
 | GROWTH-003 | Share Quote (Email/SMS/Link) | Backend + Frontend | **READY** | None |
 | ~~GROWTH-004~~ | ~~Landing Page Testimonials~~ | ~~Frontend~~ | **COMPLETE** | Committed 21f3291 |
 | ~~GROWTH-005~~ | ~~"Powered by Quoted" Branding~~ | ~~Frontend~~ | **COMPLETE** | Committed 21f3291 |
-| CONVERT-001 | Analytics (PostHog) | Backend + Frontend | **APPROVED** | Founder approved in DECISION_QUEUE |
+| ~~CONVERT-001~~ | ~~Analytics (PostHog)~~ | ~~Backend + Frontend~~ | **COMPLETE** | Committed 75eac78 |
 | CONVERT-002 | Enhanced Empty States | Frontend | **READY** | None |
 | ~~CONVERT-003~~ | ~~First Quote Celebration~~ | ~~Frontend~~ | **COMPLETE** | Committed 21f3291 |
 | RETAIN-001 | Engagement Email Series | Backend | **READY** | None |
 | RETAIN-002 | Dormancy Re-engagement Emails | Backend | **READY** | None |
-| INFRA-001 | Sentry Error Tracking | Backend + Frontend | **APPROVED** | Founder approved in DECISION_QUEUE |
+| ~~INFRA-001~~ | ~~Sentry Error Tracking~~ | ~~Backend + Frontend~~ | **COMPLETE** | Committed 75eac78 |
 | INFRA-002 | Mobile Responsiveness Audit | Frontend | **READY** | None |
 | INFRA-003 | FAQ/Help Section | Frontend | **READY** | None |
 | ONBOARD-001 | Industry/Trade Selection Step | Frontend + Backend | **READY** | None |
@@ -545,18 +545,32 @@ GET /api/billing/plans - Available pricing (public)
 
 ---
 
-## CONVERT-001: Analytics (PostHog) (READY)
+## CONVERT-001: Analytics (PostHog) (COMPLETE ✓)
 
+**Commit**: `75eac78`
 **Scope**: Backend + Frontend (4h)
 **Impact**: Can't optimize what you can't measure
 
-**Key Events**: landing_page_view, demo_started, signup_completed, first_quote_generated, quote_shared, referral_link_copied, upgrade_modal_opened, subscription_activated
+**Implementation Summary**:
+- ✅ PostHog SDK integrated (backend: posthog==3.7.4)
+- ✅ PostHog JS SDK integrated (frontend)
+- ✅ Backend events tracked:
+  - signup_completed (with user identification)
+  - onboarding_completed
+  - quote_generated (with category, confidence, subtotal)
+  - quote_edited (with change type and magnitude)
+  - subscription_activated (with plan tier and interval)
+- ✅ Frontend events tracked:
+  - landing_page_view
+  - cta_clicked (with button text and location)
+  - quote_generated (with quote_id and total)
+  - quote_edited (with quote_id and correction notes flag)
+  - upgrade_modal_opened
+- ✅ Graceful degradation: missing POSTHOG_API_KEY logs warnings but doesn't crash
+- ✅ Defensive tracking: all events wrapped in try/except or window.posthog checks
 
-**Implementation**:
-1. [ ] Create PostHog account (free: 1M events/month)
-2. [ ] Add PostHog JS to frontend
-3. [ ] Track all key events
-4. [ ] Create funnels: Landing→Signup→Onboarding→FirstQuote, Demo→Signup
+**Environment Variables**:
+- POSTHOG_API_KEY (optional - degrades gracefully)
 
 ---
 
@@ -606,15 +620,22 @@ GET /api/billing/plans - Available pricing (public)
 
 ---
 
-## INFRA-001: Sentry Error Tracking (READY)
+## INFRA-001: Sentry Error Tracking (COMPLETE ✓)
 
+**Commit**: `75eac78`
 **Scope**: Backend + Frontend (2h)
 
-**Implementation**:
-1. [ ] Add sentry-sdk[fastapi] to requirements
-2. [ ] Initialize in backend/main.py
-3. [ ] Add Sentry JS to frontend
-4. [ ] Configure alerts
+**Implementation Summary**:
+- ✅ Sentry SDK integrated (backend: sentry-sdk[fastapi]==2.18.0)
+- ✅ Sentry JS SDK integrated (frontend: v8.38.0)
+- ✅ FastAPI integration with StarletteIntegration
+- ✅ Performance monitoring: 100% transaction sampling
+- ✅ Environment-aware (development vs production)
+- ✅ Graceful degradation: missing SENTRY_DSN logs warnings but doesn't crash
+- ✅ Frontend error tracking with tracesSampleRate: 0.1 (10%)
+
+**Environment Variables**:
+- SENTRY_DSN (optional - degrades gracefully)
 
 ---
 
