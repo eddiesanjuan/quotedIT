@@ -40,6 +40,12 @@ slowapi==0.1.9
 # Audio processing
 pydub==0.25.1
 
+# Email
+resend==2.4.0
+
+# Payments
+stripe==11.1.1  # Stripe payment processing
+
 # Testing
 pytest>=7.0.0,<8.0.0
 pytest-asyncio>=0.21.0

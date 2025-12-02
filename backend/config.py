@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     # API Keys
     anthropic_api_key: str = ""
     openai_api_key: str = ""  # For Whisper transcription
+    resend_api_key: str = ""  # For transactional emails
 
     # Database - supports both SQLite (dev) and PostgreSQL (prod)
     database_url: str = "sqlite+aiosqlite:///./data/quoted.db"
@@ -67,6 +68,33 @@ class Settings(BaseSettings):
     # Claude model settings
     claude_model: str = "claude-sonnet-4-20250514"
     claude_max_tokens: int = 4096
+
+    # Stripe Payment Settings
+    stripe_secret_key: str = ""
+    stripe_publishable_key: str = ""
+    stripe_webhook_secret: str = ""
+
+    # Stripe Product IDs
+    stripe_starter_product_id: str = "prod_TWyp6aH4vMY7A8"
+    stripe_pro_product_id: str = "prod_TWyzygs71MWNeQ"
+    stripe_team_product_id: str = "prod_TWz0uN0EAbgPKI"
+
+    # Pricing Configuration
+    trial_days: int = 7
+    trial_quote_limit: int = 75
+
+    # Plan limits and pricing
+    starter_monthly_quotes: int = 75
+    starter_price_monthly: int = 2900  # $29.00 in cents
+    starter_overage_price: int = 50  # $0.50 in cents
+
+    pro_monthly_quotes: int = 200
+    pro_price_monthly: int = 4900  # $49.00 in cents
+    pro_overage_price: int = 35  # $0.35 in cents
+
+    team_monthly_quotes: int = 500
+    team_price_monthly: int = 7900  # $79.00 in cents
+    team_overage_price: int = 25  # $0.25 in cents
 
     class Config:
         env_file = ".env"

@@ -22,6 +22,7 @@ from ..services.auth import (
     get_current_user,
     get_current_contractor,
 )
+from ..services.email import email_service
 from ..models.database import User, Contractor
 from ..config import settings
 
@@ -36,8 +37,20 @@ async def register(
     """
     Register a new user account.
     Creates both user and contractor profile in one step.
+    Sends welcome email asynchronously.
     """
     user, contractor = await register_user(db, user_data)
+
+    # Send welcome email (don't block on failure)
+    try:
+        await email_service.send_welcome_email(
+            to_email=user.email,
+            business_name=contractor.business_name,
+            owner_name=contractor.owner_name,
+        )
+    except Exception as e:
+        # Log the error but don't block registration
+        print(f"Warning: Failed to send welcome email to {user.email}: {e}")
 
     # Create access token
     access_token = create_access_token(
