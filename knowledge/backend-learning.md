@@ -36,6 +36,7 @@
 | 2025-12-02 | Rate limiting prevents API cost abuse | 5/min on /api/quotes/generate |
 | 2025-12-02 | Resend email service added for transactional emails | Welcome, trial, subscription, payment failed notifications |
 | 2025-12-02 | Stripe payment infrastructure implemented | PAY-001: Subscriptions, usage metering, webhook handling, trial management |
+| 2025-12-02 | Pricing Brain API for learned knowledge visibility | FEAT-001: View/edit AI-learned pricing rules per category, Haiku analysis |
 
 ---
 
@@ -80,10 +81,12 @@ if not resource:
 | `backend/main.py` | App entry, middleware setup | Medium |
 | `backend/services/quote_generator.py` | Core AI logic | High |
 | `backend/services/learning.py` | Correction processing | Medium |
+| `backend/services/pricing_brain.py` | Pricing knowledge management, Haiku analysis | Low |
 | `backend/services/email.py` | Transactional emails via Resend | Low |
 | `backend/services/billing.py` | Stripe subscription management | Medium |
 | `backend/prompts/quote_generation.py` | Prompt construction | Medium |
 | `backend/api/quotes.py` | Quote CRUD endpoints | Medium |
+| `backend/api/pricing_brain.py` | Pricing Brain CRUD endpoints | Low |
 | `backend/api/auth.py` | Authentication, registration | Medium |
 | `backend/api/billing.py` | Stripe webhooks, checkout, portal | Medium |
 
