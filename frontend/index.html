@@ -2280,15 +2280,24 @@
 
         .empty-state {
             text-align: center;
-            padding: 60px 20px;
-            background: var(--bg-secondary);
-            border: 1px dashed var(--border);
+            padding: 3rem 2rem;
+            background: rgba(255,255,255,0.02);
             border-radius: 12px;
+            border: 1px dashed rgba(255,255,255,0.1);
+            max-width: 400px;
+            margin: 2rem auto;
         }
 
         .empty-icon {
             font-size: 3rem;
-            margin-bottom: 16px;
+            margin-bottom: 1rem;
+            opacity: 0.8;
+        }
+
+        .empty-state h3 {
+            color: #fff;
+            margin-bottom: 0.5rem;
+            font-family: var(--font-serif);
         }
 
         .empty-state h4 {
@@ -2299,8 +2308,38 @@
         }
 
         .empty-state p {
-            color: var(--text-secondary);
+            color: rgba(255,255,255,0.7);
+            line-height: 1.5;
             font-size: 0.9375rem;
+        }
+
+        .empty-state .tip {
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.5);
+            margin-top: 1rem;
+        }
+
+        .empty-state .subtext {
+            color: rgba(255,255,255,0.6);
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+
+        .empty-state .cta-button {
+            margin-top: 1.5rem;
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .empty-state .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
         }
 
         @media (max-width: 640px) {
@@ -2648,10 +2687,12 @@
                     <!-- Quote list items will be populated via JavaScript -->
                 </div>
 
-                <div class="quote-empty" id="quoteEmpty" style="display: none;">
+                <div class="empty-state" id="quoteEmpty" style="display: none;">
+                    <div class="empty-icon">📝</div>
                     <h3>No quotes yet</h3>
-                    <p>Create your first quote using the "New Quote" tab.</p>
-                    <button class="btn btn-primary" style="margin-top: 20px;" onclick="showAppSection('newQuote')">Create Quote</button>
+                    <p>Create your first quote in under 2 minutes.<br>Just describe the job - voice or text.</p>
+                    <button class="cta-button" onclick="showAppSection('newQuote')">Generate Your First Quote</button>
+                    <p class="tip">💡 Tip: Try the voice recorder - just describe the job like you would to a customer</p>
                 </div>
 
                 <div id="quoteLoadingState" style="display: none; text-align: center; padding: 40px;">
@@ -2873,13 +2914,11 @@
                         </div>
                         <!-- Empty state -->
                         <div class="empty-state" id="categoriesEmptyState" style="display: none;">
-                            <div class="empty-icon">📚</div>
-                            <h4>No categories learned yet</h4>
-                            <p>I'll learn your pricing patterns as you generate quotes and make corrections.</p>
-                            <p style="margin-top: 12px; font-size: 0.875rem; color: var(--text-muted);">Have existing quotes? Sync them to populate categories:</p>
-                            <button type="button" class="btn btn-secondary" onclick="syncPricingBrain()" id="syncCategoriesBtn" style="margin-top: 12px;">
-                                Sync Categories from Quotes
-                            </button>
+                            <div class="empty-icon">🧠</div>
+                            <h3>Your Pricing Brain is learning</h3>
+                            <p>Generate a few quotes and the AI will start learning your pricing patterns.</p>
+                            <p class="subtext">Every correction you make teaches the AI how YOU price jobs.</p>
+                            <button class="cta-button" onclick="showAppSection('newQuote')">Generate a Quote to Start Learning</button>
                         </div>
                     </div>
                 </div> <!-- End Pricing Brain Tab Content -->
