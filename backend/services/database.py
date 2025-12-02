@@ -12,7 +12,7 @@ from datetime import datetime
 
 from sqlalchemy import select, update, delete
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, attributes
 
 from ..config import settings
 from ..models.database import (
@@ -315,9 +315,10 @@ class DatabaseService:
                 if tendency not in current_notes:
                     pricing_model.pricing_notes = f"{current_notes}\n\nLearned: {tendency}".strip()
 
-            # Update model
+            # Update model - must flag_modified for SQLAlchemy to detect JSON mutation
             pricing_model.pricing_knowledge = pricing_knowledge
             pricing_model.updated_at = datetime.utcnow()
+            attributes.flag_modified(pricing_model, 'pricing_knowledge')
 
             await session.commit()
             await session.refresh(pricing_model)
@@ -370,9 +371,10 @@ class DatabaseService:
                 "confidence": 0.5,
             }
 
-            # Update model
+            # Update model - must flag_modified for SQLAlchemy to detect JSON mutation
             pricing_model.pricing_knowledge = pricing_knowledge
             pricing_model.updated_at = datetime.utcnow()
+            attributes.flag_modified(pricing_model, 'pricing_knowledge')
 
             await session.commit()
             return True
