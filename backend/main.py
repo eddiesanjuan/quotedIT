@@ -212,5 +212,15 @@ if frontend_path.exists():
         """Serve the Privacy Policy page."""
         return FileResponse(frontend_path / "privacy.html")
 
+    @app.get("/help", response_class=HTMLResponse)
+    async def serve_help(request: Request):
+        """Serve the Help & FAQ page with injected config."""
+        return templates.TemplateResponse("help.html", {
+            "request": request,
+            "posthog_api_key": settings.posthog_api_key,
+            "sentry_dsn": settings.sentry_dsn,
+            "environment": settings.environment,
+        })
+
     # Mount static files (CSS, JS, images if any)
     app.mount("/static", StaticFiles(directory=str(frontend_path)), name="static")
