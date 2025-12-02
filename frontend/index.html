@@ -4150,7 +4150,105 @@
             document.getElementById('onboardingChat').classList.remove('active');
         }
 
-        async function showQuickSetup() {
+        // Template-guided quick setup functions
+        async function loadPricingTemplate(industryKey) {
+            try {
+                const response = await fetch(`${API_BASE}/onboarding/templates/${industryKey}`);
+                if (!response.ok) {
+                    // No template available, hide guidance
+                    document.getElementById('templateGuidance').style.display = 'none';
+                    document.getElementById('pricingTipsSection').style.display = 'none';
+                    return;
+                }
+
+                const template = await response.json();
+
+                // Show and populate recommended approach
+                document.getElementById('templateGuidance').style.display = 'block';
+                document.getElementById('templateApproach').textContent = template.approach_description;
+
+                // Pre-fill form values with suggested defaults
+                const primaryPricing = template.primary_pricing || {};
+                if (primaryPricing.suggested_default) {
+                    document.getElementById('hourlyRate').value = primaryPricing.suggested_default;
+                }
+
+                // Find material markup from additional_rates
+                const materialMarkupRate = (template.additional_rates || []).find(r => r.name === 'material_markup');
+                if (materialMarkupRate && materialMarkupRate.suggested) {
+                    document.getElementById('materialMarkup').value = materialMarkupRate.suggested;
+                }
+
+                // Find minimum job from additional_rates
+                const minJobRate = (template.additional_rates || []).find(r => r.name === 'service_call_minimum' || r.name === 'minimum_charge' || r.name === 'minimum_job');
+                if (minJobRate && minJobRate.suggested) {
+                    document.getElementById('minimumJob').value = minJobRate.suggested;
+                }
+
+                // Show range hints
+                if (primaryPricing.base_rate_range) {
+                    const [min, max] = primaryPricing.base_rate_range;
+                    const hint = document.getElementById('hourlyRateHint');
+                    hint.textContent = `Typical range: $${min}-${max}/hr`;
+                    hint.style.display = 'block';
+                }
+
+                if (materialMarkupRate && materialMarkupRate.range) {
+                    const [min, max] = materialMarkupRate.range;
+                    const hint = document.getElementById('materialMarkupHint');
+                    hint.textContent = `Typical range: ${min}-${max}%`;
+                    hint.style.display = 'block';
+                }
+
+                if (minJobRate && minJobRate.range) {
+                    const [min, max] = minJobRate.range;
+                    const hint = document.getElementById('minimumJobHint');
+                    hint.textContent = `Typical range: $${min}-${max}`;
+                    hint.style.display = 'block';
+                }
+
+                // Populate pricing tips (safe DOM method - no XSS risk)
+                if (template.pricing_tips && template.pricing_tips.length > 0) {
+                    const tipsList = document.getElementById('pricingTipsList');
+                    tipsList.textContent = ''; // Clear existing
+                    template.pricing_tips.forEach(tip => {
+                        const li = document.createElement('li');
+                        li.textContent = tip; // Use textContent for safety
+                        tipsList.appendChild(li);
+                    });
+                    document.getElementById('pricingTipsSection').style.display = 'block';
+                }
+
+            } catch (error) {
+                console.error('Error loading pricing template:', error);
+                // Silently fail - user can still enter values manually
+            }
+        }
+
+        function onPrimaryTradeChange() {
+            const selectedTrade = document.getElementById('primaryTrade').value;
+            if (selectedTrade && selectedTrade !== 'other') {
+                loadPricingTemplate(selectedTrade);
+            } else {
+                // Hide template guidance for "other"
+                document.getElementById('templateGuidance').style.display = 'none';
+                document.getElementById('pricingTipsSection').style.display = 'none';
+                document.getElementById('hourlyRateHint').style.display = 'none';
+                document.getElementById('materialMarkupHint').style.display = 'none';
+                document.getElementById('minimumJobHint').style.display = 'none';
+            }
+        }
+
+        function togglePricingTips() {
+            const content = document.getElementById('pricingTipsContent');
+            const chevron = document.getElementById('tipsChevron');
+            const isHidden = content.style.display === 'none';
+
+            content.style.display = isHidden ? 'block' : 'none';
+            chevron.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+        }
+
+                async function showQuickSetup() {
             document.getElementById('industrySelection').style.display = 'none';
             document.getElementById('onboardingIntro').style.display = 'none';
             document.getElementById('quickSetupForm').style.display = 'block';
