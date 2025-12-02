@@ -189,6 +189,10 @@ async def register_user(db: AsyncSession, user_data: UserCreate) -> tuple[User, 
     await db.refresh(user)
     await db.refresh(contractor)
 
+    # Initialize trial period for new user
+    from .billing import BillingService
+    await BillingService.initialize_trial(db, user.id)
+
     return user, contractor
 
 

@@ -40,6 +40,14 @@ class User(Base):
     is_active = Column(Boolean, default=True)
     is_verified = Column(Boolean, default=False)  # Email verification
 
+    # Billing
+    stripe_customer_id = Column(String(255), unique=True, nullable=True, index=True)
+    subscription_id = Column(String(255), unique=True, nullable=True)
+    plan_tier = Column(String(50), default="trial")  # trial, starter, pro, team
+    quotes_used = Column(Integer, default=0)  # Quotes used in current billing cycle
+    billing_cycle_start = Column(DateTime, nullable=True)  # Start of current billing period
+    trial_ends_at = Column(DateTime, nullable=True)  # When trial expires
+
     # Relationship to contractor (one-to-one)
     contractor = relationship("Contractor", back_populates="user", uselist=False)
 

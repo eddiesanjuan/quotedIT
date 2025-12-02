@@ -20,6 +20,7 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from slowapi import Limiter
 from slowapi.util import get_remote_address
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..services import (
     get_transcription_service,
@@ -28,7 +29,8 @@ from ..services import (
     get_learning_service,
     get_db_service,
 )
-from ..services.auth import get_current_user
+from ..services.auth import get_current_user, get_db
+from ..services.billing import BillingService
 
 
 router = APIRouter()
@@ -232,13 +234,48 @@ def quote_to_response(quote) -> QuoteResponse:
 
 @router.post("/generate", response_model=QuoteResponse)
 @limiter.limit("30/minute")
-async def generate_quote(request: Request, quote_request: QuoteRequest, current_user: dict = Depends(get_current_user)):
+async def generate_quote(
+    request: Request,
+    quote_request: QuoteRequest,
+    current_user: dict = Depends(get_current_user),
+    auth_db: AsyncSession = Depends(get_db),
+):
     """
     Generate a quote from transcribed text.
 
     Uses the authenticated user's pricing model from the database.
     """
     try:
+        # Check billing status first
+        billing_check = await BillingService.check_quote_limit(auth_db, current_user["id"])
+
+        if not billing_check["can_generate"]:
+            if billing_check["reason"] == "trial_expired":
+                raise HTTPException(
+                    status_code=402,
+                    detail={
+                        "error": "trial_expired",
+                        "message": "Your trial has expired. Please upgrade to continue generating quotes.",
+                        "trial_ends_at": billing_check.get("trial_ends_at"),
+                    }
+                )
+            elif billing_check["reason"] == "trial_limit_reached":
+                raise HTTPException(
+                    status_code=402,
+                    detail={
+                        "error": "trial_limit_reached",
+                        "message": f"You've reached your trial limit of {billing_check.get('quotes_used', 0)} quotes. Please upgrade to continue.",
+                    }
+                )
+            else:
+                raise HTTPException(
+                    status_code=402,
+                    detail={
+                        "error": "quota_exceeded",
+                        "message": "Unable to generate quote. Please check your subscription status.",
+                    }
+                )
+
         db = get_db_service()
         quote_service = get_quote_service()
 
@@ -343,6 +380,9 @@ async def generate_quote(request: Request, quote_request: QuoteRequest, current_
             estimated_days=quote_data.get("estimated_days"),
             ai_generated_total=quote_data.get("subtotal", 0),
         )
+
+        # Increment quote usage counter
+        await BillingService.increment_quote_usage(auth_db, current_user["id"])
 
         return quote_to_response(quote)
 
@@ -589,6 +629,7 @@ async def generate_quote_from_audio(
     request: Request,
     audio: UploadFile = File(...),
     current_user: dict = Depends(get_current_user),
+    auth_db: AsyncSession = Depends(get_db),
 ):
     """
     Generate a quote from audio file.
@@ -596,6 +637,36 @@ async def generate_quote_from_audio(
     Full pipeline: Audio → Transcription → Quote Generation
     """
     try:
+        # Check billing status first
+        billing_check = await BillingService.check_quote_limit(auth_db, current_user["id"])
+
+        if not billing_check["can_generate"]:
+            if billing_check["reason"] == "trial_expired":
+                raise HTTPException(
+                    status_code=402,
+                    detail={
+                        "error": "trial_expired",
+                        "message": "Your trial has expired. Please upgrade to continue generating quotes.",
+                        "trial_ends_at": billing_check.get("trial_ends_at"),
+                    }
+                )
+            elif billing_check["reason"] == "trial_limit_reached":
+                raise HTTPException(
+                    status_code=402,
+                    detail={
+                        "error": "trial_limit_reached",
+                        "message": f"You've reached your trial limit. Please upgrade to continue.",
+                    }
+                )
+            else:
+                raise HTTPException(
+                    status_code=402,
+                    detail={
+                        "error": "quota_exceeded",
+                        "message": "Unable to generate quote. Please check your subscription status.",
+                    }
+                )
+
         db = get_db_service()
 
         # Get contractor for this user
@@ -708,6 +779,9 @@ async def generate_quote_from_audio(
                 estimated_days=quote_data.get("estimated_days"),
                 ai_generated_total=quote_data.get("subtotal", 0),
             )
+
+            # Increment quote usage counter
+            await BillingService.increment_quote_usage(auth_db, current_user["id"])
 
             return quote_to_response(quote)
 

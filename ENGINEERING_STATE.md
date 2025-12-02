@@ -1,6 +1,6 @@
 # Engineering State
 
-**Last Updated**: 2025-12-02 08:30 PST
+**Last Updated**: 2025-12-02 09:00 PST
 **Updated By**: CEO (AI)
 
 ---
@@ -30,12 +30,73 @@
 
 | Ticket | Description | Assignee | Status | Blockers |
 |--------|-------------|----------|--------|----------|
-| PAY-001 | Payment Infrastructure (Stripe) | CTO | BLOCKED | Waiting for Stripe account + API keys |
-| PAY-002 | Trial Logic & Quote Limits | CTO | BLOCKED | Depends on PAY-001 |
-| PAY-003 | Billing UI | CTO | BLOCKED | Depends on PAY-002 |
-| PAY-004 | Email System (Resend) | CTO | BLOCKED | Waiting for Resend account + API key |
-| PAY-005 | Referral System | CTO | BLOCKED | Depends on PAY-002 |
+| PAY-001 | Payment Infrastructure (Stripe) | Backend Engineer | **READY** | None - All keys received ✓ |
+| PAY-002 | Trial Logic & Quote Limits | Backend Engineer | QUEUED | Depends on PAY-001 |
+| PAY-003 | Billing UI | Frontend Engineer | QUEUED | Depends on PAY-002 |
+| PAY-004 | Email System (Resend) | Backend Engineer | **READY** | None - API key received ✓ |
+| PAY-005 | Referral System | Backend Engineer | QUEUED | Depends on PAY-002 |
 | ~~PAY-006~~ | ~~Terms of Service + Privacy Policy~~ | ~~CTO~~ | **COMPLETE** | Deployed 325fb25 |
+
+---
+
+## PAY-001 Task Breakdown (READY FOR EXECUTION)
+
+**Stripe Account Status**: SANDBOX ACTIVE ✓ ALL KEYS RECEIVED
+- Publishable Key: `pk_test_51SZugaKF9pNNNH32Psj...` ✓
+- Secret Key: `sk_test_51SZugaKF9pNNNH32Wti...` ✓
+- Webhook Secret: Will create after backend routes deployed
+
+**Products Created in Stripe**:
+| Product | Product ID | Status |
+|---------|------------|--------|
+| Starter ($29/mo) | `prod_TWyp6aH4vMY7A8` | ✓ Ready |
+| Pro ($49/mo) | `prod_TWyzygs71MWNeQ` | ✓ Ready |
+| Team ($79/mo) | `prod_TWz0uN0EAbgPKI` | ✓ Ready |
+| Quotes Meter | Created | ✓ Ready |
+
+**Implementation Tasks** (for Backend Engineer):
+1. [ ] Add Stripe SDK to requirements.txt
+2. [ ] Create `/api/billing/` routes:
+   - `POST /api/billing/create-checkout` - Start subscription
+   - `POST /api/billing/webhook` - Handle Stripe events
+   - `GET /api/billing/portal` - Customer portal link
+   - `GET /api/billing/status` - Current subscription status
+3. [ ] Add user fields: `stripe_customer_id`, `subscription_id`, `plan_tier`, `quotes_used`, `billing_cycle_start`
+4. [ ] Implement quote counting + overage reporting to Stripe meter
+5. [ ] Add subscription status checks to quote generation endpoint
+
+**Environment Variables** (add to Railway):
+```
+STRIPE_SECRET_KEY=sk_test_51SZugaKF9pNNNH32WtiBokn1imZ0IFRdRr38mht4mpebsaZWaH5YM2RhfF2pbxpju2Yo9Z2f67pVTYPdVnLqwBMM000CI0hXIl
+STRIPE_PUBLISHABLE_KEY=pk_test_51SZugaKF9pNNNH32PsjrEPHK1ynwZ1vTnHRHlQKqdS5u6r2ivaMcLTpvpK5H1VehWBLyx4hTn5rsZXTza8oVM9qM00K5n28vOe
+STRIPE_STARTER_PRODUCT_ID=prod_TWyp6aH4vMY7A8
+STRIPE_PRO_PRODUCT_ID=prod_TWyzygs71MWNeQ
+STRIPE_TEAM_PRODUCT_ID=prod_TWz0uN0EAbgPKI
+STRIPE_WEBHOOK_SECRET=whsec_...      # After webhook creation
+```
+
+---
+
+## PAY-004 Task Breakdown (READY FOR EXECUTION)
+
+**Resend Account Status**: ACTIVE ✓
+- API Key: `re_igyXR4D5_6VcjoKhx6SUjPAWZ9UsLwWx6` ✓
+
+**Implementation Tasks** (for Backend Engineer):
+1. [ ] Add Resend SDK to requirements.txt
+2. [ ] Create email service (`backend/services/email.py`)
+3. [ ] Implement transactional emails:
+   - Welcome email (after signup)
+   - Trial starting email
+   - Trial ending reminder (day 5)
+   - Subscription confirmation
+   - Payment failed notification
+4. [ ] Create email templates (HTML)
+
+**Environment Variables** (add to Railway):
+```
+RESEND_API_KEY=re_igyXR4D5_6VcjoKhx6SUjPAWZ9UsLwWx6
+```
 
 ---
 
@@ -133,9 +194,19 @@
 
 Required in Railway:
 ```
+# Existing (already set)
 ANTHROPIC_API_KEY     - Claude API key
 OPENAI_API_KEY        - Whisper transcription
 SESSION_SECRET        - Auth session signing
+ENVIRONMENT           - "production"
+
+# NEW - Add before next /quoted-run
+STRIPE_SECRET_KEY=sk_test_51SZugaKF9pNNNH32WtiBokn1imZ0IFRdRr38mht4mpebsaZWaH5YM2RhfF2pbxpju2Yo9Z2f67pVTYPdVnLqwBMM000CI0hXIl
+STRIPE_PUBLISHABLE_KEY=pk_test_51SZugaKF9pNNNH32PsjrEPHK1ynwZ1vTnHRHlQKqdS5u6r2ivaMcLTpvpK5H1VehWBLyx4hTn5rsZXTza8oVM9qM00K5n28vOe
+STRIPE_STARTER_PRODUCT_ID=prod_TWyp6aH4vMY7A8
+STRIPE_PRO_PRODUCT_ID=prod_TWyzygs71MWNeQ
+STRIPE_TEAM_PRODUCT_ID=prod_TWz0uN0EAbgPKI
+RESEND_API_KEY=re_igyXR4D5_6VcjoKhx6SUjPAWZ9UsLwWx6
 ```
 
 ---
