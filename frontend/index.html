@@ -1592,6 +1592,329 @@
                 width: 100%;
             }
         }
+
+        /* Billing & Pricing Styles */
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-top: 32px;
+        }
+
+        .pricing-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 32px;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .pricing-card.featured {
+            border-color: var(--text-primary);
+            background: var(--bg-elevated);
+        }
+
+        .pricing-card:hover {
+            border-color: var(--border-hover);
+            transform: translateY(-4px);
+        }
+
+        .pricing-card.featured:hover {
+            border-color: var(--text-primary);
+        }
+
+        .plan-name {
+            font-family: var(--font-serif);
+            font-size: 1.5rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+            letter-spacing: -0.02em;
+        }
+
+        .plan-price {
+            font-size: 3rem;
+            font-weight: 400;
+            margin-bottom: 4px;
+            font-family: var(--font-sans);
+        }
+
+        .plan-price .currency {
+            font-size: 1.5rem;
+            color: var(--text-secondary);
+        }
+
+        .plan-price .period {
+            font-size: 1rem;
+            color: var(--text-secondary);
+        }
+
+        .plan-annual-note {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+        }
+
+        .plan-features {
+            list-style: none;
+            margin: 24px 0;
+            flex-grow: 1;
+        }
+
+        .plan-features li {
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.9375rem;
+            color: var(--text-secondary);
+        }
+
+        .plan-features li:last-child {
+            border-bottom: none;
+        }
+
+        .plan-features li strong {
+            color: var(--text-primary);
+        }
+
+        .billing-toggle {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 32px;
+            font-size: 0.875rem;
+        }
+
+        .billing-toggle button {
+            padding: 8px 20px;
+            border-radius: 100px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text-secondary);
+            font-family: var(--font-sans);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .billing-toggle button.active {
+            background: var(--text-primary);
+            color: var(--bg-primary);
+            border-color: var(--text-primary);
+        }
+
+        .billing-toggle button:hover:not(.active) {
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+        }
+
+        .discount-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background: var(--success);
+            color: var(--bg-primary);
+            font-size: 0.75rem;
+            font-weight: 600;
+            border-radius: 100px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .usage-widget {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .usage-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .usage-plan {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .usage-stats {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .usage-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--bg-secondary);
+            border-radius: 100px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .usage-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--success), var(--warning));
+            border-radius: 100px;
+            transition: width 0.6s ease;
+        }
+
+        .usage-bar-fill.warning {
+            background: var(--warning);
+        }
+
+        .usage-bar-fill.critical {
+            background: var(--error);
+        }
+
+        .usage-details {
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+        }
+
+        .trial-banner {
+            background: linear-gradient(135deg, var(--warning) 0%, #f59e0b 100%);
+            color: var(--bg-primary);
+            padding: 16px 24px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .trial-banner strong {
+            font-weight: 600;
+        }
+
+        .trial-banner .btn {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            padding: 10px 20px;
+        }
+
+        .trial-banner .btn:hover {
+            background: var(--bg-card);
+        }
+
+        .billing-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 24px 0;
+        }
+
+        .billing-info-item {
+            background: var(--bg-secondary);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .billing-info-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 8px;
+        }
+
+        .billing-info-value {
+            font-size: 1.125rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        /* Upgrade Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            max-width: 500px;
+            width: 100%;
+            padding: 40px;
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .modal-close:hover {
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+        }
+
+        .modal-icon {
+            font-size: 3rem;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .modal-title {
+            font-family: var(--font-serif);
+            font-size: 2rem;
+            font-weight: 500;
+            text-align: center;
+            margin-bottom: 16px;
+            letter-spacing: -0.02em;
+        }
+
+        .modal-subtitle {
+            text-align: center;
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 640px) {
+            .pricing-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-content {
+                padding: 32px 24px;
+            }
+
+            .billing-info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1602,6 +1925,7 @@
             <div class="app-nav" id="appNav" style="display: none;">
                 <button class="app-nav-btn active" id="newQuoteNavBtn" onclick="showAppSection('newQuote')">New Quote</button>
                 <button class="app-nav-btn" id="myQuotesNavBtn" onclick="showAppSection('myQuotes')">My Quotes</button>
+                <button class="app-nav-btn" id="accountNavBtn" onclick="showAppSection('account')">Account</button>
             </div>
             <div class="nav-user">
                 <div class="business-name" id="businessNameDisplay"></div>
@@ -1967,8 +2291,91 @@
                     <button class="btn btn-secondary" onclick="backToQuoteList()">Back to My Quotes</button>
                 </div>
             </div>
+
+            <!-- Account/Billing Section -->
+            <div class="card" id="accountSection" style="display: none;">
+                <h2 class="card-title">Account & Billing</h2>
+
+                <!-- Trial Banner (shown during trial) -->
+                <div class="trial-banner" id="trialBanner" style="display: none;">
+                    <div>
+                        <strong>Free Trial</strong> — <span id="trialDaysLeft"></span>
+                    </div>
+                    <button class="btn" onclick="showUpgradeSection()">Upgrade Now</button>
+                </div>
+
+                <!-- Usage Widget -->
+                <div class="usage-widget">
+                    <div class="usage-header">
+                        <div class="usage-plan" id="currentPlan">Starter Plan</div>
+                        <div class="usage-stats" id="usageStats">0 / 75</div>
+                    </div>
+                    <div class="usage-bar">
+                        <div class="usage-bar-fill" id="usageBarFill" style="width: 0%"></div>
+                    </div>
+                    <div class="usage-details" id="usageDetails">
+                        0 quotes remaining this month
+                    </div>
+                </div>
+
+                <!-- Billing Info -->
+                <div class="billing-info-grid" id="billingInfoGrid" style="display: none;">
+                    <div class="billing-info-item">
+                        <div class="billing-info-label">Next Billing Date</div>
+                        <div class="billing-info-value" id="nextBillingDate">—</div>
+                    </div>
+                    <div class="billing-info-item">
+                        <div class="billing-info-label">Plan Type</div>
+                        <div class="billing-info-value" id="planType">—</div>
+                    </div>
+                    <div class="billing-info-item">
+                        <div class="billing-info-label">Current Period</div>
+                        <div class="billing-info-value" id="currentPeriod">—</div>
+                    </div>
+                </div>
+
+                <!-- Pricing Section -->
+                <div id="pricingSection" style="margin-top: 40px;">
+                    <h3 style="margin-bottom: 16px; font-family: var(--font-serif); font-size: 1.75rem;">Choose Your Plan</h3>
+                    <p class="subtitle" style="margin-bottom: 32px;">Upgrade anytime. Cancel anytime. No contracts.</p>
+
+                    <div class="billing-toggle">
+                        <button id="monthlyBtn" class="active" onclick="toggleBillingPeriod('monthly')">Monthly</button>
+                        <button id="annualBtn" onclick="toggleBillingPeriod('annual')">Annual <span class="discount-badge" style="margin-left: 8px;">Save 17%</span></button>
+                    </div>
+
+                    <div class="pricing-grid" id="pricingGrid">
+                        <!-- Pricing cards will be populated via JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Manage Subscription (shown for paid users) -->
+                <div id="manageSubscription" style="display: none; margin-top: 40px; text-align: center; padding: 40px; background: var(--bg-secondary); border-radius: 12px; border: 1px solid var(--border);">
+                    <h3 style="margin-bottom: 16px; font-family: var(--font-serif);">Manage Your Subscription</h3>
+                    <p class="subtitle" style="margin-bottom: 24px;">Update billing info, change plan, or cancel subscription</p>
+                    <button class="btn btn-primary" onclick="openCustomerPortal()">Open Billing Portal</button>
+                </div>
+            </div>
         </div>
     </main>
+
+    <!-- Upgrade Modal -->
+    <div class="modal-overlay" id="upgradeModal" style="display: none;">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeUpgradeModal()">&times;</button>
+            <div class="modal-icon">⚡</div>
+            <h2 class="modal-title">Quote Limit Reached</h2>
+            <p class="modal-subtitle">
+                You've used all your quotes for this month. Upgrade to continue generating quotes and keep your business moving.
+            </p>
+            <div class="pricing-grid" id="modalPricingGrid">
+                <!-- Will be populated same as main pricing grid -->
+            </div>
+            <p style="text-align: center; margin-top: 24px; font-size: 0.875rem; color: var(--text-secondary);">
+                Need more? Contact us for enterprise pricing.
+            </p>
+        </div>
+    </div>
 
     <!-- Issue Reporter FAB -->
     <button class="issue-fab" onclick="openIssueModal()" title="Report an issue">?</button>
@@ -3102,6 +3509,7 @@
             // Update nav buttons
             document.getElementById('newQuoteNavBtn').classList.toggle('active', section === 'newQuote');
             document.getElementById('myQuotesNavBtn').classList.toggle('active', section === 'myQuotes');
+            document.getElementById('accountNavBtn').classList.toggle('active', section === 'account');
 
             // Hide all sections
             document.getElementById('inputSection').style.display = 'none';
@@ -3110,12 +3518,16 @@
             document.getElementById('quoteDetailView').style.display = 'none';
             document.getElementById('onboardingNotice').style.display = 'none';
             document.getElementById('loadingSection').style.display = 'none';
+            document.getElementById('accountSection').style.display = 'none';
 
             if (section === 'newQuote') {
                 checkAndShowInputSection();
             } else if (section === 'myQuotes') {
                 document.getElementById('myQuotesSection').style.display = 'block';
                 loadQuotes();
+            } else if (section === 'account') {
+                document.getElementById('accountSection').style.display = 'block';
+                loadBillingStatus();
             }
         }
 
@@ -3551,6 +3963,329 @@
 
         // ========================================
         // End Quote History & Editing System
+        // ========================================
+
+        // ========================================
+        // Billing & Subscription System
+        // ========================================
+
+        let billingPeriod = 'monthly';
+        let currentBillingStatus = null;
+        let pricingPlans = [];
+
+        // Load billing status
+        async function loadBillingStatus() {
+            try {
+                // Fetch billing status
+                const statusResponse = await fetch(`${API_BASE}/billing/status`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                if (statusResponse.ok) {
+                    currentBillingStatus = await statusResponse.json();
+                    updateBillingUI(currentBillingStatus);
+                }
+
+                // Fetch pricing plans
+                const plansResponse = await fetch(`${API_BASE}/billing/plans`);
+                if (plansResponse.ok) {
+                    const data = await plansResponse.json();
+                    pricingPlans = data.plans || [];
+                    renderPricingCards();
+                }
+            } catch (err) {
+                console.error('Failed to load billing status:', err);
+            }
+        }
+
+        // Update billing UI with status data
+        function updateBillingUI(status) {
+            // Update usage widget
+            const quotesUsed = status.quotes_used || 0;
+            const quotesLimit = status.quotes_limit || 75;
+            const quotesRemaining = Math.max(0, quotesLimit - quotesUsed);
+            const usagePercent = Math.min(100, (quotesUsed / quotesLimit) * 100);
+
+            document.getElementById('currentPlan').textContent = `${status.plan_tier || 'Starter'} Plan`.toUpperCase();
+            document.getElementById('usageStats').textContent = `${quotesUsed} / ${quotesLimit}`;
+            document.getElementById('usageDetails').textContent = `${quotesRemaining} quote${quotesRemaining !== 1 ? 's' : ''} remaining this month`;
+
+            const usageBarFill = document.getElementById('usageBarFill');
+            usageBarFill.style.width = `${usagePercent}%`;
+
+            // Color coding
+            usageBarFill.classList.remove('warning', 'critical');
+            if (usagePercent >= 90) {
+                usageBarFill.classList.add('critical');
+            } else if (usagePercent >= 80) {
+                usageBarFill.classList.add('warning');
+            }
+
+            // Trial banner
+            const trialBanner = document.getElementById('trialBanner');
+            if (status.trial_ends_at && !status.stripe_subscription_id) {
+                const trialEnd = new Date(status.trial_ends_at);
+                const daysLeft = Math.ceil((trialEnd - new Date()) / (1000 * 60 * 60 * 24));
+
+                if (daysLeft > 0) {
+                    document.getElementById('trialDaysLeft').textContent = `${daysLeft} day${daysLeft !== 1 ? 's' : ''} remaining`;
+                    trialBanner.style.display = 'flex';
+                } else {
+                    trialBanner.style.display = 'none';
+                }
+            } else {
+                trialBanner.style.display = 'none';
+            }
+
+            // Billing info grid (for active subscriptions)
+            const billingInfoGrid = document.getElementById('billingInfoGrid');
+            const manageSubscription = document.getElementById('manageSubscription');
+
+            if (status.stripe_subscription_id) {
+                billingInfoGrid.style.display = 'grid';
+                manageSubscription.style.display = 'block';
+
+                // Next billing date
+                if (status.billing_cycle_start) {
+                    const nextBilling = new Date(status.billing_cycle_start);
+                    nextBilling.setMonth(nextBilling.getMonth() + 1);
+                    document.getElementById('nextBillingDate').textContent = nextBilling.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                }
+
+                // Plan type
+                const interval = status.billing_interval === 'year' ? 'Annual' : 'Monthly';
+                document.getElementById('planType').textContent = `${status.plan_tier} (${interval})`;
+
+                // Current period
+                if (status.billing_cycle_start) {
+                    const cycleStart = new Date(status.billing_cycle_start);
+                    const cycleEnd = new Date(status.billing_cycle_start);
+                    cycleEnd.setMonth(cycleEnd.getMonth() + 1);
+                    document.getElementById('currentPeriod').textContent =
+                        `${cycleStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${cycleEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+                }
+            } else {
+                billingInfoGrid.style.display = 'none';
+                manageSubscription.style.display = 'none';
+            }
+        }
+
+        // Render pricing cards using safe DOM methods
+        function renderPricingCards() {
+            const pricingGrid = document.getElementById('pricingGrid');
+            const modalPricingGrid = document.getElementById('modalPricingGrid');
+
+            if (!pricingGrid || pricingPlans.length === 0) return;
+
+            // Clear existing content
+            pricingGrid.textContent = '';
+            if (modalPricingGrid) modalPricingGrid.textContent = '';
+
+            pricingPlans.forEach(plan => {
+                const card = createPricingCard(plan);
+                pricingGrid.appendChild(card);
+                if (modalPricingGrid) {
+                    const modalCard = createPricingCard(plan);
+                    modalPricingGrid.appendChild(modalCard);
+                }
+            });
+        }
+
+        // Create a pricing card element (safe DOM construction)
+        function createPricingCard(plan) {
+            const isFeatured = plan.tier === 'Pro';
+            const price = billingPeriod === 'annual' ? plan.annual_price : plan.monthly_price;
+            const quotesPerMonth = plan.quotes_per_month;
+            const overagePrice = plan.overage_price_per_quote.toFixed(2);
+
+            const card = document.createElement('div');
+            card.className = `pricing-card ${isFeatured ? 'featured' : ''}`;
+
+            // Plan name
+            const nameEl = document.createElement('div');
+            nameEl.className = 'plan-name';
+            nameEl.textContent = plan.tier;
+            card.appendChild(nameEl);
+
+            // Price
+            const priceEl = document.createElement('div');
+            priceEl.className = 'plan-price';
+
+            const currency = document.createElement('span');
+            currency.className = 'currency';
+            currency.textContent = '$';
+            priceEl.appendChild(currency);
+
+            priceEl.appendChild(document.createTextNode(price));
+
+            const period = document.createElement('span');
+            period.className = 'period';
+            period.textContent = `/${billingPeriod === 'annual' ? 'yr' : 'mo'}`;
+            priceEl.appendChild(period);
+
+            card.appendChild(priceEl);
+
+            // Annual note
+            if (billingPeriod === 'annual') {
+                const annualNote = document.createElement('div');
+                annualNote.className = 'plan-annual-note';
+                const savings = (plan.monthly_price * 12 - plan.annual_price).toFixed(0);
+                annualNote.textContent = `$${plan.annual_price}/year (save $${savings})`;
+                card.appendChild(annualNote);
+            }
+
+            // Features list
+            const featuresList = document.createElement('ul');
+            featuresList.className = 'plan-features';
+
+            const features = [
+                { text: `${quotesPerMonth} quotes`, bold: true, suffix: ' per month' },
+                { text: `$${overagePrice} per extra quote`, bold: false },
+                { text: 'PDF export', bold: false },
+                { text: 'Learning system', bold: false },
+                { text: 'Email support', bold: false }
+            ];
+
+            features.forEach(feature => {
+                const li = document.createElement('li');
+                if (feature.bold) {
+                    const strong = document.createElement('strong');
+                    strong.textContent = feature.text;
+                    li.appendChild(strong);
+                    if (feature.suffix) {
+                        li.appendChild(document.createTextNode(feature.suffix));
+                    }
+                } else {
+                    li.textContent = feature.text;
+                }
+                featuresList.appendChild(li);
+            });
+
+            card.appendChild(featuresList);
+
+            // CTA button
+            const btn = document.createElement('button');
+            btn.className = `btn ${isFeatured ? 'btn-primary' : 'btn-secondary'}`;
+            btn.textContent = `Choose ${plan.tier}`;
+            btn.onclick = () => startCheckout(plan.tier.toLowerCase(), billingPeriod);
+            card.appendChild(btn);
+
+            return card;
+        }
+
+        // Toggle billing period
+        function toggleBillingPeriod(period) {
+            billingPeriod = period;
+            document.getElementById('monthlyBtn').classList.toggle('active', period === 'monthly');
+            document.getElementById('annualBtn').classList.toggle('active', period === 'annual');
+            renderPricingCards();
+        }
+
+        // Start Stripe checkout
+        async function startCheckout(planTier, interval) {
+            try {
+                const response = await fetch(`${API_BASE}/billing/create-checkout`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        plan_tier: planTier,
+                        billing_interval: interval
+                    })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Failed to create checkout session');
+                }
+
+                const data = await response.json();
+
+                // Redirect to Stripe Checkout
+                if (data.checkout_url) {
+                    window.location.href = data.checkout_url;
+                } else {
+                    throw new Error('No checkout URL returned');
+                }
+            } catch (err) {
+                console.error('Checkout error:', err);
+                showError('Failed to start checkout: ' + err.message);
+            }
+        }
+
+        // Open Stripe customer portal
+        async function openCustomerPortal() {
+            try {
+                const response = await fetch(`${API_BASE}/billing/portal`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Failed to open portal');
+                }
+
+                const data = await response.json();
+
+                if (data.portal_url) {
+                    window.location.href = data.portal_url;
+                } else {
+                    throw new Error('No portal URL returned');
+                }
+            } catch (err) {
+                console.error('Portal error:', err);
+                showError('Failed to open billing portal: ' + err.message);
+            }
+        }
+
+        // Show upgrade section (from trial banner)
+        function showUpgradeSection() {
+            document.getElementById('pricingSection').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Upgrade modal
+        function showUpgradeModal() {
+            document.getElementById('upgradeModal').style.display = 'flex';
+            loadBillingStatus(); // Refresh pricing in modal
+        }
+
+        function closeUpgradeModal() {
+            document.getElementById('upgradeModal').style.display = 'none';
+        }
+
+        // Close modal on outside click
+        document.getElementById('upgradeModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeUpgradeModal();
+            }
+        });
+
+        // Handle 402 Payment Required responses globally
+        const originalFetch = window.fetch;
+        window.fetch = async function(...args) {
+            const response = await originalFetch(...args);
+
+            if (response.status === 402) {
+                // Clone response to read error
+                const clonedResponse = response.clone();
+                try {
+                    const errorData = await clonedResponse.json();
+                    showError(errorData.detail || 'Quote limit reached. Please upgrade to continue.');
+                    showUpgradeModal();
+                } catch {
+                    showError('Quote limit reached. Please upgrade to continue.');
+                    showUpgradeModal();
+                }
+            }
+
+            return response;
+        };
+
+        // ========================================
+        // End Billing & Subscription System
         // ========================================
 
         // Error capture
