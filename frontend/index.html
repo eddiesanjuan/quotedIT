@@ -1080,19 +1080,67 @@
             margin-bottom: 12px;
             color: var(--text-secondary);
             line-height: 1.6;
+            transition: all 0.2s;
+        }
+
+        .onboarding-intro li.onboarding-option-recommended {
+            background: rgba(102, 126, 234, 0.1);
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            padding: 20px 24px;
+        }
+
+        .onboarding-intro li.onboarding-option-manual {
+            opacity: 0.8;
+            font-size: 0.9rem;
         }
 
         .onboarding-intro li strong {
             color: var(--text-primary);
-            display: block;
             margin-bottom: 4px;
+            font-size: 1.05rem;
+        }
+
+        .recommended-badge {
+            display: inline-block;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 3px 8px;
+            background: rgba(102, 126, 234, 0.2);
+            color: #a5b4fc;
+            border-radius: 4px;
+            border: 1px solid rgba(102, 126, 234, 0.3);
         }
 
         .onboarding-options {
             display: flex;
-            gap: 16px;
-            justify-content: center;
-            flex-wrap: wrap;
+            flex-direction: column;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .btn-large {
+            padding: 16px 32px;
+            font-size: 1.05rem;
+            font-weight: 600;
+            width: 100%;
+            max-width: 320px;
+        }
+
+        .btn-link {
+            background: none;
+            color: var(--text-muted);
+            padding: 8px 16px;
+            font-size: 0.875rem;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+        }
+
+        .btn-link:hover {
+            background: none;
+            color: var(--text-secondary);
+            text-decoration: underline;
         }
 
         /* Industry Selection */
@@ -1802,6 +1850,12 @@
 
             .onboarding-options .btn {
                 width: 100%;
+                max-width: 100%;
+            }
+
+            .btn-large {
+                padding: 14px 24px;
+                font-size: 1rem;
             }
 
             /* Hide navigation tabs on mobile */
@@ -2636,26 +2690,37 @@
                     <p>Before generating quotes, I need to understand your pricing model. Choose how you'd like to set this up.</p>
 
                     <ul>
-                        <li>
-                            <strong>Voice Interview</strong>
-                            Have a quick conversation where I'll ask about your rates, materials, and typical pricing. Takes 2-5 minutes.
+                        <li class="onboarding-option-recommended">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                                <strong>Guided Setup</strong>
+                                <span class="recommended-badge">Recommended</span>
+                            </div>
+                            Answer a few questions and I'll build your complete pricing profile. ~3 minutes • Voice or type • Best results
                         </li>
-                        <li>
-                            <strong>Quick Setup</strong>
-                            Enter your basic rates manually. You can always teach me more later.
+                        <li class="onboarding-option-manual">
+                            <strong>Manual Setup</strong>
+                            Enter your rates directly if you know exactly what you want. You can always refine later.
                         </li>
                     </ul>
 
                     <div class="onboarding-options">
-                        <button class="btn btn-primary" onclick="startOnboardingInterview()">Start Voice Interview</button>
-                        <button class="btn btn-secondary" onclick="showQuickSetup()">Quick Setup</button>
+                        <button class="btn btn-primary btn-large" onclick="startOnboardingInterview()">
+                            <span style="display: flex; align-items: center; gap: 8px; justify-content: center;">
+                                Start Guided Setup
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M5 12h14"></path>
+                                    <path d="M12 5l7 7-7 7"></path>
+                                </svg>
+                            </span>
+                        </button>
+                        <button class="btn btn-link" onclick="showQuickSetup()">Skip to manual setup</button>
                     </div>
                 </div>
 
                 <!-- Quick Setup Form -->
                 <div id="quickSetupForm" style="display: none;">
-                    <h3>Quick Setup</h3>
-                    <p id="quickSetupDescription">Enter your basic rates. You can refine these through quotes over time.</p>
+                    <h3>Manual Setup</h3>
+                    <p id="quickSetupDescription">Enter your rates directly. You can always refine these through the guided setup or quotes over time.</p>
 
                     <!-- Template Guidance -->
                     <div id="templateGuidance" style="display: none; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 24px;">
