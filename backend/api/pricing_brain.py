@@ -280,6 +280,54 @@ async def analyze_category(category: str, current_user: dict = Depends(get_curre
     return analysis
 
 
+class SyncResult(BaseModel):
+    """Result of syncing categories from quotes."""
+    categories_added: int
+    categories_found: List[str]
+    message: str
+
+
+@router.post("/sync", response_model=SyncResult)
+async def sync_categories_from_quotes(current_user: dict = Depends(get_current_user)):
+    """
+    Sync categories from existing quotes to the Pricing Brain.
+
+    This is useful for accounts created before category registration was added.
+    Scans all quotes and ensures each job_type is registered as a category.
+    """
+    db = get_db_service()
+
+    # Get contractor
+    contractor = await db.get_contractor_by_user_id(current_user["id"])
+    if not contractor:
+        raise HTTPException(status_code=400, detail="Contractor not found")
+
+    # Get all quotes
+    quotes = await db.get_quotes_by_contractor(contractor.id)
+
+    # Collect unique job types
+    job_types = set()
+    for quote in quotes:
+        if quote.job_type:
+            job_types.add(quote.job_type)
+
+    # Register each category
+    added_count = 0
+    for job_type in job_types:
+        was_added = await db.ensure_category_exists(
+            contractor_id=contractor.id,
+            category=job_type,
+        )
+        if was_added:
+            added_count += 1
+
+    return SyncResult(
+        categories_added=added_count,
+        categories_found=list(job_types),
+        message=f"Synced {added_count} new categories from {len(quotes)} quotes"
+    )
+
+
 @router.get("/settings/global", response_model=GlobalSettings)
 async def get_global_settings(current_user: dict = Depends(get_current_user)):
     """

@@ -228,12 +228,21 @@ class OnboardingService:
         Returns:
             Basic pricing model ready to save
         """
+        trade_defaults = self._get_trade_defaults(primary_trade)
+
+        # Build pricing_knowledge with both trade defaults and categories for Pricing Brain
+        pricing_knowledge = {
+            "trade_defaults": trade_defaults,
+            "categories": self._seed_categories_from_trade(primary_trade, trade_defaults),
+            "global_rules": [],
+        }
+
         return {
             "labor_rate_hourly": labor_rate,
             "helper_rate_hourly": labor_rate * 0.6,  # Reasonable default
             "material_markup_percent": material_markup,
             "minimum_job_amount": minimum_job,
-            "pricing_knowledge": self._get_trade_defaults(primary_trade),
+            "pricing_knowledge": pricing_knowledge,
             "pricing_notes": pricing_notes or f"Quick setup for {primary_trade}. Will learn more from quote corrections.",
             "terms": {
                 "deposit_percent": 50.0,
@@ -243,6 +252,42 @@ class OnboardingService:
             "setup_type": "quick",
             "created_at": datetime.utcnow().isoformat(),
         }
+
+    def _seed_categories_from_trade(self, primary_trade: str, trade_defaults: dict) -> dict:
+        """
+        Seed initial Pricing Brain categories from trade defaults.
+        This populates the categories dict so Pricing Brain has something to show.
+        """
+        categories = {}
+
+        for category_key, category_data in trade_defaults.items():
+            # Create display name from key (e.g., "composite_deck" -> "Composite Deck")
+            display_name = category_key.replace("_", " ").title()
+
+            # Build initial learned adjustments from trade defaults
+            learned_adjustments = []
+            if isinstance(category_data, dict):
+                if "base_per_sqft" in category_data:
+                    learned_adjustments.append(f"Base rate: ${category_data['base_per_sqft']}/sqft")
+                if "base_per_linear_ft" in category_data:
+                    learned_adjustments.append(f"Base rate: ${category_data['base_per_linear_ft']}/linear ft")
+                if "base_rate" in category_data:
+                    unit = category_data.get("unit", "each")
+                    learned_adjustments.append(f"Base rate: ${category_data['base_rate']} per {unit}")
+                if "typical_range" in category_data:
+                    low, high = category_data["typical_range"]
+                    learned_adjustments.append(f"Typical range: ${low} - ${high}")
+                if "notes" in category_data:
+                    learned_adjustments.append(category_data["notes"])
+
+            categories[category_key] = {
+                "display_name": display_name,
+                "learned_adjustments": learned_adjustments,
+                "samples": 0,
+                "confidence": 0.7,  # Higher initial confidence for trade defaults
+            }
+
+        return categories
 
     def _get_trade_defaults(self, primary_trade: str) -> dict:
         """Get default pricing knowledge for a trade."""

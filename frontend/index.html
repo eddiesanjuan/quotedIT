@@ -2810,6 +2810,10 @@
                             <div class="empty-icon">📚</div>
                             <h4>No categories learned yet</h4>
                             <p>I'll learn your pricing patterns as you generate quotes and make corrections.</p>
+                            <p style="margin-top: 12px; font-size: 0.875rem; color: var(--text-muted);">Have existing quotes? Sync them to populate categories:</p>
+                            <button type="button" class="btn btn-secondary" onclick="syncPricingBrain()" id="syncCategoriesBtn" style="margin-top: 12px;">
+                                Sync Categories from Quotes
+                            </button>
                         </div>
                     </div>
                 </div> <!-- End Pricing Brain Tab Content -->
@@ -5070,6 +5074,49 @@
             } catch (err) {
                 console.error('Failed to load pricing brain:', err);
                 showError('Failed to load pricing brain data. Please try again.');
+            }
+        }
+
+        // Sync categories from existing quotes (for legacy accounts)
+        async function syncPricingBrain() {
+            const btn = document.getElementById('syncCategoriesBtn');
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = 'Syncing...';
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/pricing-brain/sync`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to sync categories');
+                }
+
+                const result = await response.json();
+
+                // Show success message
+                if (result.categories_added > 0) {
+                    showSuccess(`Synced ${result.categories_added} categories from your quotes!`);
+                } else if (result.categories_found && result.categories_found.length === 0) {
+                    showSuccess('No quotes found to sync. Generate some quotes first!');
+                } else {
+                    showSuccess('Categories already synced - no new categories to add.');
+                }
+
+                // Reload the pricing brain data
+                await loadPricingBrain();
+
+            } catch (err) {
+                console.error('Failed to sync pricing brain:', err);
+                showError('Failed to sync categories. Please try again.');
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = 'Sync Categories from Quotes';
+                }
             }
         }
 
