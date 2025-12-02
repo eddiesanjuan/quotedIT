@@ -665,6 +665,291 @@
             }
         }
 
+        /* Product Demo Animation */
+        .product-demo {
+            background: var(--bg-primary);
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .demo-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .demo-screen {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 48px;
+            margin: 48px 0;
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Voice Input Animation */
+        .demo-voice {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 24px;
+            opacity: 0;
+        }
+
+        .voice-indicator {
+            width: 80px;
+            height: 80px;
+            background: var(--text-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .voice-pulse {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 2px solid var(--text-primary);
+            animation: pulse 2s ease-out infinite;
+        }
+
+        .voice-pulse:nth-child(2) {
+            animation-delay: 0.5s;
+        }
+
+        .voice-pulse:nth-child(3) {
+            animation-delay: 1s;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(2);
+                opacity: 0;
+            }
+        }
+
+        .voice-icon {
+            font-size: 32px;
+            z-index: 1;
+        }
+
+        .demo-text {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            text-align: center;
+            max-width: 500px;
+        }
+
+        /* Transcription Animation */
+        .demo-transcription {
+            opacity: 0;
+            width: 100%;
+        }
+
+        .transcription-text {
+            font-family: var(--font-sans);
+            font-size: 1.125rem;
+            line-height: 1.8;
+            color: var(--text-primary);
+            padding: 32px;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            border-left: 4px solid var(--text-primary);
+        }
+
+        .typing-cursor {
+            display: inline-block;
+            width: 2px;
+            height: 1.2em;
+            background: var(--text-primary);
+            margin-left: 2px;
+            animation: blink 1s step-end infinite;
+            vertical-align: text-bottom;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        /* Quote Generation Animation */
+        .demo-quote {
+            opacity: 0;
+            width: 100%;
+        }
+
+        .quote-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 32px;
+        }
+
+        .quote-header {
+            font-family: var(--font-serif);
+            font-size: 1.5rem;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .quote-line {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            opacity: 0;
+            transform: translateX(-20px);
+        }
+
+        .quote-line-item {
+            color: var(--text-secondary);
+        }
+
+        .quote-line-price {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .quote-total {
+            display: flex;
+            justify-content: space-between;
+            padding-top: 20px;
+            margin-top: 20px;
+            border-top: 2px solid var(--border);
+            font-size: 1.25rem;
+            font-weight: 600;
+            opacity: 0;
+        }
+
+        /* Animation States */
+        .demo-voice.active {
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+
+        .demo-transcription.active {
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+
+        .demo-quote.active {
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+
+        .quote-line.active {
+            animation: slideInRight 0.4s ease-out forwards;
+        }
+
+        .quote-total.active {
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .demo-cta {
+            text-align: center;
+            margin-top: 48px;
+        }
+
+        .demo-cta p {
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+            font-size: 1.125rem;
+        }
+
+        /* Responsive - Tablet (900px and below) */
+        @media (max-width: 900px) {
+            .demo-screen {
+                padding: 32px;
+                min-height: 350px;
+            }
+
+            .quote-header {
+                font-size: 1.25rem;
+            }
+        }
+
+        /* Responsive - Mobile (768px and below) */
+        @media (max-width: 768px) {
+            .demo-screen {
+                padding: 24px;
+                min-height: 300px;
+            }
+
+            .voice-indicator {
+                width: 64px;
+                height: 64px;
+            }
+
+            .voice-icon {
+                font-size: 24px;
+            }
+
+            .demo-text {
+                font-size: 1rem;
+            }
+
+            .transcription-text {
+                font-size: 1rem;
+                padding: 24px;
+            }
+
+            .quote-card {
+                padding: 24px;
+            }
+
+            .quote-line {
+                flex-direction: column;
+                gap: 4px;
+            }
+        }
+
+        /* Responsive - Extra Small Mobile (480px and below) */
+        @media (max-width: 480px) {
+            .demo-screen {
+                padding: 20px;
+                min-height: 280px;
+            }
+
+            .transcription-text {
+                padding: 20px;
+                font-size: 0.9375rem;
+            }
+
+            .quote-card {
+                padding: 20px;
+            }
+        }
+
         /* Responsive - iPhone SE (375px and below) */
         @media (max-width: 375px) {
             nav {
@@ -699,6 +984,10 @@
             .step h3 {
                 font-size: 1.25rem;
             }
+
+            .demo-screen {
+                padding: 16px;
+            }
         }
     </style>
 </head>
@@ -726,6 +1015,68 @@
                 <div class="fade-in fade-in-delay-3" style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
                     <a href="/app" class="cta-primary">Start Quoting Free</a>
                     <a href="/demo" class="cta-secondary">Try Demo - No Signup</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Product Demo Animation -->
+    <section class="product-demo">
+        <div class="container">
+            <div class="demo-container">
+                <p class="section-label fade-in">See It In Action</p>
+                <h2 class="section-title fade-in fade-in-delay-1">From voice to quote in seconds</h2>
+
+                <div class="demo-screen" id="demoScreen">
+                    <!-- Phase 1: Voice Input -->
+                    <div class="demo-voice" id="demoVoice">
+                        <div class="voice-indicator">
+                            <div class="voice-pulse"></div>
+                            <div class="voice-pulse"></div>
+                            <div class="voice-pulse"></div>
+                            <span class="voice-icon">🎤</span>
+                        </div>
+                        <p class="demo-text">"I need a quote for a kitchen remodel. New cabinets, countertops, and backsplash. About 12 by 15 feet."</p>
+                    </div>
+
+                    <!-- Phase 2: Transcription -->
+                    <div class="demo-transcription" id="demoTranscription">
+                        <div class="transcription-text">
+                            <span id="transcriptionContent"></span><span class="typing-cursor" id="typingCursor"></span>
+                        </div>
+                    </div>
+
+                    <!-- Phase 3: Quote Generated -->
+                    <div class="demo-quote" id="demoQuote">
+                        <div class="quote-card">
+                            <div class="quote-header">Kitchen Remodel Quote</div>
+                            <div class="quote-line" data-delay="0">
+                                <span class="quote-line-item">Custom Cabinets (12x15 kitchen)</span>
+                                <span class="quote-line-price">$8,500</span>
+                            </div>
+                            <div class="quote-line" data-delay="150">
+                                <span class="quote-line-item">Quartz Countertops</span>
+                                <span class="quote-line-price">$3,200</span>
+                            </div>
+                            <div class="quote-line" data-delay="300">
+                                <span class="quote-line-item">Tile Backsplash Installation</span>
+                                <span class="quote-line-price">$1,800</span>
+                            </div>
+                            <div class="quote-line" data-delay="450">
+                                <span class="quote-line-item">Labor & Installation</span>
+                                <span class="quote-line-price">$4,500</span>
+                            </div>
+                            <div class="quote-total">
+                                <span>Total Estimate</span>
+                                <span>$18,000</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="demo-cta fade-in">
+                    <p>See how fast it is for yourself</p>
+                    <a href="/demo" class="cta-primary">Try Live Demo</a>
                 </div>
             </div>
         </div>
@@ -981,6 +1332,113 @@
             setTimeout(() => {
                 requestAnimationFrame(animate);
             }, 800);
+        })();
+
+        // Product Demo Animation
+        (function() {
+            const demoScreen = document.getElementById('demoScreen');
+            const demoVoice = document.getElementById('demoVoice');
+            const demoTranscription = document.getElementById('demoTranscription');
+            const demoQuote = document.getElementById('demoQuote');
+            const transcriptionContent = document.getElementById('transcriptionContent');
+            const typingCursor = document.getElementById('typingCursor');
+
+            if (!demoScreen || !demoVoice || !demoTranscription || !demoQuote) return;
+
+            const transcriptionText = "I need a quote for a kitchen remodel. New cabinets, countertops, and backsplash. About 12 by 15 feet.";
+            let animationStarted = false;
+
+            function typeText(text, element, speed = 30) {
+                return new Promise((resolve) => {
+                    let index = 0;
+                    element.textContent = '';
+
+                    function typeChar() {
+                        if (index < text.length) {
+                            element.textContent += text[index];
+                            index++;
+                            setTimeout(typeChar, speed);
+                        } else {
+                            resolve();
+                        }
+                    }
+
+                    typeChar();
+                });
+            }
+
+            async function runDemoAnimation() {
+                // Reset all phases
+                demoVoice.classList.remove('active');
+                demoTranscription.classList.remove('active');
+                demoQuote.classList.remove('active');
+                transcriptionContent.textContent = '';
+
+                // Hide all phases
+                demoVoice.style.display = 'flex';
+                demoTranscription.style.display = 'none';
+                demoQuote.style.display = 'none';
+
+                // Phase 1: Voice Input (2.5 seconds)
+                demoVoice.classList.add('active');
+                await new Promise(resolve => setTimeout(resolve, 2500));
+
+                // Transition to Phase 2: Transcription
+                demoVoice.style.display = 'none';
+                demoTranscription.style.display = 'block';
+                demoTranscription.classList.add('active');
+
+                // Type out the transcription
+                await typeText(transcriptionText, transcriptionContent, 30);
+
+                // Pause to show complete transcription
+                await new Promise(resolve => setTimeout(resolve, 800));
+
+                // Hide cursor
+                typingCursor.style.display = 'none';
+
+                // Transition to Phase 3: Quote
+                demoTranscription.style.display = 'none';
+                demoQuote.style.display = 'block';
+                demoQuote.classList.add('active');
+
+                // Animate quote lines
+                const quoteLines = demoQuote.querySelectorAll('.quote-line');
+                for (let i = 0; i < quoteLines.length; i++) {
+                    await new Promise(resolve => setTimeout(resolve, 150));
+                    quoteLines[i].classList.add('active');
+                }
+
+                // Show total
+                await new Promise(resolve => setTimeout(resolve, 300));
+                const quoteTotal = demoQuote.querySelector('.quote-total');
+                if (quoteTotal) quoteTotal.classList.add('active');
+
+                // Wait before restarting
+                await new Promise(resolve => setTimeout(resolve, 3000));
+
+                // Reset and restart
+                typingCursor.style.display = 'inline-block';
+                const allActiveElements = demoQuote.querySelectorAll('.active');
+                allActiveElements.forEach(el => el.classList.remove('active'));
+
+                // Restart the animation
+                runDemoAnimation();
+            }
+
+            // Intersection Observer to start animation when visible
+            const demoObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting && !animationStarted) {
+                        animationStarted = true;
+                        runDemoAnimation();
+                    }
+                });
+            }, {
+                threshold: 0.3
+            });
+
+            demoObserver.observe(demoScreen);
         })();
 
         // Intersection Observer for fade-in animations
