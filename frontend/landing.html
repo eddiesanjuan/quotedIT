@@ -70,28 +70,32 @@
             position: relative;
             overflow: hidden;
             height: 3.6em; /* Show 3 items */
-            vertical-align: bottom;
+            vertical-align: baseline;
+            /* Offset to align center item with text baseline */
+            /* 3 items at 1.2em each = 3.6em. Center is at 1.8em. Shift up by ~1.5em to align */
+            margin-bottom: -1.45em;
+            margin-top: -0.95em;
             /* Gradient mask for fade effect at edges - always visible */
             -webkit-mask-image: linear-gradient(
                 to bottom,
                 transparent 0%,
-                rgba(0,0,0,0.2) 10%,
-                rgba(0,0,0,0.6) 25%,
-                rgba(0,0,0,1) 40%,
-                rgba(0,0,0,1) 60%,
-                rgba(0,0,0,0.6) 75%,
-                rgba(0,0,0,0.2) 90%,
+                rgba(0,0,0,0.15) 8%,
+                rgba(0,0,0,0.5) 22%,
+                rgba(0,0,0,1) 38%,
+                rgba(0,0,0,1) 62%,
+                rgba(0,0,0,0.5) 78%,
+                rgba(0,0,0,0.15) 92%,
                 transparent 100%
             );
             mask-image: linear-gradient(
                 to bottom,
                 transparent 0%,
-                rgba(0,0,0,0.2) 10%,
-                rgba(0,0,0,0.6) 25%,
-                rgba(0,0,0,1) 40%,
-                rgba(0,0,0,1) 60%,
-                rgba(0,0,0,0.6) 75%,
-                rgba(0,0,0,0.2) 90%,
+                rgba(0,0,0,0.15) 8%,
+                rgba(0,0,0,0.5) 22%,
+                rgba(0,0,0,1) 38%,
+                rgba(0,0,0,1) 62%,
+                rgba(0,0,0,0.5) 78%,
+                rgba(0,0,0,0.15) 92%,
                 transparent 100%
             );
         }
@@ -107,11 +111,6 @@
             line-height: 1.2em;
             font-style: italic;
             text-align: left;
-        }
-
-        /* Ghost items for the fade effect in final state */
-        .logo-spinner-item.ghost {
-            color: var(--text-muted);
         }
 
         .hero-logo {
@@ -483,7 +482,7 @@
         <div class="container">
             <div class="hero-content">
                 <div class="hero-logo fade-in" id="heroLogo">
-                    quoted<span class="logo-spinner"><span class="logo-spinner-inner" id="spinnerInner"><span class="logo-spinner-item ghost">.yours</span><span class="logo-spinner-item">.decks</span><span class="logo-spinner-item">.consulting</span><span class="logo-spinner-item">.design</span><span class="logo-spinner-item">.roofs</span><span class="logo-spinner-item">.photos</span><span class="logo-spinner-item">.events</span><span class="logo-spinner-item">.kitchens</span><span class="logo-spinner-item">.coaching</span><span class="logo-spinner-item">.fences</span><span class="logo-spinner-item">.it</span><span class="logo-spinner-item ghost">.start</span></span></span>
+                    quoted<span class="logo-spinner"><span class="logo-spinner-inner" id="spinnerInner"><span class="logo-spinner-item">.lawns</span><span class="logo-spinner-item">.decks</span><span class="logo-spinner-item">.consulting</span><span class="logo-spinner-item">.design</span><span class="logo-spinner-item">.photos</span><span class="logo-spinner-item">.events</span><span class="logo-spinner-item">.coaching</span><span class="logo-spinner-item">.weddings</span><span class="logo-spinner-item">.painting</span><span class="logo-spinner-item">.cleaning</span><span class="logo-spinner-item">.it</span><span class="logo-spinner-item">.moving</span></span></span>
                 </div>
                 <h1 class="fade-in fade-in-delay-1">Stop guessing.<br>Start quoting.</h1>
                 <p class="fade-in fade-in-delay-2">Turn voice notes into professional budget quotes in seconds. Qualify leads fast, look polished, and stop wasting time on tire-kickers.</p>
@@ -591,7 +590,7 @@
             const items = spinnerInner.querySelectorAll('.logo-spinner-item');
             const itemHeight = 1.2; // em units
 
-            // Find the index of .it (second to last, before the ghost at the end)
+            // Find the index of .it
             let targetIndex = 0;
             items.forEach((item, i) => {
                 if (item.textContent === '.it') targetIndex = i;
@@ -600,8 +599,8 @@
             // With 3 visible items (3.6em height), center item is at 1.2em from top
             const centerOffset = 1.2;
 
-            // Start position: first real item (index 1, after the ghost ".yours") centered
-            const startIndex = 1;
+            // Start position: first item (index 0) centered
+            const startIndex = 0;
             const startPosition = -startIndex * itemHeight + centerOffset;
 
             // Target position: .it centered
@@ -611,26 +610,11 @@
             const totalDistance = startPosition - targetPosition;
 
             // Animation duration in ms (longer = slower)
-            const duration = 4500;
+            const duration = 4000;
 
             // Easing function: starts fast, decelerates smoothly (ease-out quint)
             function easeOutQuint(t) {
                 return 1 - Math.pow(1 - t, 5);
-            }
-
-            // Bounce easing for the final settle
-            function easeOutBounce(t) {
-                const n1 = 7.5625;
-                const d1 = 2.75;
-                if (t < 1 / d1) {
-                    return n1 * t * t;
-                } else if (t < 2 / d1) {
-                    return n1 * (t -= 1.5 / d1) * t + 0.75;
-                } else if (t < 2.5 / d1) {
-                    return n1 * (t -= 2.25 / d1) * t + 0.9375;
-                } else {
-                    return n1 * (t -= 2.625 / d1) * t + 0.984375;
-                }
             }
 
             let startTime = null;
@@ -654,23 +638,24 @@
                 if (progress < 1) {
                     requestAnimationFrame(animate);
                 } else {
-                    // Animation complete - do a subtle bounce settle
+                    // Animation complete - do a satisfying bounce settle
                     bounceSettle();
                 }
             }
 
             function bounceSettle() {
                 const bounceStart = Date.now();
-                const bounceDuration = 400;
-                const bounceAmount = 0.08; // em - subtle overshoot
+                const bounceDuration = 600;
+                const bounceAmount = 0.18; // em - noticeable but not excessive
 
                 function bounceFrame() {
                     const elapsed = Date.now() - bounceStart;
                     const progress = Math.min(elapsed / bounceDuration, 1);
 
-                    // Damped oscillation
-                    const decay = Math.exp(-progress * 4);
-                    const oscillation = Math.sin(progress * Math.PI * 2) * decay * bounceAmount;
+                    // Damped spring oscillation - overshoots then settles
+                    const frequency = 2.5; // oscillations
+                    const decay = Math.exp(-progress * 5);
+                    const oscillation = Math.sin(progress * Math.PI * frequency) * decay * bounceAmount;
 
                     const bouncePosition = targetPosition + oscillation;
                     spinnerInner.style.transform = `translateY(${bouncePosition}em)`;
