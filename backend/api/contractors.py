@@ -89,6 +89,11 @@ class TermsUpdate(BaseModel):
     custom_terms: Optional[str] = None
 
 
+class SetIndustryRequest(BaseModel):
+    """Request to set contractor's industry/trade."""
+    industry: str
+
+
 class AccuracyStatsResponse(BaseModel):
     """Accuracy statistics response."""
     total_quotes: int = 0
@@ -306,6 +311,55 @@ async def get_accuracy_stats(contractor_id: str):
         average_adjustment_percent=3.2 if model.get("correction_count", 0) > 10 else 8.5,
         within_5_percent=model.get("correction_count", 0) - 2,
         within_10_percent=model.get("correction_count", 0),
+    )
+
+
+@router.post("/industry", response_model=ContractorResponse)
+async def set_industry(
+    request: SetIndustryRequest,
+    contractor: Contractor = Depends(get_current_contractor),
+):
+    """
+    Set the contractor's industry/trade.
+    Used during onboarding to specify what type of work they do.
+    """
+    db = get_database_service()
+
+    # Validate industry is a known type (optional but good practice)
+    valid_industries = [
+        "deck_builder", "painter", "fence_installer", "landscaper", "electrician",
+        "plumber", "hvac", "roofer", "flooring", "tile", "concrete", "framing",
+        "drywall", "window_door", "siding", "gutters", "insulation", "garage_door",
+        "pool_spa", "masonry", "tree_service", "pressure_washing", "closet_organizer",
+        "cabinet_maker", "general_contractor"
+    ]
+
+    if request.industry not in valid_industries:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid industry. Must be one of: {', '.join(valid_industries)}"
+        )
+
+    # Update the contractor's primary_trade field
+    updated = await db.update_contractor(
+        contractor_id=contractor.id,
+        primary_trade=request.industry
+    )
+
+    if not updated:
+        raise HTTPException(status_code=404, detail="Contractor not found")
+
+    return ContractorResponse(
+        id=updated.id,
+        business_name=updated.business_name,
+        owner_name=updated.owner_name,
+        email=updated.email,
+        phone=updated.phone,
+        address=updated.address,
+        primary_trade=updated.primary_trade,
+        services=updated.services,
+        plan=updated.plan,
+        created_at=updated.created_at.isoformat() if updated.created_at else None,
     )
 
 

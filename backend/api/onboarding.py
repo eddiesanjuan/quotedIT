@@ -333,6 +333,50 @@ async def get_messages(session_id: str):
     }
 
 
+@router.get("/industries")
+async def get_industries():
+    """
+    Get available industries/trades for selection.
+    Returns list of industries with display info for UI.
+    """
+    # Use the same trade defaults from onboarding service
+    onboarding_service = get_onboarding_service()
+
+    # Map of trade keys to display info
+    industries = [
+        {"key": "deck_builder", "display_name": "Deck Builder", "icon": "🏗️", "category": "Construction"},
+        {"key": "painter", "display_name": "Painter", "icon": "🎨", "category": "Finishing"},
+        {"key": "fence_installer", "display_name": "Fence Installer", "icon": "🚧", "category": "Outdoor"},
+        {"key": "landscaper", "display_name": "Landscaper", "icon": "🌳", "category": "Outdoor"},
+        {"key": "electrician", "display_name": "Electrician", "icon": "⚡", "category": "Electrical"},
+        {"key": "plumber", "display_name": "Plumber", "icon": "🔧", "category": "Plumbing"},
+        {"key": "hvac", "display_name": "HVAC", "icon": "❄️", "category": "HVAC"},
+        {"key": "roofer", "display_name": "Roofer", "icon": "🏠", "category": "Construction"},
+        {"key": "flooring", "display_name": "Flooring", "icon": "📐", "category": "Finishing"},
+        {"key": "tile", "display_name": "Tile Installer", "icon": "🔲", "category": "Finishing"},
+        {"key": "concrete", "display_name": "Concrete", "icon": "🏗️", "category": "Construction"},
+        {"key": "framing", "display_name": "Framing", "icon": "🔨", "category": "Construction"},
+        {"key": "drywall", "display_name": "Drywall", "icon": "🧱", "category": "Finishing"},
+        {"key": "window_door", "display_name": "Window & Door", "icon": "🚪", "category": "Installation"},
+        {"key": "siding", "display_name": "Siding", "icon": "🏡", "category": "Exterior"},
+        {"key": "gutters", "display_name": "Gutters", "icon": "💧", "category": "Exterior"},
+        {"key": "insulation", "display_name": "Insulation", "icon": "🧊", "category": "Installation"},
+        {"key": "garage_door", "display_name": "Garage Door", "icon": "🚗", "category": "Installation"},
+        {"key": "pool_spa", "display_name": "Pool & Spa", "icon": "🏊", "category": "Outdoor"},
+        {"key": "masonry", "display_name": "Masonry", "icon": "🧱", "category": "Construction"},
+        {"key": "tree_service", "display_name": "Tree Service", "icon": "🌲", "category": "Outdoor"},
+        {"key": "pressure_washing", "display_name": "Pressure Washing", "icon": "💦", "category": "Cleaning"},
+        {"key": "closet_organizer", "display_name": "Closet Organizer", "icon": "🗄️", "category": "Organization"},
+        {"key": "cabinet_maker", "display_name": "Cabinet Maker", "icon": "🪑", "category": "Finishing"},
+        {"key": "general_contractor", "display_name": "General Contractor", "icon": "👷", "category": "General"},
+    ]
+
+    return {
+        "industries": industries,
+        "count": len(industries),
+    }
+
+
 @router.get("/")
 async def list_sessions():
     """List all sessions (for debugging/demo)."""
