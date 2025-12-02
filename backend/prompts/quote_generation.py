@@ -110,6 +110,12 @@ The contractor has corrected previous quotes. Learn from these examples:
 Use these corrections to inform your pricing. If you see a pattern (e.g., contractor always increases demolition costs), apply that learning to this quote.
 """
 
+    # Handle None values with 'or' to ensure defaults even when key exists but is None
+    labor_rate = pricing_model.get('labor_rate_hourly') or 65
+    helper_rate = pricing_model.get('helper_rate_hourly') or 35
+    material_markup = pricing_model.get('material_markup_percent') or 20
+    minimum_job = pricing_model.get('minimum_job_amount') or 500
+
     return f"""You are a quoting assistant for {contractor_name}, a professional contractor.
 
 Your job is to take the contractor's voice notes about a job and produce a professional budgetary quote.
@@ -123,10 +129,10 @@ IMPORTANT: This is a BUDGETARY quote - a ballpark estimate to help the customer 
 
 ## Contractor's Pricing Information
 
-Labor Rate: ${pricing_model.get('labor_rate_hourly', 65)}/hour
-Helper Rate: ${pricing_model.get('helper_rate_hourly', 35)}/hour
-Material Markup: {pricing_model.get('material_markup_percent', 20)}%
-Minimum Job: ${pricing_model.get('minimum_job_amount', 500)}
+Labor Rate: ${labor_rate}/hour
+Helper Rate: ${helper_rate}/hour
+Material Markup: {material_markup}%
+Minimum Job: ${minimum_job}
 
 {pricing_knowledge_str}
 
@@ -265,27 +271,37 @@ def _format_pricing_knowledge(pricing_knowledge: dict) -> str:
             lines.append("**Your Pricing Categories:**\n")
             for cat_name, cat_data in categories.items():
                 if isinstance(cat_data, dict):
-                    display_name = cat_data.get("display_name", cat_name.replace("_", " ").title())
-                    price_range = cat_data.get("typical_price_range", [])
-                    pricing_unit = cat_data.get("pricing_unit", "")
-                    base_rate = cat_data.get("base_rate", 0)
-                    notes = cat_data.get("notes", "")
-                    confidence = cat_data.get("confidence", 0.5)
-                    samples = cat_data.get("samples", 0)
+                    display_name = cat_data.get("display_name") or cat_name.replace("_", " ").title()
+                    price_range = cat_data.get("typical_price_range") or []
+                    pricing_unit = cat_data.get("pricing_unit") or ""
+                    base_rate = cat_data.get("base_rate") or 0
+                    notes = cat_data.get("notes") or ""
+                    confidence = cat_data.get("confidence") or 0.5
+                    samples = cat_data.get("samples") or 0
 
                     line = f"  **{display_name}**"
-                    if price_range and len(price_range) == 2:
-                        line += f" - Range: ${price_range[0]:,.0f}-${price_range[1]:,.0f}"
+                    # Ensure price_range values are numeric before formatting
+                    if price_range and len(price_range) == 2 and price_range[0] is not None and price_range[1] is not None:
+                        try:
+                            line += f" - Range: ${float(price_range[0]):,.0f}-${float(price_range[1]):,.0f}"
+                        except (ValueError, TypeError):
+                            pass
                     if base_rate:
-                        line += f" (Base: ${base_rate:,.0f})"
+                        try:
+                            line += f" (Base: ${float(base_rate):,.0f})"
+                        except (ValueError, TypeError):
+                            pass
                     if pricing_unit:
                         line += f" [{pricing_unit}]"
                     lines.append(line)
 
                     if notes:
                         lines.append(f"    Notes: {notes}")
-                    if samples > 0:
-                        lines.append(f"    (Confidence: {confidence:.0%} from {samples} quotes)")
+                    if samples and samples > 0:
+                        try:
+                            lines.append(f"    (Confidence: {float(confidence):.0%} from {samples} quotes)")
+                        except (ValueError, TypeError):
+                            lines.append(f"    ({samples} quotes)")
                     lines.append("")
 
     # Handle legacy flat structure for backward compatibility
@@ -308,10 +324,13 @@ def _format_job_types(job_types: list) -> str:
     """Format job types into readable string."""
     lines = []
     for jt in job_types:
-        name = jt.get("display_name", jt.get("name", "Unknown"))
-        count = jt.get("quote_count", 0)
-        avg = jt.get("average_quote_amount", 0)
-        lines.append(f"- {name}: {count} quotes, avg ${avg:.0f}")
+        name = jt.get("display_name") or jt.get("name") or "Unknown"
+        count = jt.get("quote_count") or 0
+        avg = jt.get("average_quote_amount") or 0
+        try:
+            lines.append(f"- {name}: {count} quotes, avg ${float(avg):.0f}")
+        except (ValueError, TypeError):
+            lines.append(f"- {name}: {count} quotes")
     return "\n".join(lines) if lines else "No previous job types."
 
 
