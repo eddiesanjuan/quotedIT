@@ -66,6 +66,7 @@
 | ONBOARD-006 | Expand Industries Beyond Construction | Frontend + Backend | **READY** | None |
 | ONBOARD-007 | Quick Setup Form/Tips Mismatch | Frontend + Backend | **READY** | None |
 | ONBOARD-008 | Ensure Onboarding Path Consistency | Backend | **READY** | None |
+| UX-002 | Reframe Onboarding to Recommend Interview | Frontend | **READY** | None |
 
 ---
 
@@ -227,6 +228,43 @@ Currently, it's unclear if both paths produce pricing_models that work the same 
 3. [ ] Document which fields are "essential" vs "learned over time"
 4. [ ] Add "Complete Your Profile" prompt for Quick Setup users after first 5 quotes
 5. [ ] Verify quote generation uses both profiles consistently
+
+---
+
+## UX-002: Reframe Onboarding to Recommend Interview (READY)
+
+**Scope**: Frontend (2h)
+**Priority**: HIGH (affects onboarding conversion)
+**Requested By**: Founder (2025-12-02)
+
+**Problem**: The current onboarding page makes "Quick Setup" seem like the default/preferred path. This is backwards - the voice interview should be the RECOMMENDED method because it produces a better pricing profile.
+
+**Current Issues**:
+1. Quick Setup appears more prominent than Interview
+2. Interview sounds slow/intimidating ("5-10 minute interview")
+3. No mention that Interview can be TYPED as simple chat
+4. Users default to Quick Setup and miss the better experience
+
+**Messaging Changes Needed**:
+
+**Interview Option** (should be PRIMARY):
+- Rename to: "Quick Chat Setup" or "Guided Setup"
+- Emphasize: "~3 minutes • Voice OR text • Recommended"
+- Subtext: "Answer a few questions and we'll build your complete pricing profile"
+- Make this the visually prominent option (larger, primary color)
+
+**Quick Setup Option** (should be SECONDARY):
+- Rename to: "Manual Setup" or "DIY Setup"
+- Emphasize: "For users who know exactly what they want"
+- Subtext: "Enter your rates directly - you can always refine later"
+- Make this visually secondary (smaller, muted styling)
+
+**Implementation**:
+1. [ ] Swap visual prominence of Interview vs Quick Setup buttons
+2. [ ] Update Interview copy to emphasize speed ("~3 min") and flexibility ("voice or type")
+3. [ ] Add "Recommended" badge to Interview option
+4. [ ] Update Quick Setup copy to position as "advanced/manual" option
+5. [ ] Consider: Interview as default with "Skip to manual setup" link
 
 ---
 
