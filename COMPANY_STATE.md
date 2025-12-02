@@ -42,8 +42,8 @@ Full payment stack deployed: Stripe billing, Resend emails, billing UI. Quoted c
 | Active Learning Questions | **LIVE** | Clarifying questions for low-confidence |
 | Feedback System | **LIVE** | Non-destructive quote feedback API |
 | Learning System | **LIVE** | Per-category weighted corrections |
-| Pricing Brain Management | **PENDING PUSH** | View/edit AI learned pricing + Haiku analysis |
-| Customer Info Editing | **PENDING PUSH** | Edit customer name/address/phone on quotes |
+| Pricing Brain Management | **DEPLOYED** | View/edit AI learned pricing + Haiku analysis |
+| Customer Info Editing | **DEPLOYED** | Edit customer name/address/phone on quotes |
 | PDF Generation | **LIVE** | Professional quote PDFs |
 | Onboarding Interview | **LIVE** | Adaptive pricing model setup |
 | Landing Page | **LIVE** | Premium dark design, randomized industry spinner |
@@ -70,10 +70,9 @@ Full payment stack deployed: Stripe billing, Resend emails, billing UI. Quoted c
 | ~~Payment Infrastructure~~ | **DEPLOYED** | ~~Backend~~ | ~~Live at quoted.it.com~~ |
 | ~~Email System~~ | **DEPLOYED** | ~~Backend~~ | ~~Live at quoted.it.com~~ |
 | ~~Billing UI~~ | **DEPLOYED** | ~~Frontend~~ | ~~Live at quoted.it.com~~ |
-| ~~Pricing Brain Management~~ | **CODE COMPLETE** | ~~Engineering~~ | ~~Committed 1361539 + 6c7c94a~~ |
-| ~~Customer Info Editing~~ | **CODE COMPLETE** | ~~Engineering~~ | ~~Committed fa0f7a4 + 28a98f9~~ |
-| ~~Slot Animation Polish~~ | **CODE COMPLETE** | ~~Frontend~~ | ~~Committed 59883ef~~ |
-| Push to Production | **READY** | Founder | 7 commits ready to push |
+| ~~Pricing Brain Management~~ | **DEPLOYED** | ~~Engineering~~ | ~~Live at quoted.it.com~~ |
+| ~~Customer Info Editing~~ | **DEPLOYED** | ~~Engineering~~ | ~~Live at quoted.it.com~~ |
+| ~~Slot Animation Polish~~ | **DEPLOYED** | ~~Frontend~~ | ~~Live at quoted.it.com~~ |
 | Beta User Recruitment | **GO** | CGO | Start now! |
 | Vector Embeddings (RAG) | **BACKLOG** | Engineering | Not MVP-critical, defer to post-beta |
 

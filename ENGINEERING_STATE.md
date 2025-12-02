@@ -7,9 +7,10 @@
 
 ## Current Sprint
 
-**Sprint**: 1 (Beta Launch)
-**Goal**: Stable production, DNS configured, first beta users onboarded
-**Dates**: 2025-12-01 to 2025-12-08
+**Sprint**: 2 (100 Users)
+**Goal**: 100 active beta testers by December 16
+**Dates**: 2025-12-02 to 2025-12-16
+**Strategy Doc**: `BETA_SPRINT.md`
 
 ---
 
@@ -17,9 +18,8 @@
 
 | Environment | URL | Status | Version |
 |-------------|-----|--------|---------|
-| **Production** | https://web-production-0550.up.railway.app | RUNNING | 6c7c94a |
-| **Custom Domain** | https://quoted.it.com | LIVE (SSL ACTIVE) | 6c7c94a |
-| **Local** | 7 commits ahead | PENDING PUSH | 6c7c94a |
+| **Production** | https://web-production-0550.up.railway.app | DEPLOYING | 98faaf9 |
+| **Custom Domain** | https://quoted.it.com | LIVE (SSL ACTIVE) | 98faaf9 |
 
 **Railway Project**: Connected to main branch, auto-deploys on push
 
@@ -35,11 +35,24 @@
 | ~~PAY-002~~ | ~~Trial Logic & Quote Limits~~ | ~~Backend Engineer~~ | **COMPLETE** | Included in PAY-001 |
 | ~~PAY-003~~ | ~~Billing UI~~ | ~~Frontend Engineer~~ | **COMPLETE** | Committed b4e9fdc |
 | ~~PAY-004~~ | ~~Email System (Resend)~~ | ~~Backend Engineer~~ | **COMPLETE** | Committed 33fa641 |
-| PAY-005 | Referral System | Backend Engineer | **READY** | Can start now |
+| ~~PAY-005~~ | ~~Referral System~~ | ~~Backend Engineer~~ | **REPLACED** | See GROWTH-002 |
 | ~~PAY-006~~ | ~~Terms of Service + Privacy Policy~~ | ~~CTO~~ | **COMPLETE** | Deployed 325fb25 |
 | ~~FEAT-001~~ | ~~Pricing Brain Management~~ | ~~Backend + Frontend~~ | **COMPLETE** | Committed 1361539 + 6c7c94a |
 | ~~FEAT-002~~ | ~~Edit Customer Info on Existing Quotes~~ | ~~Frontend + Backend~~ | **COMPLETE** | Committed fa0f7a4 + 28a98f9 |
 | ~~FIX-001~~ | ~~Randomize Slot Animation Order~~ | ~~Frontend~~ | **COMPLETE** | Committed 59883ef |
+| GROWTH-001 | Demo Mode (Try Before Signup) | Backend + Frontend | **READY** | None |
+| GROWTH-002 | Referral System with Rewards | Backend + Frontend | **READY** | None |
+| GROWTH-003 | Share Quote (Email/SMS/Link) | Backend + Frontend | **READY** | None |
+| GROWTH-004 | Landing Page Testimonials | Frontend | **READY** | None |
+| GROWTH-005 | "Powered by Quoted" Branding | Frontend | **READY** | None |
+| CONVERT-001 | Analytics (PostHog) | Backend + Frontend | **READY** | None |
+| CONVERT-002 | Enhanced Empty States | Frontend | **READY** | None |
+| CONVERT-003 | First Quote Celebration | Frontend | **READY** | None |
+| RETAIN-001 | Engagement Email Series | Backend | **READY** | None |
+| RETAIN-002 | Dormancy Re-engagement Emails | Backend | **READY** | None |
+| INFRA-001 | Sentry Error Tracking | Backend + Frontend | **READY** | None |
+| INFRA-002 | Mobile Responsiveness Audit | Frontend | **READY** | None |
+| INFRA-003 | FAQ/Help Section | Frontend | **READY** | None |
 
 ---
 
@@ -163,6 +176,200 @@ GET /api/billing/plans - Available pricing (public)
 
 ---
 
+## GROWTH-001: Demo Mode (Try Before Signup) (READY)
+
+**Scope**: Backend + Frontend (6h)
+**Impact**: Removes biggest conversion barrier - users can try before committing
+
+**Problem**: Users must signup and complete 5-15 min onboarding before seeing if product works.
+
+**Solution**: 2-minute demo that generates a real quote without signup.
+
+**Demo Flow**:
+1. Landing page: "Try it now - no signup required" button
+2. Demo page with pre-filled contractor profile (General Contractor)
+3. Voice recorder OR text input
+4. Generate real quote (no auth)
+5. Show quote with "DEMO" watermark
+6. CTA: "Create free account to save this quote"
+
+**Implementation**:
+1. [ ] Create `/demo` route in frontend
+2. [ ] Create `POST /api/demo/quote` endpoint (no auth, rate limited 3/hour/IP)
+3. [ ] Demo uses generic contractor profile with standard pricing
+4. [ ] Quote generates but doesn't save to database
+5. [ ] Watermarked PDF output
+6. [ ] Prominent signup CTA after quote generation
+7. [ ] Track: demo_started, demo_quote_generated, demo_to_signup
+
+---
+
+## GROWTH-002: Referral System with Rewards (READY)
+
+**Scope**: Backend + Frontend (6h)
+**Impact**: Each user becomes a growth engine with incentives
+
+**Referral Program**:
+- Referrer gets: 1 free month credit when referral subscribes
+- Referee gets: Extended trial (14 days instead of 7)
+- Tracking: Unique referral codes per user (e.g., JOHN-A3X9)
+
+**Implementation**:
+1. [ ] Add to User model: `referral_code`, `referred_by`, `referral_count`, `referral_credits`
+2. [ ] Auto-generate referral code on registration
+3. [ ] API endpoints:
+   - `GET /api/referral/code` - Get user's code
+   - `GET /api/referral/stats` - Count, rewards earned
+   - `POST /api/referral/apply` - Apply code during signup
+4. [ ] Frontend: Referral section in Account tab with share buttons
+5. [ ] Signup flow: Optional referral code field
+6. [ ] Stripe integration: Apply credit on referee subscription
+7. [ ] Referral landing shows banner: "John invited you - get 14 days free"
+
+---
+
+## GROWTH-003: Share Quote (Email/SMS/Link) (READY)
+
+**Scope**: Backend + Frontend (4h)
+**Impact**: Every shared quote is free marketing
+
+**Problem**: Contractors manually export PDF and email. Friction + missed marketing.
+
+**Share Options**: Email, SMS, Copy Link, WhatsApp
+
+**Implementation**:
+1. [ ] Add "Share" button to quote detail (prominent)
+2. [ ] Share modal with recipient input + channel selection
+3. [ ] API endpoints:
+   - `POST /api/quotes/{id}/share/email` - Send via Resend
+   - `POST /api/quotes/{id}/share` - Generate shareable token
+   - `GET /api/quotes/shared/{token}` - Public view (read-only)
+4. [ ] Professional email template with PDF + "Powered by Quoted" footer
+5. [ ] Public quote view: Branded, contractor info, "Get Quoted" CTA
+6. [ ] Track: quote_shared, share_method, shared_quote_viewed
+
+---
+
+## GROWTH-004: Landing Page Testimonials (READY)
+
+**Scope**: Frontend (2h)
+**Impact**: Social proof increases conversion
+
+**Implementation**:
+1. [ ] Add testimonials section to landing page (3-4 quotes)
+2. [ ] Each has: Quote text, name, business type, star rating
+3. [ ] Mobile-friendly layout
+4. [ ] Placeholder testimonials until real ones collected
+
+---
+
+## GROWTH-005: "Powered by Quoted" Branding (READY)
+
+**Scope**: Frontend (1h)
+**Impact**: Free marketing on every shared quote
+
+**Implementation**:
+1. [ ] Add subtle footer to PDF exports
+2. [ ] Add to public shared quote view
+3. [ ] Style: Logo + "Voice-to-quote for contractors" + link
+
+---
+
+## CONVERT-001: Analytics (PostHog) (READY)
+
+**Scope**: Backend + Frontend (4h)
+**Impact**: Can't optimize what you can't measure
+
+**Key Events**: landing_page_view, demo_started, signup_completed, first_quote_generated, quote_shared, referral_link_copied, upgrade_modal_opened, subscription_activated
+
+**Implementation**:
+1. [ ] Create PostHog account (free: 1M events/month)
+2. [ ] Add PostHog JS to frontend
+3. [ ] Track all key events
+4. [ ] Create funnels: Landing→Signup→Onboarding→FirstQuote, Demo→Signup
+
+---
+
+## CONVERT-002: Enhanced Empty States (READY)
+
+**Scope**: Frontend (2h)
+
+**Empty States to Enhance**:
+- My Quotes (no quotes): Illustration + "Create your first quote" + big CTA
+- Pricing Brain (no data): "Generate quotes and AI will learn"
+
+---
+
+## CONVERT-003: First Quote Celebration (READY)
+
+**Scope**: Frontend (1h)
+**Impact**: Reinforce activation moment, prompt referral
+
+**Implementation**: Modal after first quote with confetti, "You generated your first quote!" + referral CTA
+
+---
+
+## RETAIN-001: Engagement Email Series (READY)
+
+**Scope**: Backend (4h)
+**Dependencies**: PAY-004 (email service - COMPLETE)
+
+**Email Series**:
+1. Day 1 (post-first-quote): "Your first quote is ready!" + tip
+2. Day 3: "Pro tip: Rush job pricing" + invite CTA
+3. Day 5: "Did you know? Edit quotes anytime" + invite CTA
+4. Day 10: "You've generated X quotes!" + referral prompt
+
+**Key**: Every email includes referral CTA at bottom.
+
+---
+
+## RETAIN-002: Dormancy Re-engagement (READY)
+
+**Scope**: Backend (2h)
+
+**Triggers**:
+- 7 days inactive: "Quick check-in" email
+- 14 days inactive: "We've made improvements" email
+
+**Implementation**: Track last_active_at, daily cron checks for inactive users
+
+---
+
+## INFRA-001: Sentry Error Tracking (READY)
+
+**Scope**: Backend + Frontend (2h)
+
+**Implementation**:
+1. [ ] Add sentry-sdk[fastapi] to requirements
+2. [ ] Initialize in backend/main.py
+3. [ ] Add Sentry JS to frontend
+4. [ ] Configure alerts
+
+---
+
+## INFRA-002: Mobile Responsiveness Audit (READY)
+
+**Scope**: Frontend (4h)
+
+**Checklist**:
+1. [ ] Voice recording works on iOS Safari, Android Chrome
+2. [ ] Touch targets minimum 44x44px
+3. [ ] Modals fit on small screens
+4. [ ] Test on iPhone SE, iPhone 14, iPad
+
+---
+
+## INFRA-003: FAQ/Help Section (READY)
+
+**Scope**: Frontend (3h)
+
+**Topics**: Getting started, pricing/billing, using Quoted, troubleshooting
+
+**Implementation**: /help route, accordion FAQ, link from navigation
+
+---
+
 ## Code Review Queue
 
 | PR | Author | Reviewer | Status |
@@ -187,11 +394,11 @@ GET /api/billing/plans - Available pricing (public)
 
 | Date | Commit | Description | Status |
 |------|--------|-------------|--------|
-| 2025-12-02 | 6c7c94a | Add Pricing Brain Management UI (FEAT-001 Frontend) | **PENDING PUSH** |
-| 2025-12-02 | 28a98f9 | Add Customer edit endpoint for quotes (FEAT-002 Backend) | **PENDING PUSH** |
-| 2025-12-02 | fa0f7a4 | Add Edit customer info on existing quotes (FEAT-002 Frontend) | **PENDING PUSH** |
-| 2025-12-02 | 1361539 | Add Pricing Brain Management API (FEAT-001 Backend) | **PENDING PUSH** |
-| 2025-12-02 | 59883ef | Fix Randomize landing page slot animation (FIX-001) | **PENDING PUSH** |
+| 2025-12-02 | 6c7c94a | Add Pricing Brain Management UI (FEAT-001 Frontend) | **DEPLOYED** |
+| 2025-12-02 | 28a98f9 | Add Customer edit endpoint for quotes (FEAT-002 Backend) | **DEPLOYED** |
+| 2025-12-02 | fa0f7a4 | Add Edit customer info on existing quotes (FEAT-002 Frontend) | **DEPLOYED** |
+| 2025-12-02 | 1361539 | Add Pricing Brain Management API (FEAT-001 Backend) | **DEPLOYED** |
+| 2025-12-02 | 59883ef | Fix Randomize landing page slot animation (FIX-001) | **DEPLOYED** |
 | 2025-12-02 | b06b712 | Fix category matching - register categories on quote generation | **DEPLOYED** |
 | 2025-12-02 | 5a84de5 | Add billing column migrations for existing Postgres databases | **DEPLOYED** |
 | 2025-12-02 | 6aedad1 | Add annual billing interval support | **DEPLOYED** |

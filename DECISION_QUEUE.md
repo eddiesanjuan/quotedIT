@@ -27,7 +27,53 @@
 <!-- Type 4: Founder-only decisions -->
 <!-- Type 3: Propose-then-do decisions -->
 
-*No pending decisions*
+### DECISION-002: PostHog Analytics Integration
+**Type**: 3 (External Service Signup)
+**Added**: 2025-12-02 15:30 PST
+**Requested By**: CEO
+
+**Context**: Sprint 2 goal is 100 users by Dec 16. We need analytics to measure funnel performance, identify drop-off points, and optimize conversion. Can't improve what we can't measure.
+
+**Service**: PostHog (product analytics)
+- Free tier: 1M events/month (more than sufficient for beta)
+- Self-hostable if we ever need
+- Key events: landing→demo→signup→onboarding→first_quote→subscription
+
+**Options**:
+- [x] **A) Approve PostHog** - Free tier, industry standard, no lock-in
+- [ ] **B) Defer** - Launch without analytics (flying blind)
+
+**Recommendation**: Option A - analytics is critical for growth optimization
+
+**Impact of Delay**: Every day without analytics is a day we can't measure what's working
+
+**Founder Response**:
+>
+
+---
+
+### DECISION-003: Sentry Error Tracking Integration
+**Type**: 3 (External Service Signup)
+**Added**: 2025-12-02 15:30 PST
+**Requested By**: CEO
+
+**Context**: As we scale to 100 users, we need to catch errors before users report them. Currently have zero visibility into production errors.
+
+**Service**: Sentry (error tracking)
+- Free tier: 5K errors/month
+- FastAPI + JavaScript SDKs
+- Alerts when new errors occur
+
+**Options**:
+- [x] **A) Approve Sentry** - Free tier, industry standard, critical for production
+- [ ] **B) Defer** - Wait for users to report errors
+
+**Recommendation**: Option A - error visibility is production-critical
+
+**Impact of Delay**: Production errors go unnoticed until users complain
+
+**Founder Response**:
+>
 
 <!--
 Example format:
