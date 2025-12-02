@@ -8,10 +8,12 @@ Now persists to database instead of in-memory storage.
 from typing import Optional, List
 from datetime import datetime
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 
 from ..services import get_onboarding_service, get_database_service
+from ..services.auth import get_current_contractor
+from ..models.database import Contractor
 from ..prompts import get_setup_system_prompt
 
 
@@ -184,9 +186,13 @@ async def continue_setup(session_id: str, request: ContinueSetupRequest):
 
 
 @router.post("/{session_id}/complete", response_model=PricingModelResponse)
-async def complete_setup(session_id: str):
+async def complete_setup(
+    session_id: str,
+    contractor: Contractor = Depends(get_current_contractor),
+):
     """
     Complete the setup and extract the pricing model.
+    Requires authentication. Saves pricing model to the contractor's record.
 
     Call this when the interview is done to get the structured pricing model.
     """
@@ -219,12 +225,37 @@ async def complete_setup(session_id: str):
 
         pricing_model = await onboarding_service.extract_pricing_model(session)
 
-        # Update database - mark as complete and store extracted data
+        # Update setup_conversation - mark as complete and store extracted data
         await db.update_setup_conversation(
             conversation_id=session_id,
             status="completed",
             extracted_data=pricing_model,
         )
+
+        # Save pricing model to the contractor's record in pricing_models table
+        existing_pricing = await db.get_pricing_model(contractor.id)
+        if existing_pricing:
+            # Update existing pricing model
+            await db.update_pricing_model(
+                contractor_id=contractor.id,
+                labor_rate_hourly=pricing_model.get("labor_rate_hourly"),
+                helper_rate_hourly=pricing_model.get("helper_rate_hourly"),
+                material_markup_percent=pricing_model.get("material_markup_percent", 20.0),
+                minimum_job_amount=pricing_model.get("minimum_job_amount"),
+                pricing_knowledge=pricing_model.get("pricing_knowledge", {}),
+                pricing_notes=pricing_model.get("pricing_notes"),
+            )
+        else:
+            # Create new pricing model
+            await db.create_pricing_model(
+                contractor_id=contractor.id,
+                labor_rate_hourly=pricing_model.get("labor_rate_hourly"),
+                helper_rate_hourly=pricing_model.get("helper_rate_hourly"),
+                material_markup_percent=pricing_model.get("material_markup_percent", 20.0),
+                minimum_job_amount=pricing_model.get("minimum_job_amount"),
+                pricing_knowledge=pricing_model.get("pricing_knowledge", {}),
+                pricing_notes=pricing_model.get("pricing_notes"),
+            )
 
         return PricingModelResponse(**pricing_model)
 

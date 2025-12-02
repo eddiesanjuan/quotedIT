@@ -6,10 +6,12 @@ Handles contractor registration, profile management, and pricing models.
 from typing import Optional, List
 from datetime import datetime
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel, EmailStr
 
-from ..services import get_learning_service
+from ..services import get_learning_service, get_database_service
+from ..services.auth import get_current_contractor
+from ..models.database import Contractor
 
 
 router = APIRouter()
@@ -210,38 +212,54 @@ async def get_contractor(contractor_id: str):
 
 @router.get("/{contractor_id}/pricing", response_model=PricingModelResponse)
 async def get_pricing_model(contractor_id: str):
-    """Get a contractor's pricing model."""
-    if contractor_id not in _pricing_models:
-        raise HTTPException(status_code=404, detail="Contractor not found")
+    """Get a contractor's pricing model from database."""
+    db = get_database_service()
+    pricing_model = await db.get_pricing_model(contractor_id)
 
-    return PricingModelResponse(**_pricing_models[contractor_id])
+    if not pricing_model:
+        raise HTTPException(status_code=404, detail="Pricing model not found")
+
+    return PricingModelResponse(
+        labor_rate_hourly=pricing_model.labor_rate_hourly,
+        helper_rate_hourly=pricing_model.helper_rate_hourly,
+        material_markup_percent=pricing_model.material_markup_percent or 20.0,
+        minimum_job_amount=pricing_model.minimum_job_amount,
+        pricing_knowledge=pricing_model.pricing_knowledge or {},
+        pricing_notes=pricing_model.pricing_notes,
+        correction_count=0,
+        last_learning_at=pricing_model.updated_at.isoformat() if pricing_model.updated_at else None,
+    )
 
 
 @router.put("/{contractor_id}/pricing", response_model=PricingModelResponse)
-async def update_pricing_model(contractor_id: str, update: PricingModelUpdate):
-    """Update a contractor's pricing model."""
-    if contractor_id not in _pricing_models:
-        raise HTTPException(status_code=404, detail="Contractor not found")
+async def update_pricing_model_endpoint(contractor_id: str, update: PricingModelUpdate):
+    """Update a contractor's pricing model in database."""
+    db = get_database_service()
+    pricing_model = await db.get_pricing_model(contractor_id)
 
-    model = _pricing_models[contractor_id]
+    if not pricing_model:
+        raise HTTPException(status_code=404, detail="Pricing model not found")
 
-    if update.labor_rate_hourly is not None:
-        model["labor_rate_hourly"] = update.labor_rate_hourly
+    # Update using the database service
+    updated = await db.update_pricing_model(
+        contractor_id=contractor_id,
+        labor_rate_hourly=update.labor_rate_hourly,
+        helper_rate_hourly=update.helper_rate_hourly,
+        material_markup_percent=update.material_markup_percent,
+        minimum_job_amount=update.minimum_job_amount,
+        pricing_notes=update.pricing_notes,
+    )
 
-    if update.helper_rate_hourly is not None:
-        model["helper_rate_hourly"] = update.helper_rate_hourly
-
-    if update.material_markup_percent is not None:
-        model["material_markup_percent"] = update.material_markup_percent
-
-    if update.minimum_job_amount is not None:
-        model["minimum_job_amount"] = update.minimum_job_amount
-
-    if update.pricing_notes is not None:
-        model["pricing_notes"] = update.pricing_notes
-
-    _pricing_models[contractor_id] = model
-    return PricingModelResponse(**model)
+    return PricingModelResponse(
+        labor_rate_hourly=updated.labor_rate_hourly,
+        helper_rate_hourly=updated.helper_rate_hourly,
+        material_markup_percent=updated.material_markup_percent or 20.0,
+        minimum_job_amount=updated.minimum_job_amount,
+        pricing_knowledge=updated.pricing_knowledge or {},
+        pricing_notes=updated.pricing_notes,
+        correction_count=0,
+        last_learning_at=updated.updated_at.isoformat() if updated.updated_at else None,
+    )
 
 
 @router.get("/{contractor_id}/terms", response_model=TermsResponse)
