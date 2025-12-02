@@ -5,6 +5,69 @@ These prompts guide the initial conversation to learn a contractor's pricing mod
 
 from typing import Optional
 
+# Import pricing template data for Type C coaching
+try:
+    from ..data.pricing_templates import PRICING_TEMPLATES
+except ImportError:
+    PRICING_TEMPLATES = {}
+
+
+def _get_type_c_coaching_context(business_type: str) -> str:
+    """
+    Generate Type C coaching context with industry-specific pricing guidance.
+    Used when the user doesn't know how to price their work.
+    """
+    # Try to find matching pricing template
+    template = PRICING_TEMPLATES.get(business_type)
+
+    if not template:
+        # Generic fallback if no template exists
+        return """
+## Type C Coaching Data (Generic)
+
+If the user is Type C (pricing-uncertain), provide general guidance:
+- Suggest hourly + materials as a starting point
+- Ask about their desired income and work backwards
+- Encourage them to research competitors
+- Start simple and refine over time
+"""
+
+    # Build industry-specific coaching context
+    approach = template.get("approach_description", "")
+    primary = template.get("primary_pricing", {})
+    additional = template.get("additional_rates", [])
+    tips = template.get("pricing_tips", [])
+
+    rate_range = primary.get("base_rate_range", [0, 0])
+    suggested = primary.get("suggested_default", 0)
+    unit = primary.get("unit", "")
+    label = primary.get("label", "rate")
+
+    context = f"""
+## Type C Coaching Data for {template.get('display_name', business_type)}
+
+**Recommended Approach**: {approach}
+
+**Primary Pricing**:
+- {label}: ${rate_range[0]}-${rate_range[1]} per {unit}
+- Suggested starting point: ${suggested} per {unit}
+
+**Additional Rates to Consider**:
+"""
+
+    for rate in additional[:3]:  # Top 3 most important
+        rate_name = rate.get("label", "")
+        rate_range = rate.get("range", [0, 0])
+        rate_desc = rate.get("description", "")
+        context += f"- {rate_name}: ${rate_range[0]}-${rate_range[1]} ({rate_desc})\n"
+
+    if tips:
+        context += "\n**Coaching Tips**:\n"
+        for tip in tips[:3]:  # Top 3 tips
+            context += f"- {tip}\n"
+
+    return context
+
 
 def get_setup_system_prompt(user_name: str, business_type: str) -> str:
     """
@@ -14,6 +77,9 @@ def get_setup_system_prompt(user_name: str, business_type: str) -> str:
 
     TRULY ADAPTIVE: Detects their sophistication level and adapts accordingly.
     """
+
+    # Get industry-specific Type C coaching data
+    type_c_context = _get_type_c_coaching_context(business_type)
 
     return f"""You are a friendly pricing assistant helping {user_name} set up their quoting system for {business_type}.
 
@@ -43,10 +109,12 @@ They know roughly what to charge but don't have formal rates.
 
 ### Type C: "I'm not sure how to price"
 They're new or struggle with pricing.
-→ YOUR JOB: Help them build a pricing structure. Guide them through:
-  - "What do you need to make per hour/day to be profitable?"
-  - "What do competitors charge for similar work?"
-  - "Let's start simple - for a basic [job type], what would feel right?"
+→ YOUR JOB: Coach them through building simple, industry-appropriate pricing. Be supportive and specific:
+  - Acknowledge their situation warmly: "No worries, let's build something simple together"
+  - Suggest industry-specific approaches from their trade
+  - Provide concrete number ranges based on typical market rates
+  - Ask guided questions (not open-ended ones that leave them lost)
+  - Make it conversational, not robotic
 → Build something simple they can refine over time.
 
 ## Adaptive Questioning Strategy
@@ -116,6 +184,49 @@ If they say "I use a spreadsheet with formulas":
 If they list multiple services:
 → "So you do [X, Y, and Z]. Do you price those differently? Walk me through what a typical [X] costs versus a typical [Y]."
 
+## Type C Coaching Guidance (Pricing-Uncertain Users)
+
+When you detect a Type C user (doesn't know how to price), provide industry-specific coaching:
+
+**Step 1: Acknowledge and reassure**
+"No worries at all - a lot of contractors start without formal pricing. Let's build something simple together that you can refine as you go."
+
+**Step 2: Suggest industry approach**
+Based on their trade, suggest the most common pricing method:
+- Electricians/Plumbers/HVAC: "Most electricians start simple: an hourly rate plus materials, with a minimum service call charge."
+- Roofers: "Roofing is typically priced per 'square' (100 sq ft of roof area)."
+- Cabinet makers: "Custom cabinets are usually priced per linear foot."
+- Painters: "Most painters charge per square foot for interior/exterior work."
+- Deck builders: "Decks are typically priced per square foot, with railing priced per linear foot."
+- Flooring: "Flooring is priced per square foot for labor, varies by material type."
+- General contractors: "Most GCs charge a percentage of total project cost (10-20%) or cost-plus markup."
+
+**Step 3: Provide concrete number ranges**
+Give them market-typical ranges for their area:
+- "Most electricians in your area charge $75-120/hour for labor"
+- "A typical service call minimum is $85-125"
+- "Roofing runs $350-650 per square for asphalt shingles"
+- "Cabinet work is typically $400-800 per linear foot depending on materials"
+
+**Step 4: Ask guided questions (not open-ended)**
+Instead of "What do you need to make per hour?" which leaves them lost, ask:
+- "Does something around $95/hour feel about right for your experience level? Higher or lower?"
+- "What about a minimum service call fee? Most electricians charge $85-150 just to show up. What feels right?"
+- "For materials, most contractors add 15-30% markup. Does 20% sound reasonable?"
+
+**Step 5: Build incrementally**
+Start with ONE core service type, get them comfortable, then expand:
+- "Let's start with your most common job - what's the typical project you do?"
+- "Perfect, let's nail down pricing for that first, then we can add the other services."
+
+**Key principles for Type C coaching:**
+- Warmth and encouragement (never judgmental)
+- Concrete numbers before asking their opinion
+- Guided questions with ranges, not open-ended blanks
+- Industry-specific language (their trade's terminology)
+- Start simple, build incrementally
+- Conversational tone, not robotic instructions
+
 ## When You're Done
 
 Summarize EVERYTHING you learned in their terms:
@@ -145,7 +256,9 @@ The user MUST click the button - don't let them think the conversation continues
 
 ## Remember
 
-You're not teaching them to price. You're LEARNING their method, whatever it is. Even "messy" or "inconsistent" pricing has patterns - find them."""
+You're not teaching them to price. You're LEARNING their method, whatever it is. Even "messy" or "inconsistent" pricing has patterns - find them.
+
+{type_c_context}"""
 
 
 def get_setup_initial_message(user_name: str, business_type: str) -> str:
