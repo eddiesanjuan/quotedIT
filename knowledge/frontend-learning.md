@@ -26,6 +26,9 @@
 
 | Date | Learning | Context |
 |------|----------|---------|
+| 2025-12-02 | Executive-approved messaging emphasizes "Right Estimate for Right Stage" | Replaces "Ballpark quotes. Not blueprints." - addresses fuzzy early project stage |
+| 2025-12-02 | "Qualify faster. Close more." becomes key tagline | Approved by exec team after messaging audit |
+| 2025-12-02 | Learning section leads with "Gets smarter with every correction" | Emphasizes continuous improvement and user-specific training |
 | 2025-12-02 | Legal pages match landing design with serif headings | Consistent brand across legal content |
 | 2025-12-02 | Legal content uses readable typography with line-height 1.8 | Optimized for dense legal text |
 | 2025-12-01 | Inline styles keep the single-file approach manageable | No build step, easy deployment |

@@ -10,8 +10,8 @@
 
 **Subject Lines:**
 1. I built something for you
-2. Your next quote in 30 seconds
-3. Voice-to-quote for contractors (beta invite)
+2. Stop wasting time on tire-kickers
+3. Qualify faster. Close more.
 
 **Send Timing:** Initial invitation
 
@@ -19,17 +19,17 @@
 
 Hey [Name],
 
-I've been building something for contractors who lose jobs to slow quotes.
+Stop wasting afternoons on people who were never going to buy.
 
-It's called Quoted. You speak the job, it sends the bid. 30 seconds instead of 30 minutes.
+I built Quoted for contractors who need to qualify leads fast. Voice the job details, get a ballpark in under 2 minutes.
 
-Voice-to-quote from the job site. Learns your pricing over time. No spreadsheets.
+If they're serious, build the detailed quote. If they flinch at the ballpark, you just saved an afternoon.
+
+Gets smarter with every correction. Your gut feeling, systematized.
 
 You're one of 15 contractors I'm inviting to test it first. Your feedback shapes what we build.
 
 Try it free for 7 days: https://quoted.it.com
-
-75 quotes included in your trial.
 
 Eddie
 
@@ -38,8 +38,8 @@ Eddie
 ## Email 2: Getting Started
 
 **Subject Lines:**
-1. Your first quote in 3 steps
-2. How to use Quoted (quick start)
+1. Qualify first, quote later
+2. Your first quote in 3 steps
 3. Welcome to Quoted
 
 **Send Timing:** Day 1 after signup
@@ -48,17 +48,17 @@ Eddie
 
 Welcome to Quoted.
 
-Here's how it works:
+The workflow: qualify first, then decide if the job's worth your time.
 
-1. **Record the job** - Speak naturally. "Two-bedroom repaint, walls and trim, customer wants Sherwin Williams."
-2. **Review the quote** - We generate line items with prices. Edit anything that's off.
-3. **Send it** - PDF goes straight to your customer.
+1. **Voice the basics** - "Two-bedroom repaint, walls and trim, Sherwin Williams."
+2. **Get your ballpark** - Under 2 minutes. Send it or keep it internal.
+3. **Edit what's off** - System learns from your corrections.
+
+Early-stage projects have fuzzy details. A ballpark shows if they're serious. Stop spending hours on unqualified leads.
 
 Start here: https://quoted.it.com
 
-You've got 75 quotes in your trial.
-
-**Pro tip**: The more detail you give, the better the quote. "20x12 kitchen" beats "kitchen remodel."
+**Pro tip**: More detail = better accuracy. "20x12 kitchen" beats "kitchen remodel."
 
 Eddie
 
@@ -68,7 +68,7 @@ Eddie
 
 **Subject Lines:**
 1. How's Quoted working for you?
-2. Day 4 - quick check-in
+2. It's getting smarter
 3. Your trial ends in 3 days
 
 **Send Timing:** Day 4 of trial
@@ -77,9 +77,9 @@ Eddie
 
 Quick check-in. How's Quoted working for you?
 
-One thing I want you to know: **it gets smarter as you use it.**
+One thing I want you to know: **it gets smarter with every correction.**
 
-Every time you edit a quote, the system learns. Your third bathroom remodel will be more accurate than your first.
+Every edit you make teaches the system. Your third bathroom remodel will be more accurate than your first. Your gut feeling, systematized.
 
 You've got 3 days left in your trial.
 
