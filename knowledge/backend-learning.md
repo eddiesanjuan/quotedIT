@@ -40,6 +40,7 @@
 | 2025-12-02 | Separate endpoint for customer edits avoids learning trigger | FEAT-002: PUT /customer endpoint for non-pricing updates, no learning overhead |
 | 2025-12-02 | Analytics service with graceful degradation pattern | CONVERT-001: PostHog tracking wraps all events in try/except, logs even without API key |
 | 2025-12-02 | Sentry initialization must happen before app creation | INFRA-001: Initialize Sentry SDK in main.py before FastAPI app instantiation |
+| 2025-12-02 | Referral system with automatic code generation | GROWTH-002: Unique codes from email (JOHN-A3X9), 14-day extended trial for referee, 1-month credit for referrer on subscription |
 
 ---
 
@@ -166,6 +167,54 @@ Both services follow "fail-safe" pattern:
 - All tracking wrapped in try/except
 - Events logged to console for debugging
 - Never block core business logic
+
+---
+
+## Referral System (GROWTH-002)
+
+### Implementation Details
+- **Code Generation**: Format is FIRSTNAME-XXXX (e.g., JOHN-A3X9) extracted from email username
+- **Uniqueness**: Collision detection with retry logic, timestamp fallback if needed
+- **Referee Benefit**: Extended trial from 7 to 14 days when using referral code
+- **Referrer Reward**: 1 month credit when referee subscribes to paid plan
+
+### Database Columns Added
+- `users.referral_code` - User's unique referral code (indexed, unique)
+- `users.referred_by_code` - Referral code used during signup (indexed)
+- `users.referral_count` - Count of successful referrals (incremented on subscription)
+- `users.referral_credits` - Months of credit earned (1 per successful referral)
+
+### API Endpoints
+- `GET /api/referral/code` - Get user's referral code
+- `GET /api/referral/stats` - Get referral count and credits
+- `GET /api/referral/link` - Get full shareable link (https://quoted.it.com/signup?ref=CODE)
+
+### Integration Points
+1. **Registration** (`backend/services/auth.py`):
+   - Auto-generates referral code on signup
+   - Accepts optional `referral_code` in UserCreate payload
+   - Applies referral code after trial initialization (extends to 14 days)
+
+2. **Billing** (`backend/services/billing.py`):
+   - Credits referrer when referee subscribes (checkout.session.completed webhook)
+   - Increments referrer's referral_count and referral_credits
+
+3. **Analytics** (PostHog events):
+   - `referral_code_generated` - When user gets their code
+   - `referral_code_applied` - When new user uses a code
+   - `referral_credit_earned` - When referrer earns a credit
+   - `signup_completed` - Now includes referral data
+   - `subscription_activated` - Now includes was_referred flag
+
+### Edge Cases Handled
+- Invalid referral code → HTTP 400, doesn't block registration (logged warning)
+- Self-referral → HTTP 400 "Cannot use your own referral code"
+- Code collision → Retry with new random suffix, fallback to timestamp
+- Missing referrer → Logged warning, doesn't block credit flow
+
+### Configuration
+- `frontend_url` setting in config.py for generating shareable links
+- Default: "https://quoted.it.com"
 
 ---
 

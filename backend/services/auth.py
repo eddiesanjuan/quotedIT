@@ -32,6 +32,7 @@ class UserCreate(BaseModel):
     business_name: str
     owner_name: Optional[str] = None
     phone: Optional[str] = None
+    referral_code: Optional[str] = None  # Optional referral code to apply during signup
 
 
 class UserLogin(BaseModel):
@@ -127,6 +128,7 @@ async def register_user(db: AsyncSession, user_data: UserCreate) -> tuple[User, 
     """
     Register a new user and create their contractor profile.
     Also creates default pricing model and terms so they can start quoting immediately.
+    Generates referral code and applies referral if provided.
     Returns (user, contractor) tuple.
     """
     # Check if email already exists
@@ -137,6 +139,10 @@ async def register_user(db: AsyncSession, user_data: UserCreate) -> tuple[User, 
             detail="Email already registered"
         )
 
+    # Generate unique referral code for this user
+    from .referral import ReferralService
+    referral_code = await ReferralService.ensure_unique_referral_code(db, user_data.email)
+
     # Create user
     user = User(
         id=generate_uuid(),
@@ -144,6 +150,7 @@ async def register_user(db: AsyncSession, user_data: UserCreate) -> tuple[User, 
         hashed_password=hash_password(user_data.password),
         is_active=True,
         is_verified=False,  # Could add email verification later
+        referral_code=referral_code,  # Assign generated referral code
     )
     db.add(user)
 
@@ -192,6 +199,14 @@ async def register_user(db: AsyncSession, user_data: UserCreate) -> tuple[User, 
     # Initialize trial period for new user
     from .billing import BillingService
     await BillingService.initialize_trial(db, user.id)
+
+    # Apply referral code if provided (extends trial to 14 days)
+    if user_data.referral_code:
+        try:
+            await ReferralService.apply_referral_code(db, user, user_data.referral_code)
+        except HTTPException as e:
+            # Log but don't block registration if referral code is invalid
+            print(f"Warning: Failed to apply referral code {user_data.referral_code}: {e.detail}")
 
     return user, contractor
 

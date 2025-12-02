@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     app_version: str = "0.1.0"
     debug: bool = True
     environment: str = "development"  # development, production
+    frontend_url: str = "https://quoted.it.com"  # For generating shareable referral links
 
     # API Keys
     anthropic_api_key: str = ""

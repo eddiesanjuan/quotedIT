@@ -48,6 +48,12 @@ class User(Base):
     billing_cycle_start = Column(DateTime, nullable=True)  # Start of current billing period
     trial_ends_at = Column(DateTime, nullable=True)  # When trial expires
 
+    # Referrals (GROWTH-002)
+    referral_code = Column(String(20), unique=True, nullable=True, index=True)  # User's unique referral code (e.g., JOHN-A3X9)
+    referred_by_code = Column(String(20), nullable=True, index=True)  # Referral code used when signing up
+    referral_count = Column(Integer, default=0)  # Number of successful referrals (referees who subscribed)
+    referral_credits = Column(Integer, default=0)  # Months of credit earned from referrals
+
     # Relationship to contractor (one-to-one)
     contractor = relationship("Contractor", back_populates="user", uselist=False)
 
@@ -570,6 +576,43 @@ async def run_migrations(engine):
                 WHERE table_name = 'users' AND column_name = 'trial_ends_at'
             """,
             "alter_sql": "ALTER TABLE users ADD COLUMN trial_ends_at TIMESTAMP"
+        },
+        # Referral columns (GROWTH-002)
+        {
+            "table": "users",
+            "column": "referral_code",
+            "check_sql": """
+                SELECT column_name FROM information_schema.columns
+                WHERE table_name = 'users' AND column_name = 'referral_code'
+            """,
+            "alter_sql": "ALTER TABLE users ADD COLUMN referral_code VARCHAR(20)"
+        },
+        {
+            "table": "users",
+            "column": "referred_by_code",
+            "check_sql": """
+                SELECT column_name FROM information_schema.columns
+                WHERE table_name = 'users' AND column_name = 'referred_by_code'
+            """,
+            "alter_sql": "ALTER TABLE users ADD COLUMN referred_by_code VARCHAR(20)"
+        },
+        {
+            "table": "users",
+            "column": "referral_count",
+            "check_sql": """
+                SELECT column_name FROM information_schema.columns
+                WHERE table_name = 'users' AND column_name = 'referral_count'
+            """,
+            "alter_sql": "ALTER TABLE users ADD COLUMN referral_count INTEGER DEFAULT 0"
+        },
+        {
+            "table": "users",
+            "column": "referral_credits",
+            "check_sql": """
+                SELECT column_name FROM information_schema.columns
+                WHERE table_name = 'users' AND column_name = 'referral_credits'
+            """,
+            "alter_sql": "ALTER TABLE users ADD COLUMN referral_credits INTEGER DEFAULT 0"
         },
     ]
 

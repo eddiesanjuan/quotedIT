@@ -26,6 +26,10 @@
 
 | Date | Learning | Context |
 |------|----------|---------|
+| 2025-12-02 | Referral tab added between Billing and Pricing Brain tabs | Account section now has 3 tabs, requires updating all toggle functions |
+| 2025-12-02 | URL params stored in localStorage for cross-page persistence | Referral code from ?ref= saved in localStorage, included in signup API call |
+| 2025-12-02 | Landing page referral banner shown conditionally with gradient | Green gradient banner (#10b981 → #059669) displays when ?ref= present in URL |
+| 2025-12-02 | Email/SMS share uses window.open with pre-filled templates | Native mailto: and sms: protocols with encodeURIComponent for message text |
 | 2025-12-02 | PostHog + Sentry integration via Jinja2 templates | Backend passes API keys to frontend via template variables, defensive checks prevent errors when keys not configured |
 | 2025-12-02 | Analytics events tracked inline in function success paths | PostHog events tracked after successful operations (quote_generated, quote_edited, upgrade_modal_opened) |
 | 2025-12-02 | Tab navigation pattern for multi-view sections | Account section uses tabs (Billing + Pricing Brain) with active state management and lazy loading |

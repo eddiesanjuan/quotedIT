@@ -70,6 +70,16 @@ async def register(
             properties={
                 "business_name": contractor.business_name,
                 "primary_trade": contractor.primary_trade,
+                "referral_code": user.referral_code,
+                "used_referral": bool(user.referred_by_code),
+            }
+        )
+        # Track referral code generation
+        analytics_service.track_event(
+            user_id=str(user.id),
+            event_name="referral_code_generated",
+            properties={
+                "referral_code": user.referral_code,
             }
         )
     except Exception as e:

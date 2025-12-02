@@ -281,6 +281,13 @@ class BillingService:
 
         await db.commit()
 
+        # Credit referrer if this user was referred (GROWTH-002)
+        from .referral import ReferralService
+        try:
+            await ReferralService.credit_referrer(db, user)
+        except Exception as e:
+            print(f"Warning: Failed to credit referrer: {e}")
+
         # Track subscription activation
         try:
             analytics_service.track_event(
@@ -290,6 +297,7 @@ class BillingService:
                     "plan_tier": plan_tier,
                     "subscription_id": subscription.id,
                     "billing_interval": session["metadata"].get("billing_interval", "monthly"),
+                    "was_referred": bool(user.referred_by_code),
                 }
             )
         except Exception as e:
