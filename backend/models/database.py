@@ -302,12 +302,17 @@ class SetupConversation(Base):
     """
     Stores the setup/onboarding conversation for a contractor.
     This is how we initially learn their pricing model.
+
+    Can be created before a contractor record exists (during onboarding flow).
     """
     __tablename__ = "setup_conversations"
 
     id = Column(String, primary_key=True, default=generate_uuid)
-    contractor_id = Column(String, ForeignKey("contractors.id"), nullable=False)
+    contractor_id = Column(String, ForeignKey("contractors.id"), nullable=True)  # Nullable for pre-signup interviews
     created_at = Column(DateTime, default=datetime.utcnow)
+
+    # Session metadata (contractor_name, primary_trade, initial_message, etc.)
+    session_data = Column(JSON)
 
     # The full conversation
     messages = Column(JSON)  # List of {role, content} messages

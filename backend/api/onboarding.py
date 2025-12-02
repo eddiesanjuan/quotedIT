@@ -1,6 +1,8 @@
 """
 Onboarding API routes for Quoted.
 Handles the setup interview process for new contractors.
+
+Now persists to database instead of in-memory storage.
 """
 
 from typing import Optional, List
@@ -9,7 +11,7 @@ from datetime import datetime
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-from ..services import get_onboarding_service
+from ..services import get_onboarding_service, get_database_service
 
 
 router = APIRouter()
@@ -63,8 +65,18 @@ class PricingModelResponse(BaseModel):
     follow_up_questions: Optional[List[str]] = None
 
 
-# In-memory session storage
-_sessions = {}
+def _conversation_to_response(conversation) -> dict:
+    """Convert database SetupConversation to API response format."""
+    session_data = conversation.session_data or {}
+    return {
+        "session_id": conversation.id,
+        "contractor_name": session_data.get("contractor_name", ""),
+        "primary_trade": session_data.get("primary_trade", ""),
+        "status": conversation.status,
+        "initial_message": session_data.get("initial_message", ""),
+        "messages": conversation.messages or [],
+        "started_at": conversation.created_at.isoformat() if conversation.created_at else "",
+    }
 
 
 @router.post("/start", response_model=SetupSessionResponse)
@@ -76,15 +88,34 @@ async def start_setup(request: StartSetupRequest):
     """
     try:
         onboarding_service = get_onboarding_service()
+        db = get_database_service()
 
+        # Generate the initial session data
         session = await onboarding_service.start_setup(
             contractor_name=request.contractor_name,
             primary_trade=request.primary_trade,
         )
 
-        _sessions[session["session_id"]] = session
+        # Persist to database
+        conversation = await db.create_setup_conversation(
+            messages=session.get("messages", []),
+            session_data={
+                "contractor_name": session.get("contractor_name"),
+                "primary_trade": session.get("primary_trade"),
+                "initial_message": session.get("initial_message"),
+            },
+        )
 
-        return SetupSessionResponse(**session)
+        # Return response with DB-generated ID
+        return SetupSessionResponse(
+            session_id=conversation.id,
+            contractor_name=request.contractor_name,
+            primary_trade=request.primary_trade,
+            status=conversation.status,
+            initial_message=session.get("initial_message", ""),
+            messages=conversation.messages or [],
+            started_at=conversation.created_at.isoformat() if conversation.created_at else datetime.utcnow().isoformat(),
+        )
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -97,20 +128,48 @@ async def continue_setup(session_id: str, request: ContinueSetupRequest):
 
     Send the contractor's response and get the next AI message.
     """
-    if session_id not in _sessions:
+    db = get_database_service()
+
+    # Fetch from database
+    conversation = await db.get_setup_conversation(session_id)
+    if not conversation:
         raise HTTPException(status_code=404, detail="Session not found")
 
     try:
         onboarding_service = get_onboarding_service()
 
-        session = await onboarding_service.continue_setup(
-            session=_sessions[session_id],
+        # Reconstruct session format for the service
+        session_data = conversation.session_data or {}
+        session = {
+            "session_id": conversation.id,
+            "contractor_name": session_data.get("contractor_name", ""),
+            "primary_trade": session_data.get("primary_trade", ""),
+            "status": conversation.status,
+            "initial_message": session_data.get("initial_message", ""),
+            "messages": conversation.messages or [],
+            "started_at": conversation.created_at.isoformat() if conversation.created_at else "",
+        }
+
+        # Continue the conversation
+        updated_session = await onboarding_service.continue_setup(
+            session=session,
             user_message=request.message,
         )
 
-        _sessions[session_id] = session
+        # Update database
+        await db.update_setup_conversation(
+            conversation_id=session_id,
+            messages=updated_session.get("messages", []),
+            session_data={
+                **session_data,
+                "initial_message": updated_session.get("initial_message", session_data.get("initial_message")),
+            },
+        )
 
-        return SetupSessionResponse(**session)
+        # Fetch updated conversation
+        conversation = await db.get_setup_conversation(session_id)
+
+        return SetupSessionResponse(**_conversation_to_response(conversation))
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -123,12 +182,13 @@ async def complete_setup(session_id: str):
 
     Call this when the interview is done to get the structured pricing model.
     """
-    if session_id not in _sessions:
+    db = get_database_service()
+
+    conversation = await db.get_setup_conversation(session_id)
+    if not conversation:
         raise HTTPException(status_code=404, detail="Session not found")
 
-    session = _sessions[session_id]
-
-    if len(session.get("messages", [])) < 4:
+    if len(conversation.messages or []) < 4:
         raise HTTPException(
             status_code=400,
             detail="Interview too short. Please continue the conversation first."
@@ -137,13 +197,26 @@ async def complete_setup(session_id: str):
     try:
         onboarding_service = get_onboarding_service()
 
+        # Reconstruct session format
+        session_data = conversation.session_data or {}
+        session = {
+            "session_id": conversation.id,
+            "contractor_name": session_data.get("contractor_name", ""),
+            "primary_trade": session_data.get("primary_trade", ""),
+            "status": conversation.status,
+            "initial_message": session_data.get("initial_message", ""),
+            "messages": conversation.messages or [],
+            "started_at": conversation.created_at.isoformat() if conversation.created_at else "",
+        }
+
         pricing_model = await onboarding_service.extract_pricing_model(session)
 
-        # Mark session as complete
-        session["status"] = "completed"
-        session["completed_at"] = datetime.utcnow().isoformat()
-        session["extracted_model"] = pricing_model
-        _sessions[session_id] = session
+        # Update database - mark as complete and store extracted data
+        await db.update_setup_conversation(
+            conversation_id=session_id,
+            status="completed",
+            extracted_data=pricing_model,
+        )
 
         return PricingModelResponse(**pricing_model)
 
@@ -179,37 +252,38 @@ async def quick_setup(request: QuickSetupRequest):
 @router.get("/{session_id}", response_model=SetupSessionResponse)
 async def get_session(session_id: str):
     """Get the current state of a setup session."""
-    if session_id not in _sessions:
+    db = get_database_service()
+
+    conversation = await db.get_setup_conversation(session_id)
+    if not conversation:
         raise HTTPException(status_code=404, detail="Session not found")
 
-    return SetupSessionResponse(**_sessions[session_id])
+    return SetupSessionResponse(**_conversation_to_response(conversation))
 
 
 @router.get("/{session_id}/messages")
 async def get_messages(session_id: str):
     """Get all messages from a setup session."""
-    if session_id not in _sessions:
+    db = get_database_service()
+
+    conversation = await db.get_setup_conversation(session_id)
+    if not conversation:
         raise HTTPException(status_code=404, detail="Session not found")
 
     return {
-        "session_id": session_id,
-        "messages": _sessions[session_id].get("messages", []),
-        "status": _sessions[session_id].get("status", "unknown"),
+        "session_id": conversation.id,
+        "messages": conversation.messages or [],
+        "status": conversation.status,
     }
 
 
 @router.get("/")
 async def list_sessions():
     """List all sessions (for debugging/demo)."""
+    # Note: This returns empty for now - would need a list_setup_conversations method
+    # Keeping backward compatibility but encouraging use of specific session endpoints
     return {
-        "sessions": [
-            {
-                "session_id": s["session_id"],
-                "contractor_name": s.get("contractor_name"),
-                "status": s.get("status"),
-                "message_count": len(s.get("messages", [])),
-            }
-            for s in _sessions.values()
-        ],
-        "count": len(_sessions),
+        "sessions": [],
+        "count": 0,
+        "note": "Use specific session_id endpoints. Session list not implemented for database storage.",
     }

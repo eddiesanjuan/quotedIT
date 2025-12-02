@@ -481,16 +481,29 @@ class DatabaseService:
 
     # ============== SETUP CONVERSATION OPERATIONS ==============
 
+    async def get_setup_conversation(
+        self,
+        conversation_id: str,
+    ) -> Optional[SetupConversation]:
+        """Get a setup conversation by ID."""
+        async with async_session_factory() as session:
+            result = await session.execute(
+                select(SetupConversation).where(SetupConversation.id == conversation_id)
+            )
+            return result.scalar_one_or_none()
+
     async def create_setup_conversation(
         self,
-        contractor_id: str,
         messages: List[Dict],
+        session_data: Optional[Dict] = None,
+        contractor_id: Optional[str] = None,
     ) -> SetupConversation:
         """Create a setup conversation record."""
         async with async_session_factory() as session:
             conversation = SetupConversation(
                 contractor_id=contractor_id,
                 messages=messages,
+                session_data=session_data or {},
                 status="in_progress",
             )
             session.add(conversation)
@@ -502,6 +515,7 @@ class DatabaseService:
         self,
         conversation_id: str,
         messages: Optional[List[Dict]] = None,
+        session_data: Optional[Dict] = None,
         status: Optional[str] = None,
         extracted_data: Optional[Dict] = None,
     ) -> Optional[SetupConversation]:
@@ -516,6 +530,8 @@ class DatabaseService:
 
             if messages is not None:
                 conversation.messages = messages
+            if session_data is not None:
+                conversation.session_data = session_data
             if status is not None:
                 conversation.status = status
                 if status == "completed":
