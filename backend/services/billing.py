@@ -147,12 +147,16 @@ class BillingService:
         db: AsyncSession,
         user_id: str,
         plan_tier: str,
+        billing_interval: str,
         success_url: str,
         cancel_url: str,
     ) -> Dict[str, str]:
         """
         Create a Stripe checkout session for subscription.
         Returns checkout URL and session ID.
+
+        Args:
+            billing_interval: "monthly" or "annual"
         """
         result = await db.execute(select(User).where(User.id == user_id))
         user = result.scalar_one_or_none()
@@ -182,7 +186,10 @@ class BillingService:
         else:
             customer = stripe.Customer.retrieve(user.stripe_customer_id)
 
-        # Get price for this product
+        # Get price for this product with correct interval
+        # Map billing_interval to Stripe interval
+        stripe_interval = "year" if billing_interval == "annual" else "month"
+
         prices = stripe.Price.list(product=plan_config["product_id"], active=True)
         if not prices.data:
             raise HTTPException(
@@ -190,12 +197,23 @@ class BillingService:
                 detail=f"No active prices found for product {plan_config['product_id']}"
             )
 
+        # Find price with matching interval
+        matching_price = None
+        for price in prices.data:
+            if price.recurring and price.recurring.interval == stripe_interval:
+                matching_price = price
+                break
+
+        # Fallback to first price if no interval match
+        if not matching_price:
+            matching_price = prices.data[0]
+
         # Create checkout session
         session = stripe.checkout.Session.create(
             customer=customer.id,
             payment_method_types=["card"],
             line_items=[{
-                "price": prices.data[0].id,
+                "price": matching_price.id,
                 "quantity": 1,
             }],
             mode="subscription",

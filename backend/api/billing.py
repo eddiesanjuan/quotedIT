@@ -19,6 +19,7 @@ router = APIRouter()
 class CheckoutRequest(BaseModel):
     """Request to create a checkout session."""
     plan_tier: str  # "starter", "pro", or "team"
+    billing_interval: str = "monthly"  # "monthly" or "annual"
     success_url: str
     cancel_url: str
 
@@ -60,6 +61,7 @@ async def create_checkout_session(
             db=db,
             user_id=user["id"],
             plan_tier=request.plan_tier,
+            billing_interval=request.billing_interval,
             success_url=request.success_url,
             cancel_url=request.cancel_url,
         )
