@@ -27,44 +27,6 @@
 <!-- Type 4: Founder-only decisions -->
 <!-- Type 3: Propose-then-do decisions -->
 
-### DECISION-005: Demo Feature Strategic Direction
-**Type**: 3 (Product Strategy)
-**Added**: 2025-12-02
-**Requested By**: CEO (after Executive Council review)
-
-**Context**: Demo page had a JavaScript bug (now fixed). However, you raised a strategic concern:
-
-> "When I think about it, I don't know how much I really love the idea without at least a big disclaimer stating that it would not work nearly as good as it would if you had done the interview. To be honest, I don't really know how it would work without an interview."
-
-**Bug Status**: Fixed. Added disclaimer. Demo now works.
-
-**Executive Council Results** (2-2 split):
-
-| Executive | Vote | Reasoning |
-|-----------|------|-----------|
-| **CGO** | Option B | Video reframes demo from "accuracy proof" to "workflow proof" - higher conversion |
-| **CPO** | Option B | Generic quotes can't show personalization value; animation shows full value story |
-| **CFO** | Option C | Founder doubt is a signal; engineering better spent on core user path |
-| **CMO** | Option C | Demo contradicts "learns YOUR pricing" positioning; interview becomes moat |
-
-**Key Insight**: All executives agreed Option A (current disclaimer approach) is the WEAKEST choice.
-
-**Options**:
-- [ ] **B) Video/Animation Demo** - Replace interactive demo with animated walkthrough showing interview→quote→learning flow. Shows workflow without accuracy concerns. (4-6h engineering)
-- [ ] **C) Remove Demo** - Delete /demo route. Focus conversion on signup→interview path. Simplify funnel. Interview becomes competitive advantage, not friction. (0.5h engineering)
-
-**Current State (Interim)**:
-- Bug fixed (item.amount, item.name)
-- Disclaimer added: "Demo uses generic pricing. Sign up for personalized quotes that learn YOUR pricing."
-- Demo functional but with expectation-setting
-
-**Recommendation**: Either B or C is better than current state. Your original concern is valid - demo can't show the product's real value (personalization).
-
-**Founder Response**:
->
-
----
-
 ### DECISION-004: Bespoke Onboarding Offer Structure
 **Type**: 4 (Strategic - Pricing/Positioning)
 **Added**: 2025-12-02 19:30 PST
@@ -182,6 +144,7 @@ Example format:
 
 | ID | Decision | Approved | Executed |
 |----|----------|----------|----------|
+| DECISION-005 | Video/Animation Demo (Option B) | 2025-12-02 | 2025-12-02 |
 | DNS-001 | Configure quoted.it.com DNS | 2025-12-01 | 2025-12-02 (LIVE) |
 
 ---
@@ -200,6 +163,7 @@ Track patterns in decisions for learning:
 
 | Date | ID | Type | Domain | Outcome | Time to Decision |
 |------|-----|------|--------|---------|-----------------|
+| 2025-12-02 | DECISION-005 | 3 | Product Strategy | Approved (Option B) | <24h |
 | 2025-12-01 | DNS-001 | 3 | Infrastructure | Approved | <24h |
 
 ---
