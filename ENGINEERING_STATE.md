@@ -1,6 +1,6 @@
 # Engineering State
 
-**Last Updated**: 2025-12-02 18:30 PST
+**Last Updated**: 2025-12-02 21:00 PST
 **Updated By**: CEO (AI)
 
 ---
@@ -18,8 +18,8 @@
 
 | Environment | URL | Status | Version |
 |-------------|-----|--------|---------|
-| **Production** | https://web-production-0550.up.railway.app | LIVE | 21f3291 |
-| **Custom Domain** | https://quoted.it.com | LIVE (SSL ACTIVE) | 21f3291 |
+| **Production** | https://web-production-0550.up.railway.app | LIVE | 9eba403 |
+| **Custom Domain** | https://quoted.it.com | LIVE (SSL ACTIVE) | 9eba403 |
 
 **Railway Project**: Connected to main branch, auto-deploys on push
 
@@ -42,23 +42,23 @@
 | ~~FIX-001~~ | ~~Randomize Slot Animation Order~~ | ~~Frontend~~ | **COMPLETE** | Committed 59883ef |
 | ~~GROWTH-001~~ | ~~Demo Mode (Try Before Signup)~~ | ~~Backend~~ | **COMPLETE** | Committed c7a91d3 (backend done, frontend needed) |
 | ~~GROWTH-002~~ | ~~Referral System with Rewards~~ | ~~Backend + Frontend~~ | **COMPLETE** | Committed 7bc67db + 2db4d5d |
-| GROWTH-003 | Share Quote (Email/SMS/Link) | Backend + Frontend | **READY** | None |
+| ~~GROWTH-003~~ | ~~Share Quote (Email/SMS/Link)~~ | ~~Backend + Frontend~~ | **COMPLETE** | Committed 408586f |
 | ~~GROWTH-004~~ | ~~Landing Page Testimonials~~ | ~~Frontend~~ | **COMPLETE** | Committed 21f3291 |
 | ~~GROWTH-005~~ | ~~"Powered by Quoted" Branding~~ | ~~Frontend~~ | **COMPLETE** | Committed 21f3291 |
 | ~~CONVERT-001~~ | ~~Analytics (PostHog)~~ | ~~Backend + Frontend~~ | **COMPLETE** | Committed 75eac78 |
-| CONVERT-002 | Enhanced Empty States | Frontend | **READY** | None |
+| ~~CONVERT-002~~ | ~~Enhanced Empty States~~ | ~~Frontend~~ | **COMPLETE** | Committed 8f7b635 |
 | ~~CONVERT-003~~ | ~~First Quote Celebration~~ | ~~Frontend~~ | **COMPLETE** | Committed 21f3291 |
-| RETAIN-001 | Engagement Email Series | Backend | **READY** | None |
-| RETAIN-002 | Dormancy Re-engagement Emails | Backend | **READY** | None |
+| ~~RETAIN-001~~ | ~~Engagement Email Series~~ | ~~Backend~~ | **COMPLETE** | Committed 732c643 |
+| ~~RETAIN-002~~ | ~~Dormancy Re-engagement Emails~~ | ~~Backend~~ | **COMPLETE** | Committed d9b7a36 |
 | ~~INFRA-001~~ | ~~Sentry Error Tracking~~ | ~~Backend + Frontend~~ | **COMPLETE** | Committed 75eac78 |
 | INFRA-002 | Mobile Responsiveness Audit | Frontend | **READY** | None |
-| INFRA-003 | FAQ/Help Section | Frontend | **READY** | None |
-| ONBOARD-001 | Industry/Trade Selection Step | Frontend + Backend | **READY** | None |
+| ~~INFRA-003~~ | ~~FAQ/Help Section~~ | ~~Frontend~~ | **COMPLETE** | Committed 7d4c86e |
+| ~~ONBOARD-001~~ | ~~Industry/Trade Selection Step~~ | ~~Frontend + Backend~~ | **COMPLETE** | Committed 5d0e693 + 19e304f |
 | ONBOARD-002 | Guided Quick Setup with Templates | Frontend + Backend | **READY** | None |
-| ONBOARD-003 | Industry Pricing Template Library | Backend | **READY** | None |
+| ~~ONBOARD-003~~ | ~~Industry Pricing Template Library~~ | ~~Backend~~ | **COMPLETE** | Committed 18284c6, 9eba403 |
 | ONBOARD-004 | Interview Type C Coaching Mode | Backend (prompts) | **READY** | None |
-| ONBOARD-005 | Expand Trade Defaults (20+ industries) | Backend | **READY** | None |
-| UX-001 | Improve Quote Input Placeholder Text | Frontend | **READY** | None |
+| ~~ONBOARD-005~~ | ~~Expand Trade Defaults (20+ industries)~~ | ~~Backend~~ | **COMPLETE** | Committed 48cb784 |
+| ~~UX-001~~ | ~~Improve Quote Input Placeholder Text~~ | ~~Frontend~~ | **COMPLETE** | Committed 5610036 |
 | FEAT-003 | Pricing Brain Global Settings Editor | Frontend + Backend | **READY** | None |
 
 ---
@@ -767,6 +767,17 @@ GET /api/billing/plans - Available pricing (public)
 
 | Date | Commit | Description | Status |
 |------|--------|-------------|--------|
+| 2025-12-02 | 9eba403 | Fix Route ordering - templates before session_id parameter | **DEPLOYED** |
+| 2025-12-02 | 18284c6 | Add Industry pricing template library (ONBOARD-003) | **DEPLOYED** |
+| 2025-12-02 | 7d4c86e | Add FAQ/Help section (INFRA-003) | **DEPLOYED** |
+| 2025-12-02 | d9b7a36 | Add Dormancy re-engagement email templates (RETAIN-002) | **DEPLOYED** |
+| 2025-12-02 | 19e304f | Add Industry selection UI for onboarding (ONBOARD-001) | **DEPLOYED** |
+| 2025-12-02 | 5d0e693 | Add Industry selection API for onboarding (ONBOARD-001) | **DEPLOYED** |
+| 2025-12-02 | 732c643 | Add Engagement email series templates (RETAIN-001) | **DEPLOYED** |
+| 2025-12-02 | 5610036 | Add Improved quote input placeholder text (UX-001) | **DEPLOYED** |
+| 2025-12-02 | 408586f | Add Share Quote API and UI (GROWTH-003) | **DEPLOYED** |
+| 2025-12-02 | 48cb784 | Add Expand trade defaults to 20+ industries (ONBOARD-005) | **DEPLOYED** |
+| 2025-12-02 | 8f7b635 | Add Enhanced empty states for quotes and pricing brain (CONVERT-002) | **DEPLOYED** |
 | 2025-12-02 | 6c7c94a | Add Pricing Brain Management UI (FEAT-001 Frontend) | **DEPLOYED** |
 | 2025-12-02 | 28a98f9 | Add Customer edit endpoint for quotes (FEAT-002 Backend) | **DEPLOYED** |
 | 2025-12-02 | fa0f7a4 | Add Edit customer info on existing quotes (FEAT-002 Frontend) | **DEPLOYED** |
