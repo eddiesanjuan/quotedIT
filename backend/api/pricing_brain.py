@@ -358,3 +358,54 @@ async def get_global_settings(current_user: dict = Depends(get_current_user)):
     settings = pricing_brain.get_global_settings(pricing_model)
 
     return settings
+
+
+@router.put("/settings/global", response_model=GlobalSettings)
+async def update_global_settings(
+    settings: GlobalSettings,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Update global pricing settings.
+
+    Allows editing base rates, material markup, minimum job amount, and pricing notes.
+    These settings apply across all categories.
+    """
+    db = get_db_service()
+    pricing_brain = get_pricing_brain_service()
+
+    # Get contractor
+    contractor = await db.get_contractor_by_user_id(current_user["id"])
+    if not contractor:
+        raise HTTPException(status_code=400, detail="Contractor not found")
+
+    # Validate inputs
+    if settings.labor_rate_hourly is not None and settings.labor_rate_hourly < 0:
+        raise HTTPException(status_code=400, detail="Labor rate must be positive")
+
+    if settings.helper_rate_hourly is not None and settings.helper_rate_hourly < 0:
+        raise HTTPException(status_code=400, detail="Helper rate must be positive")
+
+    if settings.material_markup_percent is not None:
+        if settings.material_markup_percent < 0 or settings.material_markup_percent > 100:
+            raise HTTPException(status_code=400, detail="Material markup must be between 0 and 100")
+
+    if settings.minimum_job_amount is not None and settings.minimum_job_amount < 0:
+        raise HTTPException(status_code=400, detail="Minimum job amount must be positive")
+
+    # Update pricing model
+    updated_model = await db.update_pricing_model(
+        contractor_id=contractor.id,
+        labor_rate_hourly=settings.labor_rate_hourly,
+        helper_rate_hourly=settings.helper_rate_hourly,
+        material_markup_percent=settings.material_markup_percent,
+        minimum_job_amount=settings.minimum_job_amount,
+        pricing_notes=settings.pricing_notes,
+    )
+
+    if not updated_model:
+        raise HTTPException(status_code=400, detail="Failed to update pricing model")
+
+    # Return updated settings
+    updated_settings = pricing_brain.get_global_settings(updated_model)
+    return updated_settings

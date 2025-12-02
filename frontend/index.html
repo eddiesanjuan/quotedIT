@@ -177,7 +177,8 @@
         }
 
         .app-nav-btn {
-            padding: 8px 20px;
+            padding: 12px 20px;
+            min-height: 44px;
             border-radius: 100px;
             border: 1px solid var(--border);
             background: transparent;
@@ -405,6 +406,7 @@
             justify-content: center;
             gap: 8px;
             padding: 14px 32px;
+            min-height: 44px;
             border-radius: 8px;
             border: none;
             font-family: var(--font-sans);
@@ -1801,6 +1803,86 @@
             .onboarding-options .btn {
                 width: 100%;
             }
+
+            /* Hide navigation tabs on mobile */
+            .app-nav {
+                display: none;
+            }
+
+            /* Make modal fit iPhone SE and small screens */
+            .modal-content {
+                max-width: 95%;
+                width: 95%;
+                padding: 24px 20px;
+                max-height: 85vh;
+            }
+        }
+
+        /* Responsive - Tablet (641px - 768px) */
+        @media (min-width: 641px) and (max-width: 768px) {
+            .modal-content {
+                max-width: 90%;
+                padding: 32px 24px;
+            }
+
+            .app-nav {
+                gap: 6px;
+            }
+
+            .app-nav-btn {
+                padding: 10px 16px;
+                font-size: 0.75rem;
+            }
+        }
+
+        /* Responsive - Extra Small Mobile (iPhone SE - 375px and below) */
+        @media (max-width: 375px) {
+            nav {
+                padding: 12px 16px;
+            }
+
+            .logo {
+                font-size: 1.25rem;
+            }
+
+            .container {
+                padding: 0 12px;
+            }
+
+            .card {
+                padding: 20px 16px;
+            }
+
+            .voice-section {
+                padding: 32px 16px;
+            }
+
+            .record-btn {
+                width: 100px;
+                height: 100px;
+                font-size: 0.625rem;
+            }
+
+            .modal-content {
+                padding: 20px 16px;
+            }
+
+            .total-amount {
+                font-size: 1.75rem;
+            }
+
+            h1 {
+                font-size: 1.75rem;
+            }
+
+            .card-title {
+                font-size: 1.25rem;
+            }
+
+            .btn {
+                padding: 12px 24px;
+                font-size: 0.8125rem;
+            }
         }
 
         /* Billing & Pricing Styles */
@@ -2076,8 +2158,10 @@
             font-size: 1.5rem;
             cursor: pointer;
             padding: 0;
-            width: 32px;
-            height: 32px;
+            min-width: 44px;
+            min-height: 44px;
+            width: 44px;
+            height: 44px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -2571,11 +2655,26 @@
                 <!-- Quick Setup Form -->
                 <div id="quickSetupForm" style="display: none;">
                     <h3>Quick Setup</h3>
-                    <p>Enter your basic rates. You can refine these through quotes over time.</p>
+                    <p id="quickSetupDescription">Enter your basic rates. You can refine these through quotes over time.</p>
+
+                    <!-- Template Guidance -->
+                    <div id="templateGuidance" style="display: none; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 24px;">
+                        <div style="display: flex; align-items: start; gap: 12px;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink: 0; margin-top: 2px; color: var(--accent);">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <path d="M12 16v-4"></path>
+                                <path d="M12 8h.01"></path>
+                            </svg>
+                            <div style="flex: 1;">
+                                <h4 style="font-size: 0.9rem; font-weight: 600; margin-bottom: 4px;">Recommended Approach</h4>
+                                <p id="templateApproach" style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.5; margin: 0;"></p>
+                            </div>
+                        </div>
+                    </div>
 
                     <div class="form-group">
                         <label>Primary Trade</label>
-                        <select id="primaryTrade">
+                        <select id="primaryTrade" onchange="onPrimaryTradeChange()">
                             <option value="deck_builder">Deck Builder</option>
                             <option value="general_contractor">General Contractor</option>
                             <option value="painter">Painter</option>
@@ -2590,14 +2689,31 @@
                     <div class="form-group">
                         <label>Hourly Labor Rate ($)</label>
                         <input type="number" id="hourlyRate" placeholder="85" value="85">
+                        <small id="hourlyRateHint" style="color: var(--text-muted); font-size: 0.8rem; margin-top: 4px; display: none;"></small>
+                    </div>
+                    <div class="form-group">
+                        <label>Material Markup (%)</label>
+                        <input type="number" id="materialMarkup" placeholder="20" value="20">
+                        <small id="materialMarkupHint" style="color: var(--text-muted); font-size: 0.8rem; margin-top: 4px; display: none;"></small>
                     </div>
                     <div class="form-group">
                         <label>Minimum Job Amount ($)</label>
                         <input type="number" id="minimumJob" placeholder="500" value="500">
+                        <small id="minimumJobHint" style="color: var(--text-muted); font-size: 0.8rem; margin-top: 4px; display: none;"></small>
                     </div>
-                    <div class="form-group">
-                        <label>Deposit Percentage (%)</label>
-                        <input type="number" id="depositPercent" placeholder="50" value="50">
+
+                    <!-- Pricing Tips -->
+                    <div id="pricingTipsSection" style="display: none; margin-top: 24px;">
+                        <button onclick="togglePricingTips()" type="button" style="background: none; border: none; color: var(--text-primary); cursor: pointer; display: flex; align-items: center; gap: 8px; padding: 0; font-size: 0.9rem; font-weight: 600; width: 100%; text-align: left;">
+                            <svg id="tipsChevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="transition: transform 0.2s;">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                            Pricing Tips for Your Industry
+                        </button>
+                        <div id="pricingTipsContent" style="display: none; margin-top: 12px; padding-left: 24px;">
+                            <ul id="pricingTipsList" style="color: var(--text-secondary); font-size: 0.875rem; line-height: 1.6; margin: 0; padding-left: 20px;">
+                            </ul>
+                        </div>
                     </div>
 
                     <div style="display: flex; gap: 12px; margin-top: 32px;">
@@ -3003,7 +3119,15 @@
                 <div id="pricingBrainTabContent" class="account-tab-content">
                     <!-- Global Settings Panel -->
                     <div class="pricing-brain-section">
-                        <h3 class="section-title">Global Pricing Settings</h3>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <h3 class="section-title" style="margin-bottom: 0;">Global Pricing Settings</h3>
+                            <button class="icon-button" onclick="openEditGlobalSettingsModal()" title="Edit global settings">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                </svg>
+                            </button>
+                        </div>
                         <p class="section-subtitle">Base rates you configured during onboarding</p>
                         <div class="global-settings-grid" id="globalSettingsGrid">
                             <!-- Will be populated by JavaScript -->
@@ -3137,6 +3261,43 @@
                 <div style="display: flex; gap: 12px; margin-top: 24px;">
                     <button type="button" class="btn btn-secondary" onclick="closeEditCustomerModal()" style="flex: 1;">Cancel</button>
                     <button type="submit" class="btn btn-primary" id="saveCustomerBtn" style="flex: 1;">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Global Settings Modal -->
+    <div class="modal-overlay" id="editGlobalSettingsModal" style="display: none;">
+        <div class="modal-content" style="max-width: 600px;">
+            <button class="modal-close" onclick="closeEditGlobalSettingsModal()">&times;</button>
+            <h2 class="modal-title">Edit Global Pricing Settings</h2>
+            <p class="modal-subtitle">
+                Update your base rates and pricing configuration
+            </p>
+            <form id="editGlobalSettingsForm" onsubmit="saveGlobalSettings(event)" style="margin-top: 24px;">
+                <div class="form-group">
+                    <label for="editLaborRate">Labor Rate ($/hr)</label>
+                    <input type="number" id="editLaborRate" step="0.01" min="0" placeholder="85.00" style="background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); padding: 12px; border-radius: 8px; width: 100%; font-family: var(--font-sans); font-size: 1rem;">
+                </div>
+                <div class="form-group" style="margin-top: 16px;">
+                    <label for="editHelperRate">Helper Rate ($/hr)</label>
+                    <input type="number" id="editHelperRate" step="0.01" min="0" placeholder="45.00" style="background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); padding: 12px; border-radius: 8px; width: 100%; font-family: var(--font-sans); font-size: 1rem;">
+                </div>
+                <div class="form-group" style="margin-top: 16px;">
+                    <label for="editMaterialMarkup">Material Markup (%)</label>
+                    <input type="number" id="editMaterialMarkup" step="0.1" min="0" max="100" placeholder="20.0" style="background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); padding: 12px; border-radius: 8px; width: 100%; font-family: var(--font-sans); font-size: 1rem;">
+                </div>
+                <div class="form-group" style="margin-top: 16px;">
+                    <label for="editMinimumJob">Minimum Job ($)</label>
+                    <input type="number" id="editMinimumJob" step="0.01" min="0" placeholder="500.00" style="background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); padding: 12px; border-radius: 8px; width: 100%; font-family: var(--font-sans); font-size: 1rem;">
+                </div>
+                <div class="form-group" style="margin-top: 16px;">
+                    <label for="editPricingNotes">Pricing Notes</label>
+                    <textarea id="editPricingNotes" rows="3" placeholder="Additional pricing guidance or rules..." style="background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); padding: 12px; border-radius: 8px; width: 100%; font-family: var(--font-sans); font-size: 1rem; resize: vertical;"></textarea>
+                </div>
+                <div style="display: flex; gap: 12px; margin-top: 24px;">
+                    <button type="button" class="btn btn-secondary" onclick="closeEditGlobalSettingsModal()" style="flex: 1;">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="saveGlobalSettingsBtn" style="flex: 1;">Save Changes</button>
                 </div>
             </form>
         </div>
@@ -3516,6 +3677,26 @@
             document.getElementById('authMessage').classList.remove('active');
         }
 
+        // Get supported audio MIME type for recording (iOS Safari compatibility)
+        function getSupportedAudioMimeType() {
+            const types = [
+                'audio/webm',
+                'audio/webm;codecs=opus',
+                'audio/mp4',
+                'audio/mp4;codecs=mp4a.40.2',
+                'audio/ogg;codecs=opus'
+            ];
+
+            for (const type of types) {
+                if (MediaRecorder.isTypeSupported(type)) {
+                    return type;
+                }
+            }
+
+            // Fallback - let browser choose
+            return '';
+        }
+
         // Recording
         async function toggleRecording() {
             const btn = document.getElementById('recordBtn');
@@ -3530,7 +3711,9 @@
             } else {
                 try {
                     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                    mediaRecorder = new MediaRecorder(stream);
+                    const mimeType = getSupportedAudioMimeType();
+                    const options = mimeType ? { mimeType } : {};
+                    mediaRecorder = new MediaRecorder(stream, options);
                     audioChunks = [];
 
                     mediaRecorder.ondataavailable = (e) => {
@@ -3538,7 +3721,7 @@
                     };
 
                     mediaRecorder.onstop = async () => {
-                        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                        const audioBlob = new Blob(audioChunks, { type: mimeType || 'audio/webm' });
                         await sendAudioForQuote(audioBlob);
                         stream.getTracks().forEach(track => track.stop());
                     };
@@ -3967,11 +4150,17 @@
             document.getElementById('onboardingChat').classList.remove('active');
         }
 
-        function showQuickSetup() {
+        async function showQuickSetup() {
             document.getElementById('industrySelection').style.display = 'none';
             document.getElementById('onboardingIntro').style.display = 'none';
             document.getElementById('quickSetupForm').style.display = 'block';
             document.getElementById('onboardingChat').classList.remove('active');
+
+            // Load template if industry is selected
+            if (selectedIndustry && selectedIndustry.key !== 'other') {
+                document.getElementById('primaryTrade').value = selectedIndustry.key;
+                await loadPricingTemplate(selectedIndustry.key);
+            }
         }
 
         async function startOnboardingInterview() {
@@ -4127,7 +4316,9 @@
             } else {
                 try {
                     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                    chatMediaRecorder = new MediaRecorder(stream);
+                    const mimeType = getSupportedAudioMimeType();
+                    const options = mimeType ? { mimeType } : {};
+                    chatMediaRecorder = new MediaRecorder(stream, options);
                     chatAudioChunks = [];
 
                     chatMediaRecorder.ondataavailable = (e) => {
@@ -4135,7 +4326,7 @@
                     };
 
                     chatMediaRecorder.onstop = async () => {
-                        const audioBlob = new Blob(chatAudioChunks, { type: 'audio/webm' });
+                        const audioBlob = new Blob(chatAudioChunks, { type: mimeType || 'audio/webm' });
                         stream.getTracks().forEach(track => track.stop());
 
                         // Show placeholder while transcribing
@@ -4261,8 +4452,8 @@
         async function completeQuickSetup() {
             const primaryTrade = document.getElementById('primaryTrade').value;
             const hourlyRate = parseFloat(document.getElementById('hourlyRate').value) || 85;
+            const materialMarkup = parseFloat(document.getElementById('materialMarkup').value) || 20;
             const minimumJob = parseFloat(document.getElementById('minimumJob').value) || 500;
-            const depositPercent = parseFloat(document.getElementById('depositPercent').value) || 50;
 
             try {
                 // Ensure we have user info before proceeding
@@ -4283,8 +4474,8 @@
                         contractor_name: contractorName,
                         primary_trade: primaryTrade,
                         labor_rate: hourlyRate,
+                        material_markup: materialMarkup,
                         minimum_job: minimumJob,
-                        pricing_notes: `Deposit: ${depositPercent}%`,
                     }),
                 });
 
@@ -6163,6 +6354,146 @@
 
         // ========================================
         // End Pricing Brain Management
+
+        // Global Settings Management
+        let currentGlobalSettings = null;
+
+        // Open edit global settings modal
+        async function openEditGlobalSettingsModal() {
+            try {
+                // Fetch current settings
+                const response = await fetch(`${API_BASE}/pricing-brain/settings/global`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load global settings');
+                }
+
+                currentGlobalSettings = await response.json();
+
+                // Populate form with current values
+                document.getElementById('editLaborRate').value = currentGlobalSettings.labor_rate_hourly || '';
+                document.getElementById('editHelperRate').value = currentGlobalSettings.helper_rate_hourly || '';
+                document.getElementById('editMaterialMarkup').value = currentGlobalSettings.material_markup_percent || '';
+                document.getElementById('editMinimumJob').value = currentGlobalSettings.minimum_job_amount || '';
+                document.getElementById('editPricingNotes').value = currentGlobalSettings.pricing_notes || '';
+
+                // Show modal
+                document.getElementById('editGlobalSettingsModal').style.display = 'flex';
+
+            } catch (err) {
+                console.error('Failed to open global settings modal:', err);
+                showError('Failed to load global settings. Please try again.');
+            }
+        }
+
+        // Close edit global settings modal
+        function closeEditGlobalSettingsModal() {
+            document.getElementById('editGlobalSettingsModal').style.display = 'none';
+            currentGlobalSettings = null;
+        }
+
+        // Save global settings
+        async function saveGlobalSettings(event) {
+            event.preventDefault();
+
+            const saveBtn = document.getElementById('saveGlobalSettingsBtn');
+            const originalText = saveBtn.textContent;
+            saveBtn.disabled = true;
+            saveBtn.textContent = 'Saving...';
+
+            try {
+                // Get form values (parse as floats or null)
+                const laborRate = document.getElementById('editLaborRate').value;
+                const helperRate = document.getElementById('editHelperRate').value;
+                const materialMarkup = document.getElementById('editMaterialMarkup').value;
+                const minimumJob = document.getElementById('editMinimumJob').value;
+                const pricingNotes = document.getElementById('editPricingNotes').value;
+
+                // Validation
+                if (materialMarkup && (parseFloat(materialMarkup) < 0 || parseFloat(materialMarkup) > 100)) {
+                    showError('Material markup must be between 0 and 100');
+                    saveBtn.disabled = false;
+                    saveBtn.textContent = originalText;
+                    return;
+                }
+
+                if (laborRate && parseFloat(laborRate) < 0) {
+                    showError('Labor rate must be positive');
+                    saveBtn.disabled = false;
+                    saveBtn.textContent = originalText;
+                    return;
+                }
+
+                if (helperRate && parseFloat(helperRate) < 0) {
+                    showError('Helper rate must be positive');
+                    saveBtn.disabled = false;
+                    saveBtn.textContent = originalText;
+                    return;
+                }
+
+                if (minimumJob && parseFloat(minimumJob) < 0) {
+                    showError('Minimum job amount must be positive');
+                    saveBtn.disabled = false;
+                    saveBtn.textContent = originalText;
+                    return;
+                }
+
+                // Build update object
+                const updateData = {
+                    labor_rate_hourly: laborRate ? parseFloat(laborRate) : null,
+                    helper_rate_hourly: helperRate ? parseFloat(helperRate) : null,
+                    material_markup_percent: materialMarkup ? parseFloat(materialMarkup) : null,
+                    minimum_job_amount: minimumJob ? parseFloat(minimumJob) : null,
+                    pricing_notes: pricingNotes || null
+                };
+
+                // Send update request
+                const response = await fetch(`${API_BASE}/pricing-brain/settings/global`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify(updateData)
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Failed to update global settings');
+                }
+
+                const updatedSettings = await response.json();
+
+                // Show success message
+                showLearningToast('Global settings updated successfully!', '✅');
+
+                // Update display
+                renderGlobalSettings({
+                    hourly_rate: updatedSettings.labor_rate_hourly,
+                    material_markup: updatedSettings.material_markup_percent,
+                    minimum_job: updatedSettings.minimum_job_amount
+                });
+
+                // Close modal
+                closeEditGlobalSettingsModal();
+
+            } catch (err) {
+                console.error('Failed to save global settings:', err);
+                showError(err.message || 'Failed to save global settings. Please try again.');
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.textContent = originalText;
+            }
+        }
+
+        // Close modal on outside click
+        document.getElementById('editGlobalSettingsModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeEditGlobalSettingsModal();
+            }
+        });
         // ========================================
 
         // Error capture
