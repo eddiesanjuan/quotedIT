@@ -821,6 +821,52 @@ async def get_quote(quote_id: str, current_user: dict = Depends(get_current_user
     return quote_to_response(quote)
 
 
+class CustomerUpdateRequest(BaseModel):
+    """Request to update customer information on a quote."""
+    customer_name: Optional[str] = None
+    customer_address: Optional[str] = None
+    customer_phone: Optional[str] = None
+
+
+@router.put("/{quote_id}/customer", response_model=QuoteResponse)
+async def update_quote_customer(
+    quote_id: str,
+    update: CustomerUpdateRequest,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Update customer information on a quote.
+
+    This is a simple update endpoint that only modifies customer fields.
+    Does not trigger learning since customer info changes are not pricing-related.
+    """
+    db = get_db_service()
+
+    # Get the quote
+    quote = await db.get_quote(quote_id)
+    if not quote:
+        raise HTTPException(status_code=404, detail="Quote not found")
+
+    # Verify ownership
+    contractor = await db.get_contractor_by_user_id(current_user["id"])
+    if not contractor or quote.contractor_id != contractor.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    # Build update dict - only customer fields
+    update_data = {}
+    if update.customer_name is not None:
+        update_data["customer_name"] = update.customer_name
+    if update.customer_address is not None:
+        update_data["customer_address"] = update.customer_address
+    if update.customer_phone is not None:
+        update_data["customer_phone"] = update.customer_phone
+
+    # Update the quote in database
+    updated_quote = await db.update_quote(quote_id, **update_data)
+
+    return quote_to_response(updated_quote)
+
+
 @router.put("/{quote_id}", response_model=QuoteResponse)
 async def update_quote(
     quote_id: str,
