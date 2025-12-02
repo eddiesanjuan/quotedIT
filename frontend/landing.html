@@ -69,33 +69,33 @@
             display: inline-block;
             position: relative;
             overflow: hidden;
-            height: 3.6em; /* Show 3 items */
+            height: 2.55em; /* Show 3 items at 0.85em each */
             vertical-align: baseline;
             /* Offset to align center item with text baseline */
-            /* 3 items at 1.2em each = 3.6em. Center is at 1.8em. Shift up by ~1.5em to align */
-            margin-bottom: -1.45em;
-            margin-top: -0.95em;
+            margin-bottom: -1.0em;
+            margin-top: -0.7em;
+            margin-left: 0.02em; /* Slight right nudge */
             /* Gradient mask for fade effect at edges - always visible */
             -webkit-mask-image: linear-gradient(
                 to bottom,
                 transparent 0%,
-                rgba(0,0,0,0.15) 8%,
-                rgba(0,0,0,0.5) 22%,
-                rgba(0,0,0,1) 38%,
-                rgba(0,0,0,1) 62%,
-                rgba(0,0,0,0.5) 78%,
-                rgba(0,0,0,0.15) 92%,
+                rgba(0,0,0,0.1) 10%,
+                rgba(0,0,0,0.4) 25%,
+                rgba(0,0,0,1) 40%,
+                rgba(0,0,0,1) 60%,
+                rgba(0,0,0,0.4) 75%,
+                rgba(0,0,0,0.1) 90%,
                 transparent 100%
             );
             mask-image: linear-gradient(
                 to bottom,
                 transparent 0%,
-                rgba(0,0,0,0.15) 8%,
-                rgba(0,0,0,0.5) 22%,
-                rgba(0,0,0,1) 38%,
-                rgba(0,0,0,1) 62%,
-                rgba(0,0,0,0.5) 78%,
-                rgba(0,0,0,0.15) 92%,
+                rgba(0,0,0,0.1) 10%,
+                rgba(0,0,0,0.4) 25%,
+                rgba(0,0,0,1) 40%,
+                rgba(0,0,0,1) 60%,
+                rgba(0,0,0,0.4) 75%,
+                rgba(0,0,0,0.1) 90%,
                 transparent 100%
             );
         }
@@ -107,8 +107,8 @@
         }
 
         .logo-spinner-item {
-            height: 1.2em;
-            line-height: 1.2em;
+            height: 0.85em;
+            line-height: 0.85em;
             font-style: italic;
             text-align: left;
         }
@@ -588,7 +588,7 @@
             if (!spinnerInner || !spinner) return;
 
             const items = spinnerInner.querySelectorAll('.logo-spinner-item');
-            const itemHeight = 1.2; // em units
+            const itemHeight = 0.85; // em units (matches CSS)
 
             // Find the index of .it
             let targetIndex = 0;
@@ -596,8 +596,8 @@
                 if (item.textContent === '.it') targetIndex = i;
             });
 
-            // With 3 visible items (3.6em height), center item is at 1.2em from top
-            const centerOffset = 1.2;
+            // With 3 visible items (2.55em height), center item is at 0.85em from top
+            const centerOffset = 0.85;
 
             // Start position: first item (index 0) centered
             const startIndex = 0;
@@ -646,7 +646,7 @@
             function bounceSettle() {
                 const bounceStart = Date.now();
                 const bounceDuration = 600;
-                const bounceAmount = 0.18; // em - noticeable but not excessive
+                const bounceAmount = 0.12; // em - scaled for smaller items
 
                 function bounceFrame() {
                     const elapsed = Date.now() - bounceStart;
