@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Help & FAQ - quoted.it</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- PostHog Analytics -->
+    <script>
+        !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.async=!0,p.src=s.api_host+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="capture identify alias people.set people.set_once set_config register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled onFeatureFlags getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures getActiveMatchingSurveys getSurveys".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
+        {% if posthog_api_key %}
+        posthog.init('{{ posthog_api_key }}', {api_host: 'https://us.i.posthog.com'});
+        {% endif %}
+    </script>
+
+    <!-- Sentry Error Tracking -->
+    <script src="https://browser.sentry-cdn.com/8.38.0/bundle.tracing.min.js" crossorigin="anonymous"></script>
+    <script>
+        {% if sentry_dsn %}
+        Sentry.init({
+            dsn: '{{ sentry_dsn }}',
+            environment: '{{ environment }}' || 'development',
+            tracesSampleRate: 0.1,
+        });
+        {% endif %}
+    </script>
+
+    <style>
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #141414;
+            --bg-card: #1a1a1a;
+            --bg-elevated: #222222;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --text-muted: #666666;
+            --accent: #ffffff;
+            --border: rgba(255, 255, 255, 0.1);
+            --border-hover: rgba(255, 255, 255, 0.2);
+            --font-serif: 'Playfair Display', Georgia, serif;
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            font-size: 16px;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            padding-top: 80px;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 24px 40px;
+            background: rgba(10, 10, 10, 0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-family: var(--font-serif);
+            font-size: 1.5rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+
+        .logo span {
+            font-style: italic;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 24px;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9375rem;
+            transition: color 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: var(--text-primary);
+        }
+
+        .nav-cta {
+            padding: 12px 24px;
+            background: transparent;
+            border: 1px solid var(--text-primary);
+            border-radius: 8px;
+            color: var(--text-primary);
+            text-decoration: none;
+            font-size: 0.9375rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .nav-cta:hover {
+            background: var(--text-primary);
+            color: var(--bg-primary);
+        }
+
+        /* Container */
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 48px 40px 80px;
+        }
+
+        /* Header */
+        .page-header {
+            text-align: center;
+            margin-bottom: 64px;
+        }
+
+        .page-header h1 {
+            font-family: var(--font-serif);
+            font-size: 3rem;
+            margin-bottom: 16px;
+            font-weight: 600;
+        }
+
+        .page-header p {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+        }
+
+        /* FAQ Categories */
+        .faq-category {
+            margin-bottom: 48px;
+        }
+
+        .faq-category h2 {
+            font-family: var(--font-serif);
+            font-size: 1.75rem;
+            margin-bottom: 24px;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        /* FAQ Items */
+        .faq-item {
+            margin-bottom: 16px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+            background: var(--bg-card);
+            transition: border-color 0.3s ease;
+        }
+
+        .faq-item:hover {
+            border-color: var(--border-hover);
+        }
+
+        .faq-question {
+            width: 100%;
+            padding: 20px 24px;
+            background: transparent;
+            border: none;
+            text-align: left;
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.3s ease;
+        }
+
+        .faq-question:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .faq-icon {
+            font-size: 1.5rem;
+            color: var(--text-secondary);
+            transition: transform 0.3s ease, color 0.3s ease;
+            flex-shrink: 0;
+            margin-left: 16px;
+        }
+
+        .faq-item.active .faq-icon {
+            transform: rotate(45deg);
+            color: var(--text-primary);
+        }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease, padding 0.3s ease;
+            padding: 0 24px;
+            color: var(--text-secondary);
+        }
+
+        .faq-item.active .faq-answer {
+            max-height: 500px;
+            padding: 0 24px 24px 24px;
+        }
+
+        .faq-answer p {
+            margin-bottom: 12px;
+            line-height: 1.7;
+        }
+
+        .faq-answer p:last-child {
+            margin-bottom: 0;
+        }
+
+        .faq-answer strong {
+            color: var(--text-primary);
+        }
+
+        /* Contact Section */
+        .contact-section {
+            margin-top: 80px;
+            padding: 48px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .contact-section h2 {
+            font-family: var(--font-serif);
+            font-size: 1.75rem;
+            margin-bottom: 16px;
+            font-weight: 600;
+        }
+
+        .contact-section p {
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+            font-size: 1.0625rem;
+        }
+
+        .contact-email {
+            display: inline-block;
+            padding: 16px 32px;
+            background: transparent;
+            border: 1px solid var(--text-primary);
+            border-radius: 8px;
+            color: var(--text-primary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .contact-email:hover {
+            background: var(--text-primary);
+            color: var(--bg-primary);
+        }
+
+        /* Footer */
+        footer {
+            padding: 40px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 48px;
+        }
+
+        .footer-logo {
+            font-family: var(--font-serif);
+            font-size: 1.25rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+
+        .footer-logo span {
+            font-style: italic;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 24px;
+        }
+
+        .footer-link {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.875rem;
+            transition: color 0.3s ease;
+        }
+
+        .footer-link:hover {
+            color: var(--text-primary);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            nav {
+                padding: 20px 24px;
+            }
+
+            .nav-links {
+                gap: 16px;
+            }
+
+            .nav-link {
+                display: none;
+            }
+
+            .container {
+                padding: 32px 24px 64px;
+            }
+
+            .page-header h1 {
+                font-size: 2rem;
+            }
+
+            .page-header p {
+                font-size: 1rem;
+            }
+
+            .faq-category h2 {
+                font-size: 1.5rem;
+            }
+
+            .faq-question {
+                padding: 16px 20px;
+                font-size: 0.9375rem;
+            }
+
+            .faq-answer {
+                font-size: 0.9375rem;
+            }
+
+            .contact-section {
+                padding: 32px 24px;
+            }
+
+            .contact-section h2 {
+                font-size: 1.5rem;
+            }
+
+            footer {
+                flex-direction: column;
+                gap: 16px;
+                text-align: center;
+            }
+
+            .footer-links {
+                flex-direction: column;
+                gap: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <a href="/" class="logo">quoted<span>.it</span></a>
+        <div class="nav-links">
+            <a href="/app" class="nav-link">App</a>
+            <a href="/app" class="nav-cta">Start Quoting</a>
+        </div>
+    </nav>
+
+    <!-- Content -->
+    <div class="container">
+        <!-- Header -->
+        <div class="page-header">
+            <h1>Help & FAQ</h1>
+            <p>Everything you need to know about using quoted.it</p>
+        </div>
+
+        <!-- Getting Started -->
+        <div class="faq-category">
+            <h2>Getting Started</h2>
+
+            <div class="faq-item">
+                <button class="faq-question" onclick="toggleFaq(this)">
+                    How does voice-to-quote work?
+                    <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                    <p>Simply describe the job in your own words - either by speaking or typing. Mention the customer, location, scope of work, and any materials needed. Our AI will generate a professional quote in seconds.</p>
+                    <p>The AI uses your <strong>Pricing Brain</strong> to learn from your past quotes and apply your pricing patterns automatically.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question" onclick="toggleFaq(this)">
+                    What if the AI gets my pricing wrong?
+                    <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                    <p>You can edit any quote before downloading or sharing. Simply click on any line item to adjust quantities, rates, or totals.</p>
+                    <p><strong>Every correction teaches the AI.</strong> When you edit a quote, the AI learns your preferences and gets more accurate over time. This is how your Pricing Brain gets smarter.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question" onclick="toggleFaq(this)">
+                    How do I set up my pricing model?
+                    <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                    <p>During onboarding, you'll set your <strong>hourly labor rate</strong>, <strong>material markup percentage</strong>, and <strong>minimum job amount</strong>. These become your baseline pricing settings.</p>
+                    <p>You can update these anytime in <strong>Account → Pricing Brain → Global Settings</strong>.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question" onclick="toggleFaq(this)">
+                    Can I use Quoted on my phone?
+                    <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                    <p>Yes! quoted.it works on any device with a web browser. The interface is fully responsive and optimized for mobile use.</p>
+                    <p><strong>Voice input works great on mobile</strong> - just tap the microphone button and describe the job while you're on-site.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pricing & Billing -->
+        <div class="faq-category">
+            <h2>Pricing & Billing</h2>
+
+            <div class="faq-item">
+                <button class="faq-question" onclick="toggleFaq(this)">
+                    What's included in each plan?
+                    <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                    <p><strong>Free Trial:</strong> 7 days, 5 quotes to test the system</p>
+                    <p><strong>Starter ($29/month):</strong> 30 quotes/month, voice input, Pricing Brain learning, PDF download</p>
+                    <p><strong>Pro ($79/month):</strong> 100 quotes/month, custom branding, priority support</p>
+                    <p><strong>Business ($149/month):</strong> Unlimited quotes, team features, API access</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question" onclick="toggleFaq(this)">
+                    How does the quote limit work?
+                    <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                    <p>Your quote limit resets on your billing date each month. For example, if you're on the Starter plan (30 quotes/month) and you signed up on the 15th, you get 30 quotes from the 15th of each month to the 14th of the next month.</p>
+                    <p>You can see your current usage in <strong>Account → Billing</strong>.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question" onclick="toggleFaq(this)">
+                    What happens after my trial ends?
+                    <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                    <p>When your 7-day trial ends, you'll be prompted to choose a paid plan. If you don't upgrade, you won't be able to generate new quotes, but you can still access and download your existing quotes.</p>
+                    <p>Your <strong>Pricing Brain data is saved</strong> - if you upgrade later, all your learning history is preserved.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question" onclick="toggleFaq(this)">
+                    Can I change plans later?
+                    <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                    <p>Yes! You can upgrade or downgrade anytime from <strong>Account → Billing</strong>.</p>
+                    <p><strong>Upgrades</strong> take effect immediately. <strong>Downgrades</strong> take effect at your next billing date.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Using Quoted -->
+        <div class="faq-category">
+            <h2>Using Quoted</h2>
+
+            <div class="faq-item">
+                <button class="faq-question" onclick="toggleFaq(this)">
+                    How do I edit a quote after creating it?
+                    <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                    <p>After generating a quote, you can click on any line item to edit the quantity, rate, or total. Changes are saved automatically.</p>
+                    <p>You can also add new line items, remove items, or adjust the overall structure before downloading or sharing.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question" onclick="toggleFaq(this)">
+                    Can I add my business logo to quotes?
+                    <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                    <p>Custom branding (including logos) is available on the <strong>Pro plan and above</strong>.</p>
+                    <p>Go to <strong>Account → Billing → Branding Settings</strong> to upload your logo and customize your quote appearance.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question" onclick="toggleFaq(this)">
+                    How do I share quotes with customers?
+                    <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                    <p>You have three options:</p>
+                    <p><strong>1. Download PDF:</strong> Click "Download PDF" and send the file via email or text.</p>
+                    <p><strong>2. Share Link:</strong> Click "Share" to generate a shareable link that customers can view in their browser.</p>
+                    <p><strong>3. Email Direct (coming soon):</strong> Send quotes directly from quoted.it via email.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question" onclick="toggleFaq(this)">
+                    What is the Pricing Brain?
+                    <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                    <p>The <strong>Pricing Brain</strong> is quoted.it's AI learning system. It learns your pricing patterns from every quote you create and every correction you make.</p>
+                    <p>Over time, it gets better at predicting labor hours, material costs, and total pricing - making your quotes more accurate and requiring fewer manual adjustments.</p>
+                    <p>You can see what it's learned in <strong>Account → Pricing Brain</strong>.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Troubleshooting -->
+        <div class="faq-category">
+            <h2>Troubleshooting</h2>
+
+            <div class="faq-item">
+                <button class="faq-question" onclick="toggleFaq(this)">
+                    Voice recording not working?
+                    <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                    <p><strong>Check browser permissions:</strong> Make sure you've allowed microphone access in your browser settings.</p>
+                    <p><strong>Try a different browser:</strong> Chrome, Safari, and Edge have the best voice support. Firefox may have issues on some devices.</p>
+                    <p><strong>Check your microphone:</strong> Test your mic in another app to confirm it's working.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question" onclick="toggleFaq(this)">
+                    Quote seems inaccurate?
+                    <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                    <p>The AI gets more accurate over time. Here's how to help it learn:</p>
+                    <p><strong>1. Edit the quote:</strong> Click any line item and adjust to match your actual pricing.</p>
+                    <p><strong>2. Be specific in your input:</strong> The more details you provide (materials, square footage, labor hours), the better the estimate.</p>
+                    <p><strong>3. Check your Pricing Brain:</strong> Review <strong>Account → Pricing Brain</strong> to see if your global settings (hourly rate, markup %) are correct.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question" onclick="toggleFaq(this)">
+                    How do I report an issue?
+                    <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                    <p>Email us at <strong>support@quoted.it.com</strong> with:</p>
+                    <p>• Description of the issue</p>
+                    <p>• What you were trying to do</p>
+                    <p>• Screenshots if possible</p>
+                    <p>We typically respond within 24 hours (Pro/Business customers get priority support).</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question" onclick="toggleFaq(this)">
+                    How do I delete my account?
+                    <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                    <p>Go to <strong>Account → Billing → Cancel Subscription</strong>.</p>
+                    <p>If you want to <strong>permanently delete all your data</strong>, email support@quoted.it.com and we'll process your deletion request within 7 business days.</p>
+                    <p><strong>Note:</strong> Account deletion is permanent and cannot be undone.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Section -->
+        <div class="contact-section">
+            <h2>Still need help?</h2>
+            <p>Can't find what you're looking for? Our team is here to help.</p>
+            <a href="mailto:support@quoted.it.com" class="contact-email">Email support@quoted.it.com</a>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <a href="/" class="footer-logo">quoted<span>.it</span></a>
+        <div class="footer-links">
+            <a href="/help" class="footer-link">Help</a>
+            <a href="/privacy" class="footer-link">Privacy</a>
+            <a href="/terms" class="footer-link">Terms</a>
+        </div>
+    </footer>
+
+    <!-- FAQ Toggle Script -->
+    <script>
+        function toggleFaq(button) {
+            const faqItem = button.parentElement;
+            const isActive = faqItem.classList.contains('active');
+
+            // Close all other FAQ items
+            document.querySelectorAll('.faq-item').forEach(item => {
+                item.classList.remove('active');
+            });
+
+            // Toggle current item
+            if (!isActive) {
+                faqItem.classList.add('active');
+            }
+
+            // Track FAQ click
+            if (typeof posthog !== 'undefined') {
+                posthog.capture('faq_clicked', {
+                    question: button.textContent.trim().replace('+', '').trim()
+                });
+            }
+        }
+
+        // Track page view
+        if (typeof posthog !== 'undefined') {
+            posthog.capture('help_page_viewed');
+        }
+    </script>
+</body>
+</html>

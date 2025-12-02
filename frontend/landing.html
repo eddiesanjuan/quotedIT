@@ -501,6 +501,22 @@
             color: var(--text-muted);
         }
 
+        .footer-links {
+            display: flex;
+            gap: 24px;
+        }
+
+        .footer-link {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.875rem;
+            transition: color 0.3s ease;
+        }
+
+        .footer-link:hover {
+            color: var(--text-primary);
+        }
+
         /* Responsive */
         @media (max-width: 900px) {
             section {
@@ -551,6 +567,11 @@
                 flex-direction: column;
                 gap: 16px;
                 text-align: center;
+            }
+
+            .footer-links {
+                flex-direction: column;
+                gap: 12px;
             }
         }
     </style>
@@ -705,7 +726,11 @@
     <!-- Footer -->
     <footer>
         <a href="/" class="footer-logo">quoted<span>.it</span></a>
-        <p class="footer-text">Voice to quote in seconds.</p>
+        <div class="footer-links">
+            <a href="/help" class="footer-link">Help</a>
+            <a href="/privacy" class="footer-link">Privacy</a>
+            <a href="/terms" class="footer-link">Terms</a>
+        </div>
     </footer>
 
     <!-- Scroll Animation & Logo Spinner -->
