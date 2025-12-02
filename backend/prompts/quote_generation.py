@@ -15,6 +15,7 @@ def get_quote_generation_prompt(
     job_types: Optional[list] = None,
     terms: Optional[dict] = None,
     correction_examples: Optional[list] = None,
+    detected_category: Optional[str] = None,
 ) -> str:
     """
     Generate the main quote generation prompt.
@@ -23,6 +24,7 @@ def get_quote_generation_prompt(
     - The transcribed voice note from the contractor
     - Their pricing model (learned rates, knowledge)
     - Their terms and conditions
+    - The detected category for this quote
 
     And produces:
     - Structured quote with line items
@@ -30,13 +32,49 @@ def get_quote_generation_prompt(
     - Timeline estimate
     """
 
+    # Extract category-specific learnings (THE KEY LEARNING INJECTION)
+    category_learnings_str = ""
+    pricing_knowledge = pricing_model.get("pricing_knowledge", {})
+
+    if detected_category and "categories" in pricing_knowledge:
+        categories = pricing_knowledge.get("categories", {})
+        if detected_category in categories:
+            cat_data = categories[detected_category]
+            learned_adjustments = cat_data.get("learned_adjustments", [])
+            cat_confidence = cat_data.get("confidence", 0.5)
+            cat_samples = cat_data.get("samples", 0)
+
+            if learned_adjustments:
+                adjustments_list = "\n".join(f"- {adj}" for adj in learned_adjustments)
+                category_learnings_str = f"""
+## ⚠️ CRITICAL: Apply These Learned Adjustments for "{cat_data.get('display_name', detected_category)}"
+
+Based on {cat_samples} past corrections, YOU MUST apply these adjustments to your quote:
+
+{adjustments_list}
+
+Confidence: {cat_confidence:.0%} (based on {cat_samples} corrections)
+
+IMPORTANT: These are real corrections the contractor made. Apply them to get the pricing right.
+"""
+
     # Format pricing knowledge for the prompt
     pricing_knowledge_str = ""
-    if pricing_model.get("pricing_knowledge"):
+    if pricing_knowledge:
         pricing_knowledge_str = f"""
 ## Your Learned Pricing Knowledge
 
-{_format_pricing_knowledge(pricing_model["pricing_knowledge"])}
+{_format_pricing_knowledge(pricing_knowledge)}
+"""
+
+    # Add global rules if they exist
+    global_rules = pricing_knowledge.get("global_rules", [])
+    if global_rules:
+        rules_list = "\n".join(f"- {rule}" for rule in global_rules)
+        pricing_knowledge_str += f"""
+## Global Pricing Rules (Apply to ALL quotes)
+
+{rules_list}
 """
 
     # Format job types if available
@@ -81,6 +119,7 @@ IMPORTANT: This is a BUDGETARY quote - a ballpark estimate to help the customer 
 ## Voice Note Transcription
 
 "{transcription}"
+{category_learnings_str}
 
 ## Contractor's Pricing Information
 
@@ -218,13 +257,50 @@ Analyze the correction:"""
 def _format_pricing_knowledge(pricing_knowledge: dict) -> str:
     """Format pricing knowledge dict into readable string."""
     lines = []
-    for category, data in pricing_knowledge.items():
+
+    # Handle new categories structure
+    if "categories" in pricing_knowledge:
+        categories = pricing_knowledge.get("categories", {})
+        if categories:
+            lines.append("**Your Pricing Categories:**\n")
+            for cat_name, cat_data in categories.items():
+                if isinstance(cat_data, dict):
+                    display_name = cat_data.get("display_name", cat_name.replace("_", " ").title())
+                    price_range = cat_data.get("typical_price_range", [])
+                    pricing_unit = cat_data.get("pricing_unit", "")
+                    base_rate = cat_data.get("base_rate", 0)
+                    notes = cat_data.get("notes", "")
+                    confidence = cat_data.get("confidence", 0.5)
+                    samples = cat_data.get("samples", 0)
+
+                    line = f"  **{display_name}**"
+                    if price_range and len(price_range) == 2:
+                        line += f" - Range: ${price_range[0]:,.0f}-${price_range[1]:,.0f}"
+                    if base_rate:
+                        line += f" (Base: ${base_rate:,.0f})"
+                    if pricing_unit:
+                        line += f" [{pricing_unit}]"
+                    lines.append(line)
+
+                    if notes:
+                        lines.append(f"    Notes: {notes}")
+                    if samples > 0:
+                        lines.append(f"    (Confidence: {confidence:.0%} from {samples} quotes)")
+                    lines.append("")
+
+    # Handle legacy flat structure for backward compatibility
+    for key, data in pricing_knowledge.items():
+        if key in ["categories", "global_rules"]:
+            continue  # Already handled or handled separately
+
         if isinstance(data, dict):
-            lines.append(f"**{category}**:")
-            for key, value in data.items():
-                lines.append(f"  - {key}: {value}")
+            lines.append(f"**{key}**:")
+            for k, v in data.items():
+                if k not in ["learned_adjustments"]:  # Don't duplicate adjustments
+                    lines.append(f"  - {k}: {v}")
         else:
-            lines.append(f"- {category}: {data}")
+            lines.append(f"- {key}: {data}")
+
     return "\n".join(lines) if lines else "No learned pricing knowledge yet."
 
 

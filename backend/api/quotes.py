@@ -182,12 +182,14 @@ async def generate_quote(request: QuoteRequest, current_user: dict = Depends(get
             correction_examples = await db.get_correction_examples(contractor.id)
 
         # PASS 3: Generate quote with type-filtered context
+        # AND category-specific learned adjustments injected into the prompt
         quote_data = await quote_service.generate_quote(
             transcription=request.transcription,
             contractor=contractor_dict,
             pricing_model=pricing_dict,
             terms=terms_dict,
             correction_examples=correction_examples,
+            detected_category=detected_job_type,  # For learned adjustments injection
         )
 
         # Ensure detected job_type is used if AI didn't return one
@@ -353,12 +355,14 @@ async def generate_quote_from_audio(
                 correction_examples = await db.get_correction_examples(contractor.id)
 
             # STEP 4: Generate quote with type-filtered context
+            # AND category-specific learned adjustments injected into the prompt
             quote_data = await quote_service.generate_quote(
                 transcription=transcription_text,
                 contractor=contractor_dict,
                 pricing_model=pricing_dict,
                 terms=terms_dict,
                 correction_examples=correction_examples,
+                detected_category=detected_job_type,  # For learned adjustments injection
             )
 
             # Add audio metadata
@@ -503,10 +507,12 @@ async def update_quote(
         )
 
         # If there were learnings, apply them to the pricing model
+        # Learnings are stored per-category for targeted prompt injection
         if learning_result.get("has_changes") and learning_result.get("learnings"):
             await db.apply_learnings_to_pricing_model(
                 contractor_id=contractor.id,
                 learnings=learning_result["learnings"],
+                category=quote.job_type,  # Store learnings under this category
             )
 
             # Store edit details on the quote for history and future learning

@@ -40,6 +40,7 @@ class QuoteGenerationService:
         job_types: Optional[list] = None,
         terms: Optional[dict] = None,
         correction_examples: Optional[list] = None,
+        detected_category: Optional[str] = None,
     ) -> dict:
         """
         Generate a quote from a voice transcription.
@@ -51,6 +52,7 @@ class QuoteGenerationService:
             job_types: List of job types the contractor has done
             terms: Standard terms and conditions
             correction_examples: Past quote corrections for few-shot learning
+            detected_category: The detected category for this quote (for learned adjustments injection)
 
         Returns:
             dict with the generated quote structure:
@@ -62,6 +64,7 @@ class QuoteGenerationService:
             - confidence, questions
         """
         # Build the prompt with correction examples for learning
+        # AND category-specific learned adjustments
         prompt = get_quote_generation_prompt(
             transcription=transcription,
             contractor_name=contractor.get("business_name", "Contractor"),
@@ -70,6 +73,7 @@ class QuoteGenerationService:
             job_types=job_types,
             terms=terms,
             correction_examples=correction_examples,
+            detected_category=detected_category,
         )
 
         # Call Claude

@@ -195,10 +195,19 @@ class DatabaseService:
         self,
         contractor_id: str,
         learnings: Dict[str, Any],
+        category: Optional[str] = None,
     ) -> Optional[PricingModel]:
         """
         Apply learnings from quote corrections to the pricing model.
         This is the core of the learning loop.
+
+        Learnings are stored per-category in:
+        pricing_knowledge["categories"][category]["learned_adjustments"]
+
+        Args:
+            contractor_id: The contractor's ID
+            learnings: Dict with pricing_adjustments, new_pricing_rules, overall_tendency
+            category: The category (job_type) this correction applies to
         """
         async with async_session_factory() as session:
             result = await session.execute(
@@ -211,40 +220,95 @@ class DatabaseService:
             # Get current pricing knowledge
             pricing_knowledge = pricing_model.pricing_knowledge or {}
 
-            # Apply pricing adjustments
-            for adjustment in learnings.get("pricing_adjustments", []):
-                item_type = adjustment.get("item_type")
-                if item_type:
-                    if item_type not in pricing_knowledge:
-                        pricing_knowledge[item_type] = {}
+            # Ensure categories structure exists
+            if "categories" not in pricing_knowledge:
+                pricing_knowledge["categories"] = {}
 
-                    existing = pricing_knowledge[item_type]
-                    if isinstance(existing, dict):
-                        # Weighted average: 70% existing, 30% new
-                        if "base_rate" in existing or "base_per_sqft" in existing:
-                            rate_key = "base_rate" if "base_rate" in existing else "base_per_sqft"
-                            old_rate = existing.get(rate_key, 0)
-                            new_rate = adjustment.get("corrected_value", old_rate)
-                            existing[rate_key] = old_rate * 0.7 + new_rate * 0.3
+            # Ensure global_rules exists
+            if "global_rules" not in pricing_knowledge:
+                pricing_knowledge["global_rules"] = []
 
-                        existing["samples"] = existing.get("samples", 1) + 1
-                        existing["confidence"] = min(0.95, existing.get("confidence", 0.5) + 0.02)
+            # If we have a category, store learnings there
+            if category:
+                # Initialize category if it doesn't exist
+                if category not in pricing_knowledge["categories"]:
+                    pricing_knowledge["categories"][category] = {
+                        "display_name": category.replace("_", " ").title(),
+                        "learned_adjustments": [],
+                        "samples": 0,
+                        "confidence": 0.5,
+                    }
 
-                    pricing_knowledge[item_type] = existing
+                cat_data = pricing_knowledge["categories"][category]
 
-            # Add new pricing rules
-            for rule in learnings.get("new_pricing_rules", []):
-                rule_key = rule.get("applies_to", "general")
-                if rule_key not in pricing_knowledge:
-                    pricing_knowledge[rule_key] = {}
+                # Ensure learned_adjustments list exists
+                if "learned_adjustments" not in cat_data:
+                    cat_data["learned_adjustments"] = []
 
-                if isinstance(pricing_knowledge[rule_key], dict):
-                    existing_notes = pricing_knowledge[rule_key].get("notes", "")
-                    new_note = rule.get("rule", "")
-                    if new_note and new_note not in existing_notes:
-                        pricing_knowledge[rule_key]["notes"] = f"{existing_notes}\n{new_note}".strip()
+                # Convert pricing adjustments to text statements
+                for adjustment in learnings.get("pricing_adjustments", []):
+                    item_type = adjustment.get("item_type", "item")
+                    original = adjustment.get("original_value", 0)
+                    corrected = adjustment.get("corrected_value", 0)
+                    reason = adjustment.get("reason", "")
 
-            # Update pricing notes
+                    # Build a human-readable learning statement
+                    if corrected > original:
+                        change_pct = ((corrected - original) / original * 100) if original > 0 else 0
+                        statement = f"Increase {item_type} by ~{change_pct:.0f}%"
+                        if reason:
+                            statement += f" ({reason})"
+                    elif corrected < original:
+                        change_pct = ((original - corrected) / original * 100) if original > 0 else 0
+                        statement = f"Reduce {item_type} by ~{change_pct:.0f}%"
+                        if reason:
+                            statement += f" ({reason})"
+                    else:
+                        continue  # No change, skip
+
+                    # Add if not duplicate (fuzzy check)
+                    if statement and not any(statement.lower() in adj.lower() or adj.lower() in statement.lower()
+                                             for adj in cat_data["learned_adjustments"]):
+                        cat_data["learned_adjustments"].append(statement)
+
+                # Add new pricing rules as learned adjustments
+                for rule in learnings.get("new_pricing_rules", []):
+                    applies_to = rule.get("applies_to", "")
+                    rule_text = rule.get("rule", "")
+
+                    # If rule applies to this category or is general, add it
+                    if applies_to == category or applies_to in ["general", ""]:
+                        if rule_text and rule_text not in cat_data["learned_adjustments"]:
+                            cat_data["learned_adjustments"].append(rule_text)
+
+                # Add overall tendency as a learned adjustment
+                tendency = learnings.get("overall_tendency", "")
+                if tendency and tendency not in cat_data["learned_adjustments"]:
+                    cat_data["learned_adjustments"].append(tendency)
+
+                # Update samples and confidence
+                cat_data["samples"] = cat_data.get("samples", 0) + 1
+                cat_data["confidence"] = min(0.95, cat_data.get("confidence", 0.5) + 0.02)
+
+                # Keep learned_adjustments manageable (max 20 per category)
+                if len(cat_data["learned_adjustments"]) > 20:
+                    # Keep most recent 20
+                    cat_data["learned_adjustments"] = cat_data["learned_adjustments"][-20:]
+
+                pricing_knowledge["categories"][category] = cat_data
+
+            else:
+                # No category specified - add rules to global_rules
+                for rule in learnings.get("new_pricing_rules", []):
+                    rule_text = rule.get("rule", "")
+                    if rule_text and rule_text not in pricing_knowledge["global_rules"]:
+                        pricing_knowledge["global_rules"].append(rule_text)
+
+                tendency = learnings.get("overall_tendency", "")
+                if tendency and tendency not in pricing_knowledge["global_rules"]:
+                    pricing_knowledge["global_rules"].append(tendency)
+
+            # Also update pricing_notes for backward compatibility
             tendency = learnings.get("overall_tendency", "")
             if tendency:
                 current_notes = pricing_model.pricing_notes or ""
