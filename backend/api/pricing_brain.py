@@ -90,6 +90,11 @@ async def get_all_categories(current_user: dict = Depends(get_current_user)):
     if not pricing_model:
         raise HTTPException(status_code=400, detail="Pricing model not found")
 
+    # Debug logging
+    pk = pricing_model.pricing_knowledge or {}
+    print(f"[GET DEBUG] pricing_knowledge keys: {list(pk.keys())}")
+    print(f"[GET DEBUG] categories: {list(pk.get('categories', {}).keys())}")
+
     # Get quotes for statistics
     quotes = await db.get_quotes_by_contractor(contractor.id)
 

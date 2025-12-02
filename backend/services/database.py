@@ -349,10 +349,12 @@ class DatabaseService:
             )
             pricing_model = result.scalar_one_or_none()
             if not pricing_model:
+                print(f"[SYNC DEBUG] No pricing model found for contractor {contractor_id}")
                 return False
 
-            # Get current pricing knowledge
-            pricing_knowledge = pricing_model.pricing_knowledge or {}
+            # Get current pricing knowledge - MUST make a copy to ensure mutation is detected
+            pricing_knowledge = dict(pricing_model.pricing_knowledge) if pricing_model.pricing_knowledge else {}
+            print(f"[SYNC DEBUG] Current pricing_knowledge keys: {list(pricing_knowledge.keys())}")
 
             # Ensure categories structure exists
             if "categories" not in pricing_knowledge:
@@ -360,6 +362,7 @@ class DatabaseService:
 
             # Check if category already exists
             if category in pricing_knowledge["categories"]:
+                print(f"[SYNC DEBUG] Category '{category}' already exists")
                 return False
 
             # Create the new category with minimal structure
@@ -370,13 +373,15 @@ class DatabaseService:
                 "samples": 0,
                 "confidence": 0.5,
             }
+            print(f"[SYNC DEBUG] Adding category '{category}', total categories: {len(pricing_knowledge['categories'])}")
 
-            # Update model - must flag_modified for SQLAlchemy to detect JSON mutation
+            # Update model - assign new dict to ensure SQLAlchemy detects the change
             pricing_model.pricing_knowledge = pricing_knowledge
             pricing_model.updated_at = datetime.utcnow()
             attributes.flag_modified(pricing_model, 'pricing_knowledge')
 
             await session.commit()
+            print(f"[SYNC DEBUG] Committed category '{category}'")
             return True
 
     # ============== TERMS OPERATIONS ==============
