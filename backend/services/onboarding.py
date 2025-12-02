@@ -118,7 +118,7 @@ class OnboardingService:
             session: The completed session with all messages
 
         Returns:
-            Structured pricing model ready to save
+            Structured pricing model ready to save (SAME format as quick_setup)
         """
         prompt = get_pricing_extraction_prompt(session["messages"])
 
@@ -130,10 +130,45 @@ class OnboardingService:
         # Parse the JSON response
         pricing_model = self._parse_extraction_response(response)
 
+        # CRITICAL: Ensure same structure as quick_setup for consistency
+        # Interview should produce RICHER data than quick setup, not different format
+
+        # Get trade defaults to seed categories (same as quick_setup)
+        primary_trade = session.get("primary_trade", "")
+        trade_defaults = self._get_trade_defaults(primary_trade)
+
+        # Ensure pricing_knowledge has the standard structure
+        if "pricing_knowledge" not in pricing_model or not isinstance(pricing_model["pricing_knowledge"], dict):
+            pricing_model["pricing_knowledge"] = {}
+
+        # Merge trade_defaults into pricing_knowledge (don't overwrite learned data)
+        if "trade_defaults" not in pricing_model["pricing_knowledge"]:
+            pricing_model["pricing_knowledge"]["trade_defaults"] = trade_defaults
+
+        # Seed categories from trade defaults if not present (same as quick_setup)
+        if "categories" not in pricing_model["pricing_knowledge"]:
+            pricing_model["pricing_knowledge"]["categories"] = self._seed_categories_from_trade(
+                primary_trade, trade_defaults
+            )
+
+        # Initialize global_rules if not present
+        if "global_rules" not in pricing_model["pricing_knowledge"]:
+            pricing_model["pricing_knowledge"]["global_rules"] = []
+
+        # Ensure terms structure exists (same as quick_setup)
+        if "terms" not in pricing_model or not isinstance(pricing_model.get("terms"), dict):
+            pricing_model["terms"] = {
+                "deposit_percent": 50.0,
+                "quote_valid_days": 30,
+                "labor_warranty_years": 2,
+            }
+
         # Add metadata
         pricing_model["extracted_at"] = datetime.utcnow().isoformat()
         pricing_model["session_id"] = session.get("session_id")
         pricing_model["message_count"] = len(session["messages"])
+        pricing_model["setup_type"] = "interview"  # Mark the onboarding path
+        pricing_model["created_at"] = datetime.utcnow().isoformat()
 
         return pricing_model
 
