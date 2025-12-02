@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terms of Service - quoted.it</title>
+    <meta name="description" content="Terms of Service for Quoted - Voice to Quote AI for Contractors">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #141414;
+            --bg-card: #1a1a1a;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --text-muted: #666666;
+            --border: rgba(255, 255, 255, 0.1);
+            --border-hover: rgba(255, 255, 255, 0.2);
+            --font-serif: 'Playfair Display', Georgia, serif;
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            font-size: 16px;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            padding: 24px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(to bottom, var(--bg-primary) 0%, transparent 100%);
+        }
+
+        .logo {
+            font-family: var(--font-serif);
+            font-size: 1.5rem;
+            font-weight: 500;
+            letter-spacing: -0.02em;
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+
+        .logo span {
+            font-style: italic;
+        }
+
+        .nav-cta {
+            padding: 12px 24px;
+            background: transparent;
+            border: 1px solid var(--text-primary);
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .nav-cta:hover {
+            background: var(--text-primary);
+            color: var(--bg-primary);
+        }
+
+        /* Main Content */
+        main {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 120px 40px 80px;
+        }
+
+        h1 {
+            font-family: var(--font-serif);
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            font-weight: 400;
+            line-height: 1.15;
+            letter-spacing: -0.02em;
+            margin-bottom: 16px;
+        }
+
+        .effective-date {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-bottom: 48px;
+        }
+
+        h2 {
+            font-family: var(--font-serif);
+            font-size: 1.75rem;
+            font-weight: 500;
+            line-height: 1.3;
+            margin-top: 48px;
+            margin-bottom: 16px;
+        }
+
+        h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-top: 32px;
+            margin-bottom: 12px;
+        }
+
+        p {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            line-height: 1.8;
+            margin-bottom: 20px;
+        }
+
+        ul, ol {
+            margin-left: 24px;
+            margin-bottom: 20px;
+            color: var(--text-secondary);
+        }
+
+        li {
+            margin-bottom: 12px;
+            line-height: 1.8;
+        }
+
+        a {
+            color: var(--text-primary);
+            text-decoration: underline;
+            transition: opacity 0.2s ease;
+        }
+
+        a:hover {
+            opacity: 0.7;
+        }
+
+        strong {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        /* Footer */
+        footer {
+            padding: 40px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer-logo {
+            font-family: var(--font-serif);
+            font-size: 1.25rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+
+        .footer-logo span {
+            font-style: italic;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 24px;
+            font-size: 0.875rem;
+        }
+
+        .footer-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+        }
+
+        .footer-links a:hover {
+            color: var(--text-primary);
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            main {
+                padding: 100px 24px 60px;
+            }
+
+            nav {
+                padding: 20px 24px;
+            }
+
+            h1 {
+                font-size: 2.5rem;
+            }
+
+            h2 {
+                font-size: 1.5rem;
+            }
+        }
+
+        @media (max-width: 600px) {
+            footer {
+                flex-direction: column;
+                gap: 16px;
+                text-align: center;
+            }
+
+            .footer-links {
+                flex-direction: column;
+                gap: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <a href="/" class="logo">quoted<span>.it</span></a>
+        <a href="/app" class="nav-cta">Start Quoting</a>
+    </nav>
+
+    <!-- Main Content -->
+    <main>
+        <h1>Terms of Service</h1>
+        <p class="effective-date">Effective Date: December 2024</p>
+
+        <p>Welcome to Quoted. These Terms of Service ("Terms") govern your access to and use of the Quoted service, including our website at quoted.it.com and any related applications or services (collectively, the "Service"). By accessing or using the Service, you agree to be bound by these Terms.</p>
+
+        <h2>1. Service Description</h2>
+        <p>Quoted is an AI-powered voice-to-quote platform designed to help contractors, consultants, freelancers, and service professionals generate budget estimates quickly. The Service uses artificial intelligence to convert voice recordings into structured quote documents.</p>
+        <p>These quotes are intended for preliminary budgetary purposes only and do not constitute binding contracts or final proposals unless you explicitly designate them as such.</p>
+
+        <h2>2. Account Registration</h2>
+        <p>To use the Service, you must:</p>
+        <ul>
+            <li>Be at least 18 years old</li>
+            <li>Provide accurate and complete registration information</li>
+            <li>Maintain the security of your account credentials</li>
+            <li>Notify us immediately of any unauthorized access</li>
+        </ul>
+        <p>You are responsible for all activity that occurs under your account.</p>
+
+        <h2>3. Subscription Plans and Payment</h2>
+
+        <h3>3.1 Free Trial</h3>
+        <p>New users receive a 7-day free trial with access to all features. No credit card is required to start the trial. During the trial period, you can generate up to 10 quotes.</p>
+
+        <h3>3.2 Subscription Tiers</h3>
+        <p>After the trial period, you may subscribe to one of our paid plans:</p>
+        <ul>
+            <li><strong>Starter Plan:</strong> Up to 30 quotes per month</li>
+            <li><strong>Professional Plan:</strong> Up to 100 quotes per month</li>
+            <li><strong>Business Plan:</strong> Unlimited quotes</li>
+        </ul>
+        <p>Current pricing is available at quoted.it.com. All fees are in U.S. dollars and are non-refundable except as required by law.</p>
+
+        <h3>3.3 Billing</h3>
+        <p>Subscriptions are billed monthly or annually, depending on your selected plan. Your subscription will automatically renew unless you cancel before the renewal date. We use Stripe for payment processing and do not store your payment information directly.</p>
+
+        <h3>3.4 Changes to Pricing</h3>
+        <p>We reserve the right to change our pricing with 30 days' notice. Changes will not affect your current billing period.</p>
+
+        <h2>4. Usage Limits and Restrictions</h2>
+
+        <h3>4.1 Quote Limits</h3>
+        <p>Your quote generation is limited based on your subscription tier. Once you reach your monthly limit, you must upgrade your plan or wait until the next billing cycle to generate additional quotes.</p>
+
+        <h3>4.2 Acceptable Use</h3>
+        <p>You agree not to:</p>
+        <ul>
+            <li>Use the Service for any illegal purpose</li>
+            <li>Violate any laws in your jurisdiction</li>
+            <li>Infringe on intellectual property rights</li>
+            <li>Transmit malicious code or harmful content</li>
+            <li>Attempt to gain unauthorized access to the Service</li>
+            <li>Reverse engineer, decompile, or extract source code</li>
+            <li>Resell or redistribute the Service without permission</li>
+            <li>Use automated tools to scrape or extract data</li>
+        </ul>
+
+        <h2>5. Intellectual Property</h2>
+
+        <h3>5.1 Our Property</h3>
+        <p>The Service, including its software, design, text, graphics, and other content, is owned by Quoted and protected by copyright, trademark, and other intellectual property laws. You may not copy, modify, distribute, or create derivative works without our written permission.</p>
+
+        <h3>5.2 Your Content</h3>
+        <p>You retain ownership of all content you submit to the Service, including voice recordings and quote data ("Your Content"). By using the Service, you grant us a limited, worldwide, non-exclusive license to use Your Content solely to provide and improve the Service.</p>
+        <p>Quotes you generate using the Service are yours to use, modify, and distribute as you see fit.</p>
+
+        <h2>6. AI-Generated Content</h2>
+        <p>The Service uses artificial intelligence to generate quotes based on your voice input. While we strive for accuracy, AI-generated content may contain errors or inaccuracies. You are responsible for reviewing and verifying all quotes before sending them to clients.</p>
+        <p>We make no guarantees about the accuracy, completeness, or suitability of AI-generated quotes for any particular purpose.</p>
+
+        <h2>7. Privacy and Data</h2>
+        <p>Your privacy is important to us. Our collection and use of personal information is described in our <a href="/privacy">Privacy Policy</a>, which is incorporated into these Terms by reference.</p>
+
+        <h2>8. Third-Party Services</h2>
+        <p>The Service integrates with third-party providers, including:</p>
+        <ul>
+            <li><strong>OpenAI:</strong> Voice transcription via Whisper API</li>
+            <li><strong>Anthropic:</strong> AI quote generation via Claude API</li>
+            <li><strong>Stripe:</strong> Payment processing</li>
+        </ul>
+        <p>Your use of third-party services is subject to their respective terms and privacy policies. We are not responsible for the actions, content, or policies of third-party providers.</p>
+
+        <h2>9. Disclaimers and Limitation of Liability</h2>
+
+        <h3>9.1 No Warranty</h3>
+        <p>THE SERVICE IS PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.</p>
+
+        <h3>9.2 Limitation of Liability</h3>
+        <p>TO THE MAXIMUM EXTENT PERMITTED BY LAW, QUOTED SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, OR ANY LOSS OF PROFITS, REVENUE, DATA, OR USE, ARISING OUT OF OR RELATED TO YOUR USE OF THE SERVICE.</p>
+        <p>OUR TOTAL LIABILITY TO YOU FOR ALL CLAIMS ARISING FROM OR RELATED TO THE SERVICE SHALL NOT EXCEED THE AMOUNT YOU PAID US IN THE 12 MONTHS PRECEDING THE CLAIM.</p>
+
+        <h3>9.3 Professional Advice</h3>
+        <p>The Service is not a substitute for professional advice. Quotes generated by the Service do not constitute legal, financial, or professional guidance. You should consult with appropriate professionals before making business decisions based on quotes.</p>
+
+        <h2>10. Indemnification</h2>
+        <p>You agree to indemnify and hold harmless Quoted, its affiliates, and their respective officers, directors, employees, and agents from any claims, damages, losses, liabilities, and expenses (including legal fees) arising from:</p>
+        <ul>
+            <li>Your use of the Service</li>
+            <li>Your violation of these Terms</li>
+            <li>Your violation of any third-party rights</li>
+            <li>Any content you submit to the Service</li>
+        </ul>
+
+        <h2>11. Termination</h2>
+
+        <h3>11.1 Your Rights</h3>
+        <p>You may cancel your subscription at any time through your account settings. Cancellation takes effect at the end of your current billing period. You will not receive a refund for the remaining portion of a billing period.</p>
+
+        <h3>11.2 Our Rights</h3>
+        <p>We may suspend or terminate your access to the Service at any time for any reason, including:</p>
+        <ul>
+            <li>Violation of these Terms</li>
+            <li>Fraudulent or illegal activity</li>
+            <li>Non-payment of fees</li>
+            <li>At our discretion to protect the Service or other users</li>
+        </ul>
+
+        <h3>11.3 Effect of Termination</h3>
+        <p>Upon termination, your right to use the Service immediately ceases. We may delete your account data after a reasonable retention period. Sections of these Terms that by their nature should survive termination will remain in effect.</p>
+
+        <h2>12. Changes to Terms</h2>
+        <p>We may update these Terms from time to time. If we make material changes, we will notify you by email or through a notice on the Service at least 30 days before the changes take effect.</p>
+        <p>Your continued use of the Service after changes take effect constitutes acceptance of the revised Terms. If you do not agree to the changes, you must stop using the Service and cancel your subscription.</p>
+
+        <h2>13. Governing Law and Disputes</h2>
+        <p>These Terms are governed by the laws of the United States, without regard to conflict of law principles. Any disputes arising from these Terms or your use of the Service shall be resolved through binding arbitration in accordance with the rules of the American Arbitration Association.</p>
+        <p>You waive any right to participate in a class action lawsuit or class-wide arbitration.</p>
+
+        <h2>14. General Provisions</h2>
+
+        <h3>14.1 Entire Agreement</h3>
+        <p>These Terms, together with our Privacy Policy, constitute the entire agreement between you and Quoted regarding the Service.</p>
+
+        <h3>14.2 Severability</h3>
+        <p>If any provision of these Terms is found to be invalid or unenforceable, the remaining provisions will remain in full force and effect.</p>
+
+        <h3>14.3 Waiver</h3>
+        <p>Our failure to enforce any provision of these Terms does not constitute a waiver of that provision.</p>
+
+        <h3>14.4 Assignment</h3>
+        <p>You may not assign these Terms without our written consent. We may assign these Terms to any affiliate or successor entity.</p>
+
+        <h2>15. Contact Information</h2>
+        <p>If you have questions about these Terms, please contact us:</p>
+        <p>
+            <strong>Email:</strong> <a href="mailto:support@quoted.it.com">support@quoted.it.com</a><br>
+            <strong>Website:</strong> <a href="https://quoted.it.com">https://quoted.it.com</a>
+        </p>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <a href="/" class="footer-logo">quoted<span>.it</span></a>
+        <div class="footer-links">
+            <a href="/privacy">Privacy Policy</a>
+            <a href="/terms">Terms of Service</a>
+            <a href="mailto:support@quoted.it.com">Contact</a>
+        </div>
+    </footer>
+</body>
+</html>
