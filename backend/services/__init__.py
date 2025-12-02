@@ -10,6 +10,9 @@ from .onboarding import OnboardingService, get_onboarding_service
 from .learning import LearningService, get_learning_service
 from .database import DatabaseService, get_db_service
 
+# Alias for backward compatibility
+get_database_service = get_db_service
+
 __all__ = [
     "TranscriptionService",
     "get_transcription_service",
@@ -23,4 +26,5 @@ __all__ = [
     "get_learning_service",
     "DatabaseService",
     "get_db_service",
+    "get_database_service",
 ]
