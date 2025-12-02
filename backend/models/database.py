@@ -402,7 +402,73 @@ async def init_db():
     engine = create_async_engine(settings.async_database_url)
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+
+    # Run migrations for existing tables (add missing columns)
+    await run_migrations(engine)
     return engine
+
+
+async def run_migrations(engine):
+    """
+    Add missing columns to existing tables.
+    SQLAlchemy's create_all doesn't add columns to existing tables,
+    so we need to handle that manually.
+    """
+    from sqlalchemy import text
+
+    migrations = [
+        # Add session_data column to setup_conversations if missing
+        {
+            "table": "setup_conversations",
+            "column": "session_data",
+            "check_sql": """
+                SELECT column_name FROM information_schema.columns
+                WHERE table_name = 'setup_conversations' AND column_name = 'session_data'
+            """,
+            "alter_sql": "ALTER TABLE setup_conversations ADD COLUMN session_data JSON"
+        },
+        # Add extracted_data column if missing (was also added later)
+        {
+            "table": "setup_conversations",
+            "column": "extracted_data",
+            "check_sql": """
+                SELECT column_name FROM information_schema.columns
+                WHERE table_name = 'setup_conversations' AND column_name = 'extracted_data'
+            """,
+            "alter_sql": "ALTER TABLE setup_conversations ADD COLUMN extracted_data JSON"
+        },
+    ]
+
+    async with engine.connect() as conn:
+        for migration in migrations:
+            try:
+                # Check if column exists
+                result = await conn.execute(text(migration["check_sql"]))
+                exists = result.fetchone() is not None
+
+                if not exists:
+                    print(f"Migration: Adding {migration['column']} column to {migration['table']}")
+                    await conn.execute(text(migration["alter_sql"]))
+                    await conn.commit()
+                    print(f"Migration: Successfully added {migration['column']}")
+            except Exception as e:
+                # SQLite uses different syntax, try SQLite version
+                if "information_schema" in str(e).lower() or "no such table" in str(e).lower():
+                    try:
+                        # SQLite: check with pragma
+                        sqlite_check = f"PRAGMA table_info({migration['table']})"
+                        result = await conn.execute(text(sqlite_check))
+                        columns = [row[1] for row in result.fetchall()]
+
+                        if migration["column"] not in columns:
+                            print(f"Migration (SQLite): Adding {migration['column']} to {migration['table']}")
+                            await conn.execute(text(migration["alter_sql"]))
+                            await conn.commit()
+                            print(f"Migration (SQLite): Successfully added {migration['column']}")
+                    except Exception as sqlite_err:
+                        print(f"Migration warning: Could not check/add {migration['column']}: {sqlite_err}")
+                else:
+                    print(f"Migration warning: {e}")
 
 
 def init_db_sync():
