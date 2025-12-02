@@ -602,6 +602,72 @@
             border-left: 3px solid var(--text-primary);
         }
 
+        /* Customer Info Section */
+        .customer-info-section {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 32px;
+        }
+
+        .customer-info-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .customer-info-header h3 {
+            font-family: var(--font-serif);
+            font-size: 1.25rem;
+            font-weight: 500;
+            margin: 0;
+        }
+
+        .btn-icon {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            padding: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .btn-icon:hover {
+            border-color: var(--border-hover);
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .customer-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .customer-info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .customer-info-label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .customer-info-value {
+            font-size: 1rem;
+            color: var(--text-primary);
+        }
+
         /* Line Items */
         .line-items {
             margin-bottom: 32px;
@@ -2255,6 +2321,32 @@
                     <span class="confidence-badge" id="detailConfidenceBadge">High Confidence</span>
                 </div>
 
+                <!-- Customer Info Section -->
+                <div class="customer-info-section" id="customerInfoSection">
+                    <div class="customer-info-header">
+                        <h3>Customer Information</h3>
+                        <button class="btn-icon" onclick="openEditCustomerModal()" title="Edit customer info">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M11.333 2.00004C11.5081 1.82494 11.716 1.68605 11.9447 1.59129C12.1735 1.49653 12.4187 1.44775 12.6663 1.44775C12.914 1.44775 13.1592 1.49653 13.3879 1.59129C13.6167 1.68605 13.8246 1.82494 13.9997 2.00004C14.1748 2.17513 14.3137 2.383 14.4084 2.61178C14.5032 2.84055 14.552 3.08575 14.552 3.33337C14.552 3.58099 14.5032 3.82619 14.4084 4.05497C14.3137 4.28374 14.1748 4.49161 13.9997 4.66671L5.33301 13.3334L1.66634 14.3334L2.66634 10.6667L11.333 2.00004Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="customer-info-grid">
+                        <div class="customer-info-item">
+                            <div class="customer-info-label">Name</div>
+                            <div class="customer-info-value" id="customerNameDisplay">—</div>
+                        </div>
+                        <div class="customer-info-item">
+                            <div class="customer-info-label">Address</div>
+                            <div class="customer-info-value" id="customerAddressDisplay">—</div>
+                        </div>
+                        <div class="customer-info-item">
+                            <div class="customer-info-label">Phone</div>
+                            <div class="customer-info-value" id="customerPhoneDisplay">—</div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="job-description" id="detailJobDescription"></div>
 
                 <div class="line-items" id="detailLineItems">
@@ -2374,6 +2466,35 @@
             <p style="text-align: center; margin-top: 24px; font-size: 0.875rem; color: var(--text-secondary);">
                 Need more? Contact us for enterprise pricing.
             </p>
+        </div>
+    </div>
+
+    <!-- Edit Customer Modal -->
+    <div class="modal-overlay" id="editCustomerModal" style="display: none;">
+        <div class="modal-content" style="max-width: 500px;">
+            <button class="modal-close" onclick="closeEditCustomerModal()">&times;</button>
+            <h2 class="modal-title">Edit Customer Information</h2>
+            <p class="modal-subtitle">
+                Update customer details for this quote.
+            </p>
+            <form id="editCustomerForm" onsubmit="saveCustomerInfo(event)" style="margin-top: 24px;">
+                <div class="form-group">
+                    <label for="editCustomerName">Customer Name</label>
+                    <input type="text" id="editCustomerName" placeholder="John Smith" style="background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); padding: 12px; border-radius: 8px; width: 100%; font-family: var(--font-sans); font-size: 1rem;">
+                </div>
+                <div class="form-group" style="margin-top: 16px;">
+                    <label for="editCustomerAddress">Customer Address</label>
+                    <input type="text" id="editCustomerAddress" placeholder="123 Main St, City, ST 12345" style="background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); padding: 12px; border-radius: 8px; width: 100%; font-family: var(--font-sans); font-size: 1rem;">
+                </div>
+                <div class="form-group" style="margin-top: 16px;">
+                    <label for="editCustomerPhone">Customer Phone</label>
+                    <input type="tel" id="editCustomerPhone" placeholder="(555) 123-4567" style="background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); padding: 12px; border-radius: 8px; width: 100%; font-family: var(--font-sans); font-size: 1rem;">
+                </div>
+                <div style="display: flex; gap: 12px; margin-top: 24px;">
+                    <button type="button" class="btn btn-secondary" onclick="closeEditCustomerModal()" style="flex: 1;">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="saveCustomerBtn" style="flex: 1;">Save Changes</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -3690,6 +3811,11 @@
             document.getElementById('detailJobDescription').textContent = quote.job_description || '';
             document.getElementById('detailTotalAmount').textContent = '$' + (quote.total || quote.subtotal || 0).toLocaleString();
 
+            // Update customer info display
+            document.getElementById('customerNameDisplay').textContent = quote.customer_name || '—';
+            document.getElementById('customerAddressDisplay').textContent = quote.customer_address || '—';
+            document.getElementById('customerPhoneDisplay').textContent = quote.customer_phone || '—';
+
             const confidence = quote.confidence || 'medium';
             const confidenceBadge = document.getElementById('detailConfidenceBadge');
             confidenceBadge.textContent = confidence.charAt(0).toUpperCase() + confidence.slice(1) + ' Confidence';
@@ -4264,6 +4390,88 @@
         document.getElementById('upgradeModal').addEventListener('click', function(e) {
             if (e.target === this) {
                 closeUpgradeModal();
+            }
+        });
+
+        // Edit Customer Modal Functions
+        function openEditCustomerModal() {
+            if (!currentDetailQuote) return;
+
+            // Pre-fill form with current values
+            document.getElementById('editCustomerName').value = currentDetailQuote.customer_name || '';
+            document.getElementById('editCustomerAddress').value = currentDetailQuote.customer_address || '';
+            document.getElementById('editCustomerPhone').value = currentDetailQuote.customer_phone || '';
+
+            document.getElementById('editCustomerModal').style.display = 'flex';
+        }
+
+        function closeEditCustomerModal() {
+            document.getElementById('editCustomerModal').style.display = 'none';
+        }
+
+        async function saveCustomerInfo(event) {
+            event.preventDefault();
+
+            if (!currentDetailQuote) return;
+
+            const customerData = {
+                customer_name: document.getElementById('editCustomerName').value.trim(),
+                customer_address: document.getElementById('editCustomerAddress').value.trim(),
+                customer_phone: document.getElementById('editCustomerPhone').value.trim()
+            };
+
+            const saveBtn = document.getElementById('saveCustomerBtn');
+            saveBtn.disabled = true;
+            saveBtn.textContent = 'Saving...';
+
+            try {
+                const response = await fetch(`${API_BASE}/quotes/${currentDetailQuote.id}/customer`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify(customerData)
+                });
+
+                if (response.ok) {
+                    const updatedQuote = await response.json();
+
+                    // Update current quote object
+                    currentDetailQuote.customer_name = updatedQuote.customer_name;
+                    currentDetailQuote.customer_address = updatedQuote.customer_address;
+                    currentDetailQuote.customer_phone = updatedQuote.customer_phone;
+
+                    // Update display
+                    document.getElementById('detailQuoteTitle').textContent = updatedQuote.customer_name || 'Quote Details';
+                    document.getElementById('customerNameDisplay').textContent = updatedQuote.customer_name || '—';
+                    document.getElementById('customerAddressDisplay').textContent = updatedQuote.customer_address || '—';
+                    document.getElementById('customerPhoneDisplay').textContent = updatedQuote.customer_phone || '—';
+
+                    // Update quotes cache
+                    const cacheIndex = quotesCache.findIndex(q => q.id === currentDetailQuote.id);
+                    if (cacheIndex !== -1) {
+                        quotesCache[cacheIndex] = { ...quotesCache[cacheIndex], ...updatedQuote };
+                    }
+
+                    closeEditCustomerModal();
+                } else {
+                    const error = await response.json();
+                    alert('Failed to update customer info: ' + (error.detail || 'Unknown error'));
+                }
+            } catch (err) {
+                console.error('Error saving customer info:', err);
+                alert('Network error. Please try again.');
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.textContent = 'Save Changes';
+            }
+        }
+
+        // Close edit customer modal on outside click
+        document.getElementById('editCustomerModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeEditCustomerModal();
             }
         });
 
