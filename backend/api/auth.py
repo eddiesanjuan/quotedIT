@@ -97,7 +97,7 @@ async def login(
 
 @router.get("/me", response_model=UserResponse)
 async def get_me(
-    user: User = Depends(get_current_user),
+    user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -106,15 +106,15 @@ async def get_me(
     """
     # Get contractor profile
     result = await db.execute(
-        select(Contractor).where(Contractor.user_id == user.id)
+        select(Contractor).where(Contractor.user_id == user["id"])
     )
     contractor = result.scalar_one_or_none()
 
     return UserResponse(
-        id=user.id,
-        email=user.email,
-        is_active=user.is_active,
-        is_verified=user.is_verified,
+        id=user["id"],
+        email=user["email"],
+        is_active=user["is_active"],
+        is_verified=user["is_verified"],
         contractor_id=contractor.id if contractor else None,
         business_name=contractor.business_name if contractor else None,
     )
@@ -122,7 +122,7 @@ async def get_me(
 
 @router.post("/refresh", response_model=Token)
 async def refresh_token(
-    user: User = Depends(get_current_user),
+    user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -131,7 +131,7 @@ async def refresh_token(
     """
     # Get contractor profile
     result = await db.execute(
-        select(Contractor).where(Contractor.user_id == user.id)
+        select(Contractor).where(Contractor.user_id == user["id"])
     )
     contractor = result.scalar_one_or_none()
 
@@ -143,12 +143,12 @@ async def refresh_token(
 
     # Create new access token
     access_token = create_access_token(
-        data={"sub": user.id, "contractor_id": contractor.id},
+        data={"sub": user["id"], "contractor_id": contractor.id},
         expires_delta=timedelta(minutes=settings.jwt_expire_minutes),
     )
 
     return Token(
         access_token=access_token,
-        user_id=user.id,
+        user_id=user["id"],
         contractor_id=contractor.id,
     )
