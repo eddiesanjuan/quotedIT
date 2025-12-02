@@ -69,6 +69,53 @@
 | ~~ONBOARD-008~~ | ~~Ensure Onboarding Path Consistency~~ | ~~Backend~~ | **COMPLETE** | Committed 1fc11fe |
 | ~~UX-003~~ | ~~Improve Landing Page Headline~~ | ~~Frontend~~ | **COMPLETE** | Committed 66b25b9 |
 | ~~UX-004~~ | ~~Add Product Demo Animation to Landing Page~~ | ~~Frontend~~ | **COMPLETE** | Committed 2c7244e |
+| BUG-004 | Demo Page Broken + Strategic Review | Frontend + Executive | **READY** | None |
+
+---
+
+## BUG-004: Demo Page Broken + Strategic Review (READY)
+
+**Scope**: Frontend (2h) + Executive Council Review
+**Priority**: HIGH (broken feature + strategic concern from Founder)
+**Reported By**: Founder (2025-12-02)
+
+**Bug**: JavaScript error on demo page load:
+```
+Cannot read properties of undefined (reading 'toLocaleString')
+```
+Something is trying to format a value that doesn't exist. Likely in date/number formatting.
+
+**Strategic Concern from Founder**:
+> "When I think about it, I don't know how much I really love the idea without at least a big disclaimer stating that it would not work nearly as good as it would if you had done the interview. To be honest, I don't really know how it would work without an interview."
+
+**Current Implementation**:
+- Demo uses a "generic contractor profile" (General Contractor, standard rates)
+- No personalization = quotes may be inaccurate/misleading
+- Could hurt conversion if users think "that's not how I price"
+
+**Options for Executive Council**:
+
+**Option A: Fix Bug + Add Strong Disclaimer**
+- Fix the JS error
+- Add prominent disclaimer: "Demo uses generic pricing. Your quotes will be personalized after setup."
+- Keep feature as proof-of-concept, not accuracy demo
+
+**Option B: Fix Bug + Redesign Demo Experience**
+- Fix the JS error
+- Instead of generating a quote, show a VIDEO or ANIMATION of the real flow
+- "See how it works" rather than "try it yourself"
+- Avoids accuracy concerns entirely
+
+**Option C: Remove Demo Feature**
+- Delete /demo route
+- Focus conversion on signup → interview path
+- Less friction, clearer value prop
+
+**Implementation (if keeping)**:
+1. [ ] Debug and fix toLocaleString error in frontend/demo.html
+2. [ ] Executive Council to vote on strategic direction (A, B, or C)
+3. [ ] Implement chosen direction
+4. [ ] Test end-to-end
 
 ---
 
