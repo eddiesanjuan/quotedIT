@@ -416,7 +416,8 @@ async def run_migrations(engine):
     """
     from sqlalchemy import text
 
-    migrations = [
+    # Column additions
+    column_migrations = [
         # Add session_data column to setup_conversations if missing
         {
             "table": "setup_conversations",
@@ -439,10 +440,23 @@ async def run_migrations(engine):
         },
     ]
 
+    # Constraint changes (PostgreSQL only - SQLite doesn't support these)
+    constraint_migrations = [
+        # Make contractor_id nullable in setup_conversations (for pre-signup interviews)
+        {
+            "description": "Make setup_conversations.contractor_id nullable",
+            "check_sql": """
+                SELECT is_nullable FROM information_schema.columns
+                WHERE table_name = 'setup_conversations' AND column_name = 'contractor_id'
+            """,
+            "alter_sql": "ALTER TABLE setup_conversations ALTER COLUMN contractor_id DROP NOT NULL"
+        },
+    ]
+
     async with engine.connect() as conn:
-        for migration in migrations:
+        # Run column additions
+        for migration in column_migrations:
             try:
-                # Check if column exists
                 result = await conn.execute(text(migration["check_sql"]))
                 exists = result.fetchone() is not None
 
@@ -455,7 +469,6 @@ async def run_migrations(engine):
                 # SQLite uses different syntax, try SQLite version
                 if "information_schema" in str(e).lower() or "no such table" in str(e).lower():
                     try:
-                        # SQLite: check with pragma
                         sqlite_check = f"PRAGMA table_info({migration['table']})"
                         result = await conn.execute(text(sqlite_check))
                         columns = [row[1] for row in result.fetchall()]
@@ -469,6 +482,21 @@ async def run_migrations(engine):
                         print(f"Migration warning: Could not check/add {migration['column']}: {sqlite_err}")
                 else:
                     print(f"Migration warning: {e}")
+
+        # Run constraint changes (PostgreSQL only)
+        for migration in constraint_migrations:
+            try:
+                result = await conn.execute(text(migration["check_sql"]))
+                row = result.fetchone()
+                if row and row[0] == 'NO':  # Currently NOT NULL
+                    print(f"Migration: {migration['description']}")
+                    await conn.execute(text(migration["alter_sql"]))
+                    await conn.commit()
+                    print(f"Migration: Successfully completed - {migration['description']}")
+            except Exception as e:
+                # SQLite doesn't support ALTER COLUMN, skip these migrations
+                if "information_schema" not in str(e).lower():
+                    print(f"Migration warning (constraint): {e}")
 
 
 def init_db_sync():
