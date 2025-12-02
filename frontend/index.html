@@ -1968,6 +1968,216 @@
             line-height: 1.6;
         }
 
+        /* Account Tabs */
+        .account-tabs {
+            display: flex;
+            gap: 8px;
+            margin: 24px 0 32px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .account-tab-btn {
+            padding: 12px 24px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-family: var(--font-sans);
+            font-size: 0.9375rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
+        }
+
+        .account-tab-btn:hover {
+            color: var(--text-primary);
+        }
+
+        .account-tab-btn.active {
+            color: var(--text-primary);
+            border-bottom-color: var(--text-primary);
+        }
+
+        .account-tab-content {
+            display: none;
+        }
+
+        .account-tab-content.active {
+            display: block;
+        }
+
+        /* Pricing Brain Styles */
+        .pricing-brain-section {
+            margin-bottom: 48px;
+        }
+
+        .section-title {
+            font-family: var(--font-serif);
+            font-size: 1.5rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+            letter-spacing: -0.01em;
+        }
+
+        .section-subtitle {
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+            font-size: 0.9375rem;
+        }
+
+        .global-settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .global-setting-item {
+            background: var(--bg-secondary);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .global-setting-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 8px;
+        }
+
+        .global-setting-value {
+            font-size: 1.25rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .category-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .category-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .category-card:hover {
+            border-color: var(--border-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .category-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 16px;
+        }
+
+        .category-name {
+            font-family: var(--font-serif);
+            font-size: 1.125rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .category-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background: var(--bg-elevated);
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            font-weight: 500;
+            border-radius: 100px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .category-badge.high-confidence {
+            background: var(--success);
+            color: var(--bg-primary);
+        }
+
+        .category-badge.medium-confidence {
+            background: var(--warning);
+            color: var(--bg-primary);
+        }
+
+        .category-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .category-stat {
+            text-align: center;
+            padding: 12px;
+            background: var(--bg-card);
+            border-radius: 8px;
+        }
+
+        .category-stat-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .category-stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-top: 4px;
+        }
+
+        .category-rules-preview {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+        }
+
+        .category-rules-preview p {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin: 4px 0;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: var(--bg-secondary);
+            border: 1px dashed var(--border);
+            border-radius: 12px;
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 16px;
+        }
+
+        .empty-state h4 {
+            font-family: var(--font-serif);
+            font-size: 1.25rem;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .empty-state p {
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+        }
+
         @media (max-width: 640px) {
             .pricing-grid {
                 grid-template-columns: 1fr;
@@ -1978,6 +2188,14 @@
             }
 
             .billing-info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .category-cards-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .global-settings-grid {
                 grid-template-columns: 1fr;
             }
         }
@@ -2388,6 +2606,14 @@
             <div class="card" id="accountSection" style="display: none;">
                 <h2 class="card-title">Account & Billing</h2>
 
+                <!-- Account Tabs -->
+                <div class="account-tabs">
+                    <button class="account-tab-btn active" id="billingTabBtn" onclick="showAccountTab('billing')">Billing</button>
+                    <button class="account-tab-btn" id="pricingBrainTabBtn" onclick="showAccountTab('pricingBrain')">Pricing Brain</button>
+                </div>
+
+                <!-- Billing Tab Content -->
+                <div id="billingTabContent" class="account-tab-content active">
                 <!-- Trial Banner (shown during trial) -->
                 <div class="trial-banner" id="trialBanner" style="display: none;">
                     <div>
@@ -2447,6 +2673,34 @@
                     <p class="subtitle" style="margin-bottom: 24px;">Update billing info, change plan, or cancel subscription</p>
                     <button class="btn btn-primary" onclick="openCustomerPortal()">Open Billing Portal</button>
                 </div>
+                </div> <!-- End Billing Tab Content -->
+
+                <!-- Pricing Brain Tab Content -->
+                <div id="pricingBrainTabContent" class="account-tab-content" style="display: none;">
+                    <!-- Global Settings Panel -->
+                    <div class="pricing-brain-section">
+                        <h3 class="section-title">Global Pricing Settings</h3>
+                        <p class="section-subtitle">Base rates you configured during onboarding</p>
+                        <div class="global-settings-grid" id="globalSettingsGrid">
+                            <!-- Will be populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Category Cards Dashboard -->
+                    <div class="pricing-brain-section">
+                        <h3 class="section-title">What I've Learned About Your Pricing</h3>
+                        <p class="section-subtitle">Categories where you've corrected quotes or I've detected pricing patterns</p>
+                        <div class="category-cards-grid" id="categoryCardsGrid">
+                            <!-- Will be populated by JavaScript -->
+                        </div>
+                        <!-- Empty state -->
+                        <div class="empty-state" id="categoriesEmptyState" style="display: none;">
+                            <div class="empty-icon">📚</div>
+                            <h4>No categories learned yet</h4>
+                            <p>I'll learn your pricing patterns as you generate quotes and make corrections.</p>
+                        </div>
+                    </div>
+                </div> <!-- End Pricing Brain Tab Content -->
             </div>
         </div>
     </main>
@@ -2466,6 +2720,70 @@
             <p style="text-align: center; margin-top: 24px; font-size: 0.875rem; color: var(--text-secondary);">
                 Need more? Contact us for enterprise pricing.
             </p>
+        </div>
+    </div>
+
+    <!-- Edit Category Modal -->
+    <div class="modal-overlay" id="editCategoryModal" style="display: none;">
+        <div class="modal-content" style="max-width: 700px; max-height: 90vh; overflow-y: auto;">
+            <button class="modal-close" onclick="closeEditCategoryModal()">&times;</button>
+            <h2 class="modal-title">Edit Category</h2>
+            <p class="modal-subtitle" id="categoryModalSubtitle">
+                Review and adjust pricing knowledge for this category
+            </p>
+
+            <form id="editCategoryForm" onsubmit="saveCategoryChanges(event)" style="margin-top: 24px;">
+                <!-- Category Name -->
+                <div class="form-group">
+                    <label for="editCategoryName">Category Name</label>
+                    <input type="text" id="editCategoryName" required style="background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); padding: 12px; border-radius: 8px; width: 100%; font-family: var(--font-sans); font-size: 1rem;">
+                </div>
+
+                <!-- Pattern-Based Hints (instant, no API cost) -->
+                <div style="margin-top: 24px;">
+                    <h4 style="font-family: var(--font-serif); font-size: 1.125rem; margin-bottom: 8px;">Pattern-Based Adjustments</h4>
+                    <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 16px;">What I've learned from your corrections</p>
+                    <div id="patternHintsContainer" style="background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; padding: 16px; min-height: 80px;">
+                        <!-- Will show learned patterns from stored corrections -->
+                    </div>
+                </div>
+
+                <!-- AI Analysis Section (on-demand, Haiku) -->
+                <div style="margin-top: 24px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                        <div>
+                            <h4 style="font-family: var(--font-serif); font-size: 1.125rem; margin-bottom: 4px;">AI Analysis</h4>
+                            <p style="font-size: 0.875rem; color: var(--text-secondary);">Get AI suggestions based on your patterns</p>
+                        </div>
+                        <button type="button" class="btn btn-secondary" onclick="runAIAnalysis()" id="analyzeBtn">
+                            Analyze with AI
+                        </button>
+                    </div>
+                    <div id="aiAnalysisContainer" style="background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; padding: 16px; min-height: 80px; display: none;">
+                        <!-- AI analysis results will appear here -->
+                    </div>
+                </div>
+
+                <!-- Rate Modifiers -->
+                <div class="form-group" style="margin-top: 24px;">
+                    <label for="editRateModifier">Rate Modifier (%)</label>
+                    <input type="number" id="editRateModifier" step="0.1" placeholder="0" style="background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); padding: 12px; border-radius: 8px; width: 100%; font-family: var(--font-sans); font-size: 1rem;">
+                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 8px;">Positive to increase, negative to decrease rates for this category</p>
+                </div>
+
+                <!-- Learned Rules (editable textarea) -->
+                <div class="form-group" style="margin-top: 24px;">
+                    <label for="editLearnedRules">Learned Rules (one per line)</label>
+                    <textarea id="editLearnedRules" rows="4" placeholder="No rules yet" style="background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); padding: 12px; border-radius: 8px; width: 100%; font-family: var(--font-sans); font-size: 1rem; resize: vertical;"></textarea>
+                </div>
+
+                <!-- Action Buttons -->
+                <div style="display: flex; gap: 12px; margin-top: 24px;">
+                    <button type="button" class="btn btn-secondary" onclick="confirmDeleteCategory()" style="flex: 1; background: var(--error); color: white;">Delete Category</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeEditCategoryModal()" style="flex: 1;">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="saveCategoryBtn" style="flex: 1;">Save Changes</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -4498,6 +4816,404 @@
 
         // ========================================
         // End Billing & Subscription System
+        // ========================================
+
+        // ========================================
+        // Pricing Brain Management
+        // ========================================
+
+        let currentCategory = null;
+        let pricingBrainData = null;
+
+        // Account tab switching
+        function showAccountTab(tab) {
+            // Update tab buttons
+            document.getElementById('billingTabBtn').classList.toggle('active', tab === 'billing');
+            document.getElementById('pricingBrainTabBtn').classList.toggle('active', tab === 'pricingBrain');
+
+            // Update tab content
+            document.getElementById('billingTabContent').classList.toggle('active', tab === 'billing');
+            document.getElementById('pricingBrainTabContent').classList.toggle('active', tab === 'pricingBrain');
+
+            // Load pricing brain data when switching to that tab
+            if (tab === 'pricingBrain') {
+                loadPricingBrain();
+            } else if (tab === 'billing') {
+                loadBillingStatus();
+            }
+        }
+
+        // Load pricing brain data
+        async function loadPricingBrain() {
+            try {
+                // Fetch all categories
+                const response = await fetch(`${API_BASE}/pricing-brain`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load pricing brain data');
+                }
+
+                pricingBrainData = await response.json();
+
+                // Render global settings
+                renderGlobalSettings(pricingBrainData.global_settings || {});
+
+                // Render category cards
+                const categories = pricingBrainData.categories || [];
+                renderCategoryCards(categories);
+
+            } catch (err) {
+                console.error('Failed to load pricing brain:', err);
+                showError('Failed to load pricing brain data. Please try again.');
+            }
+        }
+
+        // Render global settings
+        function renderGlobalSettings(settings) {
+            const container = document.getElementById('globalSettingsGrid');
+            container.textContent = ''; // Clear existing
+
+            const settingsToShow = [
+                { label: 'Hourly Rate', value: settings.hourly_rate ? `$${settings.hourly_rate}/hr` : 'Not set' },
+                { label: 'Material Markup', value: settings.material_markup ? `${settings.material_markup}%` : 'Not set' },
+                { label: 'Minimum Job', value: settings.minimum_job ? `$${settings.minimum_job}` : 'Not set' }
+            ];
+
+            settingsToShow.forEach(setting => {
+                const item = document.createElement('div');
+                item.className = 'global-setting-item';
+
+                const label = document.createElement('div');
+                label.className = 'global-setting-label';
+                label.textContent = setting.label;
+                item.appendChild(label);
+
+                const value = document.createElement('div');
+                value.className = 'global-setting-value';
+                value.textContent = setting.value;
+                item.appendChild(value);
+
+                container.appendChild(item);
+            });
+        }
+
+        // Render category cards
+        function renderCategoryCards(categories) {
+            const container = document.getElementById('categoryCardsGrid');
+            const emptyState = document.getElementById('categoriesEmptyState');
+
+            container.textContent = ''; // Clear existing
+
+            if (!categories || categories.length === 0) {
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+
+            categories.forEach(category => {
+                const card = createCategoryCard(category);
+                container.appendChild(card);
+            });
+        }
+
+        // Create a category card element (safe DOM construction)
+        function createCategoryCard(category) {
+            const card = document.createElement('div');
+            card.className = 'category-card';
+            card.onclick = () => openEditCategoryModal(category.name);
+
+            // Header with name and confidence badge
+            const header = document.createElement('div');
+            header.className = 'category-card-header';
+
+            const nameDiv = document.createElement('div');
+            const name = document.createElement('div');
+            name.className = 'category-name';
+            name.textContent = category.display_name || category.name;
+            nameDiv.appendChild(name);
+            header.appendChild(nameDiv);
+
+            const confidence = category.confidence_level || 'low';
+            const badge = document.createElement('div');
+            badge.className = `category-badge ${confidence === 'high' ? 'high-confidence' : confidence === 'medium' ? 'medium-confidence' : ''}`;
+            badge.textContent = confidence;
+            header.appendChild(badge);
+
+            card.appendChild(header);
+
+            // Stats grid
+            const stats = document.createElement('div');
+            stats.className = 'category-stats';
+
+            const quotesCount = category.quotes_count || 0;
+            const rulesCount = (category.learned_rules || []).length;
+
+            // Quote stat
+            const quoteStat = document.createElement('div');
+            quoteStat.className = 'category-stat';
+
+            const quoteValue = document.createElement('div');
+            quoteValue.className = 'category-stat-value';
+            quoteValue.textContent = quotesCount;
+            quoteStat.appendChild(quoteValue);
+
+            const quoteLabel = document.createElement('div');
+            quoteLabel.className = 'category-stat-label';
+            quoteLabel.textContent = 'Quotes';
+            quoteStat.appendChild(quoteLabel);
+
+            stats.appendChild(quoteStat);
+
+            // Rules stat
+            const rulesStat = document.createElement('div');
+            rulesStat.className = 'category-stat';
+
+            const rulesValue = document.createElement('div');
+            rulesValue.className = 'category-stat-value';
+            rulesValue.textContent = rulesCount;
+            rulesStat.appendChild(rulesValue);
+
+            const rulesLabel = document.createElement('div');
+            rulesLabel.className = 'category-stat-label';
+            rulesLabel.textContent = 'Rules';
+            rulesStat.appendChild(rulesLabel);
+
+            stats.appendChild(rulesStat);
+
+            card.appendChild(stats);
+
+            // Rules preview (if any)
+            if (rulesCount > 0) {
+                const rulesPreview = document.createElement('div');
+                rulesPreview.className = 'category-rules-preview';
+
+                const rules = category.learned_rules.slice(0, 2);
+                rules.forEach(rule => {
+                    const p = document.createElement('p');
+                    p.textContent = `• ${rule}`;
+                    rulesPreview.appendChild(p);
+                });
+
+                if (category.learned_rules.length > 2) {
+                    const more = document.createElement('p');
+                    more.style.fontStyle = 'italic';
+                    more.textContent = `+${category.learned_rules.length - 2} more...`;
+                    rulesPreview.appendChild(more);
+                }
+
+                card.appendChild(rulesPreview);
+            }
+
+            return card;
+        }
+
+        // Open edit category modal
+        async function openEditCategoryModal(categoryName) {
+            try {
+                // Fetch full category details
+                const response = await fetch(`${API_BASE}/pricing-brain/${encodeURIComponent(categoryName)}`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load category details');
+                }
+
+                currentCategory = await response.json();
+
+                // Populate form
+                document.getElementById('editCategoryName').value = currentCategory.display_name || currentCategory.name;
+                document.getElementById('editRateModifier').value = currentCategory.rate_modifier || 0;
+                document.getElementById('editLearnedRules').value = (currentCategory.learned_rules || []).join('\n');
+
+                // Show pattern hints (from stored corrections)
+                renderPatternHints(currentCategory);
+
+                // Hide AI analysis initially
+                document.getElementById('aiAnalysisContainer').style.display = 'none';
+
+                // Update subtitle
+                document.getElementById('categoryModalSubtitle').textContent =
+                    `${currentCategory.quotes_count || 0} quotes • ${currentCategory.confidence_level || 'low'} confidence`;
+
+                // Show modal
+                document.getElementById('editCategoryModal').style.display = 'flex';
+
+            } catch (err) {
+                console.error('Failed to open category modal:', err);
+                showError('Failed to load category details. Please try again.');
+            }
+        }
+
+        // Render pattern hints (instant, no API cost)
+        function renderPatternHints(category) {
+            const container = document.getElementById('patternHintsContainer');
+            container.textContent = ''; // Clear
+
+            const patterns = category.pattern_hints || [];
+
+            if (patterns.length === 0) {
+                const empty = document.createElement('p');
+                empty.style.color = 'var(--text-muted)';
+                empty.style.fontStyle = 'italic';
+                empty.textContent = 'No patterns detected yet. Make more corrections to build pattern hints.';
+                container.appendChild(empty);
+                return;
+            }
+
+            patterns.forEach(pattern => {
+                const p = document.createElement('p');
+                p.style.marginBottom = '8px';
+                p.style.color = 'var(--text-secondary)';
+                p.textContent = `• ${pattern}`;
+                container.appendChild(p);
+            });
+        }
+
+        // Run AI analysis (on-demand, uses Haiku)
+        async function runAIAnalysis() {
+            if (!currentCategory) return;
+
+            const analyzeBtn = document.getElementById('analyzeBtn');
+            const container = document.getElementById('aiAnalysisContainer');
+
+            analyzeBtn.disabled = true;
+            analyzeBtn.textContent = 'Analyzing...';
+
+            try {
+                const response = await fetch(`${API_BASE}/pricing-brain/${encodeURIComponent(currentCategory.name)}/analyze`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                if (!response.ok) {
+                    throw new Error('AI analysis failed');
+                }
+
+                const result = await response.json();
+
+                // Show analysis
+                container.style.display = 'block';
+                container.textContent = ''; // Clear
+
+                const analysis = document.createElement('div');
+                analysis.style.whiteSpace = 'pre-wrap';
+                analysis.style.color = 'var(--text-secondary)';
+                analysis.style.lineHeight = '1.6';
+                analysis.textContent = result.analysis || 'No insights available.';
+                container.appendChild(analysis);
+
+            } catch (err) {
+                console.error('AI analysis error:', err);
+                showError('AI analysis failed. Please try again.');
+            } finally {
+                analyzeBtn.disabled = false;
+                analyzeBtn.textContent = 'Analyze with AI';
+            }
+        }
+
+        // Save category changes
+        async function saveCategoryChanges(event) {
+            event.preventDefault();
+            if (!currentCategory) return;
+
+            const saveBtn = document.getElementById('saveCategoryBtn');
+            saveBtn.disabled = true;
+            saveBtn.textContent = 'Saving...';
+
+            try {
+                const updates = {
+                    display_name: document.getElementById('editCategoryName').value.trim(),
+                    rate_modifier: parseFloat(document.getElementById('editRateModifier').value) || 0,
+                    learned_rules: document.getElementById('editLearnedRules').value
+                        .split('\n')
+                        .map(rule => rule.trim())
+                        .filter(rule => rule.length > 0)
+                };
+
+                const response = await fetch(`${API_BASE}/pricing-brain/${encodeURIComponent(currentCategory.name)}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify(updates)
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Failed to save changes');
+                }
+
+                // Refresh and close
+                await loadPricingBrain();
+                closeEditCategoryModal();
+                showLearningToast('Category updated successfully');
+
+            } catch (err) {
+                console.error('Save error:', err);
+                showError('Failed to save changes: ' + err.message);
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.textContent = 'Save Changes';
+            }
+        }
+
+        // Confirm and delete category
+        function confirmDeleteCategory() {
+            if (!currentCategory) return;
+
+            const confirmed = confirm(`Are you sure you want to delete the "${currentCategory.display_name || currentCategory.name}" category?\n\nThis will remove all learned patterns and rules for this category. This action cannot be undone.`);
+
+            if (confirmed) {
+                deleteCategory();
+            }
+        }
+
+        // Delete category
+        async function deleteCategory() {
+            if (!currentCategory) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/pricing-brain/${encodeURIComponent(currentCategory.name)}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Failed to delete category');
+                }
+
+                // Refresh and close
+                await loadPricingBrain();
+                closeEditCategoryModal();
+                showLearningToast('Category deleted successfully');
+
+            } catch (err) {
+                console.error('Delete error:', err);
+                showError('Failed to delete category: ' + err.message);
+            }
+        }
+
+        // Close edit category modal
+        function closeEditCategoryModal() {
+            document.getElementById('editCategoryModal').style.display = 'none';
+            currentCategory = null;
+        }
+
+        // Close modal on outside click
+        document.getElementById('editCategoryModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeEditCategoryModal();
+            }
+        });
+
+        // ========================================
+        // End Pricing Brain Management
         // ========================================
 
         // Error capture
