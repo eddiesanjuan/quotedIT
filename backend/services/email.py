@@ -846,6 +846,181 @@ class EmailService:
             print(f"Failed to send milestone email to {to_email}: {e}")
             raise
 
+    @staticmethod
+    async def send_check_in_email(
+        to_email: str,
+        contractor_name: str
+    ) -> Dict[str, Any]:
+        """
+        Send Day 7 check-in email for inactive users.
+        Part of RETAIN-002 dormancy re-engagement series.
+
+        Args:
+            to_email: Recipient email address
+            contractor_name: Name of the contractor/business
+
+        Returns:
+            Resend API response
+        """
+        content = f"""
+            <h1>Quick check-in—everything okay?</h1>
+
+            <p>Hey {contractor_name},</p>
+
+            <p>We noticed you haven't created a quote in a little while. Just wanted to check in and make sure everything's going smoothly.</p>
+
+            <p>Sometimes contractors get stuck or have questions about the platform. If that's you, we're here to help. Just hit reply to this email.</p>
+
+            <div class="stat-box" style="margin: 24px 0;">
+                <div style="color: #ffffff; font-size: 18px; font-weight: 600; margin-bottom: 12px;">
+                    💡 Quick Tip: Speed Up Job Walks
+                </div>
+                <div style="color: #e0e0e0; font-size: 15px; line-height: 1.6;">
+                    Use Quoted during job walks to quote on the spot. Just record a quick voice note while you're there, and you can send a professional quote before you leave.
+                    Customers love the fast turnaround.
+                </div>
+            </div>
+
+            <a href="https://quoted.it/app" class="button">Generate a Quote</a>
+
+            <p class="muted">Your pricing data is still here waiting for you whenever you're ready.</p>
+        """
+
+        html = EmailService._get_base_template().format(content=content)
+
+        try:
+            response = resend.Emails.send({
+                "from": EmailService.FROM_EMAIL,
+                "to": to_email,
+                "subject": "Quick check-in—everything okay with Quoted?",
+                "html": html,
+            })
+            return response
+        except Exception as e:
+            print(f"Failed to send check-in email to {to_email}: {e}")
+            raise
+
+    @staticmethod
+    async def send_improvements_email(
+        to_email: str,
+        contractor_name: str
+    ) -> Dict[str, Any]:
+        """
+        Send Day 14 improvements email for inactive users.
+        Part of RETAIN-002 dormancy re-engagement series.
+
+        Args:
+            to_email: Recipient email address
+            contractor_name: Name of the contractor/business
+
+        Returns:
+            Resend API response
+        """
+        content = f"""
+            <h1>We've made some improvements</h1>
+
+            <p>Hey {contractor_name},</p>
+
+            <p>While you've been away, we've been busy improving Quoted. Here are a few updates you might like:</p>
+
+            <ul class="feature-list">
+                <li><strong>Smarter Pricing Brain</strong> - Now learns faster from your edits and adapts to seasonal pricing changes</li>
+                <li><strong>Faster Quote Generation</strong> - We cut processing time in half—quotes now generate in seconds, not minutes</li>
+                <li><strong>Enhanced PDF Exports</strong> - More professional layouts with better mobile viewing</li>
+            </ul>
+
+            <div class="stat-box" style="margin: 24px 0; background-color: #1a1a1a; border: 1px solid rgba(255, 255, 255, 0.1);">
+                <div style="color: #a0a0a0; font-size: 13px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">
+                    Your Data is Safe
+                </div>
+                <div style="color: #e0e0e0; font-size: 15px; line-height: 1.6;">
+                    All your pricing data and quote history is still here waiting. Pick up right where you left off.
+                </div>
+            </div>
+
+            <a href="https://quoted.it/app" class="button">Come Back and Try It</a>
+
+            <p class="muted" style="margin-top: 32px; padding-top: 24px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+                <strong>Know other contractors?</strong><br>
+                Share your referral link and earn rewards when they join.
+                <a href="https://quoted.it/app?tab=referral" style="color: #a0a0a0;">Get your referral code</a>
+            </p>
+        """
+
+        html = EmailService._get_base_template().format(content=content)
+
+        try:
+            response = resend.Emails.send({
+                "from": EmailService.FROM_EMAIL,
+                "to": to_email,
+                "subject": "We've made some improvements you might like",
+                "html": html,
+            })
+            return response
+        except Exception as e:
+            print(f"Failed to send improvements email to {to_email}: {e}")
+            raise
+
+    @staticmethod
+    async def send_win_back_email(
+        to_email: str,
+        contractor_name: str
+    ) -> Dict[str, Any]:
+        """
+        Send Day 30 win-back email for inactive users.
+        Part of RETAIN-002 dormancy re-engagement series.
+
+        Args:
+            to_email: Recipient email address
+            contractor_name: Name of the contractor/business
+
+        Returns:
+            Resend API response
+        """
+        content = f"""
+            <h1>We miss you!</h1>
+
+            <p>Hey {contractor_name},</p>
+
+            <p>It's been about a month since we've seen you on Quoted. We genuinely miss having you as part of our community.</p>
+
+            <p>We'd love to know what would bring you back. Was there something that didn't work for you? A feature you needed? Just hit reply and let us know—we read every message.</p>
+
+            <div class="stat-box" style="margin: 24px 0; background-color: #1a1a1a; border: 1px solid rgba(255, 255, 255, 0.1);">
+                <div style="color: #ffffff; font-size: 18px; font-weight: 600; margin-bottom: 12px;">
+                    🎁 Special Welcome Back Offer
+                </div>
+                <div style="color: #e0e0e0; font-size: 15px; line-height: 1.6; margin-bottom: 12px;">
+                    If you'd like to give Quoted another shot, we'll extend your trial by 7 days—no strings attached. Just reply to this email and we'll set it up.
+                </div>
+                <div style="color: #a0a0a0; font-size: 13px;">
+                    Offer expires in 7 days
+                </div>
+            </div>
+
+            <a href="https://quoted.it/app" class="button">Reactivate My Account</a>
+
+            <p style="margin-top: 32px; color: #e0e0e0;">Whether you come back or not, thanks for giving Quoted a try. We wish you all the best with your business.</p>
+
+            <p class="muted" style="margin-top: 16px;">
+                If you don't want to receive these emails anymore, you can <a href="https://quoted.it/unsubscribe" style="color: #a0a0a0;">unsubscribe here</a>.
+            </p>
+        """
+
+        html = EmailService._get_base_template().format(content=content)
+
+        try:
+            response = resend.Emails.send({
+                "from": EmailService.FROM_EMAIL,
+                "to": to_email,
+                "subject": "We miss you! Here's something special",
+                "html": html,
+            })
+            return response
+        except Exception as e:
+            print(f"Failed to send win-back email to {to_email}: {e}")
+            raise
+
 
 # Convenience instance
 email_service = EmailService()
