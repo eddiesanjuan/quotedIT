@@ -3069,16 +3069,16 @@
             <button class="modal-close" onclick="closeCelebrationModal()">&times;</button>
             <div class="celebration-confetti" id="confetti"></div>
             <div class="celebration-icon">🎉</div>
-            <h2 class="modal-title">Your first quote is ready!</h2>
+            <h2 class="modal-title">You created your first quote!</h2>
             <p class="modal-subtitle">
-                You just saved yourself hours of manual work. This is just the beginning.
+                You just saved yourself hours of manual work. The more you use Quoted, the smarter it gets.
             </p>
             <div class="celebration-actions">
-                <button class="btn btn-primary" onclick="closeCelebrationAndView()">View Quote</button>
-                <button class="btn btn-secondary" onclick="shareFeedback()">Share Feedback</button>
+                <button class="btn btn-primary" onclick="closeCelebrationModal()">Got it!</button>
+                <button class="btn btn-secondary" onclick="closeCelebrationAndCreate()">Create Another</button>
             </div>
             <p style="text-align: center; margin-top: 20px; font-size: 0.75rem; color: var(--text-muted);">
-                Keep creating quotes to help the AI learn your pricing style
+                Invite a friend and you both get extra trial time
             </p>
         </div>
     </div>
@@ -3501,8 +3501,8 @@
             document.getElementById('quoteResult').classList.add('active');
             hideError();
 
-            // Check if this is the user's first quote
-            checkAndShowCelebration();
+            // Mark that celebration is pending (will show when user navigates to My Quotes)
+            markCelebrationPending();
         }
 
         // Download PDF
@@ -3549,18 +3549,28 @@
 
         // ========== CELEBRATION MODAL ==========
 
+        function markCelebrationPending() {
+            // Only mark pending if user hasn't celebrated yet
+            const hasSeenCelebration = localStorage.getItem('quoted_has_celebrated');
+            if (!hasSeenCelebration) {
+                localStorage.setItem('quoted_celebration_pending', 'true');
+            }
+        }
+
         function checkAndShowCelebration() {
-            // Check if user has seen celebration before
+            // Check if celebration is pending (first quote was just created)
+            const isPending = localStorage.getItem('quoted_celebration_pending');
             const hasSeenCelebration = localStorage.getItem('quoted_has_celebrated');
 
-            if (!hasSeenCelebration) {
-                // Show celebration modal
+            if (isPending && !hasSeenCelebration) {
+                // Clear pending flag and mark as celebrated
+                localStorage.removeItem('quoted_celebration_pending');
+                localStorage.setItem('quoted_has_celebrated', 'true');
+
+                // Show celebration modal after a brief moment
                 setTimeout(() => {
                     showCelebrationModal();
-                }, 500); // Small delay for smooth transition
-
-                // Mark as shown
-                localStorage.setItem('quoted_has_celebrated', 'true');
+                }, 300);
             }
         }
 
@@ -3580,23 +3590,10 @@
             document.getElementById('confetti').innerHTML = '';
         }
 
-        function closeCelebrationAndView() {
+        function closeCelebrationAndCreate() {
             closeCelebrationModal();
-            // Quote is already visible, just close modal
-        }
-
-        function shareFeedback() {
-            closeCelebrationModal();
-            // Expand feedback section
-            const feedbackSection = document.getElementById('feedbackSection');
-            const feedbackContent = document.getElementById('feedbackContent');
-            const feedbackToggle = document.getElementById('feedbackToggle');
-
-            feedbackContent.style.display = 'block';
-            feedbackToggle.classList.add('open');
-
-            // Scroll to feedback section
-            feedbackSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            // Navigate to New Quote section
+            showAppSection('newQuote');
         }
 
         function createConfetti() {
@@ -4258,6 +4255,8 @@
             } else if (section === 'myQuotes') {
                 document.getElementById('myQuotesSection').style.display = 'block';
                 loadQuotes();
+                // Check if first quote celebration should show
+                checkAndShowCelebration();
             } else if (section === 'account') {
                 document.getElementById('accountSection').style.display = 'block';
                 loadBillingStatus();
