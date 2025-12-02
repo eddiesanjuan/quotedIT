@@ -1,7 +1,7 @@
 # Engineering State
 
-**Last Updated**: 2025-12-02 00:30 PST
-**Updated By**: CTO (AI)
+**Last Updated**: 2025-12-02 08:30 PST
+**Updated By**: CEO (AI)
 
 ---
 
@@ -18,11 +18,11 @@
 | Environment | URL | Status | Version |
 |-------------|-----|--------|---------|
 | **Production** | https://web-production-0550.up.railway.app | RUNNING | 7d50e73 |
-| **Custom Domain** | https://quoted.it.com | DNS CONFIGURED, SSL PENDING | 7d50e73 |
+| **Custom Domain** | https://quoted.it.com | LIVE (SSL ACTIVE) | 7d50e73 |
 
 **Railway Project**: Connected to main branch, auto-deploys on push
 
-**ACTION REQUIRED**: Set `ENVIRONMENT=production` in Railway variables for HTTPS redirect and CORS to work
+**Environment Variable**: `ENVIRONMENT=production` is set ✓ (HTTPS redirect and CORS active)
 
 ---
 
@@ -30,7 +30,12 @@
 
 | Ticket | Description | Assignee | Status | Blockers |
 |--------|-------------|----------|--------|----------|
-| - | No active engineering tickets | - | - | - |
+| PAY-001 | Payment Infrastructure (Stripe) | CTO | BLOCKED | Waiting for Stripe account + API keys |
+| PAY-002 | Trial Logic & Quote Limits | CTO | BLOCKED | Depends on PAY-001 |
+| PAY-003 | Billing UI | CTO | BLOCKED | Depends on PAY-002 |
+| PAY-004 | Email System (Resend) | CTO | BLOCKED | Waiting for Resend account + API key |
+| PAY-005 | Referral System | CTO | BLOCKED | Depends on PAY-002 |
+| ~~PAY-006~~ | ~~Terms of Service + Privacy Policy~~ | ~~CTO~~ | **COMPLETE** | Deployed 325fb25 |
 
 ---
 
@@ -58,7 +63,8 @@
 
 | Date | Commit | Description | Status |
 |------|--------|-------------|--------|
-| 2025-12-02 | 7d50e73 | Security hardening: SQLite issues, rate limiting, CORS, HTTPS | DEPLOYING |
+| 2025-12-02 | 325fb25 | Add Terms of Service and Privacy Policy pages | PENDING DEPLOY |
+| 2025-12-02 | 7d50e73 | Security hardening: SQLite issues, rate limiting, CORS, HTTPS | SUCCESS |
 | 2025-12-02 | eb290f0 | Add autonomous operations infrastructure | SUCCESS |
 | 2025-12-01 | 43af5c6 | Add quote history UI with editable line items | SUCCESS |
 | 2025-12-01 | d050eec | Update anthropic SDK for tool calling | SUCCESS |
@@ -83,6 +89,8 @@
 - `backend/prompts/quote_generation.py` - Prompt construction (learning injection)
 - `frontend/index.html` - Main app (31K tokens, vanilla JS)
 - `frontend/landing.html` - Landing page
+- `frontend/terms.html` - Terms of Service
+- `frontend/privacy.html` - Privacy Policy
 
 ### API Endpoints
 ```
@@ -91,6 +99,8 @@
 /api/contractors/*    - Contractor profile
 /api/onboarding/*     - Setup interview
 /api/issues/*         - Issue reporting (autonomous processing)
+/terms                - Terms of Service page
+/privacy              - Privacy Policy page
 ```
 
 ---
@@ -114,7 +124,8 @@
 
 | Issue | Severity | Workaround | Fix ETA |
 |-------|----------|------------|---------|
-| Issues reset on Railway restart | LOW | None (in-memory storage) | Post-beta |
+| ~~Issues reset on Railway restart~~ | ~~LOW~~ | ~~None~~ | RESOLVED (SQLite) |
+| No issues currently | - | - | - |
 
 ---
 

@@ -1,6 +1,6 @@
 # Product State
 
-**Last Updated**: 2025-12-01 22:40 PST
+**Last Updated**: 2025-12-02 04:20 PST
 **Updated By**: CPO (AI)
 
 ---
@@ -57,10 +57,53 @@
 
 | Priority | Feature | Status | Owner |
 |----------|---------|--------|-------|
-| P0 | DNS Configuration | BLOCKED | Founder |
-| P0 | Beta User Recruitment | NOT STARTED | CGO |
+| ~~P0~~ | ~~DNS Configuration~~ | ~~COMPLETE~~ | ~~Founder~~ |
+| P0 | Beta User Recruitment | READY TO START | CGO |
 | P1 | Monitor First Usage | READY | All |
-| P2 | Pricing Strategy | NOT STARTED | CFO |
+| ~~P2~~ | ~~Pricing Strategy~~ | ~~COMPLETE~~ | ~~CFO~~ |
+
+---
+
+## Pricing Strategy (APPROVED 2025-12-02)
+
+**Decision**: Usage-capped tiers with overage pricing for margin protection.
+
+| Tier | Monthly | Annual | Quotes | Overage | Target |
+|------|---------|--------|--------|---------|--------|
+| **Starter** | $29 | $290/yr | 75/mo | $0.50/quote | Solo contractors |
+| **Pro** | $49 | $490/yr | 200/mo | $0.35/quote | Growing businesses |
+| **Team** | $79 | $790/yr | 500/mo | $0.25/quote | Small firms (3-10) |
+
+**Trial**: 7 days, 75 quotes (mirrors Starter—no free tier exists)
+- **Referral bonus**: +7 days when referred friend signs up AND generates first quote
+- **No cap on referral days**: Viral growth > trial extension cost
+- Trial IS the beta—forces real purchase decisions
+
+**Annual Discount**: 2 months free (17% off)
+
+### Why Usage Caps (Executive Decision)
+
+**Risk mitigated**: Unlimited pricing at $29 exposed us to:
+- Extreme users (500+ quotes/month) destroying margins
+- API price increases (2-3x) making accounts unprofitable
+- No protection against both happening together
+
+**Stress-tested margins** (even at 3x API pricing):
+| Tier | Max API Cost @ 3x | Margin @ 3x |
+|------|-------------------|-------------|
+| Starter (75) | $6.75 | 77% |
+| Pro (200) | $18.00 | 63% |
+| Team (500) | $45.00 | 43% |
+
+**Overage economics**: Heavy users become profit centers, not liabilities.
+
+### Unit Economics
+- Variable cost per quote: $0.02-0.03 (current), $0.06-0.09 (3x stress)
+- Base gross margin: 81-92% (current), 43-77% (3x stress)
+- Overage margin: 91% (current), 74% (3x stress)
+- Target CAC: $22-50
+- LTV (12-month Starter): $290+
+- LTV:CAC ratio: 5.8-13x
 
 ---
 

@@ -147,5 +147,15 @@ if frontend_path.exists():
         """Serve the main application."""
         return FileResponse(frontend_path / "index.html")
 
+    @app.get("/terms")
+    async def serve_terms():
+        """Serve the Terms of Service page."""
+        return FileResponse(frontend_path / "terms.html")
+
+    @app.get("/privacy")
+    async def serve_privacy():
+        """Serve the Privacy Policy page."""
+        return FileResponse(frontend_path / "privacy.html")
+
     # Mount static files (CSS, JS, images if any)
     app.mount("/static", StaticFiles(directory=str(frontend_path)), name="static")
