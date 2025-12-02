@@ -485,6 +485,14 @@ class DatabaseService:
             )
             return result.scalar_one_or_none()
 
+    async def get_quote_by_share_token(self, share_token: str) -> Optional[Quote]:
+        """Get a quote by share token (for public access)."""
+        async with async_session_factory() as session:
+            result = await session.execute(
+                select(Quote).where(Quote.share_token == share_token)
+            )
+            return result.scalar_one_or_none()
+
     async def update_quote(
         self,
         quote_id: str,

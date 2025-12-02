@@ -58,6 +58,8 @@
 | ONBOARD-003 | Industry Pricing Template Library | Backend | **READY** | None |
 | ONBOARD-004 | Interview Type C Coaching Mode | Backend (prompts) | **READY** | None |
 | ONBOARD-005 | Expand Trade Defaults (20+ industries) | Backend | **READY** | None |
+| UX-001 | Improve Quote Input Placeholder Text | Frontend | **READY** | None |
+| FEAT-003 | Pricing Brain Global Settings Editor | Frontend + Backend | **READY** | None |
 
 ---
 
@@ -323,6 +325,86 @@ If they agree:
 1. [ ] Expand `_get_trade_defaults()` with 20+ trades
 2. [ ] Each trade gets 3-5 common service categories with pricing
 3. [ ] Use realistic industry pricing ranges
+
+---
+
+## UX-001: Improve Quote Input Placeholder Text (READY)
+
+**Scope**: Frontend (30m)
+**Priority**: LOW (polish)
+**Requested By**: Founder (2025-12-02)
+
+**Problem**: The quote input text box needs better placeholder/shadow text that shows users exactly what to say when dictating a quote.
+
+**Current State**: Generic placeholder that doesn't demonstrate the expected format.
+
+**Goal**: Create compelling example text that:
+- Sounds natural (like someone actually talking)
+- Shows key elements: customer name, job description, location/context, pricing hints
+- Is concise enough to read at a glance
+- Motivates users to start typing/speaking
+
+**Example Direction**:
+```
+"Quote for John Smith at 123 Oak Street - painting the living room and hallway, about 400 sq ft total, standard prep work, they want it done by next Friday..."
+```
+
+**Implementation**:
+1. [ ] Find current placeholder text in `frontend/index.html`
+2. [ ] Draft 2-3 improved alternatives
+3. [ ] Implement the best one
+4. [ ] Verify placeholder displays correctly in empty input
+
+---
+
+## FEAT-003: Pricing Brain Global Settings Editor (READY)
+
+**Scope**: Frontend + Backend (4h)
+**Priority**: MEDIUM (user control)
+**Requested By**: Founder (2025-12-02)
+
+**Problem**: Global pricing settings (labor rate, material markup, minimum job, etc.) are displayed but not editable in the Pricing Brain UI. Users need to be able to modify these values.
+
+**Current API**:
+- `GET /api/pricing-brain/settings/global` - Returns GlobalSettings (read-only)
+
+**GlobalSettings Model** (from `backend/api/pricing_brain.py`):
+```python
+class GlobalSettings(BaseModel):
+    labor_rate_hourly: Optional[float]
+    helper_rate_hourly: Optional[float]
+    material_markup_percent: Optional[float]
+    minimum_job_amount: Optional[float]
+    pricing_notes: Optional[str]
+```
+
+**Requirements**:
+
+1. **Backend: PUT endpoint**
+   - Create `PUT /api/pricing-brain/settings/global`
+   - Accept GlobalSettings body
+   - Update pricing_model record
+   - Return updated settings
+
+2. **Frontend: Editable Settings Section**
+   - Display current global settings in Pricing Brain tab
+   - Add "Edit" button to open edit modal (or inline editing)
+   - Input validation (rates positive, percentages 0-100)
+   - Save/Cancel buttons
+   - Success/error feedback
+
+3. **Contractor-Specific Variables** (if applicable)
+   - If contractor has custom variables in `pricing_knowledge`, display those too
+   - Allow editing custom variables
+   - Consider: ability to add new custom variables?
+
+**Implementation**:
+1. [ ] Add `PUT /api/pricing-brain/settings/global` endpoint in backend
+2. [ ] Add global settings section to Pricing Brain UI (below categories)
+3. [ ] Create edit modal or inline editing for settings
+4. [ ] Add input validation
+5. [ ] Wire up save functionality with API
+6. [ ] Handle contractor-specific variables if they exist
 
 ---
 

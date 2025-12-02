@@ -308,6 +308,11 @@ class Quote(Base):
     # The full generated PDF/document
     pdf_url = Column(String(500))
 
+    # Sharing (GROWTH-003)
+    share_token = Column(String(32), unique=True, nullable=True, index=True)  # For public access
+    shared_at = Column(DateTime, nullable=True)  # When first shared
+    share_count = Column(Integer, default=0)  # Track total shares
+
     # Relationship
     contractor = relationship("Contractor", back_populates="quotes")
     feedback = relationship("QuoteFeedback", back_populates="quote", uselist=False)
@@ -613,6 +618,34 @@ async def run_migrations(engine):
                 WHERE table_name = 'users' AND column_name = 'referral_credits'
             """,
             "alter_sql": "ALTER TABLE users ADD COLUMN referral_credits INTEGER DEFAULT 0"
+        },
+        # Share Quote columns (GROWTH-003)
+        {
+            "table": "quotes",
+            "column": "share_token",
+            "check_sql": """
+                SELECT column_name FROM information_schema.columns
+                WHERE table_name = 'quotes' AND column_name = 'share_token'
+            """,
+            "alter_sql": "ALTER TABLE quotes ADD COLUMN share_token VARCHAR(32)"
+        },
+        {
+            "table": "quotes",
+            "column": "shared_at",
+            "check_sql": """
+                SELECT column_name FROM information_schema.columns
+                WHERE table_name = 'quotes' AND column_name = 'shared_at'
+            """,
+            "alter_sql": "ALTER TABLE quotes ADD COLUMN shared_at TIMESTAMP"
+        },
+        {
+            "table": "quotes",
+            "column": "share_count",
+            "check_sql": """
+                SELECT column_name FROM information_schema.columns
+                WHERE table_name = 'quotes' AND column_name = 'share_count'
+            """,
+            "alter_sql": "ALTER TABLE quotes ADD COLUMN share_count INTEGER DEFAULT 0"
         },
     ]
 

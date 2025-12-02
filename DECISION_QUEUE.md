@@ -27,6 +27,45 @@
 <!-- Type 4: Founder-only decisions -->
 <!-- Type 3: Propose-then-do decisions -->
 
+### DECISION-004: Bespoke Onboarding Offer Structure
+**Type**: 4 (Strategic - Pricing/Positioning)
+**Added**: 2025-12-02 19:30 PST
+**Requested By**: Founder (via CEO)
+
+**Context**: Proposal to offer personalized 1:1 onboarding where Eddie walks users through their pricing interview. Goal: build trust, learn from users, create referral loop.
+
+**Original Proposal**:
+- FREE personalized setup for first 50 users
+- Condition: Must refer someone who completes onboarding
+- After 50: Charge $50 for setup
+
+**Prior Executive Analysis** (all returned MODIFY):
+
+| Executive | Concern | Recommendation |
+|-----------|---------|----------------|
+| **CGO** | Referral trigger too slow - "generates quote" takes too long | Change trigger to "completes onboarding" |
+| **CPO** | 50 users is too many - learning diminishes after ~25 | Cap at 20-30 users |
+| **CFO** | $50 is mispriced - too low for revenue, too high to convert | Either free forever (growth) or $100+ (value signal) |
+| **CMO** | Referral requirement creates friction | Make referral optional bonus, not requirement |
+
+**Options**:
+- [ ] **A) Original Proposal** - Keep as-is (50 users, referral required, $50 after)
+- [ ] **B) Modified Per Executives** - 25 users, optional referral bonus, rethink $50
+- [ ] **C) Free Forever** - No cap, no charge, pure growth play
+- [ ] **D) Other** - (specify below)
+
+**Recommendation**: Option B - executives identified real friction points
+
+**Questions to Resolve**:
+1. What's the right cap? (20, 25, 30?)
+2. Referral: required or optional bonus?
+3. After cap: free, $50, $100, or remove entirely?
+
+**Founder Response**:
+>
+
+---
+
 ### DECISION-002: PostHog Analytics Integration
 **Type**: 3 (External Service Signup)
 **Added**: 2025-12-02 15:30 PST

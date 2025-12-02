@@ -8,6 +8,8 @@
 
 | Time | Agent | Action | Type | Result |
 |------|-------|--------|------|--------|
+| 19:45 | CEO | Queued DECISION-004 (Bespoke Onboarding) + UX-001 + FEAT-003 | Type 1 | Ready for autonomous run |
+| 19:30 | CEO | Fixed category click bug (category.name → category.category) | Type 2 | Committed a9a05f7 |
 | 18:30 | Frontend Engineer | Implemented GROWTH-002 Frontend (referral UI) | Type 2 | Committed 2db4d5d |
 | 18:30 | Backend Engineer | Implemented GROWTH-002 Backend (referral system) | Type 2 | Committed 7bc67db |
 | 18:15 | Frontend Engineer | Implemented CONVERT-001 + INFRA-001 Frontend | Type 2 | Committed 75eac78 |

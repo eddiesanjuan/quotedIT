@@ -2772,6 +2772,7 @@
 
                 <div class="quote-actions" id="detailQuoteActions">
                     <button class="btn btn-primary" onclick="downloadDetailPdf()">Download PDF</button>
+                    <button class="btn btn-primary" onclick="openShareModal()">📤 Share</button>
                     <button class="btn btn-secondary" onclick="backToQuoteList()">Back to My Quotes</button>
                 </div>
             </div>
@@ -3034,6 +3035,46 @@
                     <button type="submit" class="btn btn-primary" id="saveCustomerBtn" style="flex: 1;">Save Changes</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Share Quote Modal -->
+    <div class="modal-overlay" id="shareModal" style="display: none;">
+        <div class="modal-content" style="max-width: 500px;">
+            <button class="modal-close" onclick="closeShareModal()">&times;</button>
+            <h2 class="modal-title">Share Quote</h2>
+            <p class="modal-subtitle">Send this quote to your customer</p>
+
+            <!-- Share Tabs -->
+            <div class="account-tabs" style="margin: 24px 0 24px 0;">
+                <button class="account-tab-btn active" id="shareEmailTabBtn" onclick="showShareTab('email')">Email</button>
+                <button class="account-tab-btn" id="shareLinkTabBtn" onclick="showShareTab('link')">Copy Link</button>
+            </div>
+
+            <!-- Email Tab -->
+            <div id="shareEmailTab" class="account-tab-content active">
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label for="shareRecipientEmail">Customer Email</label>
+                    <input type="email" id="shareRecipientEmail" placeholder="customer@example.com" style="background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); padding: 12px; border-radius: 8px; width: 100%; font-family: var(--font-sans); font-size: 1rem;">
+                </div>
+                <div class="form-group" style="margin-bottom: 24px;">
+                    <label for="shareMessage">Message (optional)</label>
+                    <textarea id="shareMessage" rows="4" placeholder="Add a personal message to your customer..." style="background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); padding: 12px; border-radius: 8px; width: 100%; font-family: var(--font-sans); font-size: 1rem; resize: vertical;"></textarea>
+                </div>
+                <button class="btn btn-primary" onclick="sendShareEmail()" id="sendShareEmailBtn" style="width: 100%;">Send Email</button>
+            </div>
+
+            <!-- Copy Link Tab -->
+            <div id="shareLinkTab" class="account-tab-content">
+                <p style="margin-bottom: 16px; color: var(--text-secondary); font-size: 0.9375rem;">Share this link with your customer to view the quote online</p>
+                <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+                    <input type="text" id="shareUrl" readonly style="background: var(--bg-secondary); border: 1px solid var(--border); color: var(--text-primary); padding: 12px; border-radius: 8px; flex: 1; font-family: var(--font-mono); font-size: 0.875rem;">
+                    <button class="btn btn-primary" onclick="copyShareLink()" id="copyLinkBtn">Copy</button>
+                </div>
+                <div id="copySuccessMessage" style="display: none; color: var(--success); font-size: 0.875rem; text-align: center; margin-top: 8px;">
+                    ✓ Link copied to clipboard!
+                </div>
+            </div>
         </div>
     </div>
 
@@ -5195,6 +5236,175 @@
                 saveBtn.textContent = 'Save Changes';
             }
         }
+
+        // Share Quote Functions
+        let currentShareUrl = '';
+
+        async function openShareModal() {
+            if (!currentDetailQuote) return;
+
+            // Track modal opened
+            {% if posthog_api_key %}
+            if (window.posthog) {
+                posthog.capture('share_modal_opened', {
+                    quote_id: currentDetailQuote.id
+                });
+            }
+            {% endif %}
+
+            // Pre-fill customer email if available
+            const customerEmail = currentDetailQuote.customer_email || '';
+            document.getElementById('shareRecipientEmail').value = customerEmail;
+            document.getElementById('shareMessage').value = '';
+
+            // Generate share link
+            try {
+                const response = await fetch(`${API_BASE}/quotes/${currentDetailQuote.id}/share`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    currentShareUrl = data.share_url;
+                    document.getElementById('shareUrl').value = currentShareUrl;
+                } else {
+                    console.error('Failed to generate share link');
+                    currentShareUrl = '';
+                }
+            } catch (err) {
+                console.error('Error generating share link:', err);
+            }
+
+            // Reset to email tab
+            showShareTab('email');
+
+            // Show modal
+            document.getElementById('shareModal').style.display = 'flex';
+        }
+
+        function closeShareModal() {
+            document.getElementById('shareModal').style.display = 'none';
+            document.getElementById('copySuccessMessage').style.display = 'none';
+        }
+
+        function showShareTab(tab) {
+            // Update tab buttons
+            document.getElementById('shareEmailTabBtn').classList.toggle('active', tab === 'email');
+            document.getElementById('shareLinkTabBtn').classList.toggle('active', tab === 'link');
+
+            // Update tab content
+            document.getElementById('shareEmailTab').classList.toggle('active', tab === 'email');
+            document.getElementById('shareLinkTab').classList.toggle('active', tab === 'link');
+        }
+
+        async function sendShareEmail() {
+            if (!currentDetailQuote) return;
+
+            const recipientEmail = document.getElementById('shareRecipientEmail').value.trim();
+            const message = document.getElementById('shareMessage').value.trim();
+
+            if (!recipientEmail) {
+                alert('Please enter a customer email address');
+                return;
+            }
+
+            // Basic email validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(recipientEmail)) {
+                alert('Please enter a valid email address');
+                return;
+            }
+
+            const sendBtn = document.getElementById('sendShareEmailBtn');
+            sendBtn.disabled = true;
+            sendBtn.textContent = 'Sending...';
+
+            try {
+                const response = await fetch(`${API_BASE}/quotes/${currentDetailQuote.id}/share/email`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        recipient_email: recipientEmail,
+                        message: message
+                    })
+                });
+
+                if (response.ok) {
+                    // Track email sent
+                    {% if posthog_api_key %}
+                    if (window.posthog) {
+                        posthog.capture('share_email_sent', {
+                            quote_id: currentDetailQuote.id
+                        });
+                    }
+                    {% endif %}
+
+                    alert('Quote sent successfully!');
+                    closeShareModal();
+                } else {
+                    const error = await response.json();
+                    alert('Failed to send email: ' + (error.detail || 'Unknown error'));
+                }
+            } catch (err) {
+                console.error('Error sending share email:', err);
+                alert('Network error. Please try again.');
+            } finally {
+                sendBtn.disabled = false;
+                sendBtn.textContent = 'Send Email';
+            }
+        }
+
+        async function copyShareLink() {
+            if (!currentShareUrl) {
+                alert('Share link not available');
+                return;
+            }
+
+            try {
+                await navigator.clipboard.writeText(currentShareUrl);
+
+                // Track link copied
+                {% if posthog_api_key %}
+                if (window.posthog) {
+                    posthog.capture('share_link_copied', {
+                        quote_id: currentDetailQuote.id
+                    });
+                }
+                {% endif %}
+
+                // Show success message
+                const successMsg = document.getElementById('copySuccessMessage');
+                successMsg.style.display = 'block';
+
+                // Hide after 3 seconds
+                setTimeout(() => {
+                    successMsg.style.display = 'none';
+                }, 3000);
+            } catch (err) {
+                console.error('Failed to copy link:', err);
+                // Fallback for older browsers
+                const input = document.getElementById('shareUrl');
+                input.select();
+                document.execCommand('copy');
+
+                const successMsg = document.getElementById('copySuccessMessage');
+                successMsg.style.display = 'block';
+                setTimeout(() => {
+                    successMsg.style.display = 'none';
+                }, 3000);
+            }
+        }
+
+        // Close share modal on outside click
+        document.getElementById('shareModal')?.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeShareModal();
+            }
+        });
 
         // Close edit customer modal on outside click
         document.getElementById('editCustomerModal').addEventListener('click', function(e) {

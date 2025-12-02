@@ -496,6 +496,96 @@ class EmailService:
             print(f"Failed to send payment failed notification to {to_email}: {e}")
             raise
 
+    @staticmethod
+    async def send_quote_email(
+        to_email: str,
+        contractor_name: str,
+        contractor_phone: str,
+        customer_name: Optional[str],
+        job_description: str,
+        total: float,
+        message: Optional[str] = None,
+        pdf_path: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Send quote via email to customer (GROWTH-003).
+
+        Args:
+            to_email: Customer's email address
+            contractor_name: Name of the contractor/business
+            contractor_phone: Contractor's phone number
+            customer_name: Customer's name (optional)
+            job_description: Brief job description
+            total: Quote total amount
+            message: Optional personal message from contractor
+            pdf_path: Optional path to PDF attachment
+
+        Returns:
+            Resend API response
+        """
+        greeting = f"Hi {customer_name}" if customer_name else "Hello"
+        personal_msg = f"<p>{message}</p>" if message else ""
+
+        content = f"""
+            <h1>Quote from {contractor_name}</h1>
+
+            <p>{greeting},</p>
+
+            <p>Thank you for your interest. Here's your quote:</p>
+
+            {personal_msg}
+
+            <div class="stat-box" style="margin: 24px 0;">
+                <div style="color: #a0a0a0; font-size: 13px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">
+                    Project
+                </div>
+                <div style="color: #e0e0e0; font-size: 16px; margin-bottom: 16px;">
+                    {job_description}
+                </div>
+                <div style="color: #a0a0a0; font-size: 13px; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">
+                    Total Investment
+                </div>
+                <div class="stat-value" style="font-family: 'Playfair Display', Georgia, serif; font-size: 32px; font-weight: 600; color: #ffffff;">
+                    ${total:,.2f}
+                </div>
+            </div>
+
+            <p>Please review the attached PDF for complete details.</p>
+
+            <p>Questions? Give me a call at <strong>{contractor_phone}</strong></p>
+
+            <p class="muted" style="margin-top: 32px; padding-top: 24px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+                This quote was generated with Quoted - Voice-to-quote for contractors.<br>
+                <a href="https://quoted.it" style="color: #a0a0a0;">Learn more</a>
+            </p>
+        """
+
+        html = EmailService._get_base_template().format(content=content)
+
+        try:
+            email_data = {
+                "from": EmailService.FROM_EMAIL,
+                "to": to_email,
+                "subject": f"Quote from {contractor_name}",
+                "html": html,
+            }
+
+            # Attach PDF if provided
+            if pdf_path:
+                import base64
+                with open(pdf_path, "rb") as f:
+                    pdf_content = base64.b64encode(f.read()).decode()
+                    email_data["attachments"] = [{
+                        "filename": "quote.pdf",
+                        "content": pdf_content,
+                    }]
+
+            response = resend.Emails.send(email_data)
+            return response
+        except Exception as e:
+            print(f"Failed to send quote email to {to_email}: {e}")
+            raise
+
 
 # Convenience instance
 email_service = EmailService()
