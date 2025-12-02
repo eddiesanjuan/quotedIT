@@ -64,32 +64,34 @@
         .fade-in-delay-3 { animation-delay: 0.3s; }
         .fade-in-delay-4 { animation-delay: 0.4s; }
 
-        /* Logo Spinner Animation */
+        /* Logo Spinner Animation - Smooth slot machine effect */
         .logo-spinner {
             display: inline-block;
             position: relative;
             overflow: hidden;
             height: 3.6em; /* Show 3 items */
             vertical-align: bottom;
-            /* Flip vertically so items scroll DOWN like a slot machine */
-            transform: scaleY(-1);
-            /* Gradient mask for fade effect at edges */
+            /* Gradient mask for fade effect at edges - always visible */
             -webkit-mask-image: linear-gradient(
                 to bottom,
                 transparent 0%,
-                rgba(0,0,0,0.3) 15%,
-                rgba(0,0,0,1) 35%,
-                rgba(0,0,0,1) 65%,
-                rgba(0,0,0,0.3) 85%,
+                rgba(0,0,0,0.2) 10%,
+                rgba(0,0,0,0.6) 25%,
+                rgba(0,0,0,1) 40%,
+                rgba(0,0,0,1) 60%,
+                rgba(0,0,0,0.6) 75%,
+                rgba(0,0,0,0.2) 90%,
                 transparent 100%
             );
             mask-image: linear-gradient(
                 to bottom,
                 transparent 0%,
-                rgba(0,0,0,0.3) 15%,
-                rgba(0,0,0,1) 35%,
-                rgba(0,0,0,1) 65%,
-                rgba(0,0,0,0.3) 85%,
+                rgba(0,0,0,0.2) 10%,
+                rgba(0,0,0,0.6) 25%,
+                rgba(0,0,0,1) 40%,
+                rgba(0,0,0,1) 60%,
+                rgba(0,0,0,0.6) 75%,
+                rgba(0,0,0,0.2) 90%,
                 transparent 100%
             );
         }
@@ -97,46 +99,19 @@
         .logo-spinner-inner {
             display: flex;
             flex-direction: column;
+            will-change: transform;
         }
 
         .logo-spinner-item {
             height: 1.2em;
             line-height: 1.2em;
             font-style: italic;
-            /* Flip text back to readable */
-            transform: scaleY(-1);
+            text-align: left;
         }
 
-        /* Smooth transition during spin */
-        .logo-spinner-inner.spinning {
-            transition: transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
-        }
-
-        /* Slower transition for final approach */
-        .logo-spinner-inner.slowing {
-            transition: transform 0.8s cubic-bezier(0.33, 1, 0.68, 1);
-        }
-
-        /* Bounce animation for final landing - more pronounced */
-        @keyframes spinnerBounce {
-            0% { transform: translateY(var(--bounce-start)); }
-            20% { transform: translateY(calc(var(--bounce-start) - 0.25em)); }
-            40% { transform: translateY(calc(var(--bounce-start) + 0.12em)); }
-            60% { transform: translateY(calc(var(--bounce-start) - 0.06em)); }
-            80% { transform: translateY(calc(var(--bounce-start) + 0.02em)); }
-            100% { transform: translateY(var(--bounce-start)); }
-        }
-
-        .logo-spinner-inner.bounce {
-            animation: spinnerBounce 0.6s ease-out forwards;
-        }
-
-        /* Final state - collapse to single line height */
-        .logo-spinner.final-state {
-            height: 1.2em;
-            -webkit-mask-image: none;
-            mask-image: none;
-            transition: height 0.5s cubic-bezier(0.33, 1, 0.68, 1);
+        /* Ghost items for the fade effect in final state */
+        .logo-spinner-item.ghost {
+            color: var(--text-muted);
         }
 
         .hero-logo {
@@ -508,7 +483,7 @@
         <div class="container">
             <div class="hero-content">
                 <div class="hero-logo fade-in" id="heroLogo">
-                    quoted<span class="logo-spinner"><span class="logo-spinner-inner" id="spinnerInner"><span class="logo-spinner-item spacer"></span><span class="logo-spinner-item">.decks</span><span class="logo-spinner-item">.consulting</span><span class="logo-spinner-item">.design</span><span class="logo-spinner-item">.roofs</span><span class="logo-spinner-item">.photos</span><span class="logo-spinner-item">.events</span><span class="logo-spinner-item">.kitchens</span><span class="logo-spinner-item">.coaching</span><span class="logo-spinner-item">.fences</span><span class="logo-spinner-item">.it</span></span></span>
+                    quoted<span class="logo-spinner"><span class="logo-spinner-inner" id="spinnerInner"><span class="logo-spinner-item ghost">.yours</span><span class="logo-spinner-item">.decks</span><span class="logo-spinner-item">.consulting</span><span class="logo-spinner-item">.design</span><span class="logo-spinner-item">.roofs</span><span class="logo-spinner-item">.photos</span><span class="logo-spinner-item">.events</span><span class="logo-spinner-item">.kitchens</span><span class="logo-spinner-item">.coaching</span><span class="logo-spinner-item">.fences</span><span class="logo-spinner-item">.it</span><span class="logo-spinner-item ghost">.start</span></span></span>
                 </div>
                 <h1 class="fade-in fade-in-delay-1">Stop guessing.<br>Start quoting.</h1>
                 <p class="fade-in fade-in-delay-2">Turn voice notes into professional budget quotes in seconds. Qualify leads fast, look polished, and stop wasting time on tire-kickers.</p>
@@ -607,102 +582,117 @@
 
     <!-- Scroll Animation & Logo Spinner -->
     <script>
-        // Logo Spinner Animation - slow slot machine with bounce landing
+        // Logo Spinner Animation - Smooth 60fps slot machine effect using requestAnimationFrame
         (function() {
             const spinner = document.querySelector('.logo-spinner');
             const spinnerInner = document.getElementById('spinnerInner');
             if (!spinnerInner || !spinner) return;
 
-            const allItems = spinnerInner.querySelectorAll('.logo-spinner-item');
+            const items = spinnerInner.querySelectorAll('.logo-spinner-item');
             const itemHeight = 1.2; // em units
 
-            // Start at index 1 (first real item after spacer)
-            let currentIndex = 1;
+            // Find the index of .it (second to last, before the ghost at the end)
+            let targetIndex = 0;
+            items.forEach((item, i) => {
+                if (item.textContent === '.it') targetIndex = i;
+            });
 
-            // With 3 visible items (3.6em), center item is at 1.2em from top
+            // With 3 visible items (3.6em height), center item is at 1.2em from top
             const centerOffset = 1.2;
 
-            function setPosition(index, immediate) {
-                const position = -index * itemHeight + centerOffset;
-                if (immediate) {
-                    spinnerInner.style.transition = 'none';
-                }
-                spinnerInner.style.transform = `translateY(${position}em)`;
+            // Start position: first real item (index 1, after the ghost ".yours") centered
+            const startIndex = 1;
+            const startPosition = -startIndex * itemHeight + centerOffset;
+
+            // Target position: .it centered
+            const targetPosition = -targetIndex * itemHeight + centerOffset;
+
+            // Total distance to scroll
+            const totalDistance = startPosition - targetPosition;
+
+            // Animation duration in ms (longer = slower)
+            const duration = 4500;
+
+            // Easing function: starts fast, decelerates smoothly (ease-out quint)
+            function easeOutQuint(t) {
+                return 1 - Math.pow(1 - t, 5);
             }
 
-            // Initialize at first real item
-            setPosition(currentIndex, true);
-
-            // Much slower timing - gradual deceleration like a real slot machine
-            const timings = [
-                // Start moderate, not too fast
-                300, 300, 320, 340, 360,
-                // Gradually slow down
-                400, 450, 500, 550,
-                // Really slowing now
-                650, 800, 1000,
-                // Almost stopping
-                1300, 1600, 2000
-            ];
-
-            let timingIndex = 0;
-            const lastItemIndex = allItems.length - 1; // .it is the last item
-
-            function spin() {
-                currentIndex++;
-
-                // Use appropriate transition class
-                if (timingIndex < 5) {
-                    spinnerInner.classList.remove('slowing');
-                    spinnerInner.classList.add('spinning');
+            // Bounce easing for the final settle
+            function easeOutBounce(t) {
+                const n1 = 7.5625;
+                const d1 = 2.75;
+                if (t < 1 / d1) {
+                    return n1 * t * t;
+                } else if (t < 2 / d1) {
+                    return n1 * (t -= 1.5 / d1) * t + 0.75;
+                } else if (t < 2.5 / d1) {
+                    return n1 * (t -= 2.25 / d1) * t + 0.9375;
                 } else {
-                    spinnerInner.classList.remove('spinning');
-                    spinnerInner.classList.add('slowing');
-                }
-
-                setPosition(currentIndex, false);
-
-                const isLastItem = currentIndex === lastItemIndex;
-
-                if (!isLastItem && timingIndex < timings.length) {
-                    const delay = timings[timingIndex];
-                    timingIndex++;
-                    setTimeout(spin, delay);
-                } else if (!isLastItem) {
-                    // Continue at slowest speed until we reach .it
-                    setTimeout(spin, 2200);
-                } else {
-                    // Landed on .it - wait for transition to complete, then bounce
-                    spinnerInner.classList.remove('spinning', 'slowing');
-
-                    setTimeout(() => {
-                        // Set up bounce
-                        const finalPosition = -currentIndex * itemHeight + centerOffset;
-                        spinnerInner.style.setProperty('--bounce-start', `${finalPosition}em`);
-                        spinnerInner.style.transition = 'none';
-                        spinnerInner.classList.add('bounce');
-
-                        // After bounce completes, smoothly collapse to final state
-                        setTimeout(() => {
-                            spinnerInner.classList.remove('bounce');
-
-                            // Collapse the spinner height
-                            spinner.classList.add('final-state');
-
-                            // Adjust position for the collapsed single-line view
-                            const collapsedPosition = -currentIndex * itemHeight;
-                            spinnerInner.style.transition = 'transform 0.5s cubic-bezier(0.33, 1, 0.68, 1)';
-                            spinnerInner.style.transform = `translateY(${collapsedPosition}em)`;
-                        }, 700);
-                    }, 900);
+                    return n1 * (t -= 2.625 / d1) * t + 0.984375;
                 }
             }
 
-            // Start spinner after page load + hero animation
+            let startTime = null;
+            let currentPosition = startPosition;
+
+            function animate(timestamp) {
+                if (!startTime) startTime = timestamp;
+
+                const elapsed = timestamp - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+
+                // Use easing for smooth deceleration
+                const eased = easeOutQuint(progress);
+
+                // Calculate current position
+                currentPosition = startPosition - (totalDistance * eased);
+
+                // Apply transform
+                spinnerInner.style.transform = `translateY(${currentPosition}em)`;
+
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                } else {
+                    // Animation complete - do a subtle bounce settle
+                    bounceSettle();
+                }
+            }
+
+            function bounceSettle() {
+                const bounceStart = Date.now();
+                const bounceDuration = 400;
+                const bounceAmount = 0.08; // em - subtle overshoot
+
+                function bounceFrame() {
+                    const elapsed = Date.now() - bounceStart;
+                    const progress = Math.min(elapsed / bounceDuration, 1);
+
+                    // Damped oscillation
+                    const decay = Math.exp(-progress * 4);
+                    const oscillation = Math.sin(progress * Math.PI * 2) * decay * bounceAmount;
+
+                    const bouncePosition = targetPosition + oscillation;
+                    spinnerInner.style.transform = `translateY(${bouncePosition}em)`;
+
+                    if (progress < 1) {
+                        requestAnimationFrame(bounceFrame);
+                    } else {
+                        // Ensure final position is exact
+                        spinnerInner.style.transform = `translateY(${targetPosition}em)`;
+                    }
+                }
+
+                requestAnimationFrame(bounceFrame);
+            }
+
+            // Initialize at start position
+            spinnerInner.style.transform = `translateY(${startPosition}em)`;
+
+            // Start animation after page load + hero animation
             setTimeout(() => {
-                spinnerInner.classList.add('spinning');
-                spin();
-            }, 1000);
+                requestAnimationFrame(animate);
+            }, 800);
         })();
 
         // Intersection Observer for fade-in animations
