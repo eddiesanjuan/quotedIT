@@ -340,6 +340,43 @@
             line-height: 1.6;
         }
 
+        /* Job Description Textarea - styled to match design */
+        #jobDescription {
+            width: 100%;
+            max-width: 500px;
+            min-height: 140px;
+            padding: 18px 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-family: var(--font-sans);
+            line-height: 1.6;
+            resize: vertical;
+            transition: all 0.3s ease;
+        }
+
+        #jobDescription::placeholder {
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        #jobDescription:focus {
+            outline: none;
+            border-color: var(--text-primary);
+            background: var(--bg-elevated);
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.05);
+        }
+
+        .job-input-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            width: 100%;
+        }
+
         /* Buttons */
         .btn {
             display: inline-flex;
@@ -1740,12 +1777,12 @@
 
                 <div class="text-divider">or type it out</div>
 
-                <div style="text-align: left;">
+                <div class="job-input-container">
                     <textarea
                         id="jobDescription"
                         placeholder="It's a 20 by 16 composite deck, Trex Select in Pebble Grey. Need to demo the old wood deck first. Standard aluminum railing, about 40 linear feet. Three steps down to the yard..."
                     ></textarea>
-                    <button class="btn btn-primary" onclick="generateQuote()" style="margin-top: 16px;">Generate Quote</button>
+                    <button class="btn btn-primary" onclick="generateQuote()">Generate Quote</button>
                 </div>
             </div>
 
