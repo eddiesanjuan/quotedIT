@@ -60,13 +60,13 @@
 | ~~ONBOARD-005~~ | ~~Expand Trade Defaults (20+ industries)~~ | ~~Backend~~ | **COMPLETE** | Committed 48cb784 |
 | ~~UX-001~~ | ~~Improve Quote Input Placeholder Text~~ | ~~Frontend~~ | **COMPLETE** | Committed 5610036 |
 | ~~FEAT-003~~ | ~~Pricing Brain Global Settings Editor~~ | ~~Frontend + Backend~~ | **COMPLETE** | Committed a7b12c2 |
+| ~~BUG-002~~ | ~~Share Quote Email Fails to Send~~ | ~~Backend~~ | **COMPLETE** | Committed 709111d |
+| ~~BUG-003~~ | ~~Demo Page Frontend Missing~~ | ~~Frontend~~ | **COMPLETE** | Committed 8a6770f |
+| ~~UX-002~~ | ~~Reframe Onboarding to Recommend Interview~~ | ~~Frontend~~ | **COMPLETE** | Committed 2460980 |
 | BUG-001 | Help Button Navigation Broken | Frontend | **READY** | None |
-| BUG-002 | Share Quote Email Fails to Send | Backend | **READY** | None |
-| BUG-003 | Demo Page Frontend Missing | Frontend | **READY** | Backend done (c7a91d3), frontend never built |
 | ONBOARD-006 | Expand Industries Beyond Construction | Frontend + Backend | **READY** | None |
 | ONBOARD-007 | Quick Setup Form/Tips Mismatch | Frontend + Backend | **READY** | None |
 | ONBOARD-008 | Ensure Onboarding Path Consistency | Backend | **READY** | None |
-| UX-002 | Reframe Onboarding to Recommend Interview | Frontend | **READY** | None |
 | UX-003 | Improve Landing Page Headline | Frontend | **READY** | None |
 | UX-004 | Add Product Demo Animation to Landing Page | Frontend | **READY** | None |
 
@@ -1056,6 +1056,9 @@ GET /api/billing/plans - Available pricing (public)
 
 | Date | Commit | Description | Status |
 |------|--------|-------------|--------|
+| 2025-12-02 | 8a6770f | Add Demo page frontend for try-before-signup (BUG-003) | **PENDING PUSH** |
+| 2025-12-02 | 709111d | Fix Share quote email sending (BUG-002) | **PENDING PUSH** |
+| 2025-12-02 | 2460980 | Update Reframe onboarding to recommend interview (UX-002) | **PENDING PUSH** |
 | 2025-12-02 | a1e6e66 | Add Guided quick setup with industry templates (ONBOARD-002) | **DEPLOYED** |
 | 2025-12-02 | c6b266a | Fix Mobile responsiveness across all pages (INFRA-002) | **DEPLOYED** |
 | 2025-12-02 | a7b12c2 | Add Pricing Brain global settings editor (FEAT-003) | **DEPLOYED** |
