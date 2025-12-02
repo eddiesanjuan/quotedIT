@@ -26,6 +26,8 @@
 
 | Date | Learning | Context |
 |------|----------|---------|
+| 2025-12-02 | PostHog + Sentry integration via Jinja2 templates | Backend passes API keys to frontend via template variables, defensive checks prevent errors when keys not configured |
+| 2025-12-02 | Analytics events tracked inline in function success paths | PostHog events tracked after successful operations (quote_generated, quote_edited, upgrade_modal_opened) |
 | 2025-12-02 | Tab navigation pattern for multi-view sections | Account section uses tabs (Billing + Pricing Brain) with active state management and lazy loading |
 | 2025-12-02 | Safe DOM construction prevents XSS in dynamic cards | Category cards built with createElement/textContent, avoiding innerHTML with user data |
 | 2025-12-02 | Modal pattern with backdrop-filter and outside-click close | Edit Category modal follows established pattern from Edit Customer modal |

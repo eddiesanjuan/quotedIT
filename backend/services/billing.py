@@ -12,6 +12,7 @@ from fastapi import HTTPException, status
 
 from ..config import settings
 from ..models.database import User
+from .analytics import analytics_service
 
 # Initialize Stripe
 stripe.api_key = settings.stripe_secret_key
@@ -279,6 +280,20 @@ class BillingService:
         user.trial_ends_at = None  # Clear trial if set
 
         await db.commit()
+
+        # Track subscription activation
+        try:
+            analytics_service.track_event(
+                user_id=str(user_id),
+                event_name="subscription_activated",
+                properties={
+                    "plan_tier": plan_tier,
+                    "subscription_id": subscription.id,
+                    "billing_interval": session["metadata"].get("billing_interval", "monthly"),
+                }
+            )
+        except Exception as e:
+            print(f"Warning: Failed to track subscription activation: {e}")
 
     @staticmethod
     async def handle_subscription_updated(db: AsyncSession, subscription: dict) -> None:

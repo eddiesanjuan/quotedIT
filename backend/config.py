@@ -79,6 +79,10 @@ class Settings(BaseSettings):
     stripe_pro_product_id: str = "prod_TWyzygs71MWNeQ"
     stripe_team_product_id: str = "prod_TWz0uN0EAbgPKI"
 
+    # Analytics & Monitoring
+    posthog_api_key: str = ""  # PostHog analytics
+    sentry_dsn: str = ""  # Sentry error tracking
+
     # Pricing Configuration
     trial_days: int = 7
     trial_quote_limit: int = 75

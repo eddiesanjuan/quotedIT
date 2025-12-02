@@ -4,6 +4,7 @@ Main FastAPI application.
 """
 
 import os
+import logging
 from contextlib import asynccontextmanager
 
 from pathlib import Path
@@ -11,7 +12,8 @@ from pathlib import Path
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, RedirectResponse
+from fastapi.responses import FileResponse, RedirectResponse, HTMLResponse
+from fastapi.templating import Jinja2Templates
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
@@ -20,6 +22,38 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from .config import settings
 from .models.database import init_db
 from .api import quotes, contractors, onboarding, auth, issues, billing, pricing_brain, demo
+
+# Configure logger
+logger = logging.getLogger(__name__)
+
+# Initialize Sentry if DSN is configured
+if settings.sentry_dsn:
+    try:
+        import sentry_sdk
+        from sentry_sdk.integrations.fastapi import FastApiIntegration
+        from sentry_sdk.integrations.starlette import StarletteIntegration
+
+        sentry_sdk.init(
+            dsn=settings.sentry_dsn,
+            environment=settings.environment,
+            traces_sample_rate=1.0,  # 100% of transactions for performance monitoring
+            profiles_sample_rate=1.0,  # 100% of transactions for profiling
+            integrations=[
+                StarletteIntegration(transaction_style="endpoint"),
+                FastApiIntegration(transaction_style="endpoint"),
+            ],
+        )
+        logger.info(f"Sentry initialized for environment: {settings.environment}")
+    except ImportError:
+        logger.warning(
+            "Sentry SDK not installed. "
+            "Run: pip install sentry-sdk[fastapi]. "
+            "Error tracking will not be available."
+        )
+    except Exception as e:
+        logger.error(f"Failed to initialize Sentry: {e}")
+else:
+    logger.info("Sentry DSN not configured - error tracking disabled")
 
 
 # Rate limiter
@@ -138,17 +172,28 @@ async def health():
 
 # Serve frontend static files
 frontend_path = Path(__file__).parent.parent / "frontend"
+templates = Jinja2Templates(directory=str(frontend_path))
 
 if frontend_path.exists():
-    @app.get("/")
-    async def serve_landing():
-        """Serve the landing page."""
-        return FileResponse(frontend_path / "landing.html")
+    @app.get("/", response_class=HTMLResponse)
+    async def serve_landing(request: Request):
+        """Serve the landing page with injected config."""
+        return templates.TemplateResponse("landing.html", {
+            "request": request,
+            "posthog_api_key": settings.posthog_api_key,
+            "sentry_dsn": settings.sentry_dsn,
+            "environment": settings.environment,
+        })
 
-    @app.get("/app")
-    async def serve_app():
-        """Serve the main application."""
-        return FileResponse(frontend_path / "index.html")
+    @app.get("/app", response_class=HTMLResponse)
+    async def serve_app(request: Request):
+        """Serve the main application with injected config."""
+        return templates.TemplateResponse("index.html", {
+            "request": request,
+            "posthog_api_key": settings.posthog_api_key,
+            "sentry_dsn": settings.sentry_dsn,
+            "environment": settings.environment,
+        })
 
     @app.get("/terms")
     async def serve_terms():

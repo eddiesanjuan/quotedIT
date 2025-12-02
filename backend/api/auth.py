@@ -23,6 +23,7 @@ from ..services.auth import (
     get_current_contractor,
 )
 from ..services.email import email_service
+from ..services.analytics import analytics_service
 from ..models.database import User, Contractor
 from ..config import settings
 
@@ -51,6 +52,29 @@ async def register(
     except Exception as e:
         # Log the error but don't block registration
         print(f"Warning: Failed to send welcome email to {user.email}: {e}")
+
+    # Track signup event
+    try:
+        analytics_service.identify_user(
+            user_id=str(user.id),
+            properties={
+                "email": user.email,
+                "business_name": contractor.business_name,
+                "owner_name": contractor.owner_name,
+                "primary_trade": contractor.primary_trade,
+            }
+        )
+        analytics_service.track_event(
+            user_id=str(user.id),
+            event_name="signup_completed",
+            properties={
+                "business_name": contractor.business_name,
+                "primary_trade": contractor.primary_trade,
+            }
+        )
+    except Exception as e:
+        # Log the error but don't block registration
+        print(f"Warning: Failed to track signup event for {user.email}: {e}")
 
     # Create access token
     access_token = create_access_token(

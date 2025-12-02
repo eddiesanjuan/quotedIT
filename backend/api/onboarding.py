@@ -13,6 +13,7 @@ from pydantic import BaseModel
 
 from ..services import get_onboarding_service, get_database_service
 from ..services.auth import get_current_contractor
+from ..services.analytics import analytics_service
 from ..models.database import Contractor
 from ..prompts import get_setup_system_prompt
 
@@ -256,6 +257,22 @@ async def complete_setup(
                 pricing_knowledge=pricing_model.get("pricing_knowledge", {}),
                 pricing_notes=pricing_model.get("pricing_notes"),
             )
+
+        # Track onboarding completion
+        try:
+            analytics_service.track_event(
+                user_id=str(contractor.user_id),
+                event_name="onboarding_completed",
+                properties={
+                    "contractor_id": str(contractor.id),
+                    "primary_trade": contractor.primary_trade,
+                    "has_labor_rate": pricing_model.get("labor_rate_hourly") is not None,
+                    "has_material_markup": pricing_model.get("material_markup_percent") is not None,
+                    "message_count": len(conversation.messages or []),
+                }
+            )
+        except Exception as e:
+            print(f"Warning: Failed to track onboarding completion: {e}")
 
         return PricingModelResponse(**pricing_model)
 

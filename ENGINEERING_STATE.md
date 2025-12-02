@@ -18,8 +18,8 @@
 
 | Environment | URL | Status | Version |
 |-------------|-----|--------|---------|
-| **Production** | https://web-production-0550.up.railway.app | DEPLOYING | 98faaf9 |
-| **Custom Domain** | https://quoted.it.com | LIVE (SSL ACTIVE) | 98faaf9 |
+| **Production** | https://web-production-0550.up.railway.app | LIVE | 21f3291 |
+| **Custom Domain** | https://quoted.it.com | LIVE (SSL ACTIVE) | 21f3291 |
 
 **Railway Project**: Connected to main branch, auto-deploys on push
 
@@ -40,19 +40,289 @@
 | ~~FEAT-001~~ | ~~Pricing Brain Management~~ | ~~Backend + Frontend~~ | **COMPLETE** | Committed 1361539 + 6c7c94a |
 | ~~FEAT-002~~ | ~~Edit Customer Info on Existing Quotes~~ | ~~Frontend + Backend~~ | **COMPLETE** | Committed fa0f7a4 + 28a98f9 |
 | ~~FIX-001~~ | ~~Randomize Slot Animation Order~~ | ~~Frontend~~ | **COMPLETE** | Committed 59883ef |
-| GROWTH-001 | Demo Mode (Try Before Signup) | Backend + Frontend | **READY** | None |
+| ~~GROWTH-001~~ | ~~Demo Mode (Try Before Signup)~~ | ~~Backend~~ | **COMPLETE** | Committed c7a91d3 (backend done, frontend needed) |
 | GROWTH-002 | Referral System with Rewards | Backend + Frontend | **READY** | None |
 | GROWTH-003 | Share Quote (Email/SMS/Link) | Backend + Frontend | **READY** | None |
-| GROWTH-004 | Landing Page Testimonials | Frontend | **READY** | None |
-| GROWTH-005 | "Powered by Quoted" Branding | Frontend | **READY** | None |
-| CONVERT-001 | Analytics (PostHog) | Backend + Frontend | **READY** | None |
+| ~~GROWTH-004~~ | ~~Landing Page Testimonials~~ | ~~Frontend~~ | **COMPLETE** | Committed 21f3291 |
+| ~~GROWTH-005~~ | ~~"Powered by Quoted" Branding~~ | ~~Frontend~~ | **COMPLETE** | Committed 21f3291 |
+| CONVERT-001 | Analytics (PostHog) | Backend + Frontend | **APPROVED** | Founder approved in DECISION_QUEUE |
 | CONVERT-002 | Enhanced Empty States | Frontend | **READY** | None |
-| CONVERT-003 | First Quote Celebration | Frontend | **READY** | None |
+| ~~CONVERT-003~~ | ~~First Quote Celebration~~ | ~~Frontend~~ | **COMPLETE** | Committed 21f3291 |
 | RETAIN-001 | Engagement Email Series | Backend | **READY** | None |
 | RETAIN-002 | Dormancy Re-engagement Emails | Backend | **READY** | None |
-| INFRA-001 | Sentry Error Tracking | Backend + Frontend | **READY** | None |
+| INFRA-001 | Sentry Error Tracking | Backend + Frontend | **APPROVED** | Founder approved in DECISION_QUEUE |
 | INFRA-002 | Mobile Responsiveness Audit | Frontend | **READY** | None |
 | INFRA-003 | FAQ/Help Section | Frontend | **READY** | None |
+| ONBOARD-001 | Industry/Trade Selection Step | Frontend + Backend | **READY** | None |
+| ONBOARD-002 | Guided Quick Setup with Templates | Frontend + Backend | **READY** | None |
+| ONBOARD-003 | Industry Pricing Template Library | Backend | **READY** | None |
+| ONBOARD-004 | Interview Type C Coaching Mode | Backend (prompts) | **READY** | None |
+| ONBOARD-005 | Expand Trade Defaults (20+ industries) | Backend | **READY** | None |
+
+---
+
+## ONBOARD-001: Industry/Trade Selection Step (READY)
+
+**Scope**: Frontend + Backend (3h)
+**Priority**: HIGH (affects all new users)
+**Requested By**: Founder (2025-12-02)
+
+**Problem**: The onboarding doesn't explicitly ask users what industry/trade they're in. It assumes this from registration, but users may have selected inaccurately or the options weren't granular enough.
+
+**Solution**: Add a dedicated industry selection step at the START of onboarding with:
+1. Visual industry picker (cards with icons)
+2. Granular sub-categories (e.g., "Construction" → "Deck Builder", "Framing", "Concrete", etc.)
+3. "Other" option with free-text
+4. Store this properly to drive the rest of the experience
+
+**Implementation**:
+1. [ ] Create industry picker component in frontend
+2. [ ] Update onboarding flow to start with industry selection
+3. [ ] Store selected industry on contractor record
+4. [ ] Pass industry to interview prompts and quick setup
+
+---
+
+## ONBOARD-002: Guided Quick Setup with Templates (READY)
+
+**Scope**: Frontend + Backend (6h)
+**Priority**: HIGH (improves activation for "quick path" users)
+**Requested By**: Founder (2025-12-02)
+
+**Problem**: Current quick setup only asks for labor_rate, material_markup, and minimum_job. This is too bare-bones for users who don't have established pricing. They need GUIDANCE, not just empty fields.
+
+**Current Quick Setup Fields**:
+- Labor rate (hourly)
+- Material markup %
+- Minimum job amount
+- Pricing notes (free text)
+
+**New Guided Quick Setup**:
+
+Based on their selected industry, show a RECOMMENDED pricing template with sensible defaults:
+
+**Example - Cabinet Company**:
+```
+Recommended Approach: Linear Foot Pricing
+
+Base Rate per Linear Foot: $____/LF (suggested: $150-300)
+
+Material Tier Adjustments:
+  Budget materials: +$0/LF
+  Mid-range materials: +$50/LF
+  Premium materials: +$120/LF
+
+Finishes Budget: $____/LF (suggested: $15-30)
+Hardware Budget: $____/LF (suggested: $20-50)
+
+Minimum Project: $___ (suggested: $2,500)
+```
+
+**Example - Handyman**:
+```
+Recommended Approach: Hourly + Small Job Flat Rates
+
+Hourly Rate: $____/hr (suggested: $65-95)
+Helper Rate: $____/hr (suggested: $35-50)
+
+Small Job Flat Rates:
+  Quick fix (under 1hr): $____ (suggested: $125-175)
+  Half-day job: $____ (suggested: $300-450)
+  Full-day job: $____ (suggested: $550-750)
+
+Minimum Service Call: $____ (suggested: $85-125)
+```
+
+**Implementation**:
+1. [ ] Create pricing template component that adapts to selected industry
+2. [ ] Pre-fill with sensible defaults based on industry
+3. [ ] Add helper text explaining each field
+4. [ ] Show "typical range" hints for each input
+5. [ ] Allow users to adjust and save
+6. [ ] Update backend `quick_setup()` to accept richer data structure
+
+---
+
+## ONBOARD-003: Industry Pricing Template Library (READY)
+
+**Scope**: Backend (4h)
+**Priority**: HIGH (foundation for ONBOARD-002)
+**Requested By**: Founder (2025-12-02)
+
+**Problem**: We only have 4 trade defaults in `_get_trade_defaults()`. Need comprehensive templates for 20+ industries with RECOMMENDED PRICING STRUCTURES, not just numbers.
+
+**Philosophy**: Many contractors don't have a pricing system. We should offer them a **simplified approach** they can adopt immediately and refine over time.
+
+**Template Structure Per Industry**:
+```python
+{
+    "industry_key": "cabinet_maker",
+    "display_name": "Cabinet Maker / Millwork",
+    "recommended_approach": "linear_foot",  # or hourly, project_based, sqft, etc.
+    "approach_description": "Price cabinets by linear foot with material tier adjustments",
+
+    "primary_pricing": {
+        "unit": "linear_foot",
+        "base_rate_range": [150, 300],
+        "suggested_default": 200,
+    },
+
+    "adjusters": [
+        {
+            "name": "material_tier",
+            "type": "tiered",
+            "tiers": {
+                "budget": {"modifier": 0, "description": "Melamine, basic laminates"},
+                "mid_range": {"modifier": 50, "description": "Wood veneer, solid wood fronts"},
+                "premium": {"modifier": 120, "description": "Hardwoods, custom finishes"},
+            }
+        },
+        {
+            "name": "finishes_budget",
+            "type": "per_unit",
+            "unit": "linear_foot",
+            "range": [15, 30],
+            "description": "Paint, stain, lacquer per LF"
+        },
+        {
+            "name": "hardware_budget",
+            "type": "per_unit",
+            "unit": "linear_foot",
+            "range": [20, 50],
+            "description": "Hinges, pulls, soft-close per LF"
+        }
+    ],
+
+    "minimum_project": {"range": [2500, 5000], "suggested": 3000},
+
+    "common_project_types": [
+        "Kitchen cabinets (full remodel)",
+        "Kitchen cabinets (refacing)",
+        "Bathroom vanity",
+        "Built-in bookshelves",
+        "Entertainment center",
+        "Garage cabinets"
+    ],
+
+    "pricing_tips": [
+        "Linear foot pricing simplifies quoting - one number clients understand",
+        "Material tiers let you adjust without recalculating everything",
+        "Track your actual costs for 5-10 jobs to refine these rates"
+    ]
+}
+```
+
+**Industries to Cover**:
+- Cabinet maker / Millwork
+- Kitchen & bath remodeler
+- General contractor
+- Electrician
+- Plumber
+- HVAC
+- Roofer
+- Flooring installer
+- Tile installer
+- Concrete contractor
+- Framing contractor
+- Drywall/plastering
+- Window/door installer
+- Siding contractor
+- Gutters
+- Insulation contractor
+- Garage door installer
+- Pool/spa contractor
+- Masonry/stone
+- Tree service
+- Pressure washing
+- Home organizer/closets
+- Solar installer
+
+**Implementation**:
+1. [ ] Create `backend/data/pricing_templates.py` with full template library
+2. [ ] Create function to get template by industry key
+3. [ ] Include at least 20 industries with complete templates
+4. [ ] Each template should have recommended approach + adjusters + tips
+
+---
+
+## ONBOARD-004: Interview Type C Coaching Mode (READY)
+
+**Scope**: Backend prompts (4h)
+**Priority**: MEDIUM (helps users who don't know how to price)
+**Requested By**: Founder (2025-12-02)
+
+**Problem**: The current interview detects "Type C" users (don't know how to price) but just asks vague questions like "what do you need to make per hour to be profitable?" This isn't helpful for someone who genuinely doesn't know.
+
+**Solution**: When detecting a Type C user, the interview should:
+1. **Acknowledge their situation** - "No worries, let's build something simple together"
+2. **Suggest a simplified approach** based on their industry
+3. **Walk them through setting initial rates** with concrete guidance
+4. **Explain the "learn as you go" approach** - "Start here, adjust based on how quotes feel"
+
+**New Interview Behavior for Type C**:
+
+Instead of:
+> "What do you need to make per hour/day to be profitable?"
+
+Say:
+> "No problem - let's build you a simple pricing system you can refine over time.
+>
+> For [cabinet makers], most people start with **linear foot pricing** - it's easy to calculate and clients understand it. Something like $150-250 per linear foot of cabinets, depending on materials.
+>
+> Does that approach sound right for your work? Or do you price things differently?"
+
+If they agree:
+> "Great! Let's set your starting rates. For **mid-range materials** (wood veneer, solid fronts), what feels like a fair price per linear foot? Most cabinet makers in your area charge $180-220/LF."
+
+**Implementation**:
+1. [ ] Update `setup_interview.py` prompts with industry-specific coaching
+2. [ ] Add template injection when Type C is detected
+3. [ ] Include concrete number ranges for their industry
+4. [ ] Make it conversational, not robotic
+
+---
+
+## ONBOARD-005: Expand Trade Defaults (READY)
+
+**Scope**: Backend (2h)
+**Priority**: MEDIUM (improves default experience)
+**Requested By**: Founder (2025-12-02)
+
+**Problem**: `_get_trade_defaults()` only covers 4 trades. Need 20+.
+
+**Current Coverage**:
+- deck_builder ✓
+- painter ✓
+- fence_installer ✓
+- landscaper ✓
+
+**Trades to Add**:
+- electrician
+- plumber
+- hvac
+- roofer
+- flooring
+- tile
+- concrete
+- framing
+- drywall
+- window_door
+- siding
+- gutters
+- insulation
+- garage_door
+- pool_spa
+- masonry
+- tree_service
+- pressure_washing
+- closet_organizer
+- cabinet_maker
+- general_contractor
+
+**Implementation**:
+1. [ ] Expand `_get_trade_defaults()` with 20+ trades
+2. [ ] Each trade gets 3-5 common service categories with pricing
+3. [ ] Use realistic industry pricing ranges
 
 ---
 

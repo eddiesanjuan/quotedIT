@@ -31,6 +31,7 @@ from ..services import (
 )
 from ..services.auth import get_current_user, get_db
 from ..services.billing import BillingService
+from ..services.analytics import analytics_service
 
 
 router = APIRouter()
@@ -387,6 +388,24 @@ async def generate_quote(
 
         # Increment quote usage counter
         await BillingService.increment_quote_usage(auth_db, current_user["id"])
+
+        # Track quote generation event
+        try:
+            analytics_service.track_event(
+                user_id=str(current_user["id"]),
+                event_name="quote_generated",
+                properties={
+                    "contractor_id": str(contractor.id),
+                    "quote_id": str(quote.id),
+                    "job_type": detected_job_type,
+                    "subtotal": quote_data.get("subtotal", 0),
+                    "has_customer_info": bool(quote_data.get("customer_name")),
+                    "confidence": quote_data.get("confidence"),
+                    "line_item_count": len(quote_data.get("line_items", [])),
+                }
+            )
+        except Exception as e:
+            print(f"Warning: Failed to track quote generation: {e}")
 
         return quote_to_response(quote)
 
@@ -982,6 +1001,28 @@ async def update_quote(
     except Exception as e:
         # Don't fail the update if learning fails
         print(f"[LEARNING ERROR] {e}")
+
+    # Track quote edit event
+    try:
+        analytics_service.track_event(
+            user_id=str(current_user["id"]),
+            event_name="quote_edited",
+            properties={
+                "contractor_id": str(contractor.id),
+                "quote_id": quote_id,
+                "job_type": quote.job_type,
+                "had_line_item_changes": update.line_items is not None,
+                "had_customer_changes": any([
+                    update.customer_name is not None,
+                    update.customer_address is not None,
+                    update.customer_phone is not None,
+                    update.customer_email is not None,
+                ]),
+                "subtotal_change": (updated_quote.subtotal or 0) - original_subtotal if update.line_items else 0,
+            }
+        )
+    except Exception as e:
+        print(f"Warning: Failed to track quote edit: {e}")
 
     # Refresh the quote
     updated_quote = await db.get_quote(quote_id)
