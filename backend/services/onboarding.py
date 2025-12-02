@@ -360,6 +360,454 @@ class OnboardingService:
                     "unit": "sqft",
                 },
             },
+            "electrician": {
+                "service_call": {
+                    "base_rate": 125.0,
+                    "unit": "flat",
+                    "notes": "Standard diagnostic fee, typically credited toward work"
+                },
+                "outlet_install": {
+                    "base_rate": 175.0,
+                    "typical_range": [150.0, 250.0],
+                    "unit": "per_outlet",
+                },
+                "panel_upgrade": {
+                    "base_rate": 2500.0,
+                    "typical_range": [2000.0, 3500.0],
+                    "unit": "flat",
+                    "notes": "200A panel upgrade, varies by complexity"
+                },
+                "rewiring_per_sqft": {
+                    "base_rate": 7.0,
+                    "typical_range": [5.0, 10.0],
+                    "unit": "sqft",
+                },
+                "fixture_install": {
+                    "base_rate": 150.0,
+                    "unit": "each",
+                },
+            },
+            "plumber": {
+                "service_call": {
+                    "base_rate": 150.0,
+                    "unit": "flat",
+                },
+                "fixture_install": {
+                    "base_rate": 250.0,
+                    "typical_range": [200.0, 400.0],
+                    "unit": "each",
+                    "notes": "Toilet, sink, or faucet installation"
+                },
+                "water_heater_install": {
+                    "base_rate": 1200.0,
+                    "typical_range": [900.0, 1800.0],
+                    "unit": "flat",
+                },
+                "drain_cleaning": {
+                    "base_rate": 200.0,
+                    "typical_range": [150.0, 350.0],
+                    "unit": "flat",
+                },
+                "pipe_repair_per_linear_ft": {
+                    "base_rate": 75.0,
+                    "unit": "linear_ft",
+                },
+            },
+            "hvac": {
+                "service_call": {
+                    "base_rate": 125.0,
+                    "unit": "flat",
+                },
+                "ac_install": {
+                    "base_rate": 5500.0,
+                    "typical_range": [4000.0, 8000.0],
+                    "unit": "flat",
+                    "notes": "Central AC system, varies by tonnage"
+                },
+                "furnace_install": {
+                    "base_rate": 4500.0,
+                    "typical_range": [3500.0, 6500.0],
+                    "unit": "flat",
+                },
+                "duct_work_per_linear_ft": {
+                    "base_rate": 45.0,
+                    "unit": "linear_ft",
+                },
+                "maintenance_contract": {
+                    "base_rate": 250.0,
+                    "unit": "annual",
+                },
+            },
+            "roofer": {
+                "repair": {
+                    "base_rate": 500.0,
+                    "typical_range": [300.0, 1200.0],
+                    "unit": "flat",
+                },
+                "replacement_per_square": {
+                    "base_rate": 450.0,
+                    "typical_range": [350.0, 650.0],
+                    "unit": "per_square",
+                    "notes": "100 sqft = 1 square, asphalt shingles baseline"
+                },
+                "tear_off_per_square": {
+                    "base_rate": 150.0,
+                    "unit": "per_square",
+                },
+                "inspection": {
+                    "base_rate": 200.0,
+                    "unit": "flat",
+                },
+            },
+            "flooring": {
+                "hardwood_install_per_sqft": {
+                    "base_rate": 12.0,
+                    "typical_range": [8.0, 18.0],
+                    "unit": "sqft",
+                },
+                "vinyl_install_per_sqft": {
+                    "base_rate": 6.0,
+                    "typical_range": [4.0, 9.0],
+                    "unit": "sqft",
+                },
+                "tile_install_per_sqft": {
+                    "base_rate": 15.0,
+                    "typical_range": [10.0, 25.0],
+                    "unit": "sqft",
+                },
+                "removal_per_sqft": {
+                    "base_rate": 3.0,
+                    "unit": "sqft",
+                },
+            },
+            "tile": {
+                "backsplash_per_sqft": {
+                    "base_rate": 18.0,
+                    "typical_range": [12.0, 30.0],
+                    "unit": "sqft",
+                },
+                "bathroom_floor_per_sqft": {
+                    "base_rate": 15.0,
+                    "unit": "sqft",
+                },
+                "shower_install": {
+                    "base_rate": 2500.0,
+                    "typical_range": [2000.0, 4000.0],
+                    "unit": "flat",
+                },
+                "floor_tile_per_sqft": {
+                    "base_rate": 12.0,
+                    "unit": "sqft",
+                },
+            },
+            "concrete": {
+                "driveway_per_sqft": {
+                    "base_rate": 8.0,
+                    "typical_range": [6.0, 12.0],
+                    "unit": "sqft",
+                },
+                "patio_per_sqft": {
+                    "base_rate": 10.0,
+                    "typical_range": [8.0, 15.0],
+                    "unit": "sqft",
+                },
+                "foundation_per_linear_ft": {
+                    "base_rate": 150.0,
+                    "unit": "linear_ft",
+                },
+                "stamped_concrete_per_sqft": {
+                    "base_rate": 18.0,
+                    "typical_range": [15.0, 25.0],
+                    "unit": "sqft",
+                },
+            },
+            "framing": {
+                "wall_framing_per_linear_ft": {
+                    "base_rate": 35.0,
+                    "unit": "linear_ft",
+                },
+                "addition_per_sqft": {
+                    "base_rate": 125.0,
+                    "typical_range": [100.0, 200.0],
+                    "unit": "sqft",
+                },
+                "deck_framing_per_sqft": {
+                    "base_rate": 20.0,
+                    "unit": "sqft",
+                },
+                "roof_framing_per_sqft": {
+                    "base_rate": 15.0,
+                    "unit": "sqft",
+                },
+            },
+            "drywall": {
+                "hang_per_sqft": {
+                    "base_rate": 1.50,
+                    "unit": "sqft",
+                },
+                "tape_per_sqft": {
+                    "base_rate": 0.75,
+                    "unit": "sqft",
+                },
+                "texture_per_sqft": {
+                    "base_rate": 0.50,
+                    "unit": "sqft",
+                },
+                "complete_per_sqft": {
+                    "base_rate": 3.50,
+                    "typical_range": [2.50, 5.00],
+                    "unit": "sqft",
+                    "notes": "Hang, tape, texture complete"
+                },
+            },
+            "window_door": {
+                "window_install": {
+                    "base_rate": 450.0,
+                    "typical_range": [350.0, 700.0],
+                    "unit": "each",
+                },
+                "door_install": {
+                    "base_rate": 500.0,
+                    "typical_range": [400.0, 800.0],
+                    "unit": "each",
+                },
+                "storm_door_install": {
+                    "base_rate": 250.0,
+                    "unit": "each",
+                },
+                "sliding_door_install": {
+                    "base_rate": 800.0,
+                    "typical_range": [600.0, 1200.0],
+                    "unit": "each",
+                },
+            },
+            "siding": {
+                "vinyl_per_sqft": {
+                    "base_rate": 6.0,
+                    "typical_range": [5.0, 8.0],
+                    "unit": "sqft",
+                },
+                "fiber_cement_per_sqft": {
+                    "base_rate": 9.0,
+                    "typical_range": [7.0, 12.0],
+                    "unit": "sqft",
+                },
+                "wood_per_sqft": {
+                    "base_rate": 10.0,
+                    "typical_range": [8.0, 15.0],
+                    "unit": "sqft",
+                },
+                "removal_per_sqft": {
+                    "base_rate": 2.0,
+                    "unit": "sqft",
+                },
+            },
+            "gutters": {
+                "install_per_linear_ft": {
+                    "base_rate": 12.0,
+                    "typical_range": [8.0, 18.0],
+                    "unit": "linear_ft",
+                },
+                "guards_per_linear_ft": {
+                    "base_rate": 8.0,
+                    "unit": "linear_ft",
+                },
+                "cleaning": {
+                    "base_rate": 200.0,
+                    "typical_range": [150.0, 300.0],
+                    "unit": "flat",
+                },
+                "downspout_install": {
+                    "base_rate": 75.0,
+                    "unit": "each",
+                },
+            },
+            "insulation": {
+                "blown_per_sqft": {
+                    "base_rate": 2.0,
+                    "typical_range": [1.50, 3.00],
+                    "unit": "sqft",
+                },
+                "batt_per_sqft": {
+                    "base_rate": 1.50,
+                    "unit": "sqft",
+                },
+                "spray_foam_per_sqft": {
+                    "base_rate": 4.0,
+                    "typical_range": [3.00, 6.00],
+                    "unit": "sqft",
+                },
+            },
+            "garage_door": {
+                "door_install": {
+                    "base_rate": 1200.0,
+                    "typical_range": [800.0, 2000.0],
+                    "unit": "each",
+                },
+                "opener_install": {
+                    "base_rate": 350.0,
+                    "typical_range": [250.0, 500.0],
+                    "unit": "each",
+                },
+                "repair": {
+                    "base_rate": 200.0,
+                    "typical_range": [150.0, 400.0],
+                    "unit": "flat",
+                },
+                "spring_replacement": {
+                    "base_rate": 250.0,
+                    "unit": "flat",
+                },
+            },
+            "pool_spa": {
+                "weekly_cleaning": {
+                    "base_rate": 125.0,
+                    "typical_range": [100.0, 150.0],
+                    "unit": "monthly",
+                },
+                "repair": {
+                    "base_rate": 300.0,
+                    "typical_range": [200.0, 600.0],
+                    "unit": "flat",
+                },
+                "opening": {
+                    "base_rate": 250.0,
+                    "unit": "flat",
+                },
+                "closing": {
+                    "base_rate": 200.0,
+                    "unit": "flat",
+                },
+            },
+            "masonry": {
+                "brick_per_sqft": {
+                    "base_rate": 30.0,
+                    "typical_range": [25.0, 40.0],
+                    "unit": "sqft",
+                },
+                "block_per_sqft": {
+                    "base_rate": 20.0,
+                    "unit": "sqft",
+                },
+                "stone_per_sqft": {
+                    "base_rate": 45.0,
+                    "typical_range": [35.0, 60.0],
+                    "unit": "sqft",
+                },
+                "repair": {
+                    "base_rate": 400.0,
+                    "typical_range": [300.0, 800.0],
+                    "unit": "flat",
+                },
+            },
+            "tree_service": {
+                "removal": {
+                    "base_rate": 1000.0,
+                    "typical_range": [500.0, 3000.0],
+                    "unit": "per_tree",
+                    "notes": "Varies significantly by size and complexity"
+                },
+                "trimming": {
+                    "base_rate": 400.0,
+                    "typical_range": [200.0, 800.0],
+                    "unit": "per_tree",
+                },
+                "stump_grinding": {
+                    "base_rate": 200.0,
+                    "typical_range": [100.0, 400.0],
+                    "unit": "per_stump",
+                },
+                "emergency_service": {
+                    "base_rate": 1500.0,
+                    "unit": "flat",
+                },
+            },
+            "pressure_washing": {
+                "house_wash": {
+                    "base_rate": 400.0,
+                    "typical_range": [300.0, 600.0],
+                    "unit": "flat",
+                },
+                "driveway_per_sqft": {
+                    "base_rate": 0.30,
+                    "unit": "sqft",
+                },
+                "deck_per_sqft": {
+                    "base_rate": 0.50,
+                    "unit": "sqft",
+                },
+                "roof_cleaning": {
+                    "base_rate": 500.0,
+                    "typical_range": [400.0, 800.0],
+                    "unit": "flat",
+                },
+            },
+            "closet_organizer": {
+                "custom_system_per_linear_ft": {
+                    "base_rate": 125.0,
+                    "typical_range": [100.0, 200.0],
+                    "unit": "linear_ft",
+                },
+                "reach_in_closet": {
+                    "base_rate": 800.0,
+                    "typical_range": [600.0, 1200.0],
+                    "unit": "flat",
+                },
+                "walk_in_closet": {
+                    "base_rate": 2500.0,
+                    "typical_range": [2000.0, 4000.0],
+                    "unit": "flat",
+                },
+                "pantry_system": {
+                    "base_rate": 1500.0,
+                    "unit": "flat",
+                },
+            },
+            "cabinet_maker": {
+                "custom_cabinets_per_linear_ft": {
+                    "base_rate": 500.0,
+                    "typical_range": [400.0, 800.0],
+                    "unit": "linear_ft",
+                    "notes": "Custom build, varies by materials and complexity"
+                },
+                "refacing_per_linear_ft": {
+                    "base_rate": 150.0,
+                    "typical_range": [100.0, 250.0],
+                    "unit": "linear_ft",
+                },
+                "install_per_linear_ft": {
+                    "base_rate": 100.0,
+                    "unit": "linear_ft",
+                },
+                "countertop_per_sqft": {
+                    "base_rate": 75.0,
+                    "typical_range": [50.0, 150.0],
+                    "unit": "sqft",
+                },
+            },
+            "general_contractor": {
+                "project_management": {
+                    "base_rate": 15.0,
+                    "typical_range": [10.0, 20.0],
+                    "unit": "percent_of_project",
+                    "notes": "Percentage of total project cost"
+                },
+                "remodel_per_sqft": {
+                    "base_rate": 150.0,
+                    "typical_range": [100.0, 250.0],
+                    "unit": "sqft",
+                    "notes": "Rough estimate for full renovation"
+                },
+                "addition_per_sqft": {
+                    "base_rate": 200.0,
+                    "typical_range": [150.0, 300.0],
+                    "unit": "sqft",
+                },
+                "consultation": {
+                    "base_rate": 200.0,
+                    "unit": "flat",
+                },
+            },
         }
 
         return trade_defaults.get(primary_trade, {})
