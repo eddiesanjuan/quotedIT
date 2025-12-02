@@ -69,7 +69,7 @@ class GlobalSettings(BaseModel):
 # ============================================================================
 
 
-@router.get("/", response_model=List[CategorySummary])
+@router.get("", response_model=List[CategorySummary])
 async def get_all_categories(current_user: dict = Depends(get_current_user)):
     """
     Get all pricing categories with statistics.
