@@ -8,6 +8,8 @@
 
 | Time | Agent | Action | Type | Result |
 |------|-------|--------|------|--------|
+| 17:15 | CEO | Updated /quoted-run with Executive Council phase | Type 1 | Executives consulted before prioritization |
+| 17:00 | CEO | Fixed Pricing Brain empty state for legacy accounts | Type 2 | Committed b674687 |
 | 16:30 | Frontend Engineer | Verified CONVERT-001 + INFRA-001 complete | Type 1 | Already committed in 75eac78 |
 | 16:15 | CEO | Queued ONBOARD-001 through ONBOARD-005 (onboarding improvements) | Type 1 | Ready for implementation |
 | 16:00 | CEO | Updated state files with Sprint 2 results | Type 1 | Complete |
