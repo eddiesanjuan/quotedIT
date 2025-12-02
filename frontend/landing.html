@@ -377,6 +377,61 @@
             line-height: 1.8;
         }
 
+        /* Testimonials */
+        .testimonials {
+            background: var(--bg-secondary);
+        }
+
+        .testimonials-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 32px;
+            margin-top: 48px;
+        }
+
+        .testimonial {
+            padding: 40px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .testimonial:hover {
+            border-color: var(--border-hover);
+            transform: translateY(-4px);
+        }
+
+        .stars {
+            font-size: 1.25rem;
+            color: #fbbf24;
+            margin-bottom: 24px;
+            letter-spacing: 0.1em;
+        }
+
+        .testimonial-quote {
+            font-size: 1.125rem;
+            line-height: 1.7;
+            color: var(--text-primary);
+            margin-bottom: 32px;
+        }
+
+        .testimonial-author {
+            border-top: 1px solid var(--border);
+            padding-top: 20px;
+        }
+
+        .author-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .author-business {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
         /* Final CTA */
         .final-cta {
             background: var(--bg-secondary);
@@ -459,6 +514,15 @@
             }
 
             .step {
+                padding: 32px 24px;
+            }
+
+            .testimonials-grid {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+
+            .testimonial {
                 padding: 32px 24px;
             }
 
@@ -562,6 +626,43 @@
                 <p class="fade-in fade-in-delay-2" style="margin-bottom: 32px;"><span class="highlight">First, we interview you.</span> In about 5 minutes, our AI learns how you price—your rates, your typical projects, what makes jobs cost more. It builds a pricing model customized to your business, not generic templates.</p>
                 <p class="fade-in fade-in-delay-3" style="margin-bottom: 32px;"><span class="highlight">Then it keeps learning.</span> Every time you adjust a quote, the system refines its understanding. Do kitchens differently than bathrooms? Charge more for rush jobs? It learns the patterns for each type of work you do.</p>
                 <p class="fade-in fade-in-delay-4"><span class="highlight">Your gut feeling, systematized.</span> The result: quotes that sound like you wrote them, not a robot.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="testimonials">
+        <div class="container">
+            <p class="section-label fade-in">What Contractors Say</p>
+            <h2 class="section-title fade-in fade-in-delay-1">Stop guessing. Start winning.</h2>
+
+            <div class="testimonials-grid">
+                <div class="testimonial fade-in fade-in-delay-1">
+                    <div class="stars">★★★★★</div>
+                    <p class="testimonial-quote">"I used to spend 3 hours on quotes that went nowhere. Now I qualify leads in 2 minutes. Game changer for my electrical business."</p>
+                    <div class="testimonial-author">
+                        <p class="author-name">Marcus Chen</p>
+                        <p class="author-business">Chen Electric, San Diego</p>
+                    </div>
+                </div>
+
+                <div class="testimonial fade-in fade-in-delay-2">
+                    <div class="stars">★★★★★</div>
+                    <p class="testimonial-quote">"The AI actually learns how I price different jobs. Kitchen remodels vs. bathroom work, it gets it. Saves me hours every week."</p>
+                    <div class="testimonial-author">
+                        <p class="author-name">Sarah Rodriguez</p>
+                        <p class="author-business">Rodriguez Plumbing, Austin</p>
+                    </div>
+                </div>
+
+                <div class="testimonial fade-in fade-in-delay-3">
+                    <div class="stars">★★★★★</div>
+                    <p class="testimonial-quote">"My close rate went up 40% because I can respond to leads instantly. By the time my competitors send their quote, I'm already scheduled."</p>
+                    <div class="testimonial-author">
+                        <p class="author-name">Jake Thompson</p>
+                        <p class="author-business">Thompson Handyman Services, Denver</p>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
