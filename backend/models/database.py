@@ -516,6 +516,61 @@ async def run_migrations(engine):
             """,
             "alter_sql": "ALTER TABLE setup_conversations ADD COLUMN extracted_data JSON"
         },
+        # Billing columns for users table
+        {
+            "table": "users",
+            "column": "stripe_customer_id",
+            "check_sql": """
+                SELECT column_name FROM information_schema.columns
+                WHERE table_name = 'users' AND column_name = 'stripe_customer_id'
+            """,
+            "alter_sql": "ALTER TABLE users ADD COLUMN stripe_customer_id VARCHAR"
+        },
+        {
+            "table": "users",
+            "column": "subscription_id",
+            "check_sql": """
+                SELECT column_name FROM information_schema.columns
+                WHERE table_name = 'users' AND column_name = 'subscription_id'
+            """,
+            "alter_sql": "ALTER TABLE users ADD COLUMN subscription_id VARCHAR"
+        },
+        {
+            "table": "users",
+            "column": "plan_tier",
+            "check_sql": """
+                SELECT column_name FROM information_schema.columns
+                WHERE table_name = 'users' AND column_name = 'plan_tier'
+            """,
+            "alter_sql": "ALTER TABLE users ADD COLUMN plan_tier VARCHAR DEFAULT 'trial'"
+        },
+        {
+            "table": "users",
+            "column": "quotes_used",
+            "check_sql": """
+                SELECT column_name FROM information_schema.columns
+                WHERE table_name = 'users' AND column_name = 'quotes_used'
+            """,
+            "alter_sql": "ALTER TABLE users ADD COLUMN quotes_used INTEGER DEFAULT 0"
+        },
+        {
+            "table": "users",
+            "column": "billing_cycle_start",
+            "check_sql": """
+                SELECT column_name FROM information_schema.columns
+                WHERE table_name = 'users' AND column_name = 'billing_cycle_start'
+            """,
+            "alter_sql": "ALTER TABLE users ADD COLUMN billing_cycle_start TIMESTAMP"
+        },
+        {
+            "table": "users",
+            "column": "trial_ends_at",
+            "check_sql": """
+                SELECT column_name FROM information_schema.columns
+                WHERE table_name = 'users' AND column_name = 'trial_ends_at'
+            """,
+            "alter_sql": "ALTER TABLE users ADD COLUMN trial_ends_at TIMESTAMP"
+        },
     ]
 
     # Constraint changes (PostgreSQL only - SQLite doesn't support these)
