@@ -26,6 +26,17 @@
 
 | Date | Learning | Context |
 |------|----------|---------|
+| 2025-12-02 | Tab navigation pattern for multi-view sections | Account section uses tabs (Billing + Pricing Brain) with active state management and lazy loading |
+| 2025-12-02 | Safe DOM construction prevents XSS in dynamic cards | Category cards built with createElement/textContent, avoiding innerHTML with user data |
+| 2025-12-02 | Modal pattern with backdrop-filter and outside-click close | Edit Category modal follows established pattern from Edit Customer modal |
+| 2025-12-02 | Empty states use dashed borders and emoji icons | Empty category state shows 📚 icon with encouraging message |
+| 2025-12-02 | Grid auto-fill for responsive card layouts | category-cards-grid uses repeat(auto-fill, minmax(300px, 1fr)) for flexible layout |
+| 2025-12-02 | Confidence badges use conditional color classes | high-confidence=green, medium-confidence=yellow, low=gray for visual hierarchy |
+| 2025-12-02 | Pattern hints vs AI analysis: instant vs on-demand | Pattern hints load instantly from stored data, AI analysis costs ~$0.001 per request |
+| 2025-12-02 | Fisher-Yates shuffle for slot animation randomization | Landing page slot machine now shows random industry order on each load |
+| 2025-12-02 | Customer info edit modal follows upgrade modal pattern | Reusable modal-overlay + modal-content structure with outside-click close |
+| 2025-12-02 | Customer info section uses grid layout for responsive display | auto-fit minmax(200px, 1fr) adapts to mobile/tablet/desktop |
+| 2025-12-02 | Edit icons use inline SVG for crisp rendering | 16x16 pencil icon scales perfectly at any screen resolution |
 | 2025-12-02 | Billing UI built with safe DOM methods (no innerHTML) | XSS prevention - used createElement/textContent instead of innerHTML |
 | 2025-12-02 | Global fetch wrapper intercepts 402 responses | Automatically shows upgrade modal when quote limit reached |
 | 2025-12-02 | Usage widget uses gradient fill with color-coded warnings | Green→Yellow at 80%, Red at 90% usage |
@@ -100,7 +111,7 @@ border-radius: 8px;
 
 | File | Purpose | Size |
 |------|---------|------|
-| `frontend/index.html` | Main app (auth, quotes, history) | ~31K tokens |
+| `frontend/index.html` | Main app (auth, quotes, history, billing, pricing brain) | ~38K tokens |
 | `frontend/landing.html` | Marketing landing page | ~4K tokens |
 | `frontend/terms.html` | Terms of Service legal page | ~400 lines |
 | `frontend/privacy.html` | Privacy Policy legal page | ~450 lines |

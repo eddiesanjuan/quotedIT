@@ -1,6 +1,6 @@
 # Engineering State
 
-**Last Updated**: 2025-12-02 12:00 PST
+**Last Updated**: 2025-12-02 14:30 PST
 **Updated By**: CEO (AI)
 
 ---
@@ -17,8 +17,9 @@
 
 | Environment | URL | Status | Version |
 |-------------|-----|--------|---------|
-| **Production** | https://web-production-0550.up.railway.app | RUNNING | b06b712 |
-| **Custom Domain** | https://quoted.it.com | LIVE (SSL ACTIVE) | b06b712 |
+| **Production** | https://web-production-0550.up.railway.app | RUNNING | 6c7c94a |
+| **Custom Domain** | https://quoted.it.com | LIVE (SSL ACTIVE) | 6c7c94a |
+| **Local** | 7 commits ahead | PENDING PUSH | 6c7c94a |
 
 **Railway Project**: Connected to main branch, auto-deploys on push
 
@@ -36,45 +37,80 @@
 | ~~PAY-004~~ | ~~Email System (Resend)~~ | ~~Backend Engineer~~ | **COMPLETE** | Committed 33fa641 |
 | PAY-005 | Referral System | Backend Engineer | **READY** | Can start now |
 | ~~PAY-006~~ | ~~Terms of Service + Privacy Policy~~ | ~~CTO~~ | **COMPLETE** | Deployed 325fb25 |
-| FEAT-001 | Pricing Brain Management | Backend + Frontend | **READY** | Design approved |
+| ~~FEAT-001~~ | ~~Pricing Brain Management~~ | ~~Backend + Frontend~~ | **COMPLETE** | Committed 1361539 + 6c7c94a |
+| ~~FEAT-002~~ | ~~Edit Customer Info on Existing Quotes~~ | ~~Frontend + Backend~~ | **COMPLETE** | Committed fa0f7a4 + 28a98f9 |
+| ~~FIX-001~~ | ~~Randomize Slot Animation Order~~ | ~~Frontend~~ | **COMPLETE** | Committed 59883ef |
 
 ---
 
-## FEAT-001: Pricing Brain Management (READY FOR IMPLEMENTATION)
+## FEAT-001: Pricing Brain Management (COMPLETE ✓)
 
+**Commits**: `1361539` (Backend) + `6c7c94a` (Frontend)
 **Design Doc**: `docs/plans/2025-12-02-pricing-brain-design.md`
 **Priority**: HIGH (user trust + transparency)
 **Approved By**: Founder (2025-12-02)
 
 **Summary**: New "Pricing Brain" tab in Account section where users can view what the AI learned about their pricing and make corrections with AI assistance.
 
-**Key Features**:
-- Category cards showing learned pricing knowledge (quotes count, confidence, rules)
-- Edit modal with pattern-based hints (instant, no API cost)
-- On-demand AI analysis via Haiku (~$0.001/analysis)
-- Editable: rate modifiers, learned rules, category names, delete category
-- Global settings view (base rates, material markup, minimum job)
+**Implementation Summary**:
+- ✅ Backend API: 6 endpoints for category management + AI analysis
+- ✅ Frontend UI: Pricing Brain tab with category cards, edit modals, AI insights
+- ✅ Haiku integration for on-demand category analysis (~$0.001/call)
+- ✅ Pattern-based hints (instant, no API cost)
+- ✅ Empty states, confirmations, error handling
 
-**Implementation Tasks**:
-1. [ ] Create `backend/api/pricing_brain.py` - API routes (GET, PUT, DELETE, analyze)
-2. [ ] Create `backend/services/pricing_brain.py` - Business logic + Haiku integration
-3. [ ] Register router in `backend/main.py`
-4. [ ] Add Pricing Brain tab to Account section in `frontend/index.html`
-5. [ ] Build category cards dashboard UI
-6. [ ] Build edit modal with pattern hints
-7. [ ] Build AI analysis panel
-8. [ ] Polish: empty states, confirmations, error handling
+**New Files**:
+- `backend/api/pricing_brain.py` - REST API routes (307 lines)
+- `backend/services/pricing_brain.py` - Business logic + Haiku (280 lines)
 
-**New API Endpoints**:
+**API Endpoints**:
 ```
 GET  /api/pricing-brain              - All categories + stats
 GET  /api/pricing-brain/{category}   - Single category detail
 PUT  /api/pricing-brain/{category}   - Update category
 DELETE /api/pricing-brain/{category} - Delete category
 POST /api/pricing-brain/{category}/analyze - AI analysis (Haiku)
+GET  /api/pricing-brain/settings/global - Global pricing settings
 ```
 
-**Estimated Scope**: Medium (~1 autonomous session)
+---
+
+## FEAT-002: Edit Customer Info on Existing Quotes (COMPLETE ✓)
+
+**Commits**: `fa0f7a4` (Frontend) + `28a98f9` (Backend)
+**Priority**: MEDIUM (usability)
+**Reported By**: Founder (2025-12-02)
+
+**Problem**: Once a quote is created, users cannot edit customer information (name, address, phone). If AI didn't detect customer info from transcription, or user wants to add it later, they're stuck.
+
+**Implementation Summary**:
+- ✅ Customer info section added to quote detail view
+- ✅ Edit button with pencil icon opens modal
+- ✅ Modal with customer_name, customer_address, customer_phone fields
+- ✅ Backend: `PUT /api/quotes/{quote_id}/customer` endpoint
+- ✅ Frontend wired to API with cache refresh
+
+**New API Endpoint**:
+```
+PUT /api/quotes/{quote_id}/customer - Update customer info only
+```
+
+---
+
+## FIX-001: Randomize Slot Animation Order (COMPLETE ✓)
+
+**Commit**: `59883ef`
+**Priority**: LOW (polish)
+**Reported By**: Founder (2025-12-02)
+
+**Problem**: Landing page slot animation always shows the same two industry words when page loads.
+
+**Solution**: Added Fisher-Yates shuffle on page load before animation starts.
+
+**Implementation**:
+- ✅ Fisher-Yates shuffle function added to landing.html
+- ✅ Words array shuffled on DOMContentLoaded
+- ✅ Repeat visitors now see variety
 
 ---
 
@@ -151,6 +187,11 @@ GET /api/billing/plans - Available pricing (public)
 
 | Date | Commit | Description | Status |
 |------|--------|-------------|--------|
+| 2025-12-02 | 6c7c94a | Add Pricing Brain Management UI (FEAT-001 Frontend) | **PENDING PUSH** |
+| 2025-12-02 | 28a98f9 | Add Customer edit endpoint for quotes (FEAT-002 Backend) | **PENDING PUSH** |
+| 2025-12-02 | fa0f7a4 | Add Edit customer info on existing quotes (FEAT-002 Frontend) | **PENDING PUSH** |
+| 2025-12-02 | 1361539 | Add Pricing Brain Management API (FEAT-001 Backend) | **PENDING PUSH** |
+| 2025-12-02 | 59883ef | Fix Randomize landing page slot animation (FIX-001) | **PENDING PUSH** |
 | 2025-12-02 | b06b712 | Fix category matching - register categories on quote generation | **DEPLOYED** |
 | 2025-12-02 | 5a84de5 | Add billing column migrations for existing Postgres databases | **DEPLOYED** |
 | 2025-12-02 | 6aedad1 | Add annual billing interval support | **DEPLOYED** |
@@ -181,17 +222,20 @@ GET /api/billing/plans - Available pricing (public)
 - `backend/services/learning.py` - Correction processing
 - `backend/services/billing.py` - Stripe subscription handling
 - `backend/services/email.py` - Resend transactional emails
+- `backend/services/pricing_brain.py` - Pricing Brain business logic (NEW)
+- `backend/api/pricing_brain.py` - Pricing Brain REST API (NEW)
 - `backend/prompts/quote_generation.py` - Prompt construction (learning injection)
-- `frontend/index.html` - Main app (31K tokens, vanilla JS)
-- `frontend/landing.html` - Landing page
+- `frontend/index.html` - Main app (includes Pricing Brain UI)
+- `frontend/landing.html` - Landing page (with randomized slot animation)
 - `frontend/terms.html` - Terms of Service
 - `frontend/privacy.html` - Privacy Policy
 
 ### API Endpoints
 ```
 /api/auth/*           - Authentication
-/api/quotes/*         - Quote CRUD, generation, PDF
+/api/quotes/*         - Quote CRUD, generation, PDF, customer edit
 /api/billing/*        - Stripe subscriptions, checkout, portal
+/api/pricing-brain/*  - Category management, AI analysis (NEW)
 /api/contractors/*    - Contractor profile
 /api/onboarding/*     - Setup interview
 /api/issues/*         - Issue reporting (autonomous processing)

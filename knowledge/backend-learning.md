@@ -37,6 +37,7 @@
 | 2025-12-02 | Resend email service added for transactional emails | Welcome, trial, subscription, payment failed notifications |
 | 2025-12-02 | Stripe payment infrastructure implemented | PAY-001: Subscriptions, usage metering, webhook handling, trial management |
 | 2025-12-02 | Pricing Brain API for learned knowledge visibility | FEAT-001: View/edit AI-learned pricing rules per category, Haiku analysis |
+| 2025-12-02 | Separate endpoint for customer edits avoids learning trigger | FEAT-002: PUT /customer endpoint for non-pricing updates, no learning overhead |
 
 ---
 
