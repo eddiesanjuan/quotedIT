@@ -235,22 +235,37 @@ class Quote(Base):
 
 ## The Three Main Flows
 
-### Flow 1: Onboarding Interview
+### Flow 1: Onboarding Interview (ADAPTIVE)
 
 ```
-User starts setup → AI asks about pricing → User responds → AI extracts categories → Stored in pricing_model
+User starts → AI detects sophistication level → Adapts questions → Extracts their system → Stored in pricing_model
 ```
 
 **Key Files**:
 - `backend/api/onboarding.py` - API endpoints
 - `backend/services/onboarding.py` - Interview AI logic
-- `backend/prompts/setup_interview.py` - Interview prompts
+- `backend/prompts/setup_interview.py` - Interview prompts (THE ADAPTIVE LOGIC IS HERE)
 - `backend/services/database.py` - `create_setup_conversation()`, `update_setup_conversation()`
 
 **Data Flow**:
 1. `POST /onboarding/start` → Creates SetupConversation in DB
 2. `POST /onboarding/{id}/continue` → Updates messages in DB
 3. `POST /onboarding/{id}/complete` → Extracts pricing model with categories
+
+**The Adaptive Interview System**:
+
+The interview detects which type of user is being interviewed:
+
+| Type | Description | AI Approach |
+|------|-------------|-------------|
+| **Type A** | "I have a system" - Clear rates, spreadsheets, formulas | Extract their existing system in detail. Ask probing questions about their formulas. |
+| **Type B** | "I price by feel" - Knows roughly what to charge but no formal rates | Help articulate what's in their head. Ask about recent projects. |
+| **Type C** | "I'm not sure how to price" - New or struggling | Help build a pricing structure. Guide through basics. |
+
+**Key Prompt Locations** (in `setup_interview.py`):
+- `get_setup_system_prompt()` - Contains the adaptive questioning strategy (lines 9-133)
+- `get_setup_initial_message()` - Opens with one exploratory question to detect sophistication
+- `get_pricing_extraction_prompt()` - Captures whatever system they described faithfully
 
 ### Flow 2: Quote Generation
 
