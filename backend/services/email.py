@@ -5,6 +5,8 @@ Handles all transactional emails with branded dark premium design.
 
 from typing import Optional, Dict, Any
 import resend
+import asyncio
+from functools import partial
 from datetime import datetime
 
 from ..config import settings
@@ -12,6 +14,14 @@ from ..config import settings
 
 # Initialize Resend with API key
 resend.api_key = settings.resend_api_key
+
+# Validate API key is configured
+if not settings.resend_api_key or settings.resend_api_key == "":
+    import warnings
+    warnings.warn(
+        "RESEND_API_KEY not configured. Email sending will fail. "
+        "Set RESEND_API_KEY in your .env file."
+    )
 
 
 class EmailService:
@@ -580,10 +590,19 @@ class EmailService:
                         "content": pdf_content,
                     }]
 
-            response = resend.Emails.send(email_data)
+            # Resend SDK is synchronous, so run it in a thread pool to avoid blocking
+            loop = asyncio.get_event_loop()
+            response = await loop.run_in_executor(
+                None,
+                partial(resend.Emails.send, email_data)
+            )
+
+            print(f"Quote email sent successfully to {to_email}. Response: {response}")
             return response
         except Exception as e:
             print(f"Failed to send quote email to {to_email}: {e}")
+            import traceback
+            traceback.print_exc()
             raise
 
     @staticmethod

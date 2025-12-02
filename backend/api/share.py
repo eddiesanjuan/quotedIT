@@ -162,16 +162,27 @@ async def share_quote_via_email(
             quote.pdf_url = output_path
 
         # Send email
-        await email_service.send_quote_email(
-            to_email=share_request.recipient_email,
-            contractor_name=contractor.business_name or contractor.owner_name,
-            contractor_phone=contractor.phone or "N/A",
-            customer_name=quote.customer_name,
-            job_description=quote.job_description or "Project",
-            total=quote.total or quote.subtotal or 0,
-            message=share_request.message,
-            pdf_path=quote.pdf_url,
-        )
+        print(f"Attempting to send quote email to {share_request.recipient_email} for quote {quote_id}")
+        try:
+            email_response = await email_service.send_quote_email(
+                to_email=share_request.recipient_email,
+                contractor_name=contractor.business_name or contractor.owner_name,
+                contractor_phone=contractor.phone or "N/A",
+                customer_name=quote.customer_name,
+                job_description=quote.job_description or "Project",
+                total=quote.total or quote.subtotal or 0,
+                message=share_request.message,
+                pdf_path=quote.pdf_url,
+            )
+            print(f"Email sent successfully. Response: {email_response}")
+        except Exception as email_error:
+            print(f"CRITICAL: Email failed to send for quote {quote_id}: {email_error}")
+            import traceback
+            traceback.print_exc()
+            raise HTTPException(
+                status_code=500,
+                detail=f"Failed to send email: {str(email_error)}"
+            )
 
         # Update share tracking
         share_updates = {
