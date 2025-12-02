@@ -1,6 +1,6 @@
 # Quoted Architecture & Learning System
 
-**Last Updated**: December 2024
+**Last Updated**: December 2025
 
 This document provides comprehensive documentation for future Claude instances working on Quoted. It explains the core learning system, data structures, file locations, and how to modify any part of the system.
 
