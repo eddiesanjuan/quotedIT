@@ -197,6 +197,11 @@ if frontend_path.exists():
             "environment": settings.environment,
         })
 
+    @app.get("/demo")
+    async def serve_demo():
+        """Serve the demo page for try-before-signup."""
+        return FileResponse(frontend_path / "demo.html")
+
     @app.get("/terms")
     async def serve_terms():
         """Serve the Terms of Service page."""

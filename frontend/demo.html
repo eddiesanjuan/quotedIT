@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Try Demo - quoted.it</title>
+    <meta name="description" content="Try quoted.it before signing up. Generate a sample quote instantly using voice or text.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #141414;
+            --bg-card: #1a1a1a;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --text-muted: #666666;
+            --border: rgba(255, 255, 255, 0.1);
+            --border-hover: rgba(255, 255, 255, 0.2);
+            --success: #4ade80;
+            --warning: #fbbf24;
+            --error: #f87171;
+            --font-serif: 'Playfair Display', Georgia, serif;
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            font-size: 16px;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Animations */
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4);
+            }
+            50% {
+                box-shadow: 0 0 0 20px rgba(255, 255, 255, 0);
+            }
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            padding: 24px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(to bottom, var(--bg-primary) 0%, transparent 100%);
+        }
+
+        .logo {
+            font-family: var(--font-serif);
+            font-size: 1.5rem;
+            font-weight: 500;
+            letter-spacing: -0.02em;
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+
+        .logo span {
+            font-style: italic;
+        }
+
+        .nav-cta {
+            padding: 12px 24px;
+            min-height: 44px;
+            background: transparent;
+            border: 1px solid var(--text-primary);
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-cta:hover {
+            background: var(--text-primary);
+            color: var(--bg-primary);
+        }
+
+        /* Container */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 120px 40px 80px;
+        }
+
+        /* Demo Banner */
+        .demo-banner {
+            background: linear-gradient(90deg, #10b981, #059669);
+            color: white;
+            text-align: center;
+            padding: 12px;
+            font-weight: 500;
+            font-size: 0.875rem;
+        }
+
+        /* Header */
+        .demo-header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        .demo-header h1 {
+            font-family: var(--font-serif);
+            font-size: clamp(2rem, 5vw, 3rem);
+            font-weight: 400;
+            line-height: 1.15;
+            letter-spacing: -0.02em;
+            margin-bottom: 16px;
+        }
+
+        .demo-header p {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            line-height: 1.7;
+        }
+
+        /* Card */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 40px;
+            margin-bottom: 32px;
+        }
+
+        .card-title {
+            font-family: var(--font-serif);
+            font-size: 1.5rem;
+            font-weight: 400;
+            margin-bottom: 32px;
+            text-align: center;
+        }
+
+        /* Voice Input */
+        .voice-section {
+            text-align: center;
+        }
+
+        .record-btn {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            border: 2px solid var(--text-primary);
+            background: transparent;
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .record-btn::before {
+            content: '';
+            position: absolute;
+            inset: 4px;
+            border-radius: 50%;
+            background: transparent;
+            transition: all 0.4s ease;
+        }
+
+        .record-btn:hover {
+            background: var(--text-primary);
+            color: var(--bg-primary);
+        }
+
+        .record-btn.recording {
+            background: var(--text-primary);
+            color: var(--bg-primary);
+            animation: pulse 2s infinite;
+        }
+
+        .record-btn.recording::before {
+            background: var(--error);
+            inset: 50px;
+        }
+
+        .record-instructions {
+            margin-top: 24px;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .text-divider {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            margin: 48px 0;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+        }
+
+        .text-divider::before,
+        .text-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        /* Text Input */
+        .text-input {
+            width: 100%;
+            min-height: 120px;
+            padding: 16px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+            font-size: 1rem;
+            line-height: 1.6;
+            resize: vertical;
+            transition: border-color 0.3s ease;
+        }
+
+        .text-input:focus {
+            outline: none;
+            border-color: var(--border-hover);
+        }
+
+        .text-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 16px 32px;
+            margin-top: 24px;
+            background: var(--text-primary);
+            color: var(--bg-primary);
+            border: none;
+            font-family: var(--font-sans);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px rgba(255, 255, 255, 0.1);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Loading */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 60px 40px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 2px solid var(--border);
+            border-top-color: var(--text-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 24px;
+        }
+
+        .loading-text {
+            font-family: var(--font-serif);
+            font-size: 1.25rem;
+            font-style: italic;
+            color: var(--text-secondary);
+        }
+
+        /* Quote Result */
+        .quote-result {
+            display: none;
+            position: relative;
+        }
+
+        .quote-result.active {
+            display: block;
+        }
+
+        /* Demo Watermark */
+        .demo-watermark {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 8px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 100px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+        }
+
+        .quote-header {
+            margin-bottom: 32px;
+        }
+
+        .quote-header h2 {
+            font-family: var(--font-serif);
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+
+        .quote-meta {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .quote-section {
+            margin-bottom: 32px;
+            padding-bottom: 32px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .quote-section:last-child {
+            border-bottom: none;
+        }
+
+        .quote-section h3 {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+
+        .line-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .line-item:last-child {
+            border-bottom: none;
+        }
+
+        .line-item-desc {
+            flex: 1;
+        }
+
+        .line-item-title {
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .line-item-detail {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .line-item-price {
+            font-weight: 600;
+            font-size: 1.125rem;
+            white-space: nowrap;
+            margin-left: 24px;
+        }
+
+        .total-section {
+            background: var(--bg-secondary);
+            padding: 24px;
+            margin-top: 32px;
+        }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .notes-section {
+            background: var(--bg-secondary);
+            padding: 20px;
+            margin-top: 24px;
+            font-size: 0.9375rem;
+            color: var(--text-secondary);
+            line-height: 1.7;
+            white-space: pre-wrap;
+        }
+
+        /* Signup CTA */
+        .signup-cta {
+            text-align: center;
+            padding: 48px 40px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            margin-top: 32px;
+        }
+
+        .signup-cta h3 {
+            font-family: var(--font-serif);
+            font-size: 1.75rem;
+            font-weight: 400;
+            margin-bottom: 16px;
+        }
+
+        .signup-cta p {
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+            font-size: 1.0625rem;
+        }
+
+        .cta-primary {
+            display: inline-block;
+            padding: 18px 40px;
+            background: var(--text-primary);
+            color: var(--bg-primary);
+            font-family: var(--font-sans);
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .cta-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px rgba(255, 255, 255, 0.1);
+        }
+
+        /* Error */
+        .error-message {
+            display: none;
+            padding: 16px;
+            background: rgba(248, 113, 113, 0.15);
+            border: 1px solid rgba(248, 113, 113, 0.3);
+            color: var(--error);
+            margin-bottom: 24px;
+            font-size: 0.9375rem;
+        }
+
+        .error-message.active {
+            display: block;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            nav {
+                padding: 20px 24px;
+            }
+
+            .container {
+                padding: 100px 24px 60px;
+            }
+
+            .card {
+                padding: 32px 24px;
+            }
+
+            .demo-header h1 {
+                font-size: 2rem;
+            }
+
+            .quote-header h2 {
+                font-size: 1.5rem;
+            }
+
+            .demo-watermark {
+                top: 12px;
+                right: 12px;
+                font-size: 0.625rem;
+                padding: 6px 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 80px 16px 48px;
+            }
+
+            .card {
+                padding: 24px 20px;
+            }
+
+            .record-btn {
+                width: 120px;
+                height: 120px;
+            }
+
+            .line-item {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .line-item-price {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Demo Banner -->
+    <div class="demo-banner">
+        🎁 Free Demo - No signup required. Limited to 3 quotes per hour.
+    </div>
+
+    <!-- Navigation -->
+    <nav>
+        <a href="/" class="logo">quoted<span>.it</span></a>
+        <a href="/app" class="nav-cta">Sign Up Free</a>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Header -->
+        <div class="demo-header">
+            <h1>Try Before You Sign Up</h1>
+            <p>Generate a real quote instantly. Describe any job using voice or text.</p>
+        </div>
+
+        <!-- Error Message -->
+        <div class="error-message" id="errorMessage"></div>
+
+        <!-- Input Section -->
+        <div class="card voice-section" id="inputSection">
+            <h2 class="card-title">Describe the job</h2>
+
+            <button class="record-btn" id="recordBtn" onclick="toggleRecording()">
+                <span id="recordBtnText">Record</span>
+            </button>
+            <p class="record-instructions" id="recordInstructions">
+                Click to start recording your voice note
+            </p>
+
+            <div class="text-divider">or type it out</div>
+
+            <textarea
+                class="text-input"
+                id="jobDescription"
+                placeholder="Example: Need to paint a 2,000 sq ft house, 3 bedrooms, 2 bathrooms, exterior only. Looking to start in 2 weeks."
+            ></textarea>
+
+            <button class="submit-btn" id="submitBtn" onclick="submitDescription()">
+                Generate Quote
+            </button>
+        </div>
+
+        <!-- Loading State -->
+        <div class="loading" id="loadingState">
+            <div class="spinner"></div>
+            <p class="loading-text">Generating your quote...</p>
+        </div>
+
+        <!-- Quote Result -->
+        <div class="card quote-result" id="quoteResult">
+            <div class="demo-watermark">DEMO</div>
+
+            <div class="quote-header">
+                <h2 id="quoteTitle">Quote</h2>
+                <div class="quote-meta" id="quoteMeta"></div>
+            </div>
+
+            <div class="quote-section" id="lineItemsSection">
+                <h3>Line Items</h3>
+                <div id="lineItems"></div>
+            </div>
+
+            <div class="total-section">
+                <div class="total-row">
+                    <span>Total</span>
+                    <span id="quoteTotal">$0</span>
+                </div>
+            </div>
+
+            <div class="notes-section" id="quoteNotes"></div>
+        </div>
+
+        <!-- Signup CTA (shown after quote generation) -->
+        <div class="signup-cta" id="signupCTA" style="display: none;">
+            <h3>Like what you see?</h3>
+            <p>Create a free account to save this quote, track your pricing history,<br>and let the AI learn your unique pricing patterns.</p>
+            <a href="/app" class="cta-primary">Create Free Account</a>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        const API_BASE = window.location.hostname === 'localhost'
+            ? 'http://localhost:8000/api'
+            : '/api';
+
+        let mediaRecorder = null;
+        let audioChunks = [];
+
+        // Get supported audio MIME type for recording (iOS Safari compatibility)
+        function getSupportedAudioMimeType() {
+            const types = [
+                'audio/webm',
+                'audio/webm;codecs=opus',
+                'audio/mp4',
+                'audio/mp4;codecs=mp4a.40.2',
+                'audio/ogg;codecs=opus'
+            ];
+
+            for (const type of types) {
+                if (MediaRecorder.isTypeSupported(type)) {
+                    return type;
+                }
+            }
+
+            return 'audio/webm'; // fallback
+        }
+
+        // Safely escape HTML to prevent XSS
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Toggle recording
+        async function toggleRecording() {
+            const btn = document.getElementById('recordBtn');
+            const btnText = document.getElementById('recordBtnText');
+            const instructions = document.getElementById('recordInstructions');
+
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                mediaRecorder.stop();
+                btn.classList.remove('recording');
+                btnText.textContent = 'Record';
+                instructions.textContent = 'Processing...';
+            } else {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    const mimeType = getSupportedAudioMimeType();
+                    const options = mimeType ? { mimeType } : {};
+                    mediaRecorder = new MediaRecorder(stream, options);
+                    audioChunks = [];
+
+                    mediaRecorder.ondataavailable = (e) => {
+                        audioChunks.push(e.data);
+                    };
+
+                    mediaRecorder.onstop = async () => {
+                        const audioBlob = new Blob(audioChunks, { type: mimeType || 'audio/webm' });
+                        await sendAudioForQuote(audioBlob);
+                        stream.getTracks().forEach(track => track.stop());
+                    };
+
+                    mediaRecorder.start();
+                    btn.classList.add('recording');
+                    btnText.textContent = 'Stop';
+                    instructions.textContent = 'Recording... Click again when done';
+                } catch (err) {
+                    console.error('Microphone error:', err);
+                    showError('Could not access microphone. Please allow access and try again.');
+                }
+            }
+        }
+
+        // Send audio for quote generation
+        async function sendAudioForQuote(audioBlob) {
+            showLoading(true);
+            hideError();
+
+            try {
+                const formData = new FormData();
+                formData.append('audio', audioBlob, 'recording.webm');
+
+                const response = await fetch(`${API_BASE}/demo/quote`, {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Failed to generate quote');
+                }
+
+                const quote = await response.json();
+                displayQuote(quote);
+            } catch (err) {
+                console.error('Quote generation error:', err);
+                showError(err.message || 'Failed to generate quote. Please try again.');
+            } finally {
+                showLoading(false);
+                document.getElementById('recordInstructions').textContent = 'Click to start recording your voice note';
+            }
+        }
+
+        // Submit text description
+        async function submitDescription() {
+            const description = document.getElementById('jobDescription').value.trim();
+
+            if (!description) {
+                showError('Please describe the job first.');
+                return;
+            }
+
+            showLoading(true);
+            hideError();
+
+            try {
+                const formData = new FormData();
+                formData.append('description', description);
+
+                const response = await fetch(`${API_BASE}/demo/quote`, {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Failed to generate quote');
+                }
+
+                const quote = await response.json();
+                displayQuote(quote);
+            } catch (err) {
+                console.error('Quote generation error:', err);
+                showError(err.message || 'Failed to generate quote. Please try again.');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Display quote (using safe DOM manipulation)
+        function displayQuote(quote) {
+            // Update quote title (safe - textContent)
+            const title = quote.job_type || 'Quote';
+            document.getElementById('quoteTitle').textContent = title;
+
+            // Update meta (safe - textContent)
+            const meta = [];
+            if (quote.estimated_days) {
+                meta.push(`${quote.estimated_days} day${quote.estimated_days > 1 ? 's' : ''}`);
+            }
+            if (quote.estimated_crew_size) {
+                meta.push(`${quote.estimated_crew_size} person crew`);
+            }
+            document.getElementById('quoteMeta').textContent = meta.join(' • ');
+
+            // Update line items (safe - createElement + textContent)
+            const lineItemsContainer = document.getElementById('lineItems');
+            lineItemsContainer.innerHTML = ''; // Clear existing
+
+            quote.line_items.forEach(item => {
+                const lineItemDiv = document.createElement('div');
+                lineItemDiv.className = 'line-item';
+
+                const descDiv = document.createElement('div');
+                descDiv.className = 'line-item-desc';
+
+                const titleDiv = document.createElement('div');
+                titleDiv.className = 'line-item-title';
+                titleDiv.textContent = item.item;
+                descDiv.appendChild(titleDiv);
+
+                if (item.description) {
+                    const detailDiv = document.createElement('div');
+                    detailDiv.className = 'line-item-detail';
+                    detailDiv.textContent = item.description;
+                    descDiv.appendChild(detailDiv);
+                }
+
+                const priceDiv = document.createElement('div');
+                priceDiv.className = 'line-item-price';
+                priceDiv.textContent = `$${item.total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+                lineItemDiv.appendChild(descDiv);
+                lineItemDiv.appendChild(priceDiv);
+                lineItemsContainer.appendChild(lineItemDiv);
+            });
+
+            // Update total (safe - textContent)
+            document.getElementById('quoteTotal').textContent = `$${quote.total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+            // Update notes (safe - textContent preserves newlines with white-space: pre-wrap)
+            if (quote.notes) {
+                document.getElementById('quoteNotes').textContent = quote.notes;
+            }
+
+            // Show result and CTA
+            document.getElementById('inputSection').style.display = 'none';
+            document.getElementById('quoteResult').classList.add('active');
+            document.getElementById('signupCTA').style.display = 'block';
+
+            // Scroll to result
+            document.getElementById('quoteResult').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        // Show loading
+        function showLoading(show) {
+            if (show) {
+                document.getElementById('inputSection').style.display = 'none';
+                document.getElementById('loadingState').classList.add('active');
+            } else {
+                document.getElementById('loadingState').classList.remove('active');
+                document.getElementById('inputSection').style.display = 'block';
+            }
+        }
+
+        // Show error
+        function showError(message) {
+            const errorEl = document.getElementById('errorMessage');
+            errorEl.textContent = message;
+            errorEl.classList.add('active');
+        }
+
+        // Hide error
+        function hideError() {
+            document.getElementById('errorMessage').classList.remove('active');
+        }
+
+        // Handle Enter key in textarea (Shift+Enter for new line, Enter to submit)
+        document.getElementById('jobDescription').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                submitDescription();
+            }
+        });
+    </script>
+</body>
+</html>
