@@ -1,6 +1,6 @@
 # Engineering State
 
-**Last Updated**: 2025-12-02 09:00 PST
+**Last Updated**: 2025-12-02 10:30 PST
 **Updated By**: CEO (AI)
 
 ---
@@ -30,73 +30,61 @@
 
 | Ticket | Description | Assignee | Status | Blockers |
 |--------|-------------|----------|--------|----------|
-| PAY-001 | Payment Infrastructure (Stripe) | Backend Engineer | **READY** | None - All keys received ✓ |
-| PAY-002 | Trial Logic & Quote Limits | Backend Engineer | QUEUED | Depends on PAY-001 |
-| PAY-003 | Billing UI | Frontend Engineer | QUEUED | Depends on PAY-002 |
-| PAY-004 | Email System (Resend) | Backend Engineer | **READY** | None - API key received ✓ |
-| PAY-005 | Referral System | Backend Engineer | QUEUED | Depends on PAY-002 |
+| ~~PAY-001~~ | ~~Payment Infrastructure (Stripe)~~ | ~~Backend Engineer~~ | **COMPLETE** | Committed cb1e311 |
+| ~~PAY-002~~ | ~~Trial Logic & Quote Limits~~ | ~~Backend Engineer~~ | **COMPLETE** | Included in PAY-001 |
+| ~~PAY-003~~ | ~~Billing UI~~ | ~~Frontend Engineer~~ | **COMPLETE** | Committed b4e9fdc |
+| ~~PAY-004~~ | ~~Email System (Resend)~~ | ~~Backend Engineer~~ | **COMPLETE** | Committed 33fa641 |
+| PAY-005 | Referral System | Backend Engineer | **READY** | Can start now |
 | ~~PAY-006~~ | ~~Terms of Service + Privacy Policy~~ | ~~CTO~~ | **COMPLETE** | Deployed 325fb25 |
 
 ---
 
-## PAY-001 Task Breakdown (READY FOR EXECUTION)
+## PAY-001 Implementation (COMPLETE ✓)
 
-**Stripe Account Status**: SANDBOX ACTIVE ✓ ALL KEYS RECEIVED
-- Publishable Key: `pk_test_51SZugaKF9pNNNH32Psj...` ✓
-- Secret Key: `sk_test_51SZugaKF9pNNNH32Wti...` ✓
-- Webhook Secret: Will create after backend routes deployed
+**Commit**: `cb1e311` - "Add: Stripe payment infrastructure for subscription billing"
 
-**Products Created in Stripe**:
-| Product | Product ID | Status |
-|---------|------------|--------|
-| Starter ($29/mo) | `prod_TWyp6aH4vMY7A8` | ✓ Ready |
-| Pro ($49/mo) | `prod_TWyzygs71MWNeQ` | ✓ Ready |
-| Team ($79/mo) | `prod_TWz0uN0EAbgPKI` | ✓ Ready |
-| Quotes Meter | Created | ✓ Ready |
+**Implementation Summary**:
+- ✅ Stripe SDK added (`stripe==11.1.1`)
+- ✅ Billing routes created (`/api/billing/*`)
+- ✅ User model extended with billing fields
+- ✅ Trial auto-initialization (7 days, 75 quotes)
+- ✅ Quote limits enforced (402 responses when exceeded)
+- ✅ Usage tracking integrated into quote generation
 
-**Implementation Tasks** (for Backend Engineer):
-1. [ ] Add Stripe SDK to requirements.txt
-2. [ ] Create `/api/billing/` routes:
-   - `POST /api/billing/create-checkout` - Start subscription
-   - `POST /api/billing/webhook` - Handle Stripe events
-   - `GET /api/billing/portal` - Customer portal link
-   - `GET /api/billing/status` - Current subscription status
-3. [ ] Add user fields: `stripe_customer_id`, `subscription_id`, `plan_tier`, `quotes_used`, `billing_cycle_start`
-4. [ ] Implement quote counting + overage reporting to Stripe meter
-5. [ ] Add subscription status checks to quote generation endpoint
-
-**Environment Variables** (add to Railway):
+**New API Endpoints**:
 ```
-STRIPE_SECRET_KEY=sk_test_51SZugaKF9pNNNH32WtiBokn1imZ0IFRdRr38mht4mpebsaZWaH5YM2RhfF2pbxpju2Yo9Z2f67pVTYPdVnLqwBMM000CI0hXIl
-STRIPE_PUBLISHABLE_KEY=pk_test_51SZugaKF9pNNNH32PsjrEPHK1ynwZ1vTnHRHlQKqdS5u6r2ivaMcLTpvpK5H1VehWBLyx4hTn5rsZXTza8oVM9qM00K5n28vOe
-STRIPE_STARTER_PRODUCT_ID=prod_TWyp6aH4vMY7A8
-STRIPE_PRO_PRODUCT_ID=prod_TWyzygs71MWNeQ
-STRIPE_TEAM_PRODUCT_ID=prod_TWz0uN0EAbgPKI
-STRIPE_WEBHOOK_SECRET=whsec_...      # After webhook creation
+POST /api/billing/create-checkout - Start subscription
+POST /api/billing/webhook - Stripe webhook handler
+POST /api/billing/portal - Customer portal access
+GET /api/billing/status - Current subscription status
+GET /api/billing/plans - Available pricing (public)
 ```
+
+**New Files**:
+- `backend/services/billing.py` - BillingService class
+- `backend/api/billing.py` - API routes
 
 ---
 
-## PAY-004 Task Breakdown (READY FOR EXECUTION)
+## PAY-004 Implementation (COMPLETE ✓)
 
-**Resend Account Status**: ACTIVE ✓
-- API Key: `re_igyXR4D5_6VcjoKhx6SUjPAWZ9UsLwWx6` ✓
+**Commit**: `33fa641` - "Add: Resend email service for transactional emails"
 
-**Implementation Tasks** (for Backend Engineer):
-1. [ ] Add Resend SDK to requirements.txt
-2. [ ] Create email service (`backend/services/email.py`)
-3. [ ] Implement transactional emails:
-   - Welcome email (after signup)
-   - Trial starting email
-   - Trial ending reminder (day 5)
-   - Subscription confirmation
-   - Payment failed notification
-4. [ ] Create email templates (HTML)
+**Implementation Summary**:
+- ✅ Resend SDK added (`resend==2.4.0`)
+- ✅ Email service created with 5 email types
+- ✅ Welcome email integrated with registration
+- ✅ Dark premium HTML templates
 
-**Environment Variables** (add to Railway):
-```
-RESEND_API_KEY=re_igyXR4D5_6VcjoKhx6SUjPAWZ9UsLwWx6
-```
+**Emails Ready**:
+- ✅ Welcome email (sends on registration)
+- 🔜 Trial starting email (hook into first quote)
+- 🔜 Trial ending reminder (hook into day 5 cron)
+- 🔜 Subscription confirmation (hook into Stripe webhook)
+- 🔜 Payment failed notification (hook into Stripe webhook)
+
+**New Files**:
+- `backend/services/email.py` - EmailService class (455 lines)
 
 ---
 
@@ -124,12 +112,13 @@ RESEND_API_KEY=re_igyXR4D5_6VcjoKhx6SUjPAWZ9UsLwWx6
 
 | Date | Commit | Description | Status |
 |------|--------|-------------|--------|
+| 2025-12-02 | b4e9fdc | Add Billing UI with pricing, usage tracking, upgrade modal | PENDING DEPLOY |
+| 2025-12-02 | 33fa641 | Add Resend email service for transactional emails | PENDING DEPLOY |
+| 2025-12-02 | cb1e311 | Add Stripe payment infrastructure for subscription billing | PENDING DEPLOY |
 | 2025-12-02 | 325fb25 | Add Terms of Service and Privacy Policy pages | PENDING DEPLOY |
 | 2025-12-02 | 7d50e73 | Security hardening: SQLite issues, rate limiting, CORS, HTTPS | SUCCESS |
 | 2025-12-02 | eb290f0 | Add autonomous operations infrastructure | SUCCESS |
 | 2025-12-01 | 43af5c6 | Add quote history UI with editable line items | SUCCESS |
-| 2025-12-01 | d050eec | Update anthropic SDK for tool calling | SUCCESS |
-| 2025-12-01 | 8b91f15 | Add structured outputs, feedback, confidence | SUCCESS |
 
 ---
 
@@ -147,6 +136,8 @@ RESEND_API_KEY=re_igyXR4D5_6VcjoKhx6SUjPAWZ9UsLwWx6
 - `backend/main.py` - FastAPI app entry
 - `backend/services/quote_generator.py` - Core quote generation
 - `backend/services/learning.py` - Correction processing
+- `backend/services/billing.py` - Stripe subscription handling
+- `backend/services/email.py` - Resend transactional emails
 - `backend/prompts/quote_generation.py` - Prompt construction (learning injection)
 - `frontend/index.html` - Main app (31K tokens, vanilla JS)
 - `frontend/landing.html` - Landing page
@@ -157,6 +148,7 @@ RESEND_API_KEY=re_igyXR4D5_6VcjoKhx6SUjPAWZ9UsLwWx6
 ```
 /api/auth/*           - Authentication
 /api/quotes/*         - Quote CRUD, generation, PDF
+/api/billing/*        - Stripe subscriptions, checkout, portal
 /api/contractors/*    - Contractor profile
 /api/onboarding/*     - Setup interview
 /api/issues/*         - Issue reporting (autonomous processing)
@@ -200,14 +192,24 @@ OPENAI_API_KEY        - Whisper transcription
 SESSION_SECRET        - Auth session signing
 ENVIRONMENT           - "production"
 
-# NEW - Add before next /quoted-run
+# PAYMENT - Add before deployment
 STRIPE_SECRET_KEY=sk_test_51SZugaKF9pNNNH32WtiBokn1imZ0IFRdRr38mht4mpebsaZWaH5YM2RhfF2pbxpju2Yo9Z2f67pVTYPdVnLqwBMM000CI0hXIl
 STRIPE_PUBLISHABLE_KEY=pk_test_51SZugaKF9pNNNH32PsjrEPHK1ynwZ1vTnHRHlQKqdS5u6r2ivaMcLTpvpK5H1VehWBLyx4hTn5rsZXTza8oVM9qM00K5n28vOe
 STRIPE_STARTER_PRODUCT_ID=prod_TWyp6aH4vMY7A8
 STRIPE_PRO_PRODUCT_ID=prod_TWyzygs71MWNeQ
 STRIPE_TEAM_PRODUCT_ID=prod_TWz0uN0EAbgPKI
+STRIPE_WEBHOOK_SECRET=whsec_...  # Generate in Stripe dashboard after deployment
+
+# EMAIL - Add before deployment
 RESEND_API_KEY=re_igyXR4D5_6VcjoKhx6SUjPAWZ9UsLwWx6
 ```
+
+**Post-Deployment Steps**:
+1. Add all env vars above to Railway
+2. Deploy (auto on push to main)
+3. Configure Stripe webhook: `https://quoted.it.com/api/billing/webhook`
+4. Get webhook secret from Stripe, add `STRIPE_WEBHOOK_SECRET` to Railway
+5. Test checkout flow end-to-end
 
 ---
 

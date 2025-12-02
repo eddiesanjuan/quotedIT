@@ -9,16 +9,16 @@
 
 ### Stack
 - Vanilla HTML/CSS/JS (no framework)
-- Single-page app in `frontend/index.html` (~31K tokens)
+- Single-page app in `frontend/index.html` (~35K tokens after billing UI)
 - Landing page in `frontend/landing.html`
 - Mobile-first responsive design
 
 ### Design System
-- Dark premium aesthetic
-- Primary color: Blue (#3B82F6)
-- Background: Dark grays (#111827, #1F2937)
-- Font: System fonts with sans-serif fallback
-- Border radius: 8px (standard), 12px (cards)
+- Dark premium aesthetic (#0a0a0a background, not blue)
+- Accent: White text with amber/warning for CTAs
+- Background: Dark grays (#0a0a0a, #141414, #1a1a1a)
+- Font: Playfair Display (serif) for headings, Inter (sans) for body
+- Border radius: 8px (inputs), 12px (cards), 16px (pricing cards), 100px (pills)
 
 ---
 
@@ -26,6 +26,12 @@
 
 | Date | Learning | Context |
 |------|----------|---------|
+| 2025-12-02 | Billing UI built with safe DOM methods (no innerHTML) | XSS prevention - used createElement/textContent instead of innerHTML |
+| 2025-12-02 | Global fetch wrapper intercepts 402 responses | Automatically shows upgrade modal when quote limit reached |
+| 2025-12-02 | Usage widget uses gradient fill with color-coded warnings | Green→Yellow at 80%, Red at 90% usage |
+| 2025-12-02 | Pricing cards use flexbox with flex-grow for equal height | Features list grows to fill space, CTA always at bottom |
+| 2025-12-02 | Modal overlays use backdrop-filter: blur(8px) | Modern glassmorphism effect for upgrade modal |
+| 2025-12-02 | Trial banner shows days remaining with gradient background | Warning/amber gradient (#fbbf24) for urgency |
 | 2025-12-02 | Executive-approved messaging emphasizes "Right Estimate for Right Stage" | Replaces "Ballpark quotes. Not blueprints." - addresses fuzzy early project stage |
 | 2025-12-02 | "Qualify faster. Close more." becomes key tagline | Approved by exec team after messaging audit |
 | 2025-12-02 | Learning section leads with "Gets smarter with every correction" | Emphasizes continuous improvement and user-specific training |

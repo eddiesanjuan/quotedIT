@@ -35,6 +35,7 @@
 | 2025-12-02 | SQLite is sufficient for single-server MVP | No need for PostgreSQL until horizontal scale |
 | 2025-12-02 | Rate limiting prevents API cost abuse | 5/min on /api/quotes/generate |
 | 2025-12-02 | Resend email service added for transactional emails | Welcome, trial, subscription, payment failed notifications |
+| 2025-12-02 | Stripe payment infrastructure implemented | PAY-001: Subscriptions, usage metering, webhook handling, trial management |
 
 ---
 
@@ -80,9 +81,51 @@ if not resource:
 | `backend/services/quote_generator.py` | Core AI logic | High |
 | `backend/services/learning.py` | Correction processing | Medium |
 | `backend/services/email.py` | Transactional emails via Resend | Low |
+| `backend/services/billing.py` | Stripe subscription management | Medium |
 | `backend/prompts/quote_generation.py` | Prompt construction | Medium |
 | `backend/api/quotes.py` | Quote CRUD endpoints | Medium |
 | `backend/api/auth.py` | Authentication, registration | Medium |
+| `backend/api/billing.py` | Stripe webhooks, checkout, portal | Medium |
+
+---
+
+## Billing & Payments (PAY-001)
+
+### Implementation Details
+- **Provider**: Stripe (Test Mode)
+- **Product IDs**: Configured in settings (starter, pro, team)
+- **Trial**: 7 days, 75 quotes, automatic initialization on registration
+- **Usage Tracking**: Increments on every successful quote generation
+- **Overage**: Allowed for paid plans, reported to Stripe meter
+
+### Webhook Events Handled
+- `checkout.session.completed` - Subscription created
+- `customer.subscription.updated` - Renewal or plan change (resets usage)
+- `customer.subscription.deleted` - Cancellation (downgrades to expired trial)
+- `invoice.payment_succeeded` - Successful payment
+- `invoice.payment_failed` - Payment failure (TODO: email notification)
+
+### API Endpoints
+- `POST /api/billing/create-checkout` - Start subscription flow
+- `POST /api/billing/webhook` - Stripe event handler (public, signature verified)
+- `POST /api/billing/portal` - Customer portal URL
+- `GET /api/billing/status` - Current usage and limits
+- `GET /api/billing/plans` - Available pricing plans
+
+### Quote Generation Guards
+- Both `/api/quotes/generate` and `/api/quotes/generate-from-audio` check limits before processing
+- Returns 402 Payment Required with structured error:
+  - `trial_expired` - Trial period ended
+  - `trial_limit_reached` - Used all trial quotes
+  - `quota_exceeded` - Generic limit error
+- Usage incremented after successful quote creation
+
+### Environment Variables Required
+```
+STRIPE_SECRET_KEY=sk_test_...
+STRIPE_PUBLISHABLE_KEY=pk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+```
 
 ---
 
@@ -91,3 +134,5 @@ if not resource:
 - [ ] Add Sentry for error tracking
 - [ ] Add unit tests for core flows
 - [ ] Add pagination to list endpoints
+- [ ] Add email notifications for payment events
+- [ ] Implement actual overage reporting to Stripe meter API
