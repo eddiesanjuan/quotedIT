@@ -148,6 +148,37 @@
             color: var(--text-primary);
         }
 
+        /* App Navigation Tabs */
+        .app-nav {
+            display: flex;
+            gap: 8px;
+            margin-right: 24px;
+        }
+
+        .app-nav-btn {
+            padding: 8px 20px;
+            border-radius: 100px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text-secondary);
+            font-family: var(--font-sans);
+            font-size: 0.8125rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .app-nav-btn:hover {
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+        }
+
+        .app-nav-btn.active {
+            background: var(--text-primary);
+            color: var(--bg-primary);
+            border-color: var(--text-primary);
+        }
+
         /* Main Content */
         main {
             min-height: 100vh;
@@ -1120,6 +1151,227 @@
             display: block;
         }
 
+        /* Quote History Styles */
+        .quote-history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+
+        .quote-history-header h2 {
+            font-family: var(--font-serif);
+            font-size: 2rem;
+            font-weight: 400;
+        }
+
+        .quote-history-count {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .quote-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .quote-list-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .quote-list-item:hover {
+            border-color: var(--border-hover);
+            transform: translateY(-2px);
+        }
+
+        .quote-list-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .quote-list-item-title {
+            font-weight: 500;
+            font-size: 1.125rem;
+            color: var(--text-primary);
+        }
+
+        .quote-list-item-amount {
+            font-family: var(--font-serif);
+            font-size: 1.5rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .quote-list-item-meta {
+            display: flex;
+            gap: 16px;
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+        }
+
+        .quote-list-item-meta span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .quote-empty {
+            text-align: center;
+            padding: 80px 40px;
+            color: var(--text-secondary);
+        }
+
+        .quote-empty h3 {
+            font-family: var(--font-serif);
+            font-size: 1.5rem;
+            font-weight: 400;
+            margin-bottom: 16px;
+            color: var(--text-primary);
+        }
+
+        /* Editable Line Items */
+        .line-item.editable {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 16px;
+            align-items: start;
+            padding: 20px 0;
+        }
+
+        .line-item-edit-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .line-item-name-input,
+        .line-item-desc-input {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 10px 12px;
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        .line-item-name-input {
+            font-weight: 500;
+        }
+
+        .line-item-desc-input {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .line-item-name-input:focus,
+        .line-item-desc-input:focus {
+            outline: none;
+            border-color: var(--text-primary);
+        }
+
+        .line-item-amount-input {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 10px 12px;
+            color: var(--text-primary);
+            font-family: var(--font-serif);
+            font-size: 1.25rem;
+            font-weight: 500;
+            width: 140px;
+            text-align: right;
+        }
+
+        .line-item-amount-input:focus {
+            outline: none;
+            border-color: var(--text-primary);
+        }
+
+        /* Edit Mode Indicator */
+        .edit-mode-banner {
+            display: none;
+            background: rgba(251, 191, 36, 0.1);
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            border-radius: 8px;
+            padding: 12px 20px;
+            margin-bottom: 24px;
+            color: var(--warning);
+            font-size: 0.875rem;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .edit-mode-banner.active {
+            display: flex;
+        }
+
+        .edit-mode-banner .icon {
+            font-size: 1.25rem;
+        }
+
+        /* Save Changes Button */
+        .save-changes-section {
+            display: none;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border);
+        }
+
+        .save-changes-section.active {
+            display: flex;
+        }
+
+        .correction-notes-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+            font-size: 0.875rem;
+            resize: none;
+            min-height: 60px;
+        }
+
+        .correction-notes-input:focus {
+            outline: none;
+            border-color: var(--text-primary);
+        }
+
+        .correction-notes-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .save-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .changes-summary {
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+            padding: 8px 12px;
+            background: var(--bg-secondary);
+            border-radius: 6px;
+        }
+
         /* Issue Reporter */
         .issue-fab {
             position: fixed;
@@ -1310,6 +1562,10 @@
     <nav>
         <a href="/" class="logo">quoted<span>.it</span></a>
         <div class="nav-right" id="navRight" style="display: none;">
+            <div class="app-nav" id="appNav" style="display: none;">
+                <button class="app-nav-btn active" id="newQuoteNavBtn" onclick="showAppSection('newQuote')">New Quote</button>
+                <button class="app-nav-btn" id="myQuotesNavBtn" onclick="showAppSection('myQuotes')">My Quotes</button>
+            </div>
             <div class="nav-user">
                 <div class="business-name" id="businessNameDisplay"></div>
                 <button class="logout-btn" onclick="logout()">Sign Out</button>
@@ -1602,6 +1858,78 @@
                     </div>
                 </div>
             </div>
+
+            <!-- My Quotes Section (Quote History) -->
+            <div class="card" id="myQuotesSection" style="display: none;">
+                <div class="quote-history-header">
+                    <h2>My Quotes</h2>
+                    <span class="quote-history-count" id="quoteCount">0 quotes</span>
+                </div>
+
+                <div class="quote-list" id="quoteList">
+                    <!-- Quote list items will be populated via JavaScript -->
+                </div>
+
+                <div class="quote-empty" id="quoteEmpty" style="display: none;">
+                    <h3>No quotes yet</h3>
+                    <p>Create your first quote using the "New Quote" tab.</p>
+                    <button class="btn btn-primary" style="margin-top: 20px;" onclick="showAppSection('newQuote')">Create Quote</button>
+                </div>
+
+                <div id="quoteLoadingState" style="display: none; text-align: center; padding: 40px;">
+                    <div class="spinner" style="display: inline-block;"></div>
+                    <p style="margin-top: 16px; color: var(--text-secondary);">Loading your quotes...</p>
+                </div>
+            </div>
+
+            <!-- Quote Detail View (for viewing/editing a specific quote) -->
+            <div class="card quote-result" id="quoteDetailView" style="display: none;">
+                <div class="edit-mode-banner" id="editModeBanner">
+                    <span class="icon">✏️</span>
+                    <span>Edit mode active — Changes will train the AI on your pricing preferences</span>
+                </div>
+
+                <div class="quote-header">
+                    <h2 id="detailQuoteTitle">Quote Details</h2>
+                    <span class="confidence-badge" id="detailConfidenceBadge">High Confidence</span>
+                </div>
+
+                <div class="job-description" id="detailJobDescription"></div>
+
+                <div class="line-items" id="detailLineItems">
+                    <!-- Editable line items will be populated via JavaScript -->
+                </div>
+
+                <div class="quote-total">
+                    <span class="total-label">Estimated Total</span>
+                    <span class="total-amount" id="detailTotalAmount">$0</span>
+                </div>
+
+                <div class="quote-notes" id="detailQuoteNotes" style="display: none;">
+                    <h4>Notes</h4>
+                    <p id="detailNotesContent"></p>
+                </div>
+
+                <!-- Save Changes Section -->
+                <div class="save-changes-section" id="saveChangesSection">
+                    <div class="changes-summary" id="changesSummary">
+                        No changes made
+                    </div>
+                    <div>
+                        <label class="correction-notes-label">Why did you make these changes? (helps AI learn)</label>
+                        <textarea class="correction-notes-input" id="correctionNotes" placeholder="e.g., 'Labor costs are higher in this area' or 'Customer wants premium materials'"></textarea>
+                    </div>
+                    <div class="save-actions">
+                        <button class="btn btn-secondary" onclick="cancelQuoteEdit()">Cancel</button>
+                        <button class="btn btn-primary" id="saveChangesBtn" onclick="saveQuoteChanges()" disabled>Save Changes</button>
+                    </div>
+                </div>
+
+                <div class="quote-actions" id="detailQuoteActions">
+                    <button class="btn btn-primary" onclick="downloadDetailPdf()">Download PDF</button>
+                    <button class="btn btn-secondary" onclick="backToQuoteList()">Back to My Quotes</button>
+                </div>
+            </div>
         </div>
     </main>
 
@@ -1825,6 +2153,15 @@
             document.getElementById('authView').classList.remove('active');
             document.getElementById('appView').classList.add('active');
             document.getElementById('navRight').style.display = 'flex';
+            document.getElementById('appNav').style.display = 'flex';
+
+            // Reset nav buttons to default (New Quote active)
+            document.getElementById('newQuoteNavBtn').classList.add('active');
+            document.getElementById('myQuotesNavBtn').classList.remove('active');
+
+            // Hide detail views
+            document.getElementById('myQuotesSection').style.display = 'none';
+            document.getElementById('quoteDetailView').style.display = 'none';
 
             // Ensure we have user info
             if (!currentUser) {
@@ -2710,6 +3047,473 @@
 
         // ========================================
         // End Feedback System
+        // ========================================
+
+        // ========================================
+        // Quote History & Editing System
+        // ========================================
+
+        // Quote history state
+        let quotesCache = [];
+        let currentDetailQuote = null;
+        let originalQuoteState = null;
+        let editedLineItems = [];
+        let hasUnsavedChanges = false;
+
+        // App section navigation
+        function showAppSection(section) {
+            // Update nav buttons
+            document.getElementById('newQuoteNavBtn').classList.toggle('active', section === 'newQuote');
+            document.getElementById('myQuotesNavBtn').classList.toggle('active', section === 'myQuotes');
+
+            // Hide all sections
+            document.getElementById('inputSection').style.display = 'none';
+            document.getElementById('quoteResult').style.display = 'none';
+            document.getElementById('myQuotesSection').style.display = 'none';
+            document.getElementById('quoteDetailView').style.display = 'none';
+            document.getElementById('onboardingNotice').style.display = 'none';
+            document.getElementById('loadingSection').style.display = 'none';
+
+            if (section === 'newQuote') {
+                checkAndShowInputSection();
+            } else if (section === 'myQuotes') {
+                document.getElementById('myQuotesSection').style.display = 'block';
+                loadQuotes();
+            }
+        }
+
+        async function checkAndShowInputSection() {
+            try {
+                if (!currentUser?.contractor_id) {
+                    document.getElementById('onboardingNotice').style.display = 'block';
+                    return;
+                }
+
+                const response = await fetch(`${API_BASE}/contractors/${currentUser.contractor_id}/pricing`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` },
+                });
+
+                if (response.ok) {
+                    const pricing = await response.json();
+                    const hasPricing = pricing && pricing.pricing_knowledge && Object.keys(pricing.pricing_knowledge).length > 0;
+                    document.getElementById('onboardingNotice').style.display = hasPricing ? 'none' : 'block';
+                    document.getElementById('inputSection').style.display = hasPricing ? 'block' : 'none';
+                } else {
+                    document.getElementById('onboardingNotice').style.display = 'block';
+                }
+            } catch (err) {
+                console.error('Error checking pricing:', err);
+                document.getElementById('onboardingNotice').style.display = 'block';
+            }
+        }
+
+        // Load quotes from backend
+        async function loadQuotes() {
+            const listEl = document.getElementById('quoteList');
+            const emptyEl = document.getElementById('quoteEmpty');
+            const loadingEl = document.getElementById('quoteLoadingState');
+            const countEl = document.getElementById('quoteCount');
+
+            listEl.style.display = 'none';
+            emptyEl.style.display = 'none';
+            loadingEl.style.display = 'block';
+
+            try {
+                const response = await fetch(`${API_BASE}/quotes/`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` },
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load quotes');
+                }
+
+                const data = await response.json();
+                quotesCache = data.quotes || [];
+
+                countEl.textContent = `${quotesCache.length} quote${quotesCache.length !== 1 ? 's' : ''}`;
+
+                loadingEl.style.display = 'none';
+                if (quotesCache.length > 0) {
+                    renderQuoteList(quotesCache);
+                    listEl.style.display = 'flex';
+                } else {
+                    emptyEl.style.display = 'block';
+                }
+
+            } catch (err) {
+                console.error('Error loading quotes:', err);
+                loadingEl.style.display = 'none';
+                emptyEl.style.display = 'block';
+            }
+        }
+
+        // Render quote list using safe DOM methods
+        function renderQuoteList(quotes) {
+            const listEl = document.getElementById('quoteList');
+            listEl.textContent = '';
+
+            quotes.forEach(quote => {
+                const item = document.createElement('div');
+                item.className = 'quote-list-item';
+                item.onclick = () => openQuoteDetail(quote.id);
+
+                const customerName = quote.customer_name || 'Unnamed Customer';
+                const jobType = quote.job_type ? quote.job_type.replace(/_/g, ' ') : 'General';
+                const total = quote.total || quote.subtotal || 0;
+                const createdAt = quote.created_at ? new Date(quote.created_at).toLocaleDateString() : 'Unknown date';
+                const lineItemCount = quote.line_items ? quote.line_items.length : 0;
+                const wasEdited = quote.was_edited ? ' (edited)' : '';
+
+                // Header row
+                const header = document.createElement('div');
+                header.className = 'quote-list-item-header';
+
+                const title = document.createElement('div');
+                title.className = 'quote-list-item-title';
+                title.textContent = customerName + wasEdited;
+
+                const amount = document.createElement('div');
+                amount.className = 'quote-list-item-amount';
+                amount.textContent = '$' + total.toLocaleString();
+
+                header.appendChild(title);
+                header.appendChild(amount);
+
+                // Meta row
+                const meta = document.createElement('div');
+                meta.className = 'quote-list-item-meta';
+
+                const jobSpan = document.createElement('span');
+                jobSpan.textContent = jobType;
+
+                const itemsSpan = document.createElement('span');
+                itemsSpan.textContent = lineItemCount + ' item' + (lineItemCount !== 1 ? 's' : '');
+
+                const dateSpan = document.createElement('span');
+                dateSpan.textContent = createdAt;
+
+                meta.appendChild(jobSpan);
+                meta.appendChild(itemsSpan);
+                meta.appendChild(dateSpan);
+
+                item.appendChild(header);
+                item.appendChild(meta);
+                listEl.appendChild(item);
+            });
+        }
+
+        // Open quote detail view
+        async function openQuoteDetail(quoteId) {
+            document.getElementById('myQuotesSection').style.display = 'none';
+            document.getElementById('quoteDetailView').style.display = 'block';
+
+            let quote = quotesCache.find(q => q.id === quoteId);
+            if (!quote) {
+                try {
+                    const response = await fetch(`${API_BASE}/quotes/${quoteId}`, {
+                        headers: { 'Authorization': `Bearer ${authToken}` },
+                    });
+                    if (response.ok) {
+                        quote = await response.json();
+                    }
+                } catch (err) {
+                    console.error('Error fetching quote:', err);
+                    backToQuoteList();
+                    return;
+                }
+            }
+
+            if (!quote) {
+                backToQuoteList();
+                return;
+            }
+
+            currentDetailQuote = quote;
+            originalQuoteState = {
+                line_items: JSON.parse(JSON.stringify(quote.line_items || [])),
+                job_description: quote.job_description,
+                total: quote.total || quote.subtotal || 0
+            };
+            editedLineItems = JSON.parse(JSON.stringify(quote.line_items || []));
+            hasUnsavedChanges = false;
+
+            document.getElementById('detailQuoteTitle').textContent = quote.customer_name || 'Quote Details';
+            document.getElementById('detailJobDescription').textContent = quote.job_description || '';
+            document.getElementById('detailTotalAmount').textContent = '$' + (quote.total || quote.subtotal || 0).toLocaleString();
+
+            const confidence = quote.confidence || 'medium';
+            const confidenceBadge = document.getElementById('detailConfidenceBadge');
+            confidenceBadge.textContent = confidence.charAt(0).toUpperCase() + confidence.slice(1) + ' Confidence';
+            confidenceBadge.className = 'confidence-badge ' + confidence;
+
+            if (quote.notes) {
+                document.getElementById('detailQuoteNotes').style.display = 'block';
+                document.getElementById('detailNotesContent').textContent = quote.notes;
+            } else {
+                document.getElementById('detailQuoteNotes').style.display = 'none';
+            }
+
+            renderEditableLineItems(editedLineItems);
+
+            document.getElementById('editModeBanner').classList.remove('active');
+            document.getElementById('saveChangesSection').classList.remove('active');
+            document.getElementById('saveChangesBtn').disabled = true;
+            document.getElementById('correctionNotes').value = '';
+            document.getElementById('changesSummary').textContent = 'No changes made';
+        }
+
+        // Render editable line items using safe DOM methods
+        function renderEditableLineItems(lineItems) {
+            const container = document.getElementById('detailLineItems');
+            container.textContent = '';
+
+            lineItems.forEach((item, index) => {
+                const lineItemEl = document.createElement('div');
+                lineItemEl.className = 'line-item editable';
+                lineItemEl.dataset.index = index;
+
+                const editGroup = document.createElement('div');
+                editGroup.className = 'line-item-edit-group';
+
+                const nameInput = document.createElement('input');
+                nameInput.type = 'text';
+                nameInput.className = 'line-item-name-input';
+                nameInput.value = item.name || item.description || '';
+                nameInput.placeholder = 'Item name';
+                nameInput.oninput = function() { trackLineItemChange(index, 'name', this.value); };
+
+                const descInput = document.createElement('input');
+                descInput.type = 'text';
+                descInput.className = 'line-item-desc-input';
+                descInput.value = item.details || '';
+                descInput.placeholder = 'Description (optional)';
+                descInput.oninput = function() { trackLineItemChange(index, 'details', this.value); };
+
+                editGroup.appendChild(nameInput);
+                editGroup.appendChild(descInput);
+
+                const amountInput = document.createElement('input');
+                amountInput.type = 'number';
+                amountInput.className = 'line-item-amount-input';
+                amountInput.value = item.amount || 0;
+                amountInput.min = '0';
+                amountInput.step = '1';
+                amountInput.oninput = function() { trackLineItemChange(index, 'amount', this.value); };
+
+                lineItemEl.appendChild(editGroup);
+                lineItemEl.appendChild(amountInput);
+                container.appendChild(lineItemEl);
+            });
+        }
+
+        // Track changes to line items
+        function trackLineItemChange(index, field, value) {
+            if (field === 'amount') {
+                editedLineItems[index].amount = parseFloat(value) || 0;
+                updateTotalFromLineItems();
+            } else if (field === 'name') {
+                editedLineItems[index].name = value;
+                editedLineItems[index].description = value;
+            } else if (field === 'details') {
+                editedLineItems[index].details = value;
+            }
+            checkForChanges();
+        }
+
+        function updateTotalFromLineItems() {
+            const newTotal = editedLineItems.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
+            document.getElementById('detailTotalAmount').textContent = '$' + Math.round(newTotal).toLocaleString();
+        }
+
+        function checkForChanges() {
+            const original = originalQuoteState;
+            const edited = editedLineItems;
+            let changes = [];
+            let totalDiff = 0;
+
+            for (let i = 0; i < edited.length; i++) {
+                const origItem = original.line_items[i] || {};
+                const editItem = edited[i] || {};
+
+                const origAmount = parseFloat(origItem.amount) || 0;
+                const editAmount = parseFloat(editItem.amount) || 0;
+
+                if (origAmount !== editAmount) {
+                    const diff = editAmount - origAmount;
+                    totalDiff += diff;
+                    const itemName = editItem.name || editItem.description || 'Item ' + (i + 1);
+                    changes.push(itemName + ': $' + origAmount + ' -> $' + editAmount + ' (' + (diff >= 0 ? '+' : '') + '$' + diff + ')');
+                }
+
+                if ((origItem.name || origItem.description) !== (editItem.name || editItem.description)) {
+                    changes.push('Renamed: "' + (origItem.name || origItem.description) + '" -> "' + (editItem.name || editItem.description) + '"');
+                }
+            }
+
+            hasUnsavedChanges = changes.length > 0;
+
+            const editBanner = document.getElementById('editModeBanner');
+            const saveSection = document.getElementById('saveChangesSection');
+            const saveBtn = document.getElementById('saveChangesBtn');
+            const summary = document.getElementById('changesSummary');
+
+            if (hasUnsavedChanges) {
+                editBanner.classList.add('active');
+                saveSection.classList.add('active');
+                saveBtn.disabled = false;
+
+                let summaryText = changes.join('\n');
+                if (totalDiff !== 0) {
+                    summaryText += '\n\nTotal change: ' + (totalDiff >= 0 ? '+' : '') + '$' + Math.round(totalDiff).toLocaleString();
+                }
+                summary.textContent = summaryText;
+            } else {
+                editBanner.classList.remove('active');
+                saveSection.classList.remove('active');
+                saveBtn.disabled = true;
+                summary.textContent = 'No changes made';
+            }
+        }
+
+        async function saveQuoteChanges() {
+            if (!currentDetailQuote || !hasUnsavedChanges) return;
+
+            const saveBtn = document.getElementById('saveChangesBtn');
+            saveBtn.disabled = true;
+            saveBtn.textContent = 'Saving...';
+
+            const correctionNotes = document.getElementById('correctionNotes').value;
+
+            try {
+                const response = await fetch(`${API_BASE}/quotes/${currentDetailQuote.id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        line_items: editedLineItems,
+                        correction_notes: correctionNotes || null
+                    })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Failed to save changes');
+                }
+
+                const updatedQuote = await response.json();
+
+                const cacheIndex = quotesCache.findIndex(q => q.id === currentDetailQuote.id);
+                if (cacheIndex >= 0) {
+                    quotesCache[cacheIndex] = updatedQuote;
+                }
+
+                currentDetailQuote = updatedQuote;
+                originalQuoteState = {
+                    line_items: JSON.parse(JSON.stringify(updatedQuote.line_items || [])),
+                    job_description: updatedQuote.job_description,
+                    total: updatedQuote.total || updatedQuote.subtotal || 0
+                };
+                hasUnsavedChanges = false;
+
+                saveBtn.textContent = 'Saved!';
+                document.getElementById('editModeBanner').classList.remove('active');
+                document.getElementById('saveChangesSection').classList.remove('active');
+
+                showLearningToast();
+
+                setTimeout(() => {
+                    saveBtn.textContent = 'Save Changes';
+                    saveBtn.disabled = true;
+                }, 2000);
+
+            } catch (err) {
+                console.error('Error saving changes:', err);
+                saveBtn.textContent = 'Save Changes';
+                saveBtn.disabled = false;
+                alert('Failed to save changes: ' + err.message);
+            }
+        }
+
+        function showLearningToast() {
+            let toast = document.getElementById('learningToast');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'learningToast';
+                toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:rgba(34,197,94,0.95);color:white;padding:12px 24px;border-radius:8px;font-size:0.875rem;z-index:1000;opacity:0;transition:opacity 0.3s ease;display:flex;align-items:center;gap:8px;';
+                document.body.appendChild(toast);
+            }
+
+            toast.textContent = '';
+            const icon = document.createElement('span');
+            icon.style.fontSize = '1.1rem';
+            icon.textContent = '🧠';
+            const text = document.createElement('span');
+            text.textContent = 'AI learning from your correction...';
+            toast.appendChild(icon);
+            toast.appendChild(text);
+            toast.style.opacity = '1';
+
+            setTimeout(() => { toast.style.opacity = '0'; }, 3000);
+        }
+
+        function cancelQuoteEdit() {
+            if (hasUnsavedChanges) {
+                if (!confirm('You have unsaved changes. Are you sure you want to cancel?')) {
+                    return;
+                }
+            }
+            backToQuoteList();
+        }
+
+        function backToQuoteList() {
+            currentDetailQuote = null;
+            originalQuoteState = null;
+            editedLineItems = [];
+            hasUnsavedChanges = false;
+
+            document.getElementById('quoteDetailView').style.display = 'none';
+            document.getElementById('myQuotesSection').style.display = 'block';
+        }
+
+        async function downloadDetailPdf() {
+            if (!currentDetailQuote) return;
+
+            if (hasUnsavedChanges) {
+                if (confirm('You have unsaved changes. Save before downloading PDF?')) {
+                    await saveQuoteChanges();
+                }
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/quotes/${currentDetailQuote.id}/pdf`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${authToken}` },
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to generate PDF');
+                }
+
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'quote_' + currentDetailQuote.id.substring(0, 8) + '.pdf';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+
+            } catch (err) {
+                console.error('PDF download error:', err);
+                alert('Failed to download PDF: ' + err.message);
+            }
+        }
+
+        // ========================================
+        // End Quote History & Editing System
         // ========================================
 
         // Error capture
