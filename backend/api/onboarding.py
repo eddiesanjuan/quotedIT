@@ -305,34 +305,6 @@ async def quick_setup(request: QuickSetupRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/{session_id}", response_model=SetupSessionResponse)
-async def get_session(session_id: str):
-    """Get the current state of a setup session."""
-    db = get_database_service()
-
-    conversation = await db.get_setup_conversation(session_id)
-    if not conversation:
-        raise HTTPException(status_code=404, detail="Session not found")
-
-    return SetupSessionResponse(**_conversation_to_response(conversation))
-
-
-@router.get("/{session_id}/messages")
-async def get_messages(session_id: str):
-    """Get all messages from a setup session."""
-    db = get_database_service()
-
-    conversation = await db.get_setup_conversation(session_id)
-    if not conversation:
-        raise HTTPException(status_code=404, detail="Session not found")
-
-    return {
-        "session_id": conversation.id,
-        "messages": conversation.messages or [],
-        "status": conversation.status,
-    }
-
-
 @router.get("/industries")
 async def get_industries():
     """
@@ -377,6 +349,23 @@ async def get_industries():
     }
 
 
+@router.get("/templates")
+async def list_templates():
+    """
+    List all available pricing templates.
+
+    Returns basic info (key and display name) for all templates.
+    Useful for populating industry selection dropdowns.
+    """
+    from ..data.pricing_templates import list_all_templates
+
+    templates = list_all_templates()
+    return {
+        "templates": templates,
+        "count": len(templates),
+    }
+
+
 @router.get("/templates/{industry}")
 async def get_pricing_template(industry: str):
     """
@@ -394,20 +383,31 @@ async def get_pricing_template(industry: str):
     return template
 
 
-@router.get("/templates")
-async def list_templates():
-    """
-    List all available pricing templates.
+@router.get("/{session_id}", response_model=SetupSessionResponse)
+async def get_session(session_id: str):
+    """Get the current state of a setup session."""
+    db = get_database_service()
 
-    Returns basic info (key and display name) for all templates.
-    Useful for populating industry selection dropdowns.
-    """
-    from ..data.pricing_templates import list_all_templates
+    conversation = await db.get_setup_conversation(session_id)
+    if not conversation:
+        raise HTTPException(status_code=404, detail="Session not found")
 
-    templates = list_all_templates()
+    return SetupSessionResponse(**_conversation_to_response(conversation))
+
+
+@router.get("/{session_id}/messages")
+async def get_messages(session_id: str):
+    """Get all messages from a setup session."""
+    db = get_database_service()
+
+    conversation = await db.get_setup_conversation(session_id)
+    if not conversation:
+        raise HTTPException(status_code=404, detail="Session not found")
+
     return {
-        "templates": templates,
-        "count": len(templates),
+        "session_id": conversation.id,
+        "messages": conversation.messages or [],
+        "status": conversation.status,
     }
 
 
