@@ -2751,20 +2751,25 @@
                             <option value="other">Other</option>
                         </select>
                     </div>
-                    <div class="form-group">
-                        <label>Hourly Labor Rate ($)</label>
-                        <input type="number" id="hourlyRate" placeholder="85" value="85">
-                        <small id="hourlyRateHint" style="color: var(--text-muted); font-size: 0.8rem; margin-top: 4px; display: none;"></small>
-                    </div>
-                    <div class="form-group">
-                        <label>Material Markup (%)</label>
-                        <input type="number" id="materialMarkup" placeholder="20" value="20">
-                        <small id="materialMarkupHint" style="color: var(--text-muted); font-size: 0.8rem; margin-top: 4px; display: none;"></small>
-                    </div>
-                    <div class="form-group">
-                        <label>Minimum Job Amount ($)</label>
-                        <input type="number" id="minimumJob" placeholder="500" value="500">
-                        <small id="minimumJobHint" style="color: var(--text-muted); font-size: 0.8rem; margin-top: 4px; display: none;"></small>
+
+                    <!-- Dynamic form fields will be rendered here based on industry template -->
+                    <div id="dynamicFormFields">
+                        <!-- Default fallback fields (shown for industries without templates) -->
+                        <div class="form-group">
+                            <label>Hourly Labor Rate ($)</label>
+                            <input type="number" id="hourlyRate" placeholder="85" value="85">
+                            <small id="hourlyRateHint" style="color: var(--text-muted); font-size: 0.8rem; margin-top: 4px; display: none;"></small>
+                        </div>
+                        <div class="form-group">
+                            <label>Material Markup (%)</label>
+                            <input type="number" id="materialMarkup" placeholder="20" value="20">
+                            <small id="materialMarkupHint" style="color: var(--text-muted); font-size: 0.8rem; margin-top: 4px; display: none;"></small>
+                        </div>
+                        <div class="form-group">
+                            <label>Minimum Job Amount ($)</label>
+                            <input type="number" id="minimumJob" placeholder="500" value="500">
+                            <small id="minimumJobHint" style="color: var(--text-muted); font-size: 0.8rem; margin-top: 4px; display: none;"></small>
+                        </div>
                     </div>
 
                     <!-- Pricing Tips -->
@@ -4075,30 +4080,65 @@
 
         // Industry data
         const industries = [
+            // Construction
+            { key: "deck_builder", display_name: "Deck Builder", icon: "🏗️", category: "Construction" },
+            { key: "roofer", display_name: "Roofer", icon: "🏠", category: "Construction" },
+            { key: "concrete", display_name: "Concrete", icon: "🏗️", category: "Construction" },
+            { key: "framing", display_name: "Framing", icon: "🔨", category: "Construction" },
+            { key: "masonry", display_name: "Masonry", icon: "🧱", category: "Construction" },
+            { key: "fence_installer", display_name: "Fence Installer", icon: "🚧", category: "Construction" },
+
+            // Finishing
+            { key: "painter", display_name: "Painter", icon: "🎨", category: "Finishing" },
+            { key: "flooring", display_name: "Flooring", icon: "📐", category: "Finishing" },
+            { key: "tile", display_name: "Tile Installer", icon: "🔲", category: "Finishing" },
+            { key: "drywall", display_name: "Drywall", icon: "🧱", category: "Finishing" },
+            { key: "cabinet_maker", display_name: "Cabinet Maker", icon: "🪑", category: "Finishing" },
+
+            // Electrical & Plumbing
             { key: "electrician", display_name: "Electrician", icon: "⚡", category: "Electrical" },
             { key: "plumber", display_name: "Plumber", icon: "🔧", category: "Plumbing" },
             { key: "hvac", display_name: "HVAC", icon: "❄️", category: "HVAC" },
-            { key: "roofer", display_name: "Roofer", icon: "🏠", category: "Roofing" },
-            { key: "deck_builder", display_name: "Deck Builder", icon: "🪵", category: "Carpentry" },
-            { key: "painter", display_name: "Painter", icon: "🎨", category: "Painting" },
-            { key: "landscaper", display_name: "Landscaper", icon: "🌳", category: "Landscaping" },
-            { key: "general_contractor", display_name: "General Contractor", icon: "🔨", category: "General" },
-            { key: "flooring", display_name: "Flooring", icon: "📐", category: "Flooring" },
-            { key: "masonry", display_name: "Masonry", icon: "🧱", category: "Masonry" },
-            { key: "siding", display_name: "Siding", icon: "🏘️", category: "Siding" },
-            { key: "window_door", display_name: "Windows & Doors", icon: "🚪", category: "Windows" },
-            { key: "drywall", display_name: "Drywall", icon: "📋", category: "Drywall" },
-            { key: "tile", display_name: "Tile", icon: "🔲", category: "Tile" },
-            { key: "concrete", display_name: "Concrete", icon: "🏗️", category: "Concrete" },
-            { key: "fence", display_name: "Fencing", icon: "🪵", category: "Fencing" },
-            { key: "gutter", display_name: "Gutters", icon: "💧", category: "Gutters" },
-            { key: "insulation", display_name: "Insulation", icon: "🧊", category: "Insulation" },
-            { key: "solar", display_name: "Solar", icon: "☀️", category: "Solar" },
-            { key: "pool", display_name: "Pool & Spa", icon: "🏊", category: "Pool" },
-            { key: "demolition", display_name: "Demolition", icon: "💥", category: "Demolition" },
-            { key: "handyman", display_name: "Handyman", icon: "🛠️", category: "Handyman" },
-            { key: "remodeling", display_name: "Remodeling", icon: "🏡", category: "Remodeling" },
-            { key: "cabinet", display_name: "Cabinets", icon: "📦", category: "Cabinets" },
+
+            // Outdoor
+            { key: "landscaper", display_name: "Landscaper", icon: "🌳", category: "Outdoor" },
+            { key: "pool_spa", display_name: "Pool & Spa", icon: "🏊", category: "Outdoor" },
+            { key: "tree_service", display_name: "Tree Service", icon: "🌲", category: "Outdoor" },
+
+            // Installation & Exterior
+            { key: "window_door", display_name: "Window & Door", icon: "🚪", category: "Installation" },
+            { key: "siding", display_name: "Siding", icon: "🏡", category: "Exterior" },
+            { key: "gutters", display_name: "Gutters", icon: "💧", category: "Exterior" },
+            { key: "insulation", display_name: "Insulation", icon: "🧊", category: "Installation" },
+            { key: "garage_door", display_name: "Garage Door", icon: "🚗", category: "Installation" },
+
+            // Cleaning & Organization
+            { key: "pressure_washing", display_name: "Pressure Washing", icon: "💦", category: "Cleaning" },
+            { key: "closet_organizer", display_name: "Closet Organizer", icon: "🗄️", category: "Organization" },
+
+            // Freelance & Creative
+            { key: "graphic_designer", display_name: "Graphic Designer", icon: "🎨", category: "Freelance & Creative" },
+            { key: "web_developer", display_name: "Web Developer", icon: "💻", category: "Freelance & Creative" },
+            { key: "writer", display_name: "Writer", icon: "✍️", category: "Freelance & Creative" },
+            { key: "photographer", display_name: "Photographer", icon: "📷", category: "Freelance & Creative" },
+            { key: "videographer", display_name: "Videographer", icon: "🎥", category: "Freelance & Creative" },
+
+            // Event Services
+            { key: "dj", display_name: "DJ", icon: "🎧", category: "Event Services" },
+            { key: "caterer", display_name: "Caterer", icon: "🍽️", category: "Event Services" },
+            { key: "event_planner", display_name: "Event Planner", icon: "📋", category: "Event Services" },
+            { key: "florist", display_name: "Florist", icon: "💐", category: "Event Services" },
+            { key: "wedding_coordinator", display_name: "Wedding Coordinator", icon: "💒", category: "Event Services" },
+
+            // Personal Services
+            { key: "personal_trainer", display_name: "Personal Trainer", icon: "💪", category: "Personal Services" },
+            { key: "tutor", display_name: "Tutor", icon: "📚", category: "Personal Services" },
+            { key: "coach", display_name: "Coach", icon: "🎯", category: "Personal Services" },
+            { key: "consultant", display_name: "Consultant", icon: "💼", category: "Personal Services" },
+            { key: "music_teacher", display_name: "Music Teacher", icon: "🎵", category: "Personal Services" },
+
+            // General
+            { key: "general_contractor", display_name: "General Contractor", icon: "👷", category: "General" },
             { key: "other", display_name: "Other", icon: "✨", category: "Other" }
         ];
 
@@ -4216,13 +4256,216 @@
         }
 
         // Template-guided quick setup functions
+        function renderDynamicFormFields(template) {
+            const container = document.getElementById('dynamicFormFields');
+            // Clear existing - safe method
+            while (container.firstChild) {
+                container.removeChild(container.firstChild);
+            }
+
+            const approach = template.recommended_approach;
+            const primaryPricing = template.primary_pricing || {};
+            const additionalRates = template.additional_rates || [];
+
+            // Render fields based on recommended approach
+            if (approach === 'hourly_plus_materials' || approach === 'hourly') {
+                // Hourly-based industries (electrician, plumber, handyman)
+                renderFormField(container, {
+                    id: 'hourlyRate',
+                    label: primaryPricing.label || 'Hourly Labor Rate ($)',
+                    value: primaryPricing.suggested_default || 85,
+                    placeholder: primaryPricing.suggested_default || 85,
+                    hint: primaryPricing.base_rate_range ? `Typical range: $${primaryPricing.base_rate_range[0]}-${primaryPricing.base_rate_range[1]}` : null
+                });
+
+                const serviceCallMin = additionalRates.find(r => r.name === 'service_call_minimum' || r.name === 'minimum_charge');
+                if (serviceCallMin) {
+                    renderFormField(container, {
+                        id: 'minimumJob',
+                        label: serviceCallMin.label || 'Service Call Minimum ($)',
+                        value: serviceCallMin.suggested || 500,
+                        placeholder: serviceCallMin.suggested || 500,
+                        hint: serviceCallMin.range ? `Typical range: $${serviceCallMin.range[0]}-${serviceCallMin.range[1]}` : null
+                    });
+                }
+
+                const materialMarkup = additionalRates.find(r => r.name === 'material_markup');
+                if (materialMarkup) {
+                    renderFormField(container, {
+                        id: 'materialMarkup',
+                        label: materialMarkup.label || 'Material Markup (%)',
+                        value: materialMarkup.suggested || 20,
+                        placeholder: materialMarkup.suggested || 20,
+                        hint: materialMarkup.range ? `Typical range: ${materialMarkup.range[0]}-${materialMarkup.range[1]}%` : null
+                    });
+                }
+
+            } else if (approach === 'per_linear_foot') {
+                // Linear foot industries (cabinet_maker)
+                renderFormField(container, {
+                    id: 'baseRatePerLF',
+                    label: primaryPricing.label || 'Base Rate per Linear Foot ($)',
+                    value: primaryPricing.suggested_default || 500,
+                    placeholder: primaryPricing.suggested_default || 500,
+                    hint: primaryPricing.base_rate_range ? `Typical range: $${primaryPricing.base_rate_range[0]}-${primaryPricing.base_rate_range[1]}` : null
+                });
+
+                renderFormField(container, {
+                    id: 'minimumJob',
+                    label: 'Minimum Project Amount ($)',
+                    value: 2000,
+                    placeholder: 2000,
+                    hint: 'Minimum charge for any cabinet project'
+                });
+
+            } else if (approach === 'per_square_foot') {
+                // Square foot industries (painter, flooring, concrete, deck_builder, tile, drywall)
+                renderFormField(container, {
+                    id: 'baseRatePerSqFt',
+                    label: primaryPricing.label || 'Rate per Square Foot ($)',
+                    value: primaryPricing.suggested_default || 10,
+                    placeholder: primaryPricing.suggested_default || 10,
+                    hint: primaryPricing.base_rate_range ? `Typical range: $${primaryPricing.base_rate_range[0]}-${primaryPricing.base_rate_range[1]}` : null
+                });
+
+                renderFormField(container, {
+                    id: 'minimumJob',
+                    label: 'Minimum Project Amount ($)',
+                    value: 500,
+                    placeholder: 500,
+                    hint: 'Minimum charge for any project'
+                });
+
+            } else if (approach === 'per_square') {
+                // Per square industries (roofer - 100 sq ft)
+                renderFormField(container, {
+                    id: 'baseRatePerSquare',
+                    label: primaryPricing.label || 'Price per Square (100 sq ft)',
+                    value: primaryPricing.suggested_default || 450,
+                    placeholder: primaryPricing.suggested_default || 450,
+                    hint: primaryPricing.base_rate_range ? `Typical range: $${primaryPricing.base_rate_range[0]}-${primaryPricing.base_rate_range[1]}` : null
+                });
+
+                renderFormField(container, {
+                    id: 'minimumJob',
+                    label: 'Emergency Repair Minimum ($)',
+                    value: 500,
+                    placeholder: 500,
+                    hint: 'Minimum charge for emergency repairs'
+                });
+
+            } else if (approach === 'per_unit') {
+                // Per unit industries (window_door)
+                renderFormField(container, {
+                    id: 'baseRatePerUnit',
+                    label: primaryPricing.label || 'Rate per Unit ($)',
+                    value: primaryPricing.suggested_default || 450,
+                    placeholder: primaryPricing.suggested_default || 450,
+                    hint: primaryPricing.base_rate_range ? `Typical range: $${primaryPricing.base_rate_range[0]}-${primaryPricing.base_rate_range[1]}` : null
+                });
+
+                renderFormField(container, {
+                    id: 'minimumJob',
+                    label: 'Minimum Job ($)',
+                    value: 400,
+                    placeholder: 400,
+                    hint: 'Minimum charge for any job'
+                });
+
+            } else if (approach === 'percentage_markup') {
+                // Percentage-based (general_contractor)
+                renderFormField(container, {
+                    id: 'projectManagementFee',
+                    label: primaryPricing.label || 'Project Management Fee (%)',
+                    value: primaryPricing.suggested_default || 15,
+                    placeholder: primaryPricing.suggested_default || 15,
+                    hint: primaryPricing.base_rate_range ? `Typical range: ${primaryPricing.base_rate_range[0]}-${primaryPricing.base_rate_range[1]}%` : null
+                });
+
+                const hourlyRate = additionalRates.find(r => r.name === 'hourly_rate');
+                if (hourlyRate) {
+                    renderFormField(container, {
+                        id: 'hourlyRate',
+                        label: hourlyRate.label || 'Hourly Rate (small jobs)',
+                        value: hourlyRate.suggested || 95,
+                        placeholder: hourlyRate.suggested || 95,
+                        hint: hourlyRate.range ? `Typical range: $${hourlyRate.range[0]}-${hourlyRate.range[1]}` : null
+                    });
+                }
+
+            } else {
+                // Mixed or fallback - use default hourly fields
+                renderDefaultFormFields();
+            }
+        }
+
+        function renderFormField(container, config) {
+            const formGroup = document.createElement('div');
+            formGroup.className = 'form-group';
+
+            const label = document.createElement('label');
+            label.textContent = config.label + (config.optional ? ' (optional)' : '');
+            formGroup.appendChild(label);
+
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.id = config.id;
+            input.placeholder = config.placeholder || '';
+            input.value = config.value || '';
+            if (config.step) input.step = config.step;
+            formGroup.appendChild(input);
+
+            if (config.hint) {
+                const hint = document.createElement('small');
+                hint.id = config.id + 'Hint';
+                hint.style.color = 'var(--text-muted)';
+                hint.style.fontSize = '0.8rem';
+                hint.style.marginTop = '4px';
+                hint.style.display = 'block';
+                hint.textContent = config.hint;
+                formGroup.appendChild(hint);
+            }
+
+            container.appendChild(formGroup);
+        }
+
+        function renderDefaultFormFields() {
+            const container = document.getElementById('dynamicFormFields');
+            // Clear existing - safe method
+            while (container.firstChild) {
+                container.removeChild(container.firstChild);
+            }
+
+            renderFormField(container, {
+                id: 'hourlyRate',
+                label: 'Hourly Labor Rate ($)',
+                value: 85,
+                placeholder: 85
+            });
+
+            renderFormField(container, {
+                id: 'materialMarkup',
+                label: 'Material Markup (%)',
+                value: 20,
+                placeholder: 20
+            });
+
+            renderFormField(container, {
+                id: 'minimumJob',
+                label: 'Minimum Job Amount ($)',
+                value: 500,
+                placeholder: 500
+            });
+        }
+
         async function loadPricingTemplate(industryKey) {
             try {
                 const response = await fetch(`${API_BASE}/onboarding/templates/${industryKey}`);
                 if (!response.ok) {
-                    // No template available, hide guidance
+                    // No template available, hide guidance and show default fields
                     document.getElementById('templateGuidance').style.display = 'none';
                     document.getElementById('pricingTipsSection').style.display = 'none';
+                    renderDefaultFormFields();
                     return;
                 }
 
@@ -4232,45 +4475,8 @@
                 document.getElementById('templateGuidance').style.display = 'block';
                 document.getElementById('templateApproach').textContent = template.approach_description;
 
-                // Pre-fill form values with suggested defaults
-                const primaryPricing = template.primary_pricing || {};
-                if (primaryPricing.suggested_default) {
-                    document.getElementById('hourlyRate').value = primaryPricing.suggested_default;
-                }
-
-                // Find material markup from additional_rates
-                const materialMarkupRate = (template.additional_rates || []).find(r => r.name === 'material_markup');
-                if (materialMarkupRate && materialMarkupRate.suggested) {
-                    document.getElementById('materialMarkup').value = materialMarkupRate.suggested;
-                }
-
-                // Find minimum job from additional_rates
-                const minJobRate = (template.additional_rates || []).find(r => r.name === 'service_call_minimum' || r.name === 'minimum_charge' || r.name === 'minimum_job');
-                if (minJobRate && minJobRate.suggested) {
-                    document.getElementById('minimumJob').value = minJobRate.suggested;
-                }
-
-                // Show range hints
-                if (primaryPricing.base_rate_range) {
-                    const [min, max] = primaryPricing.base_rate_range;
-                    const hint = document.getElementById('hourlyRateHint');
-                    hint.textContent = `Typical range: $${min}-${max}/hr`;
-                    hint.style.display = 'block';
-                }
-
-                if (materialMarkupRate && materialMarkupRate.range) {
-                    const [min, max] = materialMarkupRate.range;
-                    const hint = document.getElementById('materialMarkupHint');
-                    hint.textContent = `Typical range: ${min}-${max}%`;
-                    hint.style.display = 'block';
-                }
-
-                if (minJobRate && minJobRate.range) {
-                    const [min, max] = minJobRate.range;
-                    const hint = document.getElementById('minimumJobHint');
-                    hint.textContent = `Typical range: $${min}-${max}`;
-                    hint.style.display = 'block';
-                }
+                // Render dynamic form fields based on approach
+                renderDynamicFormFields(template);
 
                 // Populate pricing tips (safe DOM method - no XSS risk)
                 if (template.pricing_tips && template.pricing_tips.length > 0) {
@@ -4286,7 +4492,8 @@
 
             } catch (error) {
                 console.error('Error loading pricing template:', error);
-                // Silently fail - user can still enter values manually
+                // Silently fail - show default fields
+                renderDefaultFormFields();
             }
         }
 
@@ -4298,9 +4505,7 @@
                 // Hide template guidance for "other"
                 document.getElementById('templateGuidance').style.display = 'none';
                 document.getElementById('pricingTipsSection').style.display = 'none';
-                document.getElementById('hourlyRateHint').style.display = 'none';
-                document.getElementById('materialMarkupHint').style.display = 'none';
-                document.getElementById('minimumJobHint').style.display = 'none';
+                renderDefaultFormFields();
             }
         }
 
@@ -4614,9 +4819,57 @@
 
         async function completeQuickSetup() {
             const primaryTrade = document.getElementById('primaryTrade').value;
-            const hourlyRate = parseFloat(document.getElementById('hourlyRate').value) || 85;
-            const materialMarkup = parseFloat(document.getElementById('materialMarkup').value) || 20;
-            const minimumJob = parseFloat(document.getElementById('minimumJob').value) || 500;
+
+            // Collect all form field values dynamically
+            const formData = {
+                contractor_name: '',
+                primary_trade: primaryTrade,
+            };
+
+            // Try to get values from different possible field IDs
+            const getValue = (id) => {
+                const el = document.getElementById(id);
+                return el ? parseFloat(el.value) || null : null;
+            };
+
+            // Hourly-based fields
+            const hourlyRate = getValue('hourlyRate');
+            const helperRate = getValue('helperRate');
+            const materialMarkup = getValue('materialMarkup');
+
+            // Per-unit fields
+            const baseRatePerLF = getValue('baseRatePerLF');
+            const baseRatePerSqFt = getValue('baseRatePerSqFt');
+            const baseRatePerSquare = getValue('baseRatePerSquare');
+            const baseRatePerUnit = getValue('baseRatePerUnit');
+            const tearOffPerSquare = getValue('tearOffPerSquare');
+
+            // General contractor fields
+            const projectManagementFee = getValue('projectManagementFee');
+
+            // Common fields
+            const minimumJob = getValue('minimumJob');
+
+            // Build the request data based on what fields are present
+            if (hourlyRate) {
+                formData.labor_rate = hourlyRate;
+            } else if (baseRatePerLF) {
+                formData.base_rate_per_lf = baseRatePerLF;
+            } else if (baseRatePerSqFt) {
+                formData.base_rate_per_sqft = baseRatePerSqFt;
+            } else if (baseRatePerSquare) {
+                formData.base_rate_per_square = baseRatePerSquare;
+            } else if (baseRatePerUnit) {
+                formData.base_rate_per_unit = baseRatePerUnit;
+            } else if (projectManagementFee) {
+                formData.project_management_fee = projectManagementFee;
+            }
+
+            // Add optional fields if present
+            if (helperRate) formData.helper_rate = helperRate;
+            if (materialMarkup) formData.material_markup = materialMarkup;
+            if (minimumJob) formData.minimum_job = minimumJob;
+            if (tearOffPerSquare) formData.tear_off_per_square = tearOffPerSquare;
 
             try {
                 // Ensure we have user info before proceeding
@@ -4625,7 +4878,7 @@
                 }
 
                 // Get contractor name with safe fallback
-                const contractorName = currentUser?.business_name || currentUser?.email || 'Contractor';
+                formData.contractor_name = currentUser?.business_name || currentUser?.email || 'Contractor';
 
                 const response = await fetch(`${API_BASE}/onboarding/quick`, {
                     method: 'POST',
@@ -4633,13 +4886,7 @@
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${authToken}`,
                     },
-                    body: JSON.stringify({
-                        contractor_name: contractorName,
-                        primary_trade: primaryTrade,
-                        labor_rate: hourlyRate,
-                        material_markup: materialMarkup,
-                        minimum_job: minimumJob,
-                    }),
+                    body: JSON.stringify(formData),
                 });
 
                 if (!response.ok) {

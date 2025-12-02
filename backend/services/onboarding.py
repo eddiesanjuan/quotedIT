@@ -208,19 +208,33 @@ class OnboardingService:
         self,
         contractor_name: str,
         primary_trade: str,
-        labor_rate: float,
+        labor_rate: Optional[float] = None,
+        helper_rate: Optional[float] = None,
+        base_rate_per_lf: Optional[float] = None,
+        base_rate_per_sqft: Optional[float] = None,
+        base_rate_per_square: Optional[float] = None,
+        base_rate_per_unit: Optional[float] = None,
+        tear_off_per_square: Optional[float] = None,
+        project_management_fee: Optional[float] = None,
         material_markup: float = 20.0,
         minimum_job: float = 500.0,
         pricing_notes: Optional[str] = None,
     ) -> dict:
         """
-        Quick setup without the full interview.
+        Quick setup without the full interview - supports varied pricing approaches.
         For contractors who just want to get started fast.
 
         Args:
             contractor_name: Business name
             primary_trade: What they do
-            labor_rate: Hourly labor rate
+            labor_rate: Hourly labor rate (for hourly-based trades)
+            helper_rate: Helper hourly rate (optional)
+            base_rate_per_lf: Linear foot rate (cabinet_maker)
+            base_rate_per_sqft: Square foot rate (painter, flooring, etc)
+            base_rate_per_square: Per square rate (roofer - 100 sq ft)
+            base_rate_per_unit: Per unit rate (window_door)
+            tear_off_per_square: Tear-off rate per square (roofer)
+            project_management_fee: Project mgmt fee % (general_contractor)
             material_markup: Material markup percentage
             minimum_job: Minimum job amount
             pricing_notes: Any additional notes
@@ -230,16 +244,51 @@ class OnboardingService:
         """
         trade_defaults = self._get_trade_defaults(primary_trade)
 
+        # Normalize varied inputs to a standard labor_rate_hourly for storage
+        # This allows the system to work with varied pricing approaches internally
+        normalized_labor_rate = labor_rate
+
+        # Map per-unit rates to approximate hourly equivalents for internal storage
+        # These are rough conversions - the actual rates are stored in pricing_knowledge
+        if not normalized_labor_rate:
+            if base_rate_per_lf:
+                # Cabinet maker: ~$500/LF, assume 2-3 LF per hour = ~$150/hr
+                normalized_labor_rate = base_rate_per_lf * 0.3
+            elif base_rate_per_sqft:
+                # Painter/flooring: ~$3-10/sqft, assume 50-100 sqft/hr = ~$150-500/hr
+                normalized_labor_rate = base_rate_per_sqft * 50
+            elif base_rate_per_square:
+                # Roofer: ~$450/square, assume 1 square per 4 hours = ~$112/hr
+                normalized_labor_rate = base_rate_per_square * 0.25
+            elif base_rate_per_unit:
+                # Window/door: ~$450/unit, assume 1 unit per 3 hours = ~$150/hr
+                normalized_labor_rate = base_rate_per_unit * 0.33
+            elif project_management_fee:
+                # General contractor: typically 15%, assume $100/hr base
+                normalized_labor_rate = 100.0
+            else:
+                # Default fallback
+                normalized_labor_rate = 85.0
+
         # Build pricing_knowledge with both trade defaults and categories for Pricing Brain
+        # Store the original per-unit rates for the Pricing Brain to use
         pricing_knowledge = {
             "trade_defaults": trade_defaults,
             "categories": self._seed_categories_from_trade(primary_trade, trade_defaults),
             "global_rules": [],
+            "per_unit_rates": {
+                "base_rate_per_lf": base_rate_per_lf,
+                "base_rate_per_sqft": base_rate_per_sqft,
+                "base_rate_per_square": base_rate_per_square,
+                "base_rate_per_unit": base_rate_per_unit,
+                "tear_off_per_square": tear_off_per_square,
+                "project_management_fee": project_management_fee,
+            },
         }
 
         return {
-            "labor_rate_hourly": labor_rate,
-            "helper_rate_hourly": labor_rate * 0.6,  # Reasonable default
+            "labor_rate_hourly": normalized_labor_rate,
+            "helper_rate_hourly": helper_rate or (normalized_labor_rate * 0.6),
             "material_markup_percent": material_markup,
             "minimum_job_amount": minimum_job,
             "pricing_knowledge": pricing_knowledge,

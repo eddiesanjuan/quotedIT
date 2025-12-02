@@ -50,7 +50,7 @@
 
 **Options**:
 - [ ] **A) Original Proposal** - Keep as-is (50 users, referral required, $50 after)
-- [ ] **B) Modified Per Executives** - 25 users, optional referral bonus, rethink $50
+- [X] **B) Modified Per Executives** - 25 users, optional referral bonus, rethink $50
 - [ ] **C) Free Forever** - No cap, no charge, pure growth play
 - [ ] **D) Other** - (specify below)
 
@@ -62,7 +62,7 @@
 3. After cap: free, $50, $100, or remove entirely?
 
 **Founder Response**:
->
+> Option B and use your judgement on the quetions asked.
 
 ---
 

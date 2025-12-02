@@ -46,10 +46,25 @@ class ContinueSetupRequest(BaseModel):
 
 
 class QuickSetupRequest(BaseModel):
-    """Request for quick setup (skip interview)."""
+    """Request for quick setup (skip interview) - supports varied pricing approaches."""
     contractor_name: str
     primary_trade: str
-    labor_rate: float
+
+    # Hourly-based fields
+    labor_rate: Optional[float] = None
+    helper_rate: Optional[float] = None
+
+    # Per-unit fields
+    base_rate_per_lf: Optional[float] = None  # Linear foot (cabinet_maker)
+    base_rate_per_sqft: Optional[float] = None  # Square foot (painter, flooring, etc)
+    base_rate_per_square: Optional[float] = None  # Per square - 100 sq ft (roofer)
+    base_rate_per_unit: Optional[float] = None  # Per unit (window_door)
+    tear_off_per_square: Optional[float] = None  # Roofer tear-off
+
+    # General contractor fields
+    project_management_fee: Optional[float] = None
+
+    # Common fields
     material_markup: float = 20.0
     minimum_job: float = 500.0
     pricing_notes: Optional[str] = None
@@ -286,6 +301,7 @@ async def quick_setup(request: QuickSetupRequest):
     Quick setup without the full interview.
 
     For contractors who want to get started fast with just basic pricing.
+    Supports varied pricing approaches (hourly, per LF, per sqft, per unit, etc).
     """
     try:
         onboarding_service = get_onboarding_service()
@@ -294,6 +310,13 @@ async def quick_setup(request: QuickSetupRequest):
             contractor_name=request.contractor_name,
             primary_trade=request.primary_trade,
             labor_rate=request.labor_rate,
+            helper_rate=request.helper_rate,
+            base_rate_per_lf=request.base_rate_per_lf,
+            base_rate_per_sqft=request.base_rate_per_sqft,
+            base_rate_per_square=request.base_rate_per_square,
+            base_rate_per_unit=request.base_rate_per_unit,
+            tear_off_per_square=request.tear_off_per_square,
+            project_management_fee=request.project_management_fee,
             material_markup=request.material_markup,
             minimum_job=request.minimum_job,
             pricing_notes=request.pricing_notes,
@@ -316,30 +339,64 @@ async def get_industries():
 
     # Map of trade keys to display info
     industries = [
+        # Construction
         {"key": "deck_builder", "display_name": "Deck Builder", "icon": "🏗️", "category": "Construction"},
+        {"key": "roofer", "display_name": "Roofer", "icon": "🏠", "category": "Construction"},
+        {"key": "concrete", "display_name": "Concrete", "icon": "🏗️", "category": "Construction"},
+        {"key": "framing", "display_name": "Framing", "icon": "🔨", "category": "Construction"},
+        {"key": "masonry", "display_name": "Masonry", "icon": "🧱", "category": "Construction"},
+        {"key": "fence_installer", "display_name": "Fence Installer", "icon": "🚧", "category": "Construction"},
+
+        # Finishing
         {"key": "painter", "display_name": "Painter", "icon": "🎨", "category": "Finishing"},
-        {"key": "fence_installer", "display_name": "Fence Installer", "icon": "🚧", "category": "Outdoor"},
-        {"key": "landscaper", "display_name": "Landscaper", "icon": "🌳", "category": "Outdoor"},
+        {"key": "flooring", "display_name": "Flooring", "icon": "📐", "category": "Finishing"},
+        {"key": "tile", "display_name": "Tile Installer", "icon": "🔲", "category": "Finishing"},
+        {"key": "drywall", "display_name": "Drywall", "icon": "🧱", "category": "Finishing"},
+        {"key": "cabinet_maker", "display_name": "Cabinet Maker", "icon": "🪑", "category": "Finishing"},
+
+        # Electrical & Plumbing
         {"key": "electrician", "display_name": "Electrician", "icon": "⚡", "category": "Electrical"},
         {"key": "plumber", "display_name": "Plumber", "icon": "🔧", "category": "Plumbing"},
         {"key": "hvac", "display_name": "HVAC", "icon": "❄️", "category": "HVAC"},
-        {"key": "roofer", "display_name": "Roofer", "icon": "🏠", "category": "Construction"},
-        {"key": "flooring", "display_name": "Flooring", "icon": "📐", "category": "Finishing"},
-        {"key": "tile", "display_name": "Tile Installer", "icon": "🔲", "category": "Finishing"},
-        {"key": "concrete", "display_name": "Concrete", "icon": "🏗️", "category": "Construction"},
-        {"key": "framing", "display_name": "Framing", "icon": "🔨", "category": "Construction"},
-        {"key": "drywall", "display_name": "Drywall", "icon": "🧱", "category": "Finishing"},
+
+        # Outdoor
+        {"key": "landscaper", "display_name": "Landscaper", "icon": "🌳", "category": "Outdoor"},
+        {"key": "pool_spa", "display_name": "Pool & Spa", "icon": "🏊", "category": "Outdoor"},
+        {"key": "tree_service", "display_name": "Tree Service", "icon": "🌲", "category": "Outdoor"},
+
+        # Installation & Exterior
         {"key": "window_door", "display_name": "Window & Door", "icon": "🚪", "category": "Installation"},
         {"key": "siding", "display_name": "Siding", "icon": "🏡", "category": "Exterior"},
         {"key": "gutters", "display_name": "Gutters", "icon": "💧", "category": "Exterior"},
         {"key": "insulation", "display_name": "Insulation", "icon": "🧊", "category": "Installation"},
         {"key": "garage_door", "display_name": "Garage Door", "icon": "🚗", "category": "Installation"},
-        {"key": "pool_spa", "display_name": "Pool & Spa", "icon": "🏊", "category": "Outdoor"},
-        {"key": "masonry", "display_name": "Masonry", "icon": "🧱", "category": "Construction"},
-        {"key": "tree_service", "display_name": "Tree Service", "icon": "🌲", "category": "Outdoor"},
+
+        # Cleaning & Organization
         {"key": "pressure_washing", "display_name": "Pressure Washing", "icon": "💦", "category": "Cleaning"},
         {"key": "closet_organizer", "display_name": "Closet Organizer", "icon": "🗄️", "category": "Organization"},
-        {"key": "cabinet_maker", "display_name": "Cabinet Maker", "icon": "🪑", "category": "Finishing"},
+
+        # Freelance & Creative
+        {"key": "graphic_designer", "display_name": "Graphic Designer", "icon": "🎨", "category": "Freelance & Creative"},
+        {"key": "web_developer", "display_name": "Web Developer", "icon": "💻", "category": "Freelance & Creative"},
+        {"key": "writer", "display_name": "Writer", "icon": "✍️", "category": "Freelance & Creative"},
+        {"key": "photographer", "display_name": "Photographer", "icon": "📷", "category": "Freelance & Creative"},
+        {"key": "videographer", "display_name": "Videographer", "icon": "🎥", "category": "Freelance & Creative"},
+
+        # Event Services
+        {"key": "dj", "display_name": "DJ", "icon": "🎧", "category": "Event Services"},
+        {"key": "caterer", "display_name": "Caterer", "icon": "🍽️", "category": "Event Services"},
+        {"key": "event_planner", "display_name": "Event Planner", "icon": "📋", "category": "Event Services"},
+        {"key": "florist", "display_name": "Florist", "icon": "💐", "category": "Event Services"},
+        {"key": "wedding_coordinator", "display_name": "Wedding Coordinator", "icon": "💒", "category": "Event Services"},
+
+        # Personal Services
+        {"key": "personal_trainer", "display_name": "Personal Trainer", "icon": "💪", "category": "Personal Services"},
+        {"key": "tutor", "display_name": "Tutor", "icon": "📚", "category": "Personal Services"},
+        {"key": "coach", "display_name": "Coach", "icon": "🎯", "category": "Personal Services"},
+        {"key": "consultant", "display_name": "Consultant", "icon": "💼", "category": "Personal Services"},
+        {"key": "music_teacher", "display_name": "Music Teacher", "icon": "🎵", "category": "Personal Services"},
+
+        # General
         {"key": "general_contractor", "display_name": "General Contractor", "icon": "👷", "category": "General"},
     ]
 
