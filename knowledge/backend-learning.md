@@ -38,6 +38,8 @@
 | 2025-12-02 | Stripe payment infrastructure implemented | PAY-001: Subscriptions, usage metering, webhook handling, trial management |
 | 2025-12-02 | Pricing Brain API for learned knowledge visibility | FEAT-001: View/edit AI-learned pricing rules per category, Haiku analysis |
 | 2025-12-02 | Separate endpoint for customer edits avoids learning trigger | FEAT-002: PUT /customer endpoint for non-pricing updates, no learning overhead |
+| 2025-12-02 | Analytics service with graceful degradation pattern | CONVERT-001: PostHog tracking wraps all events in try/except, logs even without API key |
+| 2025-12-02 | Sentry initialization must happen before app creation | INFRA-001: Initialize Sentry SDK in main.py before FastAPI app instantiation |
 
 ---
 
@@ -85,6 +87,7 @@ if not resource:
 | `backend/services/pricing_brain.py` | Pricing knowledge management, Haiku analysis | Low |
 | `backend/services/email.py` | Transactional emails via Resend | Low |
 | `backend/services/billing.py` | Stripe subscription management | Medium |
+| `backend/services/analytics.py` | PostHog event tracking | Low |
 | `backend/prompts/quote_generation.py` | Prompt construction | Medium |
 | `backend/api/quotes.py` | Quote CRUD endpoints | Medium |
 | `backend/api/pricing_brain.py` | Pricing Brain CRUD endpoints | Low |
@@ -133,9 +136,41 @@ STRIPE_WEBHOOK_SECRET=whsec_...
 
 ---
 
+## Analytics & Monitoring (CONVERT-001 + INFRA-001)
+
+### PostHog Analytics
+- **Service**: `backend/services/analytics.py`
+- **Pattern**: Graceful degradation - logs events even without API key
+- **Events Tracked**:
+  - `signup_completed` - User registration (with identification)
+  - `onboarding_completed` - Setup interview finished
+  - `quote_generated` - Quote created (with category, confidence, subtotal)
+  - `quote_edited` - Quote modified (with change type and magnitude)
+  - `subscription_activated` - Payment successful (with plan tier)
+
+### Sentry Error Tracking
+- **Initialization**: `backend/main.py` (before app creation)
+- **Integrations**: FastAPI + Starlette
+- **Sampling**: 100% transactions (for MVP - reduce when scaling)
+- **Environment**: Auto-detected from `ENVIRONMENT` setting
+
+### Environment Variables Required
+```
+POSTHOG_API_KEY=phc_...     # Optional - degrades gracefully
+SENTRY_DSN=https://...      # Optional - degrades gracefully
+```
+
+### Design Pattern
+Both services follow "fail-safe" pattern:
+- Missing API keys log warnings, don't crash
+- All tracking wrapped in try/except
+- Events logged to console for debugging
+- Never block core business logic
+
+---
+
 ## Pending Improvements
 
-- [ ] Add Sentry for error tracking
 - [ ] Add unit tests for core flows
 - [ ] Add pagination to list endpoints
 - [ ] Add email notifications for payment events
