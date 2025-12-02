@@ -2742,6 +2742,7 @@
                 <!-- Account Tabs -->
                 <div class="account-tabs">
                     <button class="account-tab-btn active" id="billingTabBtn" onclick="showAccountTab('billing')">Billing</button>
+                    <button class="account-tab-btn" id="referralTabBtn" onclick="showAccountTab('referral')">Referral</button>
                     <button class="account-tab-btn" id="pricingBrainTabBtn" onclick="showAccountTab('pricingBrain')">Pricing Brain</button>
                 </div>
 
@@ -2807,6 +2808,50 @@
                     <button class="btn btn-primary" onclick="openCustomerPortal()">Open Billing Portal</button>
                 </div>
                 </div> <!-- End Billing Tab Content -->
+
+                <!-- Referral Tab Content -->
+                <div id="referralTabContent" class="account-tab-content">
+                    <!-- Referral Section -->
+                    <div class="referral-section" style="background: var(--bg-card); border-radius: 12px; padding: 24px; margin-bottom: 24px;">
+                        <h3 style="margin: 0 0 8px 0; font-size: 1.25rem; font-family: var(--font-serif);">Refer & Earn</h3>
+                        <p style="color: var(--text-secondary); margin: 0 0 16px 0; font-size: 0.9rem;">
+                            Earn 1 free month for every friend who subscribes. They get 14 days free (instead of 7).
+                        </p>
+
+                        <!-- Stats -->
+                        <div style="display: flex; gap: 24px; margin-bottom: 16px; flex-wrap: wrap;">
+                            <div>
+                                <div style="font-size: 2rem; font-weight: 700; color: var(--accent);" id="referral-count">0</div>
+                                <div style="font-size: 0.8rem; color: var(--text-muted);">Referrals</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 2rem; font-weight: 700; color: var(--success);" id="referral-credits">0</div>
+                                <div style="font-size: 0.8rem; color: var(--text-muted);">Months Earned</div>
+                            </div>
+                        </div>
+
+                        <!-- Referral Link -->
+                        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                            <input type="text" id="referral-link" readonly
+                                   style="flex: 1; min-width: 200px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 8px; padding: 12px; color: var(--text-primary); font-family: monospace; font-size: 0.9rem;"
+                                   value="Loading...">
+                            <button onclick="copyReferralLink()"
+                                    style="background: var(--accent); color: var(--bg-primary); border: none; border-radius: 8px; padding: 12px 16px; cursor: pointer; font-weight: 600; white-space: nowrap; font-family: var(--font-sans);">
+                                Copy Link
+                            </button>
+                        </div>
+
+                        <!-- Share Buttons -->
+                        <div style="display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap;">
+                            <button onclick="shareViaEmail()" style="background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 8px; padding: 8px 16px; cursor: pointer; font-size: 0.85rem; color: var(--text-primary); font-family: var(--font-sans);">
+                                📧 Email
+                            </button>
+                            <button onclick="shareViaSMS()" style="background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 8px; padding: 8px 16px; cursor: pointer; font-size: 0.85rem; color: var(--text-primary); font-family: var(--font-sans);">
+                                💬 SMS
+                            </button>
+                        </div>
+                    </div>
+                </div> <!-- End Referral Tab Content -->
 
                 <!-- Pricing Brain Tab Content -->
                 <div id="pricingBrainTabContent" class="account-tab-content">
@@ -3053,6 +3098,13 @@
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
+            // Check for referral code in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const refCode = urlParams.get('ref');
+            if (refCode) {
+                localStorage.setItem('referral_code', refCode);
+            }
+
             if (authToken && currentUser) {
                 showAppView();
             } else {
@@ -3111,12 +3163,16 @@
             e.preventDefault();
             const btn = document.getElementById('registerBtn');
 
+            // Include referral code if present
+            const referralCode = localStorage.getItem('referral_code');
+
             const data = {
                 email: document.getElementById('registerEmail').value,
                 password: document.getElementById('registerPassword').value,
                 business_name: document.getElementById('registerBusiness').value,
                 owner_name: document.getElementById('registerName').value || null,
                 phone: document.getElementById('registerPhone').value || null,
+                referral_code: referralCode || null,
             };
 
             btn.disabled = true;
@@ -4959,6 +5015,66 @@
             document.getElementById('upgradeModal').style.display = 'none';
         }
 
+        // Referral functions
+        async function loadReferralStats() {
+            try {
+                const response = await fetch(`${API_BASE}/referral/stats`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('referral-count').textContent = data.referral_count || 0;
+                    document.getElementById('referral-credits').textContent = data.referral_credits || 0;
+                    document.getElementById('referral-link').value = data.referral_link || 'Error loading link';
+                } else {
+                    console.error('Failed to load referral stats');
+                    document.getElementById('referral-link').value = 'Error loading link';
+                }
+            } catch (error) {
+                console.error('Error loading referral stats:', error);
+                document.getElementById('referral-link').value = 'Error loading link';
+            }
+        }
+
+        function copyReferralLink() {
+            const link = document.getElementById('referral-link');
+            navigator.clipboard.writeText(link.value).then(() => {
+                showSuccess('Referral link copied!');
+                // Track analytics
+                {% if posthog_api_key %}
+                if (window.posthog) {
+                    posthog.capture('referral_link_copied');
+                }
+                {% endif %}
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+                showError('Failed to copy link');
+            });
+        }
+
+        function shareViaEmail() {
+            const link = document.getElementById('referral-link').value;
+            const subject = encodeURIComponent('Try Quoted - Voice-to-Quote for Contractors');
+            const body = encodeURIComponent(`I've been using Quoted to generate quotes in seconds using just my voice. You should try it!\n\n${link}\n\nYou'll get 14 days free (double the normal trial).`);
+            window.open(`mailto:?subject=${subject}&body=${body}`);
+            {% if posthog_api_key %}
+            if (window.posthog) {
+                posthog.capture('referral_shared', { method: 'email' });
+            }
+            {% endif %}
+        }
+
+        function shareViaSMS() {
+            const link = document.getElementById('referral-link').value;
+            const text = encodeURIComponent(`Try Quoted - I use it to generate quotes in seconds with my voice. You get 14 days free: ${link}`);
+            window.open(`sms:?body=${text}`);
+            {% if posthog_api_key %}
+            if (window.posthog) {
+                posthog.capture('referral_shared', { method: 'sms' });
+            }
+            {% endif %}
+        }
+
         // Close modal on outside click
         document.getElementById('upgradeModal').addEventListener('click', function(e) {
             if (e.target === this) {
@@ -5084,17 +5200,21 @@
         function showAccountTab(tab) {
             // Update tab buttons
             document.getElementById('billingTabBtn').classList.toggle('active', tab === 'billing');
+            document.getElementById('referralTabBtn').classList.toggle('active', tab === 'referral');
             document.getElementById('pricingBrainTabBtn').classList.toggle('active', tab === 'pricingBrain');
 
             // Update tab content
             document.getElementById('billingTabContent').classList.toggle('active', tab === 'billing');
+            document.getElementById('referralTabContent').classList.toggle('active', tab === 'referral');
             document.getElementById('pricingBrainTabContent').classList.toggle('active', tab === 'pricingBrain');
 
-            // Load pricing brain data when switching to that tab
+            // Load data when switching tabs
             if (tab === 'pricingBrain') {
                 loadPricingBrain();
             } else if (tab === 'billing') {
                 loadBillingStatus();
+            } else if (tab === 'referral') {
+                loadReferralStats();
             }
         }
 

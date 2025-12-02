@@ -556,6 +556,11 @@
     </style>
 </head>
 <body>
+    <!-- Referral Banner (shown when ?ref= in URL) -->
+    <div id="referral-banner" style="display: none; background: linear-gradient(90deg, #10b981, #059669); color: white; text-align: center; padding: 12px; font-weight: 500; font-family: var(--font-sans);">
+        🎁 You've been referred! Sign up now for <strong>14 days free</strong> (double the normal trial)
+    </div>
+
     <!-- Navigation -->
     <nav>
         <a href="/" class="logo">quoted<span>.it</span></a>
@@ -847,6 +852,17 @@
             el.style.animationPlayState = 'paused';
             observer.observe(el);
         });
+
+        // Check for referral code in URL and show banner
+        (function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const refCode = urlParams.get('ref');
+            if (refCode) {
+                document.getElementById('referral-banner').style.display = 'block';
+                // Store for signup
+                localStorage.setItem('referral_code', refCode);
+            }
+        })();
 
         // PostHog Analytics - Track landing page events
         {% if posthog_api_key %}
