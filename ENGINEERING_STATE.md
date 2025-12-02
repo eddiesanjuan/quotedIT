@@ -1,6 +1,6 @@
 # Engineering State
 
-**Last Updated**: 2025-12-02 11:15 PST
+**Last Updated**: 2025-12-02 12:00 PST
 **Updated By**: CEO (AI)
 
 ---
@@ -17,8 +17,8 @@
 
 | Environment | URL | Status | Version |
 |-------------|-----|--------|---------|
-| **Production** | https://web-production-0550.up.railway.app | RUNNING | 5a84de5 |
-| **Custom Domain** | https://quoted.it.com | LIVE (SSL ACTIVE) | 5a84de5 |
+| **Production** | https://web-production-0550.up.railway.app | RUNNING | b06b712 |
+| **Custom Domain** | https://quoted.it.com | LIVE (SSL ACTIVE) | b06b712 |
 
 **Railway Project**: Connected to main branch, auto-deploys on push
 
@@ -36,6 +36,45 @@
 | ~~PAY-004~~ | ~~Email System (Resend)~~ | ~~Backend Engineer~~ | **COMPLETE** | Committed 33fa641 |
 | PAY-005 | Referral System | Backend Engineer | **READY** | Can start now |
 | ~~PAY-006~~ | ~~Terms of Service + Privacy Policy~~ | ~~CTO~~ | **COMPLETE** | Deployed 325fb25 |
+| FEAT-001 | Pricing Brain Management | Backend + Frontend | **READY** | Design approved |
+
+---
+
+## FEAT-001: Pricing Brain Management (READY FOR IMPLEMENTATION)
+
+**Design Doc**: `docs/plans/2025-12-02-pricing-brain-design.md`
+**Priority**: HIGH (user trust + transparency)
+**Approved By**: Founder (2025-12-02)
+
+**Summary**: New "Pricing Brain" tab in Account section where users can view what the AI learned about their pricing and make corrections with AI assistance.
+
+**Key Features**:
+- Category cards showing learned pricing knowledge (quotes count, confidence, rules)
+- Edit modal with pattern-based hints (instant, no API cost)
+- On-demand AI analysis via Haiku (~$0.001/analysis)
+- Editable: rate modifiers, learned rules, category names, delete category
+- Global settings view (base rates, material markup, minimum job)
+
+**Implementation Tasks**:
+1. [ ] Create `backend/api/pricing_brain.py` - API routes (GET, PUT, DELETE, analyze)
+2. [ ] Create `backend/services/pricing_brain.py` - Business logic + Haiku integration
+3. [ ] Register router in `backend/main.py`
+4. [ ] Add Pricing Brain tab to Account section in `frontend/index.html`
+5. [ ] Build category cards dashboard UI
+6. [ ] Build edit modal with pattern hints
+7. [ ] Build AI analysis panel
+8. [ ] Polish: empty states, confirmations, error handling
+
+**New API Endpoints**:
+```
+GET  /api/pricing-brain              - All categories + stats
+GET  /api/pricing-brain/{category}   - Single category detail
+PUT  /api/pricing-brain/{category}   - Update category
+DELETE /api/pricing-brain/{category} - Delete category
+POST /api/pricing-brain/{category}/analyze - AI analysis (Haiku)
+```
+
+**Estimated Scope**: Medium (~1 autonomous session)
 
 ---
 
@@ -112,6 +151,7 @@ GET /api/billing/plans - Available pricing (public)
 
 | Date | Commit | Description | Status |
 |------|--------|-------------|--------|
+| 2025-12-02 | b06b712 | Fix category matching - register categories on quote generation | **DEPLOYED** |
 | 2025-12-02 | 5a84de5 | Add billing column migrations for existing Postgres databases | **DEPLOYED** |
 | 2025-12-02 | 6aedad1 | Add annual billing interval support | **DEPLOYED** |
 | 2025-12-02 | f871c12 | Fix pricing card field mapping (API response → frontend) | **DEPLOYED** |

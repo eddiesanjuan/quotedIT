@@ -8,6 +8,9 @@
 
 | Time | Agent | Action | Type | Result |
 |------|-------|--------|------|--------|
+| 12:30 | CEO | Brainstorm: Pricing Brain Management feature design | Type 2 | Design approved |
+| 12:30 | CEO | Staged FEAT-001 for next /quoted-run | Type 1 | Ready for implementation |
+| 12:00 | CEO | Fixed category matching - register categories on quote generation | Type 2 | Committed b06b712 |
 | 11:15 | CEO | Fixed missing Postgres billing columns via auto-migration | Type 2 | Committed 5a84de5 |
 | 11:10 | CEO | Diagnosed 500 error - missing billing columns in Postgres | Type 1 | Root cause found |
 | 11:05 | CEO | Fixed pricing card field mapping (API → frontend) | Type 2 | Committed f871c12 |
