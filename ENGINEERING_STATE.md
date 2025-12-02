@@ -1,6 +1,6 @@
 # Engineering State
 
-**Last Updated**: 2025-12-02 21:00 PST
+**Last Updated**: 2025-12-02 21:15 PST
 **Updated By**: CEO (AI)
 
 ---
@@ -18,8 +18,8 @@
 
 | Environment | URL | Status | Version |
 |-------------|-----|--------|---------|
-| **Production** | https://web-production-0550.up.railway.app | LIVE | 9eba403 |
-| **Custom Domain** | https://quoted.it.com | LIVE (SSL ACTIVE) | 9eba403 |
+| **Production** | https://web-production-0550.up.railway.app | LIVE | a1e6e66 |
+| **Custom Domain** | https://quoted.it.com | LIVE (SSL ACTIVE) | a1e6e66 |
 
 **Railway Project**: Connected to main branch, auto-deploys on push
 
@@ -51,15 +51,15 @@
 | ~~RETAIN-001~~ | ~~Engagement Email Series~~ | ~~Backend~~ | **COMPLETE** | Committed 732c643 |
 | ~~RETAIN-002~~ | ~~Dormancy Re-engagement Emails~~ | ~~Backend~~ | **COMPLETE** | Committed d9b7a36 |
 | ~~INFRA-001~~ | ~~Sentry Error Tracking~~ | ~~Backend + Frontend~~ | **COMPLETE** | Committed 75eac78 |
-| INFRA-002 | Mobile Responsiveness Audit | Frontend | **READY** | None |
+| ~~INFRA-002~~ | ~~Mobile Responsiveness Audit~~ | ~~Frontend~~ | **COMPLETE** | Committed c6b266a |
 | ~~INFRA-003~~ | ~~FAQ/Help Section~~ | ~~Frontend~~ | **COMPLETE** | Committed 7d4c86e |
 | ~~ONBOARD-001~~ | ~~Industry/Trade Selection Step~~ | ~~Frontend + Backend~~ | **COMPLETE** | Committed 5d0e693 + 19e304f |
-| ONBOARD-002 | Guided Quick Setup with Templates | Frontend + Backend | **READY** | None |
+| ~~ONBOARD-002~~ | ~~Guided Quick Setup with Templates~~ | ~~Frontend + Backend~~ | **COMPLETE** | Committed a1e6e66 |
 | ~~ONBOARD-003~~ | ~~Industry Pricing Template Library~~ | ~~Backend~~ | **COMPLETE** | Committed 18284c6, 9eba403 |
-| ONBOARD-004 | Interview Type C Coaching Mode | Backend (prompts) | **READY** | None |
+| ~~ONBOARD-004~~ | ~~Interview Type C Coaching Mode~~ | ~~Backend (prompts)~~ | **COMPLETE** | Committed 5219509 |
 | ~~ONBOARD-005~~ | ~~Expand Trade Defaults (20+ industries)~~ | ~~Backend~~ | **COMPLETE** | Committed 48cb784 |
 | ~~UX-001~~ | ~~Improve Quote Input Placeholder Text~~ | ~~Frontend~~ | **COMPLETE** | Committed 5610036 |
-| FEAT-003 | Pricing Brain Global Settings Editor | Frontend + Backend | **READY** | None |
+| ~~FEAT-003~~ | ~~Pricing Brain Global Settings Editor~~ | ~~Frontend + Backend~~ | **COMPLETE** | Committed a7b12c2 |
 
 ---
 
@@ -767,6 +767,10 @@ GET /api/billing/plans - Available pricing (public)
 
 | Date | Commit | Description | Status |
 |------|--------|-------------|--------|
+| 2025-12-02 | a1e6e66 | Add Guided quick setup with industry templates (ONBOARD-002) | **DEPLOYED** |
+| 2025-12-02 | c6b266a | Fix Mobile responsiveness across all pages (INFRA-002) | **DEPLOYED** |
+| 2025-12-02 | a7b12c2 | Add Pricing Brain global settings editor (FEAT-003) | **DEPLOYED** |
+| 2025-12-02 | 5219509 | Add Interview Type C coaching with industry guidance (ONBOARD-004) | **DEPLOYED** |
 | 2025-12-02 | 9eba403 | Fix Route ordering - templates before session_id parameter | **DEPLOYED** |
 | 2025-12-02 | 18284c6 | Add Industry pricing template library (ONBOARD-003) | **DEPLOYED** |
 | 2025-12-02 | 7d4c86e | Add FAQ/Help section (INFRA-003) | **DEPLOYED** |
