@@ -190,6 +190,7 @@ class ReferralService:
     async def get_referral_stats(db: AsyncSession, user_id: str) -> Dict[str, Any]:
         """
         Get referral statistics for a user.
+        Auto-generates referral code for existing users who don't have one.
 
         Args:
             db: Database session
@@ -207,13 +208,19 @@ class ReferralService:
                 detail="User not found"
             )
 
+        # Auto-generate referral code for existing users who don't have one
+        if not user.referral_code:
+            user.referral_code = await ReferralService.ensure_unique_referral_code(db, user.email)
+            await db.commit()
+            await db.refresh(user)
+
         # Construct shareable link
         base_url = settings.frontend_url.rstrip("/")
         shareable_link = f"{base_url}/signup?ref={user.referral_code}" if user.referral_code else None
 
         return {
             "referral_code": user.referral_code,
-            "referral_count": user.referral_count,
-            "referral_credits": user.referral_credits,
+            "referral_count": user.referral_count or 0,
+            "referral_credits": user.referral_credits or 0,
             "shareable_link": shareable_link,
         }
