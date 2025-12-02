@@ -5024,7 +5024,8 @@
                     const data = await response.json();
                     document.getElementById('referral-count').textContent = data.referral_count || 0;
                     document.getElementById('referral-credits').textContent = data.referral_credits || 0;
-                    document.getElementById('referral-link').value = data.referral_link || 'Error loading link';
+                    // API returns shareable_link, not referral_link
+                    document.getElementById('referral-link').value = data.shareable_link || 'Error loading link';
                 } else {
                     console.error('Failed to load referral stats');
                     document.getElementById('referral-link').value = 'Error loading link';
@@ -5038,7 +5039,7 @@
         function copyReferralLink() {
             const link = document.getElementById('referral-link');
             navigator.clipboard.writeText(link.value).then(() => {
-                showSuccess('Referral link copied!');
+                showLearningToast('Referral link copied!', '📋');
                 // Track analytics
                 {% if posthog_api_key %}
                 if (window.posthog) {
@@ -5229,14 +5230,32 @@
                     throw new Error('Failed to load pricing brain data');
                 }
 
-                pricingBrainData = await response.json();
+                const categoriesData = await response.json();
 
-                // Render global settings
-                renderGlobalSettings(pricingBrainData.global_settings || {});
+                // API returns array of categories directly
+                pricingBrainData = { categories: categoriesData };
+
+                // Fetch and render global settings from separate endpoint
+                try {
+                    const settingsResponse = await fetch(`${API_BASE}/pricing-brain/settings/global`, {
+                        headers: { 'Authorization': `Bearer ${authToken}` }
+                    });
+                    if (settingsResponse.ok) {
+                        const globalSettings = await settingsResponse.json();
+                        renderGlobalSettings({
+                            hourly_rate: globalSettings.labor_rate_hourly,
+                            material_markup: globalSettings.material_markup_percent,
+                            minimum_job: globalSettings.minimum_job_amount
+                        });
+                    } else {
+                        renderGlobalSettings({});
+                    }
+                } catch (e) {
+                    renderGlobalSettings({});
+                }
 
                 // Render category cards
-                const categories = pricingBrainData.categories || [];
-                renderCategoryCards(categories);
+                renderCategoryCards(categoriesData);
 
             } catch (err) {
                 console.error('Failed to load pricing brain:', err);
