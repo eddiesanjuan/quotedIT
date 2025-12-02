@@ -67,6 +67,8 @@
 | ONBOARD-007 | Quick Setup Form/Tips Mismatch | Frontend + Backend | **READY** | None |
 | ONBOARD-008 | Ensure Onboarding Path Consistency | Backend | **READY** | None |
 | UX-002 | Reframe Onboarding to Recommend Interview | Frontend | **READY** | None |
+| UX-003 | Improve Landing Page Headline | Frontend | **READY** | None |
+| UX-004 | Add Product Demo Animation to Landing Page | Frontend | **READY** | None |
 
 ---
 
@@ -228,6 +230,88 @@ Currently, it's unclear if both paths produce pricing_models that work the same 
 3. [ ] Document which fields are "essential" vs "learned over time"
 4. [ ] Add "Complete Your Profile" prompt for Quick Setup users after first 5 quotes
 5. [ ] Verify quote generation uses both profiles consistently
+
+---
+
+## UX-003: Improve Landing Page Headline (READY)
+
+**Scope**: Frontend (1h)
+**Priority**: MEDIUM (brand/messaging polish)
+**Requested By**: Founder (2025-12-02)
+
+**Problem**: The current headline "Turn Voice Notes into Professional Budget Quotes in Seconds" doesn't read well. It's functional but not memorable or evocative.
+
+**Current Headline**:
+> "Turn Voice Notes into Professional Budget Quotes in Seconds"
+
+**Proposed Change**:
+Lead with something more evocative, then follow with the functional description:
+
+**Option A** (Founder's suggestion):
+> **"Your quotes, spoken into existence."**
+> Turn voice notes into professional quotes in seconds.
+
+**Option B**:
+> **"Speak it. Quote it. Done."**
+> Turn job site voice notes into professional quotes instantly.
+
+**Option C**:
+> **"From voice to invoice."**
+> Describe the job, get the quote. That simple.
+
+**Implementation**:
+1. [ ] Review current headline in `frontend/landing.html`
+2. [ ] Implement two-line headline structure (evocative + functional)
+3. [ ] Adjust typography hierarchy (larger evocative line, smaller functional line)
+4. [ ] Test on mobile to ensure readability
+
+---
+
+## UX-004: Add Product Demo Animation to Landing Page (READY)
+
+**Scope**: Frontend (6h)
+**Priority**: MEDIUM (conversion optimization)
+**Requested By**: Founder (2025-12-02)
+
+**Problem**: The landing page shows static content. A visual demo of the product flow would help visitors understand the value proposition immediately.
+
+**What to Build**: A ~15-second looping animation showing the complete product flow:
+
+**Animation Sequence**:
+1. **Interview/Onboarding** (~3s) - Quick chat setting up pricing
+2. **Recording a Job** (~3s) - User clicks record, speaks job description
+3. **Quote Generated** (~3s) - Professional PDF appears with line items
+4. **Editing/Feedback** (~3s) - User adjusts a price, system learns
+5. **Pricing Brain View** (~3s) - Show the learned pricing model
+6. **Loop restart** - Seamless transition back to step 1
+
+**Technical Approach Options**:
+
+**Option A: CSS/JS Animation (Recommended)**
+- Create simplified UI mockups as SVG or HTML elements
+- Animate with CSS keyframes or GSAP
+- Lightweight, no video loading
+- Easy to update
+
+**Option B: Pre-recorded GIF/Video**
+- Screen record the actual product
+- Fast-forward/edit to 15 seconds
+- Higher fidelity but larger file size
+- Harder to update
+
+**Option C: Lottie Animation**
+- Design in After Effects, export as Lottie JSON
+- Smooth, scalable, small file size
+- Requires design tool expertise
+
+**Implementation**:
+1. [ ] Decide on technical approach (recommend Option A)
+2. [ ] Create simplified UI mockup frames for each step
+3. [ ] Build animation sequence with smooth transitions
+4. [ ] Add to landing page hero section (beside or below headline)
+5. [ ] Ensure animation doesn't slow page load
+6. [ ] Add pause-on-hover or reduced-motion support for accessibility
+7. [ ] Test on mobile (may need simplified version)
 
 ---
 
