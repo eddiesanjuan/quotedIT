@@ -1,6 +1,6 @@
 # Engineering State
 
-**Last Updated**: 2025-12-02 21:15 PST
+**Last Updated**: 2025-12-02 23:30 PST
 **Updated By**: CEO (AI)
 
 ---
@@ -66,9 +66,9 @@
 | ~~BUG-001~~ | ~~Help Button Navigation Broken~~ | ~~Frontend~~ | **COMPLETE** | Committed e0cb0e5 |
 | ~~ONBOARD-006~~ | ~~Expand Industries Beyond Construction~~ | ~~Frontend + Backend~~ | **COMPLETE** | Committed 03993dd |
 | ~~ONBOARD-007~~ | ~~Quick Setup Form/Tips Mismatch~~ | ~~Frontend + Backend~~ | **COMPLETE** | Committed 03993dd |
-| ONBOARD-008 | Ensure Onboarding Path Consistency | Backend | **READY** | None |
-| UX-003 | Improve Landing Page Headline | Frontend | **READY** | None |
-| UX-004 | Add Product Demo Animation to Landing Page | Frontend | **READY** | None |
+| ~~ONBOARD-008~~ | ~~Ensure Onboarding Path Consistency~~ | ~~Backend~~ | **COMPLETE** | Committed 1fc11fe |
+| ~~UX-003~~ | ~~Improve Landing Page Headline~~ | ~~Frontend~~ | **COMPLETE** | Committed 66b25b9 |
+| ~~UX-004~~ | ~~Add Product Demo Animation to Landing Page~~ | ~~Frontend~~ | **COMPLETE** | Committed 2c7244e |
 
 ---
 
@@ -1056,6 +1056,9 @@ GET /api/billing/plans - Available pricing (public)
 
 | Date | Commit | Description | Status |
 |------|--------|-------------|--------|
+| 2025-12-02 | 1fc11fe | Fix Ensure onboarding path consistency (ONBOARD-008) | **PENDING PUSH** |
+| 2025-12-02 | 2c7244e | Add Product demo animation on landing page (UX-004) | **PENDING PUSH** |
+| 2025-12-02 | 66b25b9 | Update Improve landing page headline (UX-003) | **PENDING PUSH** |
 | 2025-12-02 | 03993dd | Fix Quick Setup form fields match industry pricing (ONBOARD-007 + ONBOARD-006) | **PENDING PUSH** |
 | 2025-12-02 | e0cb0e5 | Fix Help button navigation (BUG-001) | **PENDING PUSH** |
 | 2025-12-02 | 8a6770f | Add Demo page frontend for try-before-signup (BUG-003) | **DEPLOYED** |
