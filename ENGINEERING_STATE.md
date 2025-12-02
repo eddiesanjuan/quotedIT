@@ -60,6 +60,173 @@
 | ~~ONBOARD-005~~ | ~~Expand Trade Defaults (20+ industries)~~ | ~~Backend~~ | **COMPLETE** | Committed 48cb784 |
 | ~~UX-001~~ | ~~Improve Quote Input Placeholder Text~~ | ~~Frontend~~ | **COMPLETE** | Committed 5610036 |
 | ~~FEAT-003~~ | ~~Pricing Brain Global Settings Editor~~ | ~~Frontend + Backend~~ | **COMPLETE** | Committed a7b12c2 |
+| BUG-001 | Help Button Navigation Broken | Frontend | **READY** | None |
+| BUG-002 | Share Quote Email Fails to Send | Backend | **READY** | None |
+| BUG-003 | Demo Page Frontend Missing | Frontend | **READY** | Backend done (c7a91d3), frontend never built |
+| ONBOARD-006 | Expand Industries Beyond Construction | Frontend + Backend | **READY** | None |
+| ONBOARD-007 | Quick Setup Form/Tips Mismatch | Frontend + Backend | **READY** | None |
+| ONBOARD-008 | Ensure Onboarding Path Consistency | Backend | **READY** | None |
+
+---
+
+## BUG-001: Help Button Navigation Broken (READY)
+
+**Scope**: Frontend (1h)
+**Priority**: HIGH (broken user-facing feature)
+**Reported By**: Founder (2025-12-02)
+
+**Problem**: The Help button in the navigation doesn't lead anywhere when clicked. The help.html page exists but the navigation isn't wired up correctly.
+
+**Implementation**:
+1. [ ] Find Help button in frontend navigation
+2. [ ] Ensure it links to /help or help.html
+3. [ ] Verify navigation works on all pages (index, landing, etc.)
+4. [ ] Test on mobile
+
+---
+
+## BUG-002: Share Quote Email Fails to Send (READY)
+
+**Scope**: Backend (2h)
+**Priority**: HIGH (blocks viral growth feature)
+**Reported By**: Founder (2025-12-02)
+
+**Problem**: When users try to share a quote via email (GROWTH-003), the email fails to send. This breaks the viral loop.
+
+**Investigation**:
+1. [ ] Check Resend API key is configured in Railway
+2. [ ] Check email service error handling in `backend/api/share.py`
+3. [ ] Verify email template renders correctly
+4. [ ] Check Resend dashboard for failed sends
+5. [ ] Add better error logging/reporting
+
+---
+
+## BUG-003: Demo Page Frontend Missing (READY)
+
+**Scope**: Frontend (4h)
+**Priority**: HIGH (blocks "try before signup" conversion)
+**Reported By**: Founder (2025-12-02)
+
+**Problem**: GROWTH-001 implemented the demo backend (c7a91d3) but the frontend was never built. The demo page doesn't exist, so users can't try the product before signing up.
+
+**What Exists**:
+- `POST /api/demo/quote` - Backend endpoint (rate limited, no auth)
+- Demo uses generic contractor profile
+
+**What's Missing**:
+- `/demo` route in frontend
+- Demo page UI with:
+  - Voice recorder OR text input
+  - Quote generation (using demo endpoint)
+  - "DEMO" watermark on output
+  - CTA: "Create free account to save this quote"
+
+**Implementation**:
+1. [ ] Create `frontend/demo.html`
+2. [ ] Copy quote input UI from main app
+3. [ ] Wire to `/api/demo/quote` endpoint
+4. [ ] Add "DEMO" watermark to results
+5. [ ] Add prominent signup CTA
+6. [ ] Link from landing page ("Try it now - no signup required")
+
+---
+
+## ONBOARD-006: Expand Industries Beyond Construction (READY)
+
+**Scope**: Frontend + Backend (3h)
+**Priority**: MEDIUM (market expansion)
+**Requested By**: Founder (2025-12-02)
+
+**Problem**: The industry selection is too construction-centric. Quoted could work for many service businesses that need to quote jobs, not just contractors:
+- Freelancers (designers, developers, writers)
+- Event services (DJs, photographers, caterers, planners)
+- Personal services (tutors, coaches, trainers)
+- Creative services (videographers, musicians)
+
+**Implementation**:
+1. [ ] Add new industry categories to `backend/api/onboarding.py`:
+   - Freelance/Creative
+   - Event Services
+   - Personal Services
+2. [ ] Add specific trades under each:
+   - Photographer, Videographer, Graphic Designer, Web Developer
+   - DJ, Caterer, Event Planner, Florist
+   - Personal Trainer, Tutor, Coach, Consultant
+3. [ ] Create pricing templates for these industries in `backend/data/pricing_templates.py`
+4. [ ] Add appropriate icons for new categories
+5. [ ] Update trade defaults for new industries
+
+---
+
+## ONBOARD-007: Quick Setup Form/Tips Mismatch (READY)
+
+**Scope**: Frontend + Backend (4h)
+**Priority**: HIGH (confuses users during onboarding)
+**Requested By**: Founder (2025-12-02)
+
+**Problem**: The Quick Setup form fields don't match the pricing approach recommended in the tips. For example:
+- Tips say: "Cabinet makers use linear foot pricing at $400-800/LF"
+- Form asks: Hourly rate, material markup, minimum job
+
+This creates cognitive dissonance - the advice doesn't match what you're being asked to enter.
+
+**Solution**: Make Quick Setup form fields DYNAMIC based on industry template's `recommended_approach`:
+
+**Hourly-Based Industries** (electrician, plumber, handyman):
+- Hourly Labor Rate
+- Helper Rate (optional)
+- Service Call Minimum
+- Material Markup %
+
+**Linear Foot Industries** (cabinet maker, countertops):
+- Base Rate per Linear Foot
+- Material Tier Adjustments
+- Minimum Project Amount
+
+**Square Foot Industries** (painter, flooring):
+- Rate per Square Foot
+- Complexity Multipliers
+- Minimum Project Amount
+
+**Per-Unit Industries** (roofer - per square, tree service - per tree):
+- Rate per Unit
+- Unit Type
+- Minimum Job
+
+**Implementation**:
+1. [ ] Add `recommended_approach` field handling in Quick Setup JS
+2. [ ] Create field templates for each approach type
+3. [ ] Render appropriate fields based on industry template
+4. [ ] Update `quick_setup()` backend to accept varied field structures
+5. [ ] Map varied fields to consistent pricing_model storage
+
+---
+
+## ONBOARD-008: Ensure Onboarding Path Consistency (READY)
+
+**Scope**: Backend (4h)
+**Priority**: HIGH (data quality/user experience)
+**Requested By**: Founder (2025-12-02)
+
+**Problem**: Quick Setup and Interview should produce CONSISTENT pricing profiles, just with different levels of completeness:
+- Interview → Comprehensive profile (all fields filled, nuanced)
+- Quick Setup → Essential profile (core fields, learns more over time)
+
+Currently, it's unclear if both paths produce pricing_models that work the same way in quote generation.
+
+**Acceptance Criteria**:
+1. Both paths store data in same `pricing_model` format
+2. Quote generation works identically regardless of onboarding path
+3. Quick Setup users have clear path to "complete" their profile later
+4. Interview users don't have redundant/conflicting data
+
+**Implementation**:
+1. [ ] Audit `quick_setup()` output format vs interview output format
+2. [ ] Ensure both write to same `pricing_model` schema
+3. [ ] Document which fields are "essential" vs "learned over time"
+4. [ ] Add "Complete Your Profile" prompt for Quick Setup users after first 5 quotes
+5. [ ] Verify quote generation uses both profiles consistently
 
 ---
 
