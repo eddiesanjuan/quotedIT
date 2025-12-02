@@ -633,6 +633,14 @@ class DatabaseService:
             await session.refresh(issue)
             return issue
 
+    async def get_issue(self, issue_id: str) -> Optional[UserIssue]:
+        """Get a single issue by ID."""
+        async with async_session_factory() as session:
+            result = await session.execute(
+                select(UserIssue).where(UserIssue.id == issue_id)
+            )
+            return result.scalar_one_or_none()
+
     async def get_new_issues(self) -> List[UserIssue]:
         """Get all issues with status='new'."""
         async with async_session_factory() as session:
@@ -641,6 +649,25 @@ class DatabaseService:
                 .where(UserIssue.status == "new")
                 .order_by(UserIssue.created_at)
             )
+            return list(result.scalars().all())
+
+    async def get_all_issues(
+        self,
+        status: Optional[str] = None,
+        category: Optional[str] = None,
+    ) -> List[UserIssue]:
+        """Get all issues, optionally filtered by status and/or category."""
+        async with async_session_factory() as session:
+            query = select(UserIssue)
+
+            if status:
+                query = query.where(UserIssue.status == status)
+            if category:
+                query = query.where(UserIssue.category == category)
+
+            query = query.order_by(UserIssue.created_at.desc())
+
+            result = await session.execute(query)
             return list(result.scalars().all())
 
     async def update_issue(

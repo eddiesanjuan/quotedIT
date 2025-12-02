@@ -1,21 +1,21 @@
 """
 Issue reporting API for Quoted.
 Allows users to report bugs/issues that can be processed by autonomous Claude Code.
+
+Now uses SQLite persistence via DatabaseService (upgraded from in-memory storage).
 """
 
 from typing import Optional, List
 from datetime import datetime
 
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, update
 
-from ..models.database import UserIssue, get_database_url
-from ..services.auth import get_current_user_optional
+from ..services.database import get_db_service
 
 
 router = APIRouter()
+db = get_db_service()
 
 
 # Request/Response models
@@ -47,6 +47,9 @@ class IssueResponse(BaseModel):
     agent_solution: Optional[str] = None
     resolved_at: Optional[datetime] = None
 
+    class Config:
+        from_attributes = True
+
 
 class IssueUpdateRequest(BaseModel):
     """Request to update an issue (for Claude Code agent)."""
@@ -57,8 +60,22 @@ class IssueUpdateRequest(BaseModel):
     commit_hash: Optional[str] = None
 
 
-# In-memory storage for MVP (will use database in production)
-_issues: dict = {}
+def _issue_to_response(issue) -> IssueResponse:
+    """Convert UserIssue model to IssueResponse."""
+    return IssueResponse(
+        id=issue.id,
+        created_at=issue.created_at,
+        title=issue.title,
+        description=issue.description,
+        category=issue.category,
+        severity=issue.severity,
+        status=issue.status,
+        page_url=issue.page_url,
+        error_message=issue.error_message,
+        agent_analysis=issue.agent_analysis,
+        agent_solution=issue.agent_solution,
+        resolved_at=issue.resolved_at,
+    )
 
 
 @router.post("/", response_model=IssueResponse)
@@ -68,35 +85,20 @@ async def create_issue(request: IssueCreateRequest):
 
     Users can report bugs, feature requests, or other issues.
     These will be picked up by the autonomous Claude Code agent.
+    Issues are persisted to SQLite and survive Railway restarts.
     """
-    import uuid
+    issue = await db.create_issue(
+        title=request.title,
+        description=request.description,
+        category=request.category or "bug",
+        severity=request.severity or "medium",
+        page_url=request.page_url,
+        browser_info=request.browser_info,
+        error_message=request.error_message,
+        steps_to_reproduce=request.steps_to_reproduce,
+    )
 
-    issue_id = str(uuid.uuid4())
-    now = datetime.utcnow()
-
-    issue = {
-        "id": issue_id,
-        "created_at": now,
-        "updated_at": now,
-        "title": request.title,
-        "description": request.description,
-        "category": request.category,
-        "severity": request.severity,
-        "status": "new",
-        "page_url": request.page_url,
-        "browser_info": request.browser_info,
-        "error_message": request.error_message,
-        "steps_to_reproduce": request.steps_to_reproduce,
-        "agent_analysis": None,
-        "agent_solution": None,
-        "files_modified": None,
-        "commit_hash": None,
-        "resolved_at": None,
-    }
-
-    _issues[issue_id] = issue
-
-    return IssueResponse(**issue)
+    return _issue_to_response(issue)
 
 
 @router.get("/", response_model=List[IssueResponse])
@@ -107,17 +109,8 @@ async def list_issues(
     """
     List all issues, optionally filtered by status or category.
     """
-    issues = list(_issues.values())
-
-    if status:
-        issues = [i for i in issues if i["status"] == status]
-    if category:
-        issues = [i for i in issues if i["category"] == category]
-
-    # Sort by created_at descending (newest first)
-    issues.sort(key=lambda x: x["created_at"], reverse=True)
-
-    return [IssueResponse(**i) for i in issues]
+    issues = await db.get_all_issues(status=status, category=category)
+    return [_issue_to_response(i) for i in issues]
 
 
 @router.get("/new", response_model=List[IssueResponse])
@@ -126,18 +119,18 @@ async def get_new_issues():
     Get all issues with status='new' for the autonomous agent to process.
     This is the endpoint the polling script will call.
     """
-    new_issues = [i for i in _issues.values() if i["status"] == "new"]
-    new_issues.sort(key=lambda x: x["created_at"])  # Oldest first (FIFO)
-    return [IssueResponse(**i) for i in new_issues]
+    issues = await db.get_new_issues()
+    return [_issue_to_response(i) for i in issues]
 
 
 @router.get("/{issue_id}", response_model=IssueResponse)
 async def get_issue(issue_id: str):
     """Get a specific issue by ID."""
-    if issue_id not in _issues:
+    issue = await db.get_issue(issue_id)
+    if not issue:
         raise HTTPException(status_code=404, detail="Issue not found")
 
-    return IssueResponse(**_issues[issue_id])
+    return _issue_to_response(issue)
 
 
 @router.patch("/{issue_id}", response_model=IssueResponse)
@@ -145,56 +138,57 @@ async def update_issue(issue_id: str, request: IssueUpdateRequest):
     """
     Update an issue (used by Claude Code agent to report progress).
     """
-    if issue_id not in _issues:
+    # Check issue exists
+    existing = await db.get_issue(issue_id)
+    if not existing:
         raise HTTPException(status_code=404, detail="Issue not found")
 
-    issue = _issues[issue_id]
+    # Build update kwargs
+    update_kwargs = {}
 
     if request.status:
-        issue["status"] = request.status
-        if request.status == "in_progress" and not issue.get("picked_up_at"):
-            issue["picked_up_at"] = datetime.utcnow()
+        update_kwargs["status"] = request.status
+        if request.status == "in_progress" and not existing.picked_up_at:
+            update_kwargs["picked_up_at"] = datetime.utcnow()
         elif request.status == "resolved":
-            issue["resolved_at"] = datetime.utcnow()
+            update_kwargs["resolved_at"] = datetime.utcnow()
 
     if request.agent_analysis:
-        issue["agent_analysis"] = request.agent_analysis
+        update_kwargs["agent_analysis"] = request.agent_analysis
 
     if request.agent_solution:
-        issue["agent_solution"] = request.agent_solution
+        update_kwargs["agent_solution"] = request.agent_solution
 
     if request.files_modified:
-        issue["files_modified"] = request.files_modified
+        update_kwargs["files_modified"] = request.files_modified
 
     if request.commit_hash:
-        issue["commit_hash"] = request.commit_hash
+        update_kwargs["commit_hash"] = request.commit_hash
 
-    issue["updated_at"] = datetime.utcnow()
-    _issues[issue_id] = issue
-
-    return IssueResponse(**issue)
+    issue = await db.update_issue(issue_id, **update_kwargs)
+    return _issue_to_response(issue)
 
 
-@router.post("/{issue_id}/claim")
+@router.post("/{issue_id}/claim", response_model=IssueResponse)
 async def claim_issue(issue_id: str):
     """
     Claim an issue for processing (prevents duplicate work).
     Returns the issue if successfully claimed, 409 if already claimed.
     """
-    if issue_id not in _issues:
+    issue = await db.get_issue(issue_id)
+    if not issue:
         raise HTTPException(status_code=404, detail="Issue not found")
 
-    issue = _issues[issue_id]
-
-    if issue["status"] != "new":
+    if issue.status != "new":
         raise HTTPException(
             status_code=409,
-            detail=f"Issue already claimed (status: {issue['status']})"
+            detail=f"Issue already claimed (status: {issue.status})"
         )
 
-    issue["status"] = "queued"
-    issue["picked_up_at"] = datetime.utcnow()
-    issue["updated_at"] = datetime.utcnow()
-    _issues[issue_id] = issue
+    issue = await db.update_issue(
+        issue_id,
+        status="queued",
+        picked_up_at=datetime.utcnow(),
+    )
 
-    return IssueResponse(**issue)
+    return _issue_to_response(issue)

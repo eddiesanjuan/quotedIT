@@ -8,14 +8,41 @@ from contextlib import asynccontextmanager
 
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, RedirectResponse
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from .config import settings
 from .models.database import init_db
 from .api import quotes, contractors, onboarding, auth, issues
+
+
+# Rate limiter
+limiter = Limiter(key_func=get_remote_address)
+
+
+class HTTPSRedirectMiddleware(BaseHTTPMiddleware):
+    """Redirect HTTP to HTTPS in production."""
+
+    async def dispatch(self, request: Request, call_next):
+        # Check if behind a proxy (Railway sets X-Forwarded-Proto)
+        forwarded_proto = request.headers.get("x-forwarded-proto", "")
+
+        # Only redirect if in production and coming via HTTP
+        if (settings.environment == "production" and
+            forwarded_proto == "http" and
+            request.url.path not in ["/health", "/api/info"]):
+            # Build HTTPS URL
+            https_url = str(request.url).replace("http://", "https://", 1)
+            return RedirectResponse(https_url, status_code=301)
+
+        response = await call_next(request)
+        return response
 
 
 @asynccontextmanager
@@ -23,6 +50,7 @@ async def lifespan(app: FastAPI):
     """Application lifespan handler - startup and shutdown."""
     # Startup
     print(f"Starting {settings.app_name} v{settings.app_version}")
+    print(f"Environment: {settings.environment}")
 
     # Ensure data directories exist
     os.makedirs("./data", exist_ok=True)
@@ -47,10 +75,34 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS middleware (for frontend)
+# Add rate limiter to app state
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# HTTPS redirect middleware (production only)
+if settings.environment == "production":
+    app.add_middleware(HTTPSRedirectMiddleware)
+
+# Allowed origins for CORS
+ALLOWED_ORIGINS = [
+    "https://quoted.it.com",
+    "https://www.quoted.it.com",
+    "https://web-production-0550.up.railway.app",
+]
+
+# In development, also allow localhost
+if settings.environment != "production":
+    ALLOWED_ORIGINS.extend([
+        "http://localhost:3000",
+        "http://localhost:8000",
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:8000",
+    ])
+
+# CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, restrict this
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

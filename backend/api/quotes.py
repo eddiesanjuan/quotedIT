@@ -15,9 +15,11 @@ import tempfile
 from typing import Optional, List
 from datetime import datetime
 
-from fastapi import APIRouter, HTTPException, UploadFile, File, Form, Depends
+from fastapi import APIRouter, HTTPException, UploadFile, File, Form, Depends, Request
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 
 from ..services import (
     get_transcription_service,
@@ -30,6 +32,9 @@ from ..services.auth import get_current_user
 
 
 router = APIRouter()
+
+# Rate limiter instance
+limiter = Limiter(key_func=get_remote_address)
 
 
 # Request/Response models
@@ -226,7 +231,8 @@ def quote_to_response(quote) -> QuoteResponse:
 
 
 @router.post("/generate", response_model=QuoteResponse)
-async def generate_quote(request: QuoteRequest, current_user: dict = Depends(get_current_user)):
+@limiter.limit("30/minute")
+async def generate_quote(request: Request, quote_request: QuoteRequest, current_user: dict = Depends(get_current_user)):
     """
     Generate a quote from transcribed text.
 
@@ -281,7 +287,7 @@ async def generate_quote(request: QuoteRequest, current_user: dict = Depends(get
         # PASS 1: Detect category from transcription (fast, cheap call)
         # Uses user's existing categories for fuzzy matching, or creates new ones
         detected_job_type = await quote_service.detect_job_type(
-            request.transcription,
+            quote_request.transcription,
             pricing_knowledge=pricing_dict.get("pricing_knowledge")
         )
 
@@ -299,19 +305,19 @@ async def generate_quote(request: QuoteRequest, current_user: dict = Depends(get
         # PASS 3: Generate quote with type-filtered context
         # AND category-specific learned adjustments injected into the prompt
         # Enhancement 3: Optionally use confidence sampling for data-driven confidence
-        if request.use_confidence_sampling:
+        if quote_request.use_confidence_sampling:
             quote_data, variance_confidence = await quote_service.generate_quote_with_confidence(
-                transcription=request.transcription,
+                transcription=quote_request.transcription,
                 contractor=contractor_dict,
                 pricing_model=pricing_dict,
                 terms=terms_dict,
                 correction_examples=correction_examples,
                 detected_category=detected_job_type,
-                num_samples=min(max(request.num_samples, 2), 5),  # Clamp to 2-5
+                num_samples=min(max(quote_request.num_samples, 2), 5),  # Clamp to 2-5
             )
         else:
             quote_data = await quote_service.generate_quote(
-                transcription=request.transcription,
+                transcription=quote_request.transcription,
                 contractor=contractor_dict,
                 pricing_model=pricing_dict,
                 terms=terms_dict,
@@ -326,7 +332,7 @@ async def generate_quote(request: QuoteRequest, current_user: dict = Depends(get
         # Save to database
         quote = await db.create_quote(
             contractor_id=contractor.id,
-            transcription=request.transcription,
+            transcription=quote_request.transcription,
             job_type=quote_data.get("job_type"),
             job_description=quote_data.get("job_description"),
             line_items=quote_data.get("line_items", []),
@@ -351,8 +357,10 @@ async def generate_quote(request: QuoteRequest, current_user: dict = Depends(get
 # ============================================================================
 
 @router.post("/clarifying-questions", response_model=ClarifyingQuestionsResponse)
+@limiter.limit("30/minute")
 async def get_clarifying_questions(
-    request: ClarifyingQuestionsRequest,
+    request: Request,
+    clarify_request: ClarifyingQuestionsRequest,
     current_user: dict = Depends(get_current_user),
 ):
     """
@@ -392,10 +400,10 @@ async def get_clarifying_questions(
 
         # Generate clarifying questions
         result = await quote_service.generate_clarifying_questions(
-            transcription=request.transcription,
+            transcription=clarify_request.transcription,
             contractor=contractor_dict,
             pricing_model=pricing_dict,
-            max_questions=min(max(request.max_questions, 1), 5),  # Clamp 1-5
+            max_questions=min(max(clarify_request.max_questions, 1), 5),  # Clamp 1-5
         )
 
         # Convert to response model
@@ -423,8 +431,10 @@ async def get_clarifying_questions(
 
 
 @router.post("/generate-with-clarifications", response_model=QuoteResponse)
+@limiter.limit("30/minute")
 async def generate_quote_with_clarifications(
-    request: QuoteWithClarificationsRequest,
+    request: Request,
+    clarified_request: QuoteWithClarificationsRequest,
     current_user: dict = Depends(get_current_user),
 ):
     """
@@ -486,12 +496,12 @@ async def generate_quote_with_clarifications(
                 "question": c.question,
                 "answer": c.answer,
             }
-            for c in request.clarifications
+            for c in clarified_request.clarifications
         ]
 
         # Generate quote with clarifications
         quote_data = await quote_service.generate_quote_with_clarifications(
-            transcription=request.transcription,
+            transcription=clarified_request.transcription,
             clarifications=clarification_dicts,
             contractor=contractor_dict,
             pricing_model=pricing_dict,
@@ -501,7 +511,7 @@ async def generate_quote_with_clarifications(
         # Save to database
         quote = await db.create_quote(
             contractor_id=contractor.id,
-            transcription=request.transcription,
+            transcription=clarified_request.transcription,
             job_type=quote_data.get("job_type"),
             job_description=quote_data.get("job_description"),
             line_items=quote_data.get("line_items", []),
@@ -533,7 +543,9 @@ class TranscriptionResponse(BaseModel):
 
 
 @router.post("/transcribe", response_model=TranscriptionResponse)
+@limiter.limit("20/minute")
 async def transcribe_audio(
+    request: Request,
     audio: UploadFile = File(...),
     current_user: dict = Depends(get_current_user),
 ):
@@ -572,7 +584,9 @@ async def transcribe_audio(
 
 
 @router.post("/generate-from-audio", response_model=QuoteResponse)
+@limiter.limit("20/minute")
 async def generate_quote_from_audio(
+    request: Request,
     audio: UploadFile = File(...),
     current_user: dict = Depends(get_current_user),
 ):
@@ -847,7 +861,8 @@ async def update_quote(
 
 
 @router.post("/{quote_id}/pdf")
-async def generate_pdf(quote_id: str, current_user: dict = Depends(get_current_user)):
+@limiter.limit("30/minute")
+async def generate_pdf(request: Request, quote_id: str, current_user: dict = Depends(get_current_user)):
     """Generate a PDF for a quote."""
     db = get_db_service()
 
