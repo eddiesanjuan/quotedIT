@@ -3507,6 +3507,21 @@
                     ✓ Link copied to clipboard!
                 </div>
             </div>
+
+            <!-- Referral Banner -->
+            <div style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.08), rgba(124, 58, 237, 0.03)); border: 1px solid rgba(124, 58, 237, 0.2); border-radius: 8px; padding: 12px 16px; margin-top: 24px; display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+                <div style="flex: 1;">
+                    <div style="font-size: 0.875rem; color: var(--text-primary); margin-bottom: 2px;">
+                        Know another contractor?
+                    </div>
+                    <div style="font-size: 0.8125rem; color: var(--text-secondary);">
+                        Share your code: <span id="shareModalReferralCode" style="font-family: var(--font-mono); color: var(--text-primary); font-weight: 600;">Loading...</span>
+                    </div>
+                </div>
+                <button onclick="copyShareModalReferralCode()" id="copyShareModalCodeBtn" style="background: var(--accent); color: white; border: none; border-radius: 6px; padding: 8px 16px; cursor: pointer; font-size: 0.8125rem; font-weight: 500; transition: all 0.2s ease; white-space: nowrap;">
+                    Copy
+                </button>
+            </div>
         </div>
     </div>
 
@@ -3585,13 +3600,42 @@
             <p class="modal-subtitle">
                 You just saved yourself hours of manual work. The more you use Quoted, the smarter it gets.
             </p>
+
+            <!-- Referral Section -->
+            <div style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.1), rgba(124, 58, 237, 0.05)); border: 1px solid rgba(124, 58, 237, 0.3); border-radius: 12px; padding: 20px; margin: 24px 0;">
+                <h3 style="margin: 0 0 8px 0; font-size: 1.125rem; color: var(--text-primary); font-family: var(--font-serif);">
+                    🎁 Invite a Friend, You Both Get Rewards
+                </h3>
+                <p style="color: var(--text-secondary); margin: 0 0 16px 0; font-size: 0.875rem;">
+                    You get <strong style="color: var(--text-primary);">1 free month</strong>, they get <strong style="color: var(--text-primary);">14 extra days</strong>
+                </p>
+
+                <!-- Referral Code Display -->
+                <div style="background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+                    <div style="flex: 1;">
+                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em;">Your Referral Code</div>
+                        <div id="celebrationReferralCode" style="font-family: var(--font-mono); font-size: 1.125rem; color: var(--text-primary); font-weight: 600;">Loading...</div>
+                    </div>
+                    <button onclick="copyCelebrationReferralCode()" id="copyCelebrationCodeBtn" style="background: var(--accent); color: white; border: none; border-radius: 8px; padding: 10px 20px; cursor: pointer; font-size: 0.875rem; font-weight: 500; transition: all 0.2s ease; white-space: nowrap;">
+                        Copy Code
+                    </button>
+                </div>
+
+                <!-- Share Buttons -->
+                <div style="display: flex; gap: 8px;">
+                    <button onclick="shareCelebrationReferralLink()" style="flex: 1; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 8px; padding: 10px; cursor: pointer; font-size: 0.875rem; color: var(--text-primary); font-family: var(--font-sans); transition: all 0.2s ease;">
+                        📧 Share Link
+                    </button>
+                    <button onclick="copyCelebrationReferralLink()" style="flex: 1; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 8px; padding: 10px; cursor: pointer; font-size: 0.875rem; color: var(--text-primary); font-family: var(--font-sans); transition: all 0.2s ease;">
+                        🔗 Copy Link
+                    </button>
+                </div>
+            </div>
+
             <div class="celebration-actions">
                 <button class="btn btn-primary" onclick="closeCelebrationModal()">Got it!</button>
                 <button class="btn btn-secondary" onclick="closeCelebrationAndCreate()">Create Another</button>
             </div>
-            <p style="text-align: center; margin-top: 20px; font-size: 0.75rem; color: var(--text-muted);">
-                Invite a friend and you both get extra trial time
-            </p>
         </div>
     </div>
 
@@ -3979,6 +4023,16 @@
                 return;
             }
 
+            // Check if this is first quote attempt
+            const isFirstQuoteAttempt = currentBillingStatus?.quotes_used === 0;
+
+            // Track first quote attempt
+            {% if posthog_api_key %}
+            if (window.posthog && isFirstQuoteAttempt) {
+                posthog.capture('first_quote_attempt');
+            }
+            {% endif %}
+
             showLoading(true);
 
             try {
@@ -4009,6 +4063,14 @@
                         quote_id: quote.id,
                         total: quote.total
                     });
+
+                    // Track first quote milestone
+                    if (isFirstQuoteAttempt) {
+                        posthog.capture('first_quote_generated', {
+                            quote_id: quote.id,
+                            total: quote.total
+                        });
+                    }
                 }
                 {% endif %}
             } catch (err) {
@@ -4164,12 +4226,22 @@
             }
         }
 
-        function showCelebrationModal() {
+        async function showCelebrationModal() {
             const modal = document.getElementById('celebrationModal');
             modal.style.display = 'flex';
 
             // Create confetti
             createConfetti();
+
+            // Load referral code
+            await loadCelebrationReferralCode();
+
+            // Track referral shown
+            {% if posthog_api_key %}
+            if (window.posthog) {
+                posthog.capture('referral_shown_at_celebration');
+            }
+            {% endif %}
         }
 
         function closeCelebrationModal() {
@@ -4679,6 +4751,14 @@
 
             document.getElementById('chatMessages').innerHTML = '';
             messageCount = 0;
+
+            // Track onboarding path selection
+            {% if posthog_api_key %}
+            if (window.posthog) {
+                posthog.capture('onboarding_path_selected', { path: 'interview' });
+                posthog.capture('onboarding_started', { onboarding_type: 'interview' });
+            }
+            {% endif %}
 
             addTypingIndicator();
 
@@ -6037,6 +6117,16 @@
 
         // Start Stripe checkout
         async function startCheckout(planTier, interval) {
+            // Track upgrade button click
+            {% if posthog_api_key %}
+            if (window.posthog) {
+                posthog.capture('upgrade_clicked', {
+                    plan_tier: planTier,
+                    billing_interval: interval
+                });
+            }
+            {% endif %}
+
             try {
                 const response = await fetch(`${API_BASE}/billing/create-checkout`, {
                     method: 'POST',
@@ -6146,10 +6236,11 @@
             document.getElementById('upgradeModal').style.display = 'flex';
             loadBillingStatus(); // Refresh pricing in modal
 
-            // Track upgrade modal open
+            // Track upgrade modal view
             {% if posthog_api_key %}
             if (window.posthog) {
-                posthog.capture('quote_limit_modal_shown');
+                posthog.capture('upgrade_modal_viewed');
+                posthog.capture('quote_limit_modal_shown'); // Legacy event name
             }
             {% endif %}
         }
@@ -6488,9 +6579,25 @@
                 try {
                     const errorData = await clonedResponse.json();
                     showError(errorData.detail || 'Quote limit reached. Please upgrade to continue.');
+
+                    // Track quote limit reached
+                    {% if posthog_api_key %}
+                    if (window.posthog) {
+                        posthog.capture('quote_limit_reached');
+                    }
+                    {% endif %}
+
                     showUpgradeModal();
                 } catch {
                     showError('Quote limit reached. Please upgrade to continue.');
+
+                    // Track quote limit reached
+                    {% if posthog_api_key %}
+                    if (window.posthog) {
+                        posthog.capture('quote_limit_reached');
+                    }
+                    {% endif %}
+
                     showUpgradeModal();
                 }
             }
