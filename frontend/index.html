@@ -4274,6 +4274,137 @@
             }
         }
 
+        // ========== REFERRAL FUNCTIONS ==========
+
+        let cachedReferralData = null;
+
+        async function loadCelebrationReferralCode() {
+            try {
+                const response = await fetch(`${API_BASE}/referral/stats`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    cachedReferralData = data;
+
+                    // Extract code from shareable_link (format: https://quoted.com/?ref=CODE)
+                    const referralCode = data.shareable_link ? data.shareable_link.split('=')[1] : 'ERROR';
+                    document.getElementById('celebrationReferralCode').textContent = referralCode;
+                } else {
+                    document.getElementById('celebrationReferralCode').textContent = 'ERROR';
+                }
+            } catch (error) {
+                console.error('Error loading referral code:', error);
+                document.getElementById('celebrationReferralCode').textContent = 'ERROR';
+            }
+        }
+
+        function copyCelebrationReferralCode() {
+            const codeElement = document.getElementById('celebrationReferralCode');
+            const code = codeElement.textContent;
+
+            navigator.clipboard.writeText(code).then(() => {
+                const btn = document.getElementById('copyCelebrationCodeBtn');
+                const originalText = btn.textContent;
+                btn.textContent = 'Copied!';
+
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                }, 2000);
+
+                // Track analytics
+                {% if posthog_api_key %}
+                if (window.posthog) {
+                    posthog.capture('referral_code_copied', {
+                        source: 'celebration_modal'
+                    });
+                }
+                {% endif %}
+            });
+        }
+
+        function copyCelebrationReferralLink() {
+            if (!cachedReferralData) return;
+
+            const link = cachedReferralData.shareable_link;
+            navigator.clipboard.writeText(link).then(() => {
+                showLearningToast('Referral link copied!', '📋');
+
+                // Track analytics
+                {% if posthog_api_key %}
+                if (window.posthog) {
+                    posthog.capture('referral_link_copied', {
+                        source: 'celebration_modal'
+                    });
+                }
+                {% endif %}
+            });
+        }
+
+        function shareCelebrationReferralLink() {
+            if (!cachedReferralData) return;
+
+            const link = cachedReferralData.shareable_link;
+            const subject = 'Try Quoted - AI Quote Generator for Contractors';
+            const body = `Hey! I've been using Quoted to generate professional quotes in seconds. You should check it out - use my code to get 14 days free (instead of 7): ${link}`;
+
+            window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+            // Track analytics
+            {% if posthog_api_key %}
+            if (window.posthog) {
+                posthog.capture('referral_shared', {
+                    source: 'celebration_modal',
+                    method: 'email'
+                });
+            }
+            {% endif %}
+        }
+
+        async function loadShareModalReferralCode() {
+            try {
+                const response = await fetch(`${API_BASE}/referral/stats`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                if (response.ok) {
+                    const data = await response.json();
+
+                    // Extract code from shareable_link
+                    const referralCode = data.shareable_link ? data.shareable_link.split('=')[1] : 'ERROR';
+                    document.getElementById('shareModalReferralCode').textContent = referralCode;
+                } else {
+                    document.getElementById('shareModalReferralCode').textContent = 'ERROR';
+                }
+            } catch (error) {
+                console.error('Error loading referral code:', error);
+                document.getElementById('shareModalReferralCode').textContent = 'ERROR';
+            }
+        }
+
+        function copyShareModalReferralCode() {
+            const codeElement = document.getElementById('shareModalReferralCode');
+            const code = codeElement.textContent;
+
+            navigator.clipboard.writeText(code).then(() => {
+                const btn = document.getElementById('copyShareModalCodeBtn');
+                const originalText = btn.textContent;
+                btn.textContent = 'Copied!';
+
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                }, 2000);
+
+                // Track analytics
+                {% if posthog_api_key %}
+                if (window.posthog) {
+                    posthog.capture('referral_code_copied', {
+                        source: 'share_modal'
+                    });
+                }
+                {% endif %}
+            });
+        }
+
         // ========== ONBOARDING ==========
 
         let onboardingSessionId = null;
@@ -6433,6 +6564,16 @@
 
             // Reset to email tab
             showShareTab('email');
+
+            // Load referral code
+            await loadShareModalReferralCode();
+
+            // Track referral shown
+            {% if posthog_api_key %}
+            if (window.posthog) {
+                posthog.capture('referral_shown_in_share');
+            }
+            {% endif %}
 
             // Show modal
             document.getElementById('shareModal').style.display = 'flex';
