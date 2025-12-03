@@ -1187,6 +1187,296 @@
                 padding-top: 145px;
             }
         }
+
+        /* Exit Intent Survey Modal */
+        .exit-survey-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(12px);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            padding: 24px;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .exit-survey-overlay.active {
+            display: flex;
+        }
+
+        .exit-survey-content {
+            background: linear-gradient(135deg, rgba(20, 20, 20, 0.98), rgba(10, 10, 10, 0.98));
+            border: 1px solid rgba(0, 255, 136, 0.2);
+            border-radius: 16px;
+            padding: 48px 40px;
+            max-width: 560px;
+            width: 100%;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0, 255, 136, 0.1);
+            animation: slideUp 0.4s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .exit-survey-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: color 0.3s ease;
+            padding: 4px;
+            line-height: 1;
+        }
+
+        .exit-survey-close:hover {
+            color: var(--text-primary);
+        }
+
+        .exit-survey-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .exit-survey-icon {
+            font-size: 3rem;
+            margin-bottom: 16px;
+        }
+
+        .exit-survey-title {
+            font-family: var(--font-serif);
+            font-size: 1.75rem;
+            font-weight: 500;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+        }
+
+        .exit-survey-subtitle {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        .exit-survey-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 32px;
+        }
+
+        .exit-survey-option {
+            display: flex;
+            align-items: center;
+            padding: 16px 20px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            color: var(--text-primary);
+        }
+
+        .exit-survey-option:hover {
+            border-color: rgba(0, 255, 136, 0.4);
+            background: rgba(0, 255, 136, 0.05);
+        }
+
+        .exit-survey-option.selected {
+            border-color: #00ff88;
+            background: rgba(0, 255, 136, 0.1);
+        }
+
+        .exit-survey-option input[type="checkbox"] {
+            margin-right: 12px;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: #00ff88;
+        }
+
+        .exit-survey-other {
+            margin-top: 8px;
+        }
+
+        .exit-survey-other input[type="text"] {
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .exit-survey-other input[type="text"]:focus {
+            outline: none;
+            border-color: #00ff88;
+        }
+
+        .exit-survey-divider {
+            height: 1px;
+            background: var(--border);
+            margin: 32px 0;
+        }
+
+        .exit-survey-waitlist {
+            text-align: center;
+        }
+
+        .exit-survey-waitlist-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+        }
+
+        .exit-survey-waitlist-subtitle {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+
+        .exit-survey-email-group {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .exit-survey-email-input {
+            flex: 1;
+            padding: 14px 18px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .exit-survey-email-input:focus {
+            outline: none;
+            border-color: #00ff88;
+        }
+
+        .exit-survey-btn-primary {
+            padding: 14px 28px;
+            background: #00ff88;
+            color: #0a0a0a;
+            border: none;
+            border-radius: 8px;
+            font-family: var(--font-sans);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .exit-survey-btn-primary:hover {
+            background: #00dd77;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 255, 136, 0.3);
+        }
+
+        .exit-survey-btn-secondary {
+            display: inline-block;
+            padding: 14px 28px;
+            background: transparent;
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: var(--font-sans);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            width: 100%;
+        }
+
+        .exit-survey-btn-secondary:hover {
+            border-color: #00ff88;
+            background: rgba(0, 255, 136, 0.05);
+        }
+
+        .exit-survey-skip {
+            margin-top: 16px;
+            text-align: center;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .exit-survey-skip button {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            text-decoration: underline;
+            cursor: pointer;
+            font-family: var(--font-sans);
+            font-size: 0.875rem;
+            transition: color 0.3s ease;
+        }
+
+        .exit-survey-skip button:hover {
+            color: var(--text-secondary);
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 600px) {
+            .exit-survey-content {
+                padding: 36px 28px;
+                max-width: 95%;
+            }
+
+            .exit-survey-title {
+                font-size: 1.5rem;
+            }
+
+            .exit-survey-option {
+                padding: 14px 16px;
+                font-size: 0.9375rem;
+            }
+
+            .exit-survey-email-group {
+                flex-direction: column;
+            }
+
+            .exit-survey-btn-primary {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .exit-survey-content {
+                padding: 28px 20px;
+            }
+
+            .exit-survey-title {
+                font-size: 1.375rem;
+            }
+
+            .exit-survey-icon {
+                font-size: 2.5rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1426,6 +1716,64 @@
             <a href="/terms" class="footer-link">Terms</a>
         </div>
     </footer>
+
+    <!-- Exit Intent Survey Modal -->
+    <div id="exitSurveyModal" class="exit-survey-overlay">
+        <div class="exit-survey-content">
+            <button class="exit-survey-close" onclick="closeExitSurvey()">&times;</button>
+
+            <div class="exit-survey-header">
+                <div class="exit-survey-icon">💭</div>
+                <h2 class="exit-survey-title">Before you go...</h2>
+                <p class="exit-survey-subtitle">Help us understand what's holding you back</p>
+            </div>
+
+            <form id="exitSurveyForm" onsubmit="submitExitSurvey(event)">
+                <div class="exit-survey-options">
+                    <label class="exit-survey-option">
+                        <input type="checkbox" name="reason" value="not_my_trade">
+                        <span>Not sure it works for my trade</span>
+                    </label>
+                    <label class="exit-survey-option">
+                        <input type="checkbox" name="reason" value="pricing_high">
+                        <span>Pricing seems high</span>
+                    </label>
+                    <label class="exit-survey-option">
+                        <input type="checkbox" name="reason" value="no_time">
+                        <span>Don't have time right now</span>
+                    </label>
+                    <label class="exit-survey-option">
+                        <input type="checkbox" name="reason" value="need_examples">
+                        <span>Need to see real examples first</span>
+                    </label>
+                    <label class="exit-survey-option">
+                        <input type="checkbox" name="reason" value="other" id="otherCheckbox">
+                        <span>Other</span>
+                    </label>
+                    <div class="exit-survey-other" id="otherTextContainer" style="display: none;">
+                        <input type="text" id="otherText" name="other_text" placeholder="Tell us more...">
+                    </div>
+                </div>
+
+                <button type="submit" class="exit-survey-btn-secondary">Submit Feedback</button>
+
+                <div class="exit-survey-divider"></div>
+
+                <div class="exit-survey-waitlist">
+                    <h3 class="exit-survey-waitlist-title">Want updates for your trade?</h3>
+                    <p class="exit-survey-waitlist-subtitle">Join the waitlist and we'll notify you when we add your specific industry</p>
+                    <div class="exit-survey-email-group">
+                        <input type="email" id="waitlistEmail" class="exit-survey-email-input" placeholder="your@email.com">
+                        <button type="button" onclick="submitWaitlist()" class="exit-survey-btn-primary">Join Waitlist</button>
+                    </div>
+                </div>
+
+                <div class="exit-survey-skip">
+                    <button type="button" onclick="closeExitSurvey()">No thanks, just browsing</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <!-- Scroll Animation & Logo Spinner -->
     <script>
@@ -1769,6 +2117,292 @@
                     betaCounter.style.display = 'block';
                 });
         })();
+
+        // Exit Intent Survey
+        (function() {
+            const modal = document.getElementById('exitSurveyModal');
+            const otherCheckbox = document.getElementById('otherCheckbox');
+            const otherTextContainer = document.getElementById('otherTextContainer');
+            const otherText = document.getElementById('otherText');
+
+            // Check if survey already shown this session
+            const surveyShown = sessionStorage.getItem('exit_survey_shown');
+            const surveyCompleted = localStorage.getItem('exit_survey_completed');
+
+            // Don't show if already shown this session or completed before
+            if (surveyShown || surveyCompleted) return;
+
+            let mouseY = 0;
+            let exitIntentTriggered = false;
+
+            // Track mouse position
+            document.addEventListener('mousemove', (e) => {
+                mouseY = e.clientY;
+            });
+
+            // Detect exit intent - mouse moving toward top of window (to close tab/browser)
+            document.addEventListener('mouseout', (e) => {
+                // Check if mouse is leaving viewport from the top
+                if (e.clientY < 10 && mouseY < 10 && !exitIntentTriggered) {
+                    exitIntentTriggered = true;
+                    showExitSurvey();
+                }
+            });
+
+            // Show "Other" text input when checkbox selected
+            if (otherCheckbox) {
+                otherCheckbox.addEventListener('change', (e) => {
+                    if (e.target.checked) {
+                        otherTextContainer.style.display = 'block';
+                        otherText.focus();
+                    } else {
+                        otherTextContainer.style.display = 'none';
+                        otherText.value = '';
+                    }
+                });
+            }
+
+            // Add visual feedback for checkbox selection
+            document.querySelectorAll('.exit-survey-option input[type="checkbox"]').forEach(checkbox => {
+                checkbox.addEventListener('change', (e) => {
+                    const label = e.target.closest('.exit-survey-option');
+                    if (e.target.checked) {
+                        label.classList.add('selected');
+                    } else {
+                        label.classList.remove('selected');
+                    }
+                });
+            });
+
+            // Click outside to close
+            if (modal) {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        closeExitSurvey();
+                    }
+                });
+            }
+        })();
+
+        function showExitSurvey() {
+            const modal = document.getElementById('exitSurveyModal');
+            if (!modal) return;
+
+            // Mark as shown for this session
+            sessionStorage.setItem('exit_survey_shown', 'true');
+
+            // Show modal
+            modal.classList.add('active');
+
+            // Track analytics
+            {% if posthog_api_key %}
+            if (window.posthog) {
+                posthog.capture('exit_survey_shown');
+            }
+            {% endif %}
+        }
+
+        function closeExitSurvey() {
+            const modal = document.getElementById('exitSurveyModal');
+            if (!modal) return;
+
+            modal.classList.remove('active');
+
+            // Track dismissal
+            {% if posthog_api_key %}
+            if (window.posthog) {
+                posthog.capture('exit_survey_dismissed');
+            }
+            {% endif %}
+        }
+
+        function submitExitSurvey(event) {
+            event.preventDefault();
+
+            // Collect selected reasons
+            const checkboxes = document.querySelectorAll('input[name="reason"]:checked');
+            const reasons = Array.from(checkboxes).map(cb => cb.value);
+            const otherText = document.getElementById('otherText').value;
+
+            // Validate - at least one reason selected
+            if (reasons.length === 0) {
+                alert('Please select at least one reason');
+                return;
+            }
+
+            // If "other" selected, ensure text provided
+            if (reasons.includes('other') && !otherText.trim()) {
+                alert('Please tell us more about your concern');
+                document.getElementById('otherText').focus();
+                return;
+            }
+
+            // Store response data
+            const responseData = {
+                reasons: reasons,
+                other_text: otherText || null,
+                timestamp: new Date().toISOString(),
+                page_url: window.location.href
+            };
+
+            // Store in localStorage for now (can be sent to backend later)
+            const existingResponses = JSON.parse(localStorage.getItem('exit_survey_responses') || '[]');
+            existingResponses.push(responseData);
+            localStorage.setItem('exit_survey_responses', JSON.stringify(existingResponses));
+
+            // Mark as completed
+            localStorage.setItem('exit_survey_completed', 'true');
+
+            // Track analytics
+            {% if posthog_api_key %}
+            if (window.posthog) {
+                posthog.capture('exit_survey_completed', {
+                    reasons: reasons,
+                    has_other_text: !!otherText,
+                    reason_count: reasons.length
+                });
+            }
+            {% endif %}
+
+            // Show thank you message using safe DOM methods
+            const formContainer = document.getElementById('exitSurveyForm');
+            if (formContainer) {
+                // Clear existing content
+                while (formContainer.firstChild) {
+                    formContainer.removeChild(formContainer.firstChild);
+                }
+
+                // Create wrapper
+                const wrapper = document.createElement('div');
+                wrapper.style.textAlign = 'center';
+                wrapper.style.padding = '40px 20px';
+
+                // Create icon
+                const icon = document.createElement('div');
+                icon.style.fontSize = '3rem';
+                icon.style.marginBottom = '16px';
+                icon.textContent = '✅';
+                wrapper.appendChild(icon);
+
+                // Create heading
+                const heading = document.createElement('h3');
+                heading.style.fontFamily = 'var(--font-serif)';
+                heading.style.fontSize = '1.5rem';
+                heading.style.marginBottom = '12px';
+                heading.style.color = 'var(--text-primary)';
+                heading.textContent = 'Thank you!';
+                wrapper.appendChild(heading);
+
+                // Create paragraph
+                const paragraph = document.createElement('p');
+                paragraph.style.color = 'var(--text-secondary)';
+                paragraph.style.marginBottom = '24px';
+                paragraph.textContent = 'Your feedback helps us improve Quoted for everyone.';
+                wrapper.appendChild(paragraph);
+
+                // Create close button
+                const button = document.createElement('button');
+                button.className = 'exit-survey-btn-primary';
+                button.style.width = 'auto';
+                button.textContent = 'Close';
+                button.onclick = closeExitSurvey;
+                wrapper.appendChild(button);
+
+                formContainer.appendChild(wrapper);
+            }
+
+            // Auto-close after 3 seconds
+            setTimeout(() => {
+                closeExitSurvey();
+            }, 3000);
+        }
+
+        function submitWaitlist() {
+            const emailInput = document.getElementById('waitlistEmail');
+            const email = emailInput.value.trim();
+
+            // Validate email
+            if (!email) {
+                alert('Please enter your email address');
+                emailInput.focus();
+                return;
+            }
+
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                alert('Please enter a valid email address');
+                emailInput.focus();
+                return;
+            }
+
+            // Hash email for privacy (simple hash for demo - use proper hashing in production)
+            const hashedEmail = btoa(email);
+
+            // Store waitlist signup
+            const waitlistData = {
+                email_hash: hashedEmail,
+                timestamp: new Date().toISOString(),
+                page_url: window.location.href
+            };
+
+            // Store in localStorage for now (can be sent to backend later)
+            const existingWaitlist = JSON.parse(localStorage.getItem('exit_survey_waitlist') || '[]');
+            existingWaitlist.push(waitlistData);
+            localStorage.setItem('exit_survey_waitlist', JSON.stringify(existingWaitlist));
+
+            // Track analytics
+            {% if posthog_api_key %}
+            if (window.posthog) {
+                posthog.capture('waitlist_signup', {
+                    email_hash: hashedEmail,
+                    source: 'exit_survey'
+                });
+            }
+            {% endif %}
+
+            // Show success message using safe DOM methods
+            const waitlistContainer = document.querySelector('.exit-survey-waitlist');
+            if (waitlistContainer) {
+                // Clear existing content
+                while (waitlistContainer.firstChild) {
+                    waitlistContainer.removeChild(waitlistContainer.firstChild);
+                }
+
+                // Create wrapper
+                const wrapper = document.createElement('div');
+                wrapper.style.textAlign = 'center';
+                wrapper.style.padding = '20px';
+
+                // Create icon
+                const icon = document.createElement('div');
+                icon.style.fontSize = '2.5rem';
+                icon.style.marginBottom = '12px';
+                icon.textContent = '🎉';
+                wrapper.appendChild(icon);
+
+                // Create heading
+                const heading = document.createElement('h3');
+                heading.className = 'exit-survey-waitlist-title';
+                heading.textContent = "You're on the list!";
+                wrapper.appendChild(heading);
+
+                // Create paragraph
+                const paragraph = document.createElement('p');
+                paragraph.className = 'exit-survey-waitlist-subtitle';
+                paragraph.textContent = "We'll email you when we add support for your trade.";
+                wrapper.appendChild(paragraph);
+
+                waitlistContainer.appendChild(wrapper);
+            }
+
+            // Mark survey as completed
+            localStorage.setItem('exit_survey_completed', 'true');
+
+            // Auto-close after 2 seconds
+            setTimeout(() => {
+                closeExitSurvey();
+            }, 2000);
+        }
     </script>
 </body>
 </html>

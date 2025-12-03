@@ -71,6 +71,7 @@
 | ~~UX-004~~ | ~~Add Product Demo Animation to Landing Page~~ | ~~Frontend~~ | **COMPLETE** | Committed 2c7244e |
 | ~~BUG-004~~ | ~~Demo Page Broken + Strategic Review~~ | ~~Frontend + Executive~~ | **BUG FIXED** | Strategic direction pending DECISION-005 |
 | ~~BUG-005~~ | ~~Mobile Formatting & Layout Issues~~ | ~~Frontend~~ | **COMPLETE** | App nav + landing page mobile fixes |
+| DISC-020 | Exit-Intent Survey on Landing Page | Frontend | **COMPLETE** | Committed (pending push) |
 
 ---
 
@@ -1515,6 +1516,248 @@ GET /api/billing/plans - Available pricing (public)
 - Response: Block at registration with helpful message
 
 **Success Metric**: <5% trial abuse rate; no viral "how to get unlimited Quoted trials" posts
+
+---
+
+### DISC-018: Trial Grace Period & Soft Warnings (DISCOVERED) ⭐ Priority #1
+
+**Source**: Product Discovery Agent (2025-12-03)
+**Impact**: HIGH | **Effort**: M | **Score**: 1.5
+**Sprint Alignment**: Direct conversion impact - prevents revenue loss at trial expiration
+
+**Problem**: When trial expires (7 days, 75 quotes), users are immediately hard-blocked. No warning before the wall. User discovers limitation at worst moment (on job site, customer waiting) - creates bad UX and lost conversions.
+
+**Evidence**:
+- `backend/api/quotes.py` lines 251-278: Raises 402 error immediately when trial_expired or trial_limit_reached
+- No soft warning at 5/7 quotes remaining
+- No "Generate 1 more quote to upgrade" offer
+- DISC-005 added upgrade modal but not grace mechanics
+
+**Proposed Work**:
+1. Soft warning at 90% quota (67/75 quotes): Banner "You have 8 quotes remaining"
+2. At 95% (71/75): Modal after quote generation: "Trial ending soon - upgrade to unlock unlimited"
+3. At 100%: Allow 3 grace quotes with watermark "TRIAL EXPIRED" on PDF
+4. Grace quote CTA: "Upgrade to remove watermark and continue"
+5. Track: How many users convert during grace vs. hard block
+
+**Success Metric**: Trial→paid conversion +10-15pp; <5% of users hit hard block without warning
+
+---
+
+### DISC-019: "Try It First" Fast Activation Path (DISCOVERED) ⭐ Priority #2
+
+**Source**: Product Discovery Agent (2025-12-03)
+**Impact**: HIGH | **Effort**: M | **Score**: 1.5
+**Sprint Alignment**: Removes biggest new user friction - accelerates time to first quote
+
+**Problem**: New users must complete full onboarding (5-15 min interview OR quick setup) before generating first quote. This delays activation and increases drop-off. Demo mode exists for anonymous users but not for logged-in activation.
+
+**Evidence**:
+- `/api/onboarding/start` and `/api/onboarding/quick` both require completing full setup before first quote
+- No "Skip for now" option to generate sample quote with default pricing
+- BETA_SPRINT targets 60% activation rate - likely hurt by this friction
+
+**Proposed Work**:
+1. After signup, offer choice: "Set up my pricing (5-10 min)" OR "Try a quote now (2 min)"
+2. "Try It First" → Pre-filled generic pricing for their trade (from pricing_templates)
+3. User generates first quote immediately
+4. After first quote: "Want better accuracy? Complete pricing setup now"
+5. Track which path users choose and activation rates for each
+
+**Success Metric**: Activation rate 70%+ (up from 60% baseline); Time to first quote <3 min
+
+---
+
+### DISC-020: Exit-Intent Survey on Landing Page (DISCOVERED) ⭐ Priority #3
+
+**Source**: Growth Discovery Agent (2025-12-03)
+**Impact**: HIGH | **Effort**: M | **Score**: 1.5
+**Sprint Alignment**: Qualitative conversion data - know WHY visitors leave without signing up
+
+**Problem**: Landing page has traffic but conversion rate is unknown. Visitors leave without signing up and we don't know WHY. Are they confused? Not contractors? Price sensitive? Don't believe it works?
+
+**Evidence**:
+- PostHog analytics tracks clicks but not WHY people leave
+- Demo→signup baseline unknown (DISC-006 added modal but no data yet)
+- 6 days to iterate - need fast feedback loops
+
+**Proposed Work**:
+1. Exit-intent popup when mouse moves toward close/back button
+2. Single question: "What's holding you back from trying Quoted?"
+3. Options: "Not sure it works for my trade", "Pricing seems high", "Don't have time", "Need real examples", "Other"
+4. Submit → Thank you + "Join waitlist for updates?" (email capture)
+5. Analytics: exit_survey_shown, exit_survey_completed, exit_reason_selected
+6. Daily report: Top 3 objections → rapid iteration
+
+**Success Metric**: 100+ survey responses; identify top objection; +10-15% landing→signup after fix
+
+---
+
+### DISC-021: Email Signature Referral Hack (DISCOVERED)
+
+**Source**: Growth Discovery Agent (2025-12-03)
+**Impact**: MEDIUM | **Effort**: S | **Score**: 2.0
+**Sprint Alignment**: Boosts viral coefficient - every quote email becomes referral opportunity
+
+**Problem**: Referral visibility is delayed until first quote celebration. Most contractors send 5-20 emails/day with quotes - 25-100 free impressions per user per week going to waste.
+
+**Evidence**:
+- "Powered by Quoted" branding exists (GROWTH-005) but only on PDF
+- No email signature suggestion in onboarding or account settings
+- Viral coefficient needs to hit 1.3x (30 users → 40 referred users)
+
+**Proposed Work**:
+1. Account Settings: Add "Boost Your Referrals" card with pre-written email signature
+2. Pre-written: "PS: I use Quoted for instant voice quotes - [referral link]"
+3. Copy button for easy paste into Gmail/Outlook
+4. Show projected earnings: "If 1 in 10 clients tries Quoted, you earn $X/month in credits"
+5. After first quote modal: Optional email signature copy with one-click
+
+**Success Metric**: 40% of users copy email signature; referral coefficient 1.0 → 1.2+
+
+---
+
+### DISC-022: Customer Memory (Autocomplete) (DISCOVERED)
+
+**Source**: Product Discovery Agent (2025-12-03)
+**Impact**: MEDIUM | **Effort**: S | **Score**: 2.0
+**Sprint Alignment**: UX improvement - reduces friction for repeat customers
+
+**Problem**: Contractors often quote the same customer multiple times (different jobs, change orders). Currently, every quote requires re-entering customer name/phone/email. Tedious and error-prone.
+
+**Evidence**:
+- Database has customer fields on Quote but no separate Customer table
+- No autocomplete or customer search in quote generation flow
+- API has `PUT /api/quotes/{id}/customer` but no `/api/customers` endpoints
+
+**Proposed Work**:
+1. Backend: Extract unique customers from quote history (no new table needed)
+2. API endpoint: `GET /api/customers` returns list of {name, phone, email} from past quotes
+3. Frontend: Autocomplete dropdown on customer name field
+4. When user types, show matching past customers
+5. Click to autofill all customer fields
+6. Track saves vs. manual entry in analytics
+
+**Success Metric**: 30%+ of quotes use saved customer info (for users with 5+ quotes)
+
+---
+
+### DISC-023: Contractor Community Outreach Plan (DISCOVERED) 🚀 FOUNDER ACTION
+
+**Source**: Growth Discovery Agent (2025-12-03)
+**Impact**: HIGH | **Effort**: M | **Score**: 1.5
+**Sprint Alignment**: Distribution strategy - 100-user goal requires reaching contractors who don't know Quoted exists
+
+**Problem**: Product is built, analytics tracking, but no distribution strategy. 5 users (all founder network). 6 days remaining, need 95 more users. Zero community outreach documented.
+
+**Evidence**:
+- BETA_SPRINT assumes 300 demo views but no plan to get them
+- DISC-013 identified this gap but no action plan
+- No social media posts, Reddit threads, or community outreach
+
+**Proposed Work (FOUNDER REQUIRED)**:
+1. **Reddit (Day 1-2)**: Post in r/contractors, r/Construction, r/smallbusiness
+   - Title: "Built a voice-to-quote tool for contractors - 60 second demo, no signup"
+   - Include demo link + "First 100 beta users get lifetime discount" (scarcity)
+2. **Facebook Groups (Day 1-2)**: Post in 5 contractor groups (request permission first)
+3. **Blog/SEO (Day 2-3)**: Create /blog/how-to-quote-construction-jobs-faster landing page
+4. UTM tracking on all links for channel attribution
+
+**Success Metric**: 200+ demo page views; 20+ signups from community posts
+
+---
+
+### DISC-024: Viral Footer Enhancement on Shared Quotes (DISCOVERED)
+
+**Source**: Growth Discovery Agent (2025-12-03)
+**Impact**: MEDIUM | **Effort**: M | **Score**: 1.0
+**Sprint Alignment**: B2C expansion - every shared quote becomes marketing opportunity
+
+**Problem**: "Powered by Quoted" branding exists but is passive - just text. No CTA. Customers who receive quotes see branding but don't know they can GET Quoted themselves.
+
+**Evidence**:
+- GROWTH-003: Share quote deployed
+- GROWTH-005: "Powered by Quoted" branding exists
+- Current branding has no call to action
+- No tracking of shared_quote_viewed → signup (B2C funnel)
+
+**Proposed Work**:
+1. Enhanced footer: "Powered by Quoted - Get quotes like this in 60 seconds [Try Demo]"
+2. Track: shared_quote_cta_clicked
+3. Customer landing page `/for-customers`: "Your contractor uses Quoted. You can too."
+4. Full funnel: shared_quote_view → cta_click → demo_view → signup
+
+**Success Metric**: 5-10% of shared quote viewers click "Try Demo"; 3-5 B2C signups
+
+---
+
+### DISC-025: Landing Page Segment A/B Test (DISCOVERED) 🧪 STRATEGIC
+
+**Source**: Strategy Discovery Agent (2025-12-03)
+**Impact**: MEDIUM | **Effort**: M | **Score**: 1.0
+**Sprint Alignment**: GTM clarity - which segment converts better?
+
+**Problem**: CGO analysis shows Segment B (ballpark-only contractors) beats Segment A (qualification-focused) on EVERY metric. Yet messaging serves neither well. No data on which segment actually signs up.
+
+**Evidence**:
+- Segment B: 2x better LTV:CAC, 3-5x faster activation, higher viral coefficient
+- CMO decision: "Lead with qualification" then "Defer ballpark-only"
+- Current landing page has mixed messaging
+
+**Proposed Work**:
+1. Create TWO landing pages: /qualify (Segment A) and /ballpark (Segment B)
+2. Split initial 100 users: 80% Segment B, 20% Segment A (per CGO recommendation)
+3. Measure activation, retention, referral by segment separately
+4. Pick ONE segment by January 2026 based on data
+
+**Success Metric**: Clear winner on (Viral Coefficient × Retention × LTV) / CAC
+
+---
+
+### DISC-026: Pricing A/B Test ($19 vs $49) (DISCOVERED) 🧪 STRATEGIC
+
+**Source**: Strategy Discovery Agent (2025-12-03)
+**Impact**: HIGH | **Effort**: M | **Score**: 1.5
+**Sprint Alignment**: Value hypothesis validation - is impulse pricing the right strategy?
+
+**Problem**: Recent pricing drop from $29→$19 signals leadership doesn't trust value perception. At 90%+ gross margin, pricing is NOT unit economics - it's positioning. "Impulse buy" for a tool that creates business moats suggests misaligned GTM.
+
+**Evidence**:
+- CFO/CMO/CGO voted for $19 as "impulse buy" and "no-brainer"
+- Original positioning: "Moat: After 50+ quotes, system knows YOUR pricing deeply"
+- Cheaper than a single wasted trip to quote tire-kicker job
+- Learning system is crown jewel but pricing doesn't reflect switching cost value
+
+**Proposed Work**:
+1. A/B test value-based pricing ($49 Starter) vs current impulse pricing ($19)
+2. High-price cohort messaging: "Your pricing brain - learns what works, predicts what wins"
+3. Track which cohort has higher LTV, lower churn, better referrals
+4. Consider "outcome pricing" tier later (% of won contract value)
+
+**Success Metric**: LTV:CAC comparison after 90 days; referral quality comparison
+
+---
+
+### DISC-027: LinkedIn Founder Content Blitz (DISCOVERED) 🚀 FOUNDER ACTION
+
+**Source**: Growth Discovery Agent (2025-12-03)
+**Impact**: HIGH | **Effort**: M | **Score**: 1.5
+**Sprint Alignment**: Leverages founder network for 15-20 users in 6 days
+
+**Problem**: Founder network = 30 users (per BETA_SPRINT) but no ACTIVE outreach. LinkedIn is where contractors AND vendors hang out. One viral post can reach thousands.
+
+**Proposed Work (FOUNDER REQUIRED)**:
+**Daily LinkedIn Posts (6 posts over 6 days)**:
+1. Day 1: "I'm giving away quotes." (curiosity hook) + demo video
+2. Day 2: Customer success story - "Contractor lost $50K job because he quoted too slow"
+3. Day 3: Behind-the-scenes - "Why I built this"
+4. Day 4: Testimonial (from beta users or placeholder)
+5. Day 5: Urgency - "72 spots left in beta"
+6. Day 6: Final push - "Last call: 28 spots left"
+
+**Engagement**: Tag 10 contractor connections in each post; comment on competitor posts
+
+**Success Metric**: 5,000+ impressions; 50+ landing page visits; 15-20 signups from LinkedIn
 
 ---
 
