@@ -503,6 +503,13 @@
             color: var(--text-muted);
         }
 
+        .cta-subtext {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-top: 16px;
+            width: 100%;
+        }
+
         /* Footer */
         footer {
             padding: 40px;
@@ -1013,9 +1020,10 @@
                 <h1 class="fade-in fade-in-delay-1">Talk, don't type.<br>Quote in seconds.</h1>
                 <p class="fade-in fade-in-delay-2">Turn voice notes into professional budget quotes in seconds. Qualify leads fast, look polished, and stop wasting time on tire-kickers.</p>
                 <div class="fade-in fade-in-delay-3" style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
-                    <a href="/app" class="cta-primary">Start Quoting Free</a>
-                    <a href="/demo" class="cta-secondary">See How It Works</a>
+                    <a href="/demo" class="cta-primary" id="hero-demo-cta">Try 2-Minute Demo</a>
+                    <a href="/app" class="cta-secondary" id="hero-signup-cta">Start Free Trial</a>
                 </div>
+                <p class="cta-subtext fade-in fade-in-delay-4">No signup required for demo</p>
             </div>
         </div>
     </section>
@@ -1075,8 +1083,8 @@
                 </div>
 
                 <div class="demo-cta fade-in">
-                    <p>Watch the complete workflow</p>
-                    <a href="/demo" class="cta-primary">View Full Walkthrough</a>
+                    <p>Ready to try it yourself?</p>
+                    <a href="/demo" class="cta-primary">Try the Demo Now</a>
                 </div>
             </div>
         </div>
@@ -1198,7 +1206,10 @@
     <section class="final-cta">
         <div class="container">
             <h2 class="fade-in">Ready to stop writing quotes at midnight?</h2>
-            <a href="/app" class="cta-primary fade-in fade-in-delay-1">Start Quoting Free</a>
+            <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-top: 48px;">
+                <a href="/demo" class="cta-primary fade-in fade-in-delay-1">Try the Demo</a>
+                <a href="/app" class="cta-secondary fade-in fade-in-delay-1">Start Free Trial</a>
+            </div>
             <p class="cta-note fade-in fade-in-delay-2">No credit card required.</p>
         </div>
     </section>
@@ -1483,14 +1494,19 @@
             posthog.capture('landing_page_view');
         }
 
-        // Track CTA clicks
-        document.querySelectorAll('a[href="/app"]').forEach(link => {
+        // Track CTA clicks with A/B labels
+        document.querySelectorAll('a[href="/demo"], a[href="/app"]').forEach(link => {
             link.addEventListener('click', function(e) {
                 if (window.posthog) {
+                    const isDemo = this.href.includes('/demo');
                     const buttonText = this.textContent.trim();
+                    const section = this.closest('section')?.className || 'hero';
+
                     posthog.capture('cta_clicked', {
+                        cta_type: isDemo ? 'demo' : 'signup',
                         button_text: buttonText,
-                        location: this.className.includes('nav-cta') ? 'nav' : 'body'
+                        section: section,
+                        is_primary: this.classList.contains('cta-primary')
                     });
                 }
             });
