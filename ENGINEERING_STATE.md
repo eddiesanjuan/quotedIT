@@ -1459,6 +1459,36 @@ GET /api/billing/plans - Available pricing (public)
 
 ---
 
+### DISC-016: Premium PDF Branding Features (READY) 🏆 Paid Tier Differentiation
+
+**Source**: Founder (2025-12-03)
+**Impact**: HIGH | **Effort**: L | **Score**: 0.75
+**Sprint Alignment**: Creates compelling paid tier value; differentiates Trial vs Paid experience
+
+**Problem**: Currently no differentiation between trial and paid experience beyond quote limits. Paid subscribers should get tangible value that makes their quotes look more professional and "theirs."
+
+**Proposed Features**:
+1. **Custom Logo Upload** - Add business logo to PDF quotes (header position)
+2. **Voice-Driven Template Customization** - Verbal design tweaks at template level (not per-quote)
+   - Examples: "make my header dark blue", "use larger font for totals", "add my tagline"
+   - Persists as user's template, applies to all future quotes
+3. **White-Label / Remove Quoted Branding** - Remove "Powered by Quoted" so quotes are fully user-branded
+
+**Questions for Executive Council**:
+1. Which features at which tier? (Starter vs Pro vs Team)
+2. Build order/priority?
+3. MVP scope for each feature?
+4. Voice template editing UX - how to implement elegantly?
+
+**Implementation Considerations**:
+- Logo: Image upload, storage, PDF generation integration
+- Voice template: Claude interprets design requests, stores as template config, applies to PDF
+- White-label: Simple flag per tier, PDF generation checks tier
+
+**Success Metric**: Increased trial→paid conversion; reduced churn on paid tiers
+
+---
+
 ## Technical Debt
 
 | Item | Priority | Effort | Notes |
