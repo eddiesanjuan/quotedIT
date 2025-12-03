@@ -362,6 +362,59 @@
             line-height: 1.6;
         }
 
+        /* Customer Autocomplete Dropdown (DISC-022) */
+        .autocomplete-container {
+            position: relative;
+        }
+
+        .autocomplete-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-top: 4px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .autocomplete-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            border-bottom: 1px solid var(--border);
+            transition: background 0.2s ease;
+        }
+
+        .autocomplete-item:last-child {
+            border-bottom: none;
+        }
+
+        .autocomplete-item:hover {
+            background: var(--bg-card);
+        }
+
+        .autocomplete-item-name {
+            color: var(--text-primary);
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .autocomplete-item-details {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .autocomplete-empty {
+            padding: 12px 16px;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            text-align: center;
+        }
+
         /* Job Description Textarea - styled to match design */
         #jobDescription {
             width: 100%;
@@ -3944,9 +3997,10 @@
                 Update customer details for this quote.
             </p>
             <form id="editCustomerForm" onsubmit="saveCustomerInfo(event)" style="margin-top: 24px;">
-                <div class="form-group">
+                <div class="form-group autocomplete-container">
                     <label for="editCustomerName">Customer Name</label>
-                    <input type="text" id="editCustomerName" placeholder="John Smith" style="background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); padding: 12px; border-radius: 8px; width: 100%; font-family: var(--font-sans); font-size: 1rem;">
+                    <input type="text" id="editCustomerName" placeholder="John Smith" autocomplete="off" style="background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); padding: 12px; border-radius: 8px; width: 100%; font-family: var(--font-sans); font-size: 1rem;">
+                    <div id="customerAutocomplete" class="autocomplete-dropdown" style="display: none;"></div>
                 </div>
                 <div class="form-group" style="margin-top: 16px;">
                     <label for="editCustomerAddress">Customer Address</label>
@@ -7592,7 +7646,178 @@
 
         function closeEditCustomerModal() {
             document.getElementById('editCustomerModal').style.display = 'none';
+            // Hide autocomplete dropdown when modal closes
+            document.getElementById('customerAutocomplete').style.display = 'none';
         }
+
+        // ========================================
+        // Customer Autocomplete (DISC-022)
+        // ========================================
+        let customerAutocompleteTimeout = null;
+        let customerAutocompleteCache = [];
+        let customerAutocompleteUsed = false;
+
+        // Setup autocomplete on customer name field
+        function setupCustomerAutocomplete() {
+            const nameInput = document.getElementById('editCustomerName');
+            const dropdown = document.getElementById('customerAutocomplete');
+
+            if (!nameInput || !dropdown) return;
+
+            // Handle input with debounce
+            nameInput.addEventListener('input', function(e) {
+                const query = e.target.value.trim();
+
+                // Clear existing timeout
+                if (customerAutocompleteTimeout) {
+                    clearTimeout(customerAutocompleteTimeout);
+                }
+
+                // Hide dropdown if empty query
+                if (query.length === 0) {
+                    dropdown.style.display = 'none';
+                    return;
+                }
+
+                // Debounce API call (300ms)
+                customerAutocompleteTimeout = setTimeout(async () => {
+                    await fetchCustomerSuggestions(query);
+                }, 300);
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!nameInput.contains(e.target) && !dropdown.contains(e.target)) {
+                    dropdown.style.display = 'none';
+                }
+            });
+
+            // Handle keyboard navigation
+            nameInput.addEventListener('keydown', function(e) {
+                const items = dropdown.querySelectorAll('.autocomplete-item');
+                const activeItem = dropdown.querySelector('.autocomplete-item.active');
+                let currentIndex = -1;
+
+                if (activeItem) {
+                    currentIndex = Array.from(items).indexOf(activeItem);
+                }
+
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    const nextIndex = Math.min(currentIndex + 1, items.length - 1);
+                    if (items[nextIndex]) {
+                        items.forEach(item => item.classList.remove('active'));
+                        items[nextIndex].classList.add('active');
+                        items[nextIndex].scrollIntoView({ block: 'nearest' });
+                    }
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    const prevIndex = Math.max(currentIndex - 1, 0);
+                    if (items[prevIndex]) {
+                        items.forEach(item => item.classList.remove('active'));
+                        items[prevIndex].classList.add('active');
+                        items[prevIndex].scrollIntoView({ block: 'nearest' });
+                    }
+                } else if (e.key === 'Enter') {
+                    if (activeItem && dropdown.style.display !== 'none') {
+                        e.preventDefault();
+                        activeItem.click();
+                    }
+                } else if (e.key === 'Escape') {
+                    dropdown.style.display = 'none';
+                }
+            });
+        }
+
+        // Fetch customer suggestions from API
+        async function fetchCustomerSuggestions(query) {
+            const dropdown = document.getElementById('customerAutocomplete');
+
+            try {
+                const response = await fetch(`${API_BASE}/quotes/customers?q=${encodeURIComponent(query)}`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                if (response.ok) {
+                    const customers = await response.json();
+                    customerAutocompleteCache = customers;
+                    renderCustomerSuggestions(customers);
+                } else {
+                    dropdown.style.display = 'none';
+                }
+            } catch (err) {
+                console.error('Error fetching customer suggestions:', err);
+                dropdown.style.display = 'none';
+            }
+        }
+
+        // Render customer suggestions in dropdown
+        function renderCustomerSuggestions(customers) {
+            const dropdown = document.getElementById('customerAutocomplete');
+
+            if (customers.length === 0) {
+                dropdown.innerHTML = '<div class="autocomplete-empty">No previous customers found</div>';
+                dropdown.style.display = 'block';
+                return;
+            }
+
+            dropdown.innerHTML = customers.map(customer => {
+                const details = [];
+                if (customer.phone) details.push(customer.phone);
+                if (customer.email) details.push(customer.email);
+
+                return `
+                    <div class="autocomplete-item" data-customer='${JSON.stringify(customer)}'>
+                        <div class="autocomplete-item-name">${customer.name || 'Unnamed Customer'}</div>
+                        ${details.length > 0 ? `<div class="autocomplete-item-details">${details.join(' • ')}</div>` : ''}
+                    </div>
+                `;
+            }).join('');
+
+            dropdown.style.display = 'block';
+
+            // Add click handlers
+            dropdown.querySelectorAll('.autocomplete-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    selectCustomer(JSON.parse(this.dataset.customer));
+                });
+            });
+        }
+
+        // Select a customer from autocomplete
+        function selectCustomer(customer) {
+            // Fill all customer fields
+            document.getElementById('editCustomerName').value = customer.name || '';
+            document.getElementById('editCustomerPhone').value = customer.phone || '';
+
+            // Hide dropdown
+            document.getElementById('customerAutocomplete').style.display = 'none';
+
+            // Mark that autocomplete was used
+            customerAutocompleteUsed = true;
+
+            // Track autocomplete usage (DISC-022)
+            {% if posthog_api_key %}
+            if (window.posthog) {
+                posthog.capture('customer_autocomplete_used', {
+                    has_phone: !!customer.phone,
+                    has_email: !!customer.email,
+                    customer_name: customer.name
+                });
+            }
+            {% endif %}
+        }
+
+        // Initialize autocomplete when modal opens
+        const originalOpenEditCustomerModal = window.openEditCustomerModal;
+        window.openEditCustomerModal = function() {
+            originalOpenEditCustomerModal();
+            // Reset autocomplete flag when modal opens
+            customerAutocompleteUsed = false;
+            setupCustomerAutocomplete();
+        };
 
         async function saveCustomerInfo(event) {
             event.preventDefault();
@@ -7621,6 +7846,19 @@
 
                 if (response.ok) {
                     const updatedQuote = await response.json();
+
+                    // Track manual entry if autocomplete wasn't used (DISC-022)
+                    if (!customerAutocompleteUsed && customerData.customer_name) {
+                        {% if posthog_api_key %}
+                        if (window.posthog) {
+                            posthog.capture('customer_manual_entry', {
+                                has_phone: !!customerData.customer_phone,
+                                has_address: !!customerData.customer_address,
+                                customer_name: customerData.customer_name
+                            });
+                        }
+                        {% endif %}
+                    }
 
                     // Update current quote object
                     currentDetailQuote.customer_name = updatedQuote.customer_name;

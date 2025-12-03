@@ -21,6 +21,7 @@ from pydantic import BaseModel
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, distinct, func, or_
 
 from ..services import (
     get_transcription_service,
@@ -32,6 +33,7 @@ from ..services import (
 from ..services.auth import get_current_user, get_db
 from ..services.billing import BillingService
 from ..services.analytics import analytics_service
+from ..models.database import Quote, async_session_factory
 
 
 router = APIRouter()
@@ -1420,3 +1422,104 @@ async def get_feedback_stats(current_user: dict = Depends(get_current_user)):
     stats = await db.get_feedback_stats(contractor.id)
 
     return stats
+
+
+# ============================================================================
+# Customer Autocomplete Endpoint (DISC-022)
+# ============================================================================
+
+class CustomerResponse(BaseModel):
+    """Customer data for autocomplete."""
+    name: Optional[str] = None
+    email: Optional[str] = None
+    phone: Optional[str] = None
+
+
+@router.get("/customers", response_model=List[CustomerResponse])
+async def get_customers(
+    q: Optional[str] = None,
+    current_user: dict = Depends(get_current_user),
+):
+    """
+    Get unique customers from user's quote history for autocomplete.
+
+    DISC-022: Customer Memory - Returns list of past customers to enable
+    autocomplete when entering customer details on new quotes.
+
+    Args:
+        q: Optional search query to filter customers by name/email/phone
+        current_user: Authenticated user from JWT
+
+    Returns:
+        List of unique customers (deduplicated by email or name)
+    """
+    db = get_db_service()
+
+    # Get contractor for current user
+    contractor = await db.get_contractor_by_user_id(current_user["id"])
+    if not contractor:
+        return []
+
+    # Query quotes for this contractor and extract unique customers
+    async with async_session_factory() as session:
+        # Build query to get distinct customers
+        query = select(
+            Quote.customer_name,
+            Quote.customer_email,
+            Quote.customer_phone
+        ).where(
+            Quote.contractor_id == contractor.id
+        ).where(
+            # Only include quotes that have at least a name or email
+            or_(
+                Quote.customer_name.isnot(None),
+                Quote.customer_email.isnot(None)
+            )
+        )
+
+        # Apply search filter if provided
+        if q:
+            search_term = f"%{q.lower()}%"
+            query = query.where(
+                or_(
+                    func.lower(Quote.customer_name).like(search_term),
+                    func.lower(Quote.customer_email).like(search_term),
+                    func.lower(Quote.customer_phone).like(search_term)
+                )
+            )
+
+        # Order by most recent
+        query = query.order_by(Quote.created_at.desc())
+
+        result = await session.execute(query)
+        rows = result.all()
+
+        # Deduplicate customers (prefer by email, fallback to name)
+        seen_emails = set()
+        seen_names = set()
+        unique_customers = []
+
+        for row in rows:
+            name, email, phone = row
+
+            # Skip if we've seen this customer already
+            if email and email.lower() in seen_emails:
+                continue
+            if not email and name and name.lower() in seen_names:
+                continue
+
+            # Track this customer
+            if email:
+                seen_emails.add(email.lower())
+            if name:
+                seen_names.add(name.lower())
+
+            unique_customers.append(
+                CustomerResponse(
+                    name=name,
+                    email=email,
+                    phone=phone
+                )
+            )
+
+        return unique_customers
