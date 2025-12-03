@@ -129,14 +129,43 @@ async def register_user(db: AsyncSession, user_data: UserCreate) -> tuple[User, 
     Register a new user and create their contractor profile.
     Also creates default pricing model and terms so they can start quoting immediately.
     Generates referral code and applies referral if provided.
+
+    Trial abuse prevention (DISC-017):
+    - Blocks disposable email domains
+    - Normalizes email to detect duplicate accounts (Gmail dot/plus aliases)
+
     Returns (user, contractor) tuple.
     """
-    # Check if email already exists
+    from ..utils.email import normalize_email, validate_email_for_registration
+
+    # Validate email (block disposable domains) - DISC-017
+    is_valid, error_message = validate_email_for_registration(user_data.email)
+    if not is_valid:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=error_message
+        )
+
+    # Normalize email for duplicate detection - DISC-017
+    normalized = normalize_email(user_data.email)
+
+    # Check if email already exists (original)
     existing = await get_user_by_email(db, user_data.email)
     if existing:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Email already registered"
+            detail="An account with this email already exists"
+        )
+
+    # Check if normalized email already exists (prevents Gmail aliases) - DISC-017
+    result = await db.execute(
+        select(User).where(User.normalized_email == normalized)
+    )
+    existing_normalized = result.scalar_one_or_none()
+    if existing_normalized:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="An account with this email already exists"
         )
 
     # Generate unique referral code for this user
@@ -147,6 +176,7 @@ async def register_user(db: AsyncSession, user_data: UserCreate) -> tuple[User, 
     user = User(
         id=generate_uuid(),
         email=user_data.email,
+        normalized_email=normalized,  # DISC-017: Store normalized email for duplicate detection
         hashed_password=hash_password(user_data.password),
         is_active=True,
         is_verified=False,  # Could add email verification later

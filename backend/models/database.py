@@ -34,6 +34,7 @@ class User(Base):
 
     # Authentication
     email = Column(String(255), unique=True, nullable=False, index=True)
+    normalized_email = Column(String(255), nullable=True, index=True)  # DISC-017: For duplicate detection
     hashed_password = Column(String(255), nullable=False)
 
     # Status
@@ -82,6 +83,7 @@ class Contractor(Base):
     address = Column(Text)
     service_area = Column(String(255))
     logo_url = Column(String(500))
+    logo_data = Column(Text)  # Base64-encoded logo image (DISC-016)
 
     # What they do
     primary_trade = Column(String(100))  # e.g., "deck_builder", "painter", "landscaper"
@@ -702,6 +704,26 @@ async def run_migrations(engine):
                 WHERE table_name = 'quotes' AND column_name = 'share_count'
             """,
             "alter_sql": "ALTER TABLE quotes ADD COLUMN share_count INTEGER DEFAULT 0"
+        },
+        # Logo data column (DISC-016)
+        {
+            "table": "contractors",
+            "column": "logo_data",
+            "check_sql": """
+                SELECT column_name FROM information_schema.columns
+                WHERE table_name = 'contractors' AND column_name = 'logo_data'
+            """,
+            "alter_sql": "ALTER TABLE contractors ADD COLUMN logo_data TEXT"
+        },
+        # Normalized email column for trial abuse prevention (DISC-017)
+        {
+            "table": "users",
+            "column": "normalized_email",
+            "check_sql": """
+                SELECT column_name FROM information_schema.columns
+                WHERE table_name = 'users' AND column_name = 'normalized_email'
+            """,
+            "alter_sql": "ALTER TABLE users ADD COLUMN normalized_email VARCHAR(255)"
         },
     ]
 
