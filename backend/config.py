@@ -75,10 +75,10 @@ class Settings(BaseSettings):
     stripe_publishable_key: str = ""
     stripe_webhook_secret: str = ""
 
-    # Stripe Product IDs
-    stripe_starter_product_id: str = "prod_TWyp6aH4vMY7A8"
-    stripe_pro_product_id: str = "prod_TWyzygs71MWNeQ"
-    stripe_team_product_id: str = "prod_TWz0uN0EAbgPKI"
+    # Stripe Product IDs (production)
+    stripe_starter_product_id: str = "prod_TXB6SKP96LAlcM"
+    stripe_pro_product_id: str = "prod_TXB6du0ylntvVV"
+    stripe_team_product_id: str = "prod_TXB6aO5kvAD4uV"
 
     # Analytics & Monitoring
     posthog_api_key: str = ""  # PostHog analytics
