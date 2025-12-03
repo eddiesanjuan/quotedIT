@@ -3096,34 +3096,41 @@
 
                 <!-- Intro Screen -->
                 <div id="onboardingIntro" class="onboarding-intro" style="display: none;">
-                    <h3>Let's learn how you price.</h3>
-                    <p>Before generating quotes, I need to understand your pricing model. Choose how you'd like to set this up.</p>
+                    <h3>Ready to create quotes?</h3>
+                    <p>Choose how you'd like to get started. You can always customize your pricing later.</p>
 
                     <ul>
-                        <li class="onboarding-option-recommended">
+                        <li class="onboarding-option-recommended" onclick="handleTryFirst()" style="cursor: pointer;">
                             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-                                <strong>Guided Setup</strong>
-                                <span class="recommended-badge">Recommended</span>
+                                <strong>Try a Quote Now</strong>
+                                <span class="recommended-badge">Fastest</span>
                             </div>
-                            Answer a few questions and I'll build your complete pricing profile. ~3 minutes • Voice or type • Best results
+                            Generate your first quote in 2 minutes using industry defaults. Perfect for testing Quoted.
                         </li>
-                        <li class="onboarding-option-manual">
+                        <li onclick="startOnboardingInterview()" style="cursor: pointer;">
+                            <strong>Quick Chat Setup</strong>
+                            ~3 minutes • Voice OR text • We'll build your pricing profile together
+                        </li>
+                        <li class="onboarding-option-manual" onclick="showQuickSetup()" style="cursor: pointer;">
                             <strong>Manual Setup</strong>
-                            Enter your rates directly if you know exactly what you want. You can always refine later.
+                            Enter your exact rates if you know them. Most customizable option.
                         </li>
                     </ul>
 
                     <div class="onboarding-options">
-                        <button class="btn btn-primary btn-large" onclick="startOnboardingInterview()">
+                        <button class="btn btn-primary btn-large" onclick="handleTryFirst()">
                             <span style="display: flex; align-items: center; gap: 8px; justify-content: center;">
-                                Start Guided Setup
+                                Try a Quote Now
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M5 12h14"></path>
                                     <path d="M12 5l7 7-7 7"></path>
                                 </svg>
                             </span>
                         </button>
-                        <button class="btn btn-link" onclick="showQuickSetup()">Skip to manual setup</button>
+                        <div style="display: flex; gap: 12px; width: 100%;">
+                            <button class="btn btn-link" onclick="startOnboardingInterview()" style="flex: 1;">Quick Chat</button>
+                            <button class="btn btn-link" onclick="showQuickSetup()" style="flex: 1;">Manual Setup</button>
+                        </div>
                     </div>
                 </div>
 
@@ -4631,8 +4638,18 @@
                         posthog.capture('first_quote_generated', {
                             quote_id: quote.id,
                             total: quote.total,
-                            input_method: lastInputMethod || 'text'
+                            input_method: lastInputMethod || 'text',
+                            onboarding_path: currentUser?.onboarding_path || 'unknown'
                         });
+
+                        // Track if this is from try-first path (DISC-019)
+                        if (currentUser?.onboarding_path === 'try_first') {
+                            posthog.capture('try_first_quote_generated', {
+                                quote_id: quote.id,
+                                total: quote.total,
+                                input_method: lastInputMethod || 'text'
+                            });
+                        }
                     }
                 }
                 {% endif %}
@@ -5600,6 +5617,106 @@
                 console.error('Interview error:', err);
                 removeTypingIndicator();
                 addChatMessage('assistant', "Having trouble starting. Please try again or use Quick Setup.");
+            }
+        }
+
+        async function handleTryFirst() {
+            try {
+                // Show loading state
+                const btn = event.target.closest('button');
+                const originalHTML = btn.innerHTML;
+                btn.disabled = true;
+
+                // Clear button and set loading text safely
+                while (btn.firstChild) {
+                    btn.removeChild(btn.firstChild);
+                }
+                const loadingSpan = document.createElement('span');
+                loadingSpan.style.display = 'flex';
+                loadingSpan.style.alignItems = 'center';
+                loadingSpan.style.gap = '8px';
+                loadingSpan.style.justifyContent = 'center';
+                loadingSpan.textContent = 'Creating your pricing model...';
+                btn.appendChild(loadingSpan);
+
+                // Call try-first endpoint
+                const response = await fetch(`${API_BASE}/onboarding/try-first`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`,
+                    },
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Failed to activate try-first mode');
+                }
+
+                const result = await response.json();
+
+                // Track try-first quote generation event
+                {% if posthog_api_key %}
+                if (window.posthog) {
+                    posthog.capture('try_first_activated', {
+                        primary_trade: currentUser?.primary_trade,
+                    });
+                }
+                {% endif %}
+
+                // Hide onboarding
+                document.getElementById('onboardingIntro').style.display = 'none';
+
+                // Show success message if showNotification exists, otherwise use alert
+                const successMessage = result.message || 'Ready to generate your first quote! You can customize pricing anytime from Settings.';
+                if (typeof showNotification === 'function') {
+                    showNotification(successMessage, 'success');
+                } else {
+                    alert(successMessage);
+                }
+
+                // Switch to quotes tab immediately
+                setTimeout(() => {
+                    switchTab('quotes');
+                }, 500);
+
+            } catch (err) {
+                console.error('Error activating try-first:', err);
+                alert(err.message || 'Failed to set up pricing. Please try again or choose a different onboarding option.');
+
+                // Restore button - use a safer approach
+                const btn = event.target.closest('button');
+                if (btn) {
+                    btn.disabled = false;
+                    // Recreate button content safely
+                    while (btn.firstChild) {
+                        btn.removeChild(btn.firstChild);
+                    }
+                    const span = document.createElement('span');
+                    span.style.display = 'flex';
+                    span.style.alignItems = 'center';
+                    span.style.gap = '8px';
+                    span.style.justifyContent = 'center';
+                    span.textContent = 'Try a Quote Now';
+
+                    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                    svg.setAttribute('width', '16');
+                    svg.setAttribute('height', '16');
+                    svg.setAttribute('viewBox', '0 0 24 24');
+                    svg.setAttribute('fill', 'none');
+                    svg.setAttribute('stroke', 'currentColor');
+                    svg.setAttribute('stroke-width', '2');
+
+                    const path1 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    path1.setAttribute('d', 'M5 12h14');
+                    const path2 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    path2.setAttribute('d', 'M12 5l7 7-7 7');
+
+                    svg.appendChild(path1);
+                    svg.appendChild(path2);
+                    span.appendChild(svg);
+                    btn.appendChild(span);
+                }
             }
         }
 

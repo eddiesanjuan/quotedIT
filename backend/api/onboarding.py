@@ -569,6 +569,154 @@ async def get_messages(session_id: str):
     }
 
 
+@router.post("/try-first")
+async def try_first_activation(
+    contractor: Contractor = Depends(get_current_contractor),
+):
+    """
+    "Try It First" fast activation path (DISC-019).
+
+    Creates a minimal pricing model using industry template defaults,
+    allowing users to generate their first quote in ~2 minutes without full onboarding.
+    Users can customize pricing later.
+    """
+    try:
+        from ..data.pricing_templates import get_template
+
+        db = get_database_service()
+
+        # Get contractor's selected industry
+        industry = contractor.primary_trade
+        if not industry:
+            raise HTTPException(
+                status_code=400,
+                detail="Industry not selected. Please select your trade first."
+            )
+
+        # Get pricing template for industry
+        template = get_template(industry)
+        if not template:
+            # Fall back to generic defaults if no template
+            template = {
+                "primary_pricing": {
+                    "unit": "hourly",
+                    "suggested_default": 85
+                },
+                "additional_rates": [
+                    {"name": "material_markup", "suggested": 20}
+                ]
+            }
+
+        # Build minimal pricing model from template defaults
+        primary_pricing = template.get("primary_pricing", {})
+        additional_rates = template.get("additional_rates", [])
+        approach = template.get("recommended_approach", "hourly")
+
+        # Initialize pricing model based on approach
+        pricing_model = {
+            "labor_rate_hourly": None,
+            "helper_rate_hourly": None,
+            "material_markup_percent": 20.0,  # Default
+            "minimum_job_amount": 500.0,  # Default
+            "pricing_knowledge": {},
+            "pricing_notes": f"Auto-generated defaults for {industry}. Customize these rates to match your actual pricing.",
+        }
+
+        # Set primary rate based on approach
+        if approach in ["hourly_plus_materials", "hourly", "mixed"]:
+            pricing_model["labor_rate_hourly"] = primary_pricing.get("suggested_default", 85)
+        elif approach == "per_square_foot":
+            pricing_model["pricing_knowledge"]["base_rate_per_sqft"] = primary_pricing.get("suggested_default", 10)
+        elif approach == "per_linear_foot":
+            pricing_model["pricing_knowledge"]["base_rate_per_lf"] = primary_pricing.get("suggested_default", 500)
+        elif approach == "per_square":
+            pricing_model["pricing_knowledge"]["base_rate_per_square"] = primary_pricing.get("suggested_default", 450)
+        elif approach == "per_unit":
+            pricing_model["pricing_knowledge"]["base_rate_per_unit"] = primary_pricing.get("suggested_default", 450)
+        elif approach == "percentage_markup":
+            pricing_model["pricing_knowledge"]["project_management_fee"] = primary_pricing.get("suggested_default", 15)
+
+        # Add additional rates from template
+        material_markup_rate = next((r for r in additional_rates if r.get("name") == "material_markup"), None)
+        if material_markup_rate:
+            pricing_model["material_markup_percent"] = material_markup_rate.get("suggested", 20)
+
+        minimum_rate = next(
+            (r for r in additional_rates if r.get("name") in ["service_call_minimum", "minimum_charge", "minimum_job"]),
+            None
+        )
+        if minimum_rate:
+            pricing_model["minimum_job_amount"] = minimum_rate.get("suggested", 500)
+
+        # Save pricing model to database
+        existing_pricing = await db.get_pricing_model(contractor.id)
+        if existing_pricing:
+            await db.update_pricing_model(
+                contractor_id=contractor.id,
+                labor_rate_hourly=pricing_model.get("labor_rate_hourly"),
+                helper_rate_hourly=pricing_model.get("helper_rate_hourly"),
+                material_markup_percent=pricing_model.get("material_markup_percent", 20.0),
+                minimum_job_amount=pricing_model.get("minimum_job_amount"),
+                pricing_knowledge=pricing_model.get("pricing_knowledge", {}),
+                pricing_notes=pricing_model.get("pricing_notes"),
+            )
+        else:
+            await db.create_pricing_model(
+                contractor_id=contractor.id,
+                labor_rate_hourly=pricing_model.get("labor_rate_hourly"),
+                helper_rate_hourly=pricing_model.get("helper_rate_hourly"),
+                material_markup_percent=pricing_model.get("material_markup_percent", 20.0),
+                minimum_job_amount=pricing_model.get("minimum_job_amount"),
+                pricing_knowledge=pricing_model.get("pricing_knowledge", {}),
+                pricing_notes=pricing_model.get("pricing_notes"),
+            )
+
+        # Update user record with onboarding path
+        from sqlalchemy import update
+        from ..models.database import User
+
+        async_session = db.async_session_maker()
+        async with async_session as session:
+            stmt = update(User).where(User.id == contractor.user_id).values(
+                onboarding_path="try_first",
+                onboarding_completed_at=datetime.utcnow()
+            )
+            await session.execute(stmt)
+            await session.commit()
+
+        # Track onboarding path selection and completion (DISC-019)
+        try:
+            analytics_service.track_event(
+                user_id=str(contractor.user_id),
+                event_name="onboarding_path_selected",
+                properties={
+                    "path": "try_first",
+                    "contractor_id": str(contractor.id),
+                    "primary_trade": industry,
+                }
+            )
+            analytics_service.track_event(
+                user_id=str(contractor.user_id),
+                event_name="onboarding_completed",
+                properties={
+                    "onboarding_path": "try_first",
+                    "contractor_id": str(contractor.id),
+                    "primary_trade": industry,
+                }
+            )
+        except Exception as e:
+            print(f"Warning: Failed to track try-first activation: {e}")
+
+        return {
+            "success": True,
+            "message": "Ready to generate your first quote! You can customize pricing anytime from Settings.",
+            "pricing_model": pricing_model,
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.get("/")
 async def list_sessions():
     """List all sessions (for debugging/demo)."""
