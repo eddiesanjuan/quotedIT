@@ -70,7 +70,7 @@
 | ~~UX-003~~ | ~~Improve Landing Page Headline~~ | ~~Frontend~~ | **COMPLETE** | Committed 66b25b9 |
 | ~~UX-004~~ | ~~Add Product Demo Animation to Landing Page~~ | ~~Frontend~~ | **COMPLETE** | Committed 2c7244e |
 | ~~BUG-004~~ | ~~Demo Page Broken + Strategic Review~~ | ~~Frontend + Executive~~ | **BUG FIXED** | Strategic direction pending DECISION-005 |
-| BUG-005 | Mobile Formatting & Layout Issues | Frontend | **PARTIAL** | App nav fixed; landing page issues remain |
+| ~~BUG-005~~ | ~~Mobile Formatting & Layout Issues~~ | ~~Frontend~~ | **COMPLETE** | App nav + landing page mobile fixes |
 
 ---
 
@@ -100,7 +100,7 @@
 
 ---
 
-## BUG-005: Mobile Formatting & Layout Issues (PARTIAL FIX)
+## BUG-005: Mobile Formatting & Layout Issues (COMPLETE)
 
 **Scope**: Frontend (3-4h)
 **Priority**: HIGH (user-facing visual bugs)
@@ -120,44 +120,20 @@
   - Added safe-area-inset-bottom for notched phones
   - Added extra padding to main content on mobile for nav bar
 
-### ⏳ REMAINING ISSUES (Landing Page)
+### ✅ FIXED (2025-12-02) - Landing Page
 
-1. **Beta counter overlaps hero content on mobile**
-   - Beta counter positioned at `top: 70px` on mobile (600px breakpoint)
-   - Hero `padding-top` only adjusted at 900px (80px), not at 600px
-   - Result: Beta counter may cover hero headline on smaller screens
-   - Files: `landing.html` lines 1057-1069, 570-572
+**Landing Page Mobile Layout (landing.html)**
+- **Issue**: Beta counter overlapping hero content on mobile
+- **Fix**: Added progressive hero padding and beta counter adjustments at all breakpoints
+- **Details**:
+  - Hero padding-top: 120px (600px), 110px (480px), 100px (375px)
+  - Beta counter position/sizing adjustments at each breakpoint
+  - Referral banner offset handling via `.has-banner` class
+  - Z-index stacking verified correct (nav: 100, beta: 99)
 
-2. **Z-index stacking needs audit**
-   - Nav: z-index 100
-   - Beta counter: z-index 99
-   - Modals: z-index 1000/1001
-   - Trial banners (index.html): z-index 1000
-   - Potential conflicts when multiple fixed elements visible
-
-3. **Hero content offset missing for beta counter**
-   - Hero starts at `padding-top: 100px` (desktop), `80px` (tablet)
-   - No adjustment at 600px or 480px to account for beta counter height
-   - Content may be partially hidden behind fixed elements
-
-4. **Smallest viewport (375px) needs testing**
-   - Beta counter only adjusts at 600px, nothing at 375px
-   - Nav padding at 480px is 16px 20px - may be tight
-   - CTA buttons may be cramped
-
-**Recommended Next Steps**:
-1. Add `padding-top` adjustment at 600px and 480px breakpoints for hero
-2. Audit z-index values for consistent stacking order
-3. Add 375px breakpoint adjustments for beta counter
-4. Test all pages: landing, index, demo, help
-
-**Testing Requirements**:
-- Test on iPhone SE (375px)
-- Test on iPhone 14 (390px)
-- Test on iPad Mini (768px)
-- Test with/without referral banner visible
-
-**Playwright MCP Recommended**: Switch to browser profile for visual regression testing
+**Commits**:
+- `fe99329` - App nav mobile fix (bottom nav bar)
+- `687d026` - Landing page mobile layout fixes
 
 ---
 
