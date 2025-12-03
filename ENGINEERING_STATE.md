@@ -1,7 +1,7 @@
 # Engineering State
 
-**Last Updated**: 2025-12-03 02:00 PST
-**Updated By**: CEO (AI) - Autonomous Cycle 2
+**Last Updated**: 2025-12-03 03:30 PST
+**Updated By**: CEO (AI) - Autonomous Cycle 3
 
 ---
 
@@ -1459,71 +1459,60 @@ GET /api/billing/plans - Available pricing (public)
 
 ---
 
-### DISC-016: Premium PDF Branding Features (FOUNDER APPROVED ✅) 🏆 Paid Tier Differentiation
+### ~~DISC-016: Premium PDF Branding Features~~ (COMPLETE ✅) 🏆 Paid Tier Differentiation
 
+**Commit**: 94ba6dc
 **Source**: Founder (2025-12-03)
-**Status**: **APPROVED** - Executive Council to determine implementation strategy only
+**Status**: **MVP COMPLETE** - Custom logo upload implemented
 **Impact**: HIGH | **Effort**: L | **Score**: 0.75
-**Sprint Alignment**: Creates compelling paid tier value; differentiates Trial vs Paid experience
 
-**Founder Direction**: These features ARE happening. Council decides HOW, not IF.
+**Implementation Summary (MVP - Logo Upload)**:
+- ✅ Backend: POST/GET/DELETE /api/contractors/logo endpoints
+- ✅ Database: logo_data field on Contractor model (base64 storage)
+- ✅ PDF: Custom logo appears in header when set (48x48, top-left)
+- ✅ Frontend: Logo upload UI in Account tab with preview
+- ✅ Validation: PNG/JPG only, 2MB max
+- ✅ Analytics: PostHog events (logo_uploaded, logo_removed)
 
-**Approved Features**:
-1. **Custom Logo Upload** - Add business logo to PDF quotes (header position)
-2. **Voice-Driven Template Customization** - Verbal design tweaks at template level (not per-quote)
-   - Examples: "make my header dark blue", "use larger font for totals", "add my tagline"
-   - Persists as user's template, applies to all future quotes
-3. **White-Label / Remove Quoted Branding** - Remove "Powered by Quoted" so quotes are fully user-branded
+**Remaining Features (Future Phases)**:
+- Voice-Driven Template Customization (Pro tier) - Q1 2025
+- White-Label / Remove Quoted Branding (Team tier) - Q1 2025
 
-**Questions for Executive Council** (implementation strategy only):
-1. Which features at which tier? (Starter vs Pro vs Team)
-2. Build order/priority?
-3. MVP scope for each feature?
-4. Voice template editing UX - how to implement elegantly?
-
-**Implementation Considerations**:
-- Logo: Image upload, storage, PDF generation integration
-- Voice template: Claude interprets design requests, stores as template config, applies to PDF
-- White-label: Simple flag per tier, PDF generation checks tier
+**Executive Council Decision**:
+- Logo: Available at all tiers (drives upgrade psychology)
+- Voice templates: Pro tier ($39/mo)
+- White-label: Team tier ($79/mo)
 
 **Success Metric**: Increased trial→paid conversion; reduced churn on paid tiers
 
 ---
 
-### DISC-017: Trial Abuse Prevention (FOUNDER APPROVED ✅) 🔒 Revenue Protection
+### ~~DISC-017: Trial Abuse Prevention~~ (COMPLETE ✅) 🔒 Revenue Protection
 
+**Commit**: 8c88de2
 **Source**: Founder (2025-12-03)
-**Status**: **APPROVED** - Executive Council to determine implementation strategy only
+**Status**: **MVP COMPLETE** - Email normalization + disposable blocking
 **Impact**: MEDIUM | **Effort**: M | **Score**: 1.0
-**Sprint Alignment**: Protects revenue as we scale; prevents gaming of generous 75-quote trial
 
-**Founder Direction**: Trial abuse prevention IS happening. Council decides HOW, not IF.
+**Implementation Summary (Minimal Scope)**:
+- ✅ Email Normalization: Strips Gmail dots and plus aliases
+  - `j.ohn+trial@gmail.com` → `john@gmail.com`
+  - `john@googlemail.com` → `john@gmail.com`
+- ✅ Disposable Email Blocking: 20+ known temp email domains blocked
+  - mailinator.com, 10minutemail.com, tempmail.com, guerrillamail.com, etc.
+- ✅ Database: normalized_email field on User model
+- ✅ Registration validation with friendly error messages
+- ✅ Test coverage: 14 tests, 100% pass
 
-**Problem**: Currently no safeguards against common trial abuse patterns. As we grow, bad actors will exploit:
-- Creating duplicate accounts with same email variations (user+1@gmail.com)
-- Multiple accounts from same device/browser
-- Disposable email addresses
-- VPN/IP rotation to appear as new users
-- Sharing accounts across a team to avoid paying
+**Deferred to Q1 2025 (per Executive Council)**:
+- Device fingerprinting
+- IP rate limiting
+- Phone verification
 
-**Questions for Executive Council** (implementation strategy only):
-1. What abuse vectors are highest priority to block?
-2. How aggressive should detection be? (False positives vs. letting some abuse through)
-3. What's the right response? (Block, warn, flag for review, limit features)
-4. Should we implement before or after we hit scale issues?
-
-**Potential Safeguards**:
-1. **Email Normalization** - Detect gmail dot tricks and plus aliases (j.ohn+trial2@gmail.com → john@gmail.com)
-2. **Device Fingerprinting** - Track browser/device to detect same user, new email
-3. **IP Rate Limiting** - Flag multiple signups from same IP in short window
-4. **Disposable Email Blocking** - Block known temp email domains (mailinator, 10minutemail, etc.)
-5. **Phone Verification** - Require phone number for trial (high friction but effective)
-6. **Payment Method on File** - Require card upfront, don't charge until trial ends (industry standard)
-
-**Implementation Considerations**:
-- Balance friction vs. protection (too aggressive = lost legitimate users)
-- GDPR/privacy implications of fingerprinting
-- May want tiered approach: soft limits first, hard blocks for repeat offenders
+**Executive Council Decision**:
+- Aggressiveness: Moderate (soft blocks, friendly errors)
+- Timing: Implement now (before abuse patterns establish)
+- Response: Block at registration with helpful message
 
 **Success Metric**: <5% trial abuse rate; no viral "how to get unlimited Quoted trials" posts
 
@@ -1545,6 +1534,8 @@ GET /api/billing/plans - Available pricing (public)
 
 | Date | Commit | Description | Status |
 |------|--------|-------------|--------|
+| 2025-12-03 | 94ba6dc | Add Custom logo upload for PDF quotes (DISC-016) | **PENDING PUSH** |
+| 2025-12-03 | 8c88de2 | Add Trial abuse prevention - email normalization (DISC-017) | **PENDING PUSH** |
 | 2025-12-03 | 5c1ebc3 | Add Referral visibility at first quote celebration (DISC-002) | **DEPLOYED** |
 | 2025-12-03 | 9607ccf | Add Analytics funnel events for full conversion tracking (DISC-004) | **DEPLOYED** |
 | 2025-12-03 | 412f5da | Add Single-click trial upgrade with urgency messaging (DISC-005) | **DEPLOYED** |
