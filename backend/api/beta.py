@@ -12,7 +12,7 @@ router = APIRouter()
 
 # Configuration
 BETA_TOTAL_SPOTS = 100
-BETA_OFFSET = 68  # Initial claimed count for social proof
+BETA_OFFSET = 73  # Initial claimed count for social proof (27 remaining - believable odd number)
 
 @router.get("/spots")
 async def get_beta_spots(db: AsyncSession = Depends(get_db)):
