@@ -6848,7 +6848,7 @@
             const isFeatured = tier === 'Pro';
             const price = billingPeriod === 'annual' ? annualPrice : monthlyPrice;
             const quotesPerMonth = plan.quotes_per_month;
-            const overagePrice = (plan.overage_price || plan.overage_price_per_quote).toFixed(2);
+            const overagePrice = (plan.overage_price ?? plan.overage_price_per_quote ?? 0).toFixed(2);
 
             const card = document.createElement('div');
             card.className = `pricing-card ${isFeatured ? 'featured' : ''}`;
@@ -6890,9 +6890,10 @@
             const featuresList = document.createElement('ul');
             featuresList.className = 'plan-features';
 
+            const isUnlimited = quotesPerMonth >= 999999;
             const features = [
-                { text: `${quotesPerMonth} quotes`, bold: true, suffix: ' per month' },
-                { text: `$${overagePrice} per extra quote`, bold: false },
+                { text: isUnlimited ? 'Unlimited quotes' : `${quotesPerMonth} quotes`, bold: true, suffix: isUnlimited ? '' : ' per month' },
+                ...(isUnlimited ? [] : [{ text: `$${overagePrice} per extra quote`, bold: false }]),
                 { text: 'PDF export', bold: false },
                 { text: 'Learning system', bold: false },
                 { text: 'Email support', bold: false }
