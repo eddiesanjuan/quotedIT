@@ -1459,22 +1459,23 @@ GET /api/billing/plans - Available pricing (public)
 
 ---
 
-### DISC-016: Premium PDF Branding Features (READY) 🏆 Paid Tier Differentiation
+### DISC-016: Premium PDF Branding Features (FOUNDER APPROVED ✅) 🏆 Paid Tier Differentiation
 
 **Source**: Founder (2025-12-03)
+**Status**: **APPROVED** - Executive Council to determine implementation strategy only
 **Impact**: HIGH | **Effort**: L | **Score**: 0.75
 **Sprint Alignment**: Creates compelling paid tier value; differentiates Trial vs Paid experience
 
-**Problem**: Currently no differentiation between trial and paid experience beyond quote limits. Paid subscribers should get tangible value that makes their quotes look more professional and "theirs."
+**Founder Direction**: These features ARE happening. Council decides HOW, not IF.
 
-**Proposed Features**:
+**Approved Features**:
 1. **Custom Logo Upload** - Add business logo to PDF quotes (header position)
 2. **Voice-Driven Template Customization** - Verbal design tweaks at template level (not per-quote)
    - Examples: "make my header dark blue", "use larger font for totals", "add my tagline"
    - Persists as user's template, applies to all future quotes
 3. **White-Label / Remove Quoted Branding** - Remove "Powered by Quoted" so quotes are fully user-branded
 
-**Questions for Executive Council**:
+**Questions for Executive Council** (implementation strategy only):
 1. Which features at which tier? (Starter vs Pro vs Team)
 2. Build order/priority?
 3. MVP scope for each feature?
@@ -1489,11 +1490,14 @@ GET /api/billing/plans - Available pricing (public)
 
 ---
 
-### DISC-017: Trial Abuse Prevention (READY) 🔒 Revenue Protection
+### DISC-017: Trial Abuse Prevention (FOUNDER APPROVED ✅) 🔒 Revenue Protection
 
 **Source**: Founder (2025-12-03)
+**Status**: **APPROVED** - Executive Council to determine implementation strategy only
 **Impact**: MEDIUM | **Effort**: M | **Score**: 1.0
 **Sprint Alignment**: Protects revenue as we scale; prevents gaming of generous 75-quote trial
+
+**Founder Direction**: Trial abuse prevention IS happening. Council decides HOW, not IF.
 
 **Problem**: Currently no safeguards against common trial abuse patterns. As we grow, bad actors will exploit:
 - Creating duplicate accounts with same email variations (user+1@gmail.com)
@@ -1502,7 +1506,7 @@ GET /api/billing/plans - Available pricing (public)
 - VPN/IP rotation to appear as new users
 - Sharing accounts across a team to avoid paying
 
-**Questions for Executive Council**:
+**Questions for Executive Council** (implementation strategy only):
 1. What abuse vectors are highest priority to block?
 2. How aggressive should detection be? (False positives vs. letting some abuse through)
 3. What's the right response? (Block, warn, flag for review, limit features)
