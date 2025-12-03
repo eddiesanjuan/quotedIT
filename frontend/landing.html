@@ -591,6 +591,10 @@
 
         /* Responsive - Mobile (600px and below) */
         @media (max-width: 600px) {
+            .hero {
+                padding-top: 120px; /* Account for beta counter at top: 70px + ~40px height + buffer */
+            }
+
             .hero h1 {
                 font-size: 2.5rem;
             }
@@ -641,6 +645,10 @@
 
             section {
                 padding: 48px 16px;
+            }
+
+            .hero {
+                padding-top: 110px; /* Smaller screens, beta counter closer to nav */
             }
 
             .hero h1 {
@@ -971,6 +979,10 @@
                 padding: 40px 12px;
             }
 
+            .hero {
+                padding-top: 100px; /* Compact spacing for smallest screens */
+            }
+
             .hero h1 {
                 font-size: 1.75rem;
             }
@@ -1053,7 +1065,7 @@
             to { opacity: 1; transform: translate(-50%, 0); }
         }
 
-        /* Mobile adjustments */
+        /* Mobile adjustments - 600px */
         @media (max-width: 600px) {
             .beta-counter {
                 top: 70px;
@@ -1065,6 +1077,68 @@
             }
             .beta-separator, .beta-claimed {
                 display: none;
+            }
+        }
+
+        /* Mobile adjustments - 480px */
+        @media (max-width: 480px) {
+            .beta-counter {
+                top: 60px;
+                padding: 8px 14px;
+            }
+            .beta-counter-inner {
+                font-size: 0.75rem;
+                gap: 6px;
+            }
+            .beta-pulse {
+                width: 6px;
+                height: 6px;
+            }
+            .beta-text strong {
+                font-size: 0.875rem;
+            }
+        }
+
+        /* Mobile adjustments - 375px (iPhone SE) */
+        @media (max-width: 375px) {
+            .beta-counter {
+                top: 52px;
+                padding: 6px 12px;
+            }
+            .beta-counter-inner {
+                font-size: 0.6875rem;
+            }
+        }
+
+        /* Referral banner offset adjustments */
+        body.has-banner .beta-counter {
+            top: 124px; /* 80px default + 44px banner */
+        }
+        body.has-banner .hero {
+            padding-top: 180px; /* Extra space for banner */
+        }
+        @media (max-width: 600px) {
+            body.has-banner .beta-counter {
+                top: 114px;
+            }
+            body.has-banner .hero {
+                padding-top: 165px;
+            }
+        }
+        @media (max-width: 480px) {
+            body.has-banner .beta-counter {
+                top: 104px;
+            }
+            body.has-banner .hero {
+                padding-top: 155px;
+            }
+        }
+        @media (max-width: 375px) {
+            body.has-banner .beta-counter {
+                top: 96px;
+            }
+            body.has-banner .hero {
+                padding-top: 145px;
             }
         }
     </style>
@@ -1565,6 +1639,7 @@
             const refCode = urlParams.get('ref');
             if (refCode) {
                 document.getElementById('referral-banner').style.display = 'block';
+                document.body.classList.add('has-banner');
                 // Store for signup
                 localStorage.setItem('referral_code', refCode);
             }
