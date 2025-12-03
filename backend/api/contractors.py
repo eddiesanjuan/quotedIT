@@ -5,8 +5,10 @@ Handles contractor registration, profile management, and pricing models.
 
 from typing import Optional, List
 from datetime import datetime
+import base64
+import imghdr
 
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, UploadFile, File
 from pydantic import BaseModel, EmailStr
 
 from ..services import get_learning_service, get_database_service
@@ -361,4 +363,107 @@ async def list_contractors():
     return {
         "contractors": list(_contractors.values()),
         "count": len(_contractors),
+    }
+
+
+# ========================================
+# Logo Management (DISC-016)
+# ========================================
+
+class LogoUploadResponse(BaseModel):
+    """Response for logo upload."""
+    success: bool
+    message: str
+    logo_data: Optional[str] = None
+
+
+@router.post("/logo", response_model=LogoUploadResponse)
+async def upload_logo(
+    file: UploadFile = File(...),
+    contractor: Contractor = Depends(get_current_contractor),
+):
+    """
+    Upload a business logo (PNG or JPG, max 2MB).
+    Stores as base64-encoded string in database.
+    """
+    # Validate file size (2MB max)
+    MAX_SIZE = 2 * 1024 * 1024  # 2MB in bytes
+
+    # Read file content
+    file_content = await file.read()
+    file_size = len(file_content)
+
+    if file_size > MAX_SIZE:
+        raise HTTPException(
+            status_code=400,
+            detail=f"File too large. Maximum size is 2MB, got {file_size / 1024 / 1024:.2f}MB"
+        )
+
+    # Validate file type (PNG or JPG)
+    file_type = imghdr.what(None, h=file_content)
+    if file_type not in ['png', 'jpeg']:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid file type. Only PNG and JPG are allowed, got {file_type or 'unknown'}"
+        )
+
+    # Convert to base64
+    base64_data = base64.b64encode(file_content).decode('utf-8')
+
+    # Create data URI with proper MIME type
+    mime_type = "image/png" if file_type == "png" else "image/jpeg"
+    data_uri = f"data:{mime_type};base64,{base64_data}"
+
+    # Update contractor in database
+    db = get_database_service()
+    updated = await db.update_contractor(
+        contractor_id=contractor.id,
+        logo_data=data_uri
+    )
+
+    if not updated:
+        raise HTTPException(status_code=500, detail="Failed to save logo")
+
+    return LogoUploadResponse(
+        success=True,
+        message="Logo uploaded successfully",
+        logo_data=data_uri
+    )
+
+
+@router.get("/logo")
+async def get_logo(
+    contractor: Contractor = Depends(get_current_contractor),
+):
+    """Get the current contractor's logo."""
+    db = get_database_service()
+    contractor_data = await db.get_contractor(contractor.id)
+
+    if not contractor_data:
+        raise HTTPException(status_code=404, detail="Contractor not found")
+
+    return {
+        "logo_data": contractor_data.logo_data,
+        "has_logo": contractor_data.logo_data is not None
+    }
+
+
+@router.delete("/logo")
+async def delete_logo(
+    contractor: Contractor = Depends(get_current_contractor),
+):
+    """Remove the contractor's logo."""
+    db = get_database_service()
+
+    updated = await db.update_contractor(
+        contractor_id=contractor.id,
+        logo_data=None
+    )
+
+    if not updated:
+        raise HTTPException(status_code=500, detail="Failed to delete logo")
+
+    return {
+        "success": True,
+        "message": "Logo deleted successfully"
     }

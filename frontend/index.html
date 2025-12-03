@@ -3485,6 +3485,7 @@
                 <div class="account-tabs">
                     <button class="account-tab-btn active" id="billingTabBtn" onclick="showAccountTab('billing')">Billing</button>
                     <button class="account-tab-btn" id="referralTabBtn" onclick="showAccountTab('referral')">Referral</button>
+                    <button class="account-tab-btn" id="logoTabBtn" onclick="showAccountTab('logo')">Business Logo</button>
                     <button class="account-tab-btn" id="pricingBrainTabBtn" onclick="showAccountTab('pricingBrain')">Pricing Brain</button>
                 </div>
 
@@ -3594,6 +3595,43 @@
                         </div>
                     </div>
                 </div> <!-- End Referral Tab Content -->
+
+                <!-- Logo Tab Content (DISC-016) -->
+                <div id="logoTabContent" class="account-tab-content">
+                    <div style="background: var(--bg-card); border-radius: 12px; padding: 24px; margin-bottom: 24px;">
+                        <h3 style="margin: 0 0 8px 0; font-size: 1.25rem; font-family: var(--font-serif);">Business Logo</h3>
+                        <p style="color: var(--text-secondary); margin: 0 0 24px 0; font-size: 0.9rem;">
+                            Upload your business logo to appear on all PDF quotes. Supports PNG and JPG (max 2MB).
+                        </p>
+
+                        <!-- Current Logo Preview -->
+                        <div id="logoPreviewSection" style="margin-bottom: 24px; display: none;">
+                            <p style="color: var(--text-secondary); margin: 0 0 12px 0; font-size: 0.875rem; font-weight: 500;">Current Logo</p>
+                            <div style="background: var(--bg-secondary); border-radius: 8px; padding: 24px; text-align: center; position: relative;">
+                                <img id="logoPreview" src="" alt="Business Logo" style="max-width: 200px; max-height: 100px; border-radius: 4px;">
+                                <button class="btn" onclick="removeLogo()" style="margin-top: 16px; background: var(--bg-primary); color: var(--text-secondary);">Remove Logo</button>
+                            </div>
+                        </div>
+
+                        <!-- No Logo Message -->
+                        <div id="noLogoMessage" style="margin-bottom: 24px;">
+                            <p style="color: var(--text-secondary); margin: 0 0 12px 0; font-size: 0.875rem;">
+                                No logo uploaded. Your quotes will use a placeholder with your business initial.
+                            </p>
+                        </div>
+
+                        <!-- Upload Section -->
+                        <div>
+                            <label for="logoFileInput" class="btn btn-primary" style="display: inline-block; cursor: pointer; margin-bottom: 8px;">
+                                Choose Logo File
+                            </label>
+                            <input type="file" id="logoFileInput" accept="image/png,image/jpeg" style="display: none;" onchange="handleLogoFileSelect(event)">
+                            <p id="logoFileName" style="color: var(--text-secondary); margin: 8px 0 0 0; font-size: 0.875rem;"></p>
+                            <div id="logoUploadError" style="color: #ef4444; margin-top: 8px; font-size: 0.875rem; display: none;"></div>
+                            <div id="logoUploadSuccess" style="color: #10b981; margin-top: 8px; font-size: 0.875rem; display: none;"></div>
+                        </div>
+                    </div>
+                </div> <!-- End Logo Tab Content -->
 
                 <!-- Pricing Brain Tab Content -->
                 <div id="pricingBrainTabContent" class="account-tab-content">
@@ -7090,6 +7128,132 @@
             {% endif %}
         }
 
+        // ========================================
+        // Logo Management (DISC-016)
+        // ========================================
+
+        async function loadCurrentLogo() {
+            try {
+                const response = await fetch(`${API_BASE}/contractors/logo`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.has_logo && data.logo_data) {
+                        document.getElementById('logoPreview').src = data.logo_data;
+                        document.getElementById('logoPreviewSection').style.display = 'block';
+                        document.getElementById('noLogoMessage').style.display = 'none';
+                    } else {
+                        document.getElementById('logoPreviewSection').style.display = 'none';
+                        document.getElementById('noLogoMessage').style.display = 'block';
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading logo:', error);
+            }
+        }
+
+        async function handleLogoFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // Reset messages
+            document.getElementById('logoUploadError').style.display = 'none';
+            document.getElementById('logoUploadSuccess').style.display = 'none';
+            document.getElementById('logoFileName').textContent = file.name;
+
+            // Validate file size (2MB)
+            const maxSize = 2 * 1024 * 1024;
+            if (file.size > maxSize) {
+                document.getElementById('logoUploadError').textContent = `File too large. Maximum size is 2MB, got ${(file.size / 1024 / 1024).toFixed(2)}MB`;
+                document.getElementById('logoUploadError').style.display = 'block';
+                event.target.value = '';
+                return;
+            }
+
+            // Validate file type
+            if (!['image/png', 'image/jpeg'].includes(file.type)) {
+                document.getElementById('logoUploadError').textContent = 'Invalid file type. Only PNG and JPG are allowed.';
+                document.getElementById('logoUploadError').style.display = 'block';
+                event.target.value = '';
+                return;
+            }
+
+            // Upload logo
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+
+                const response = await fetch(`${API_BASE}/contractors/logo`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${authToken}` },
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('logoUploadSuccess').textContent = 'Logo uploaded successfully!';
+                    document.getElementById('logoUploadSuccess').style.display = 'block';
+
+                    // Update preview
+                    if (data.logo_data) {
+                        document.getElementById('logoPreview').src = data.logo_data;
+                        document.getElementById('logoPreviewSection').style.display = 'block';
+                        document.getElementById('noLogoMessage').style.display = 'none';
+                    }
+
+                    // Track analytics
+                    {% if posthog_api_key %}
+                    if (window.posthog) {
+                        posthog.capture('logo_uploaded');
+                    }
+                    {% endif %}
+                } else {
+                    const error = await response.json();
+                    document.getElementById('logoUploadError').textContent = error.detail || 'Failed to upload logo';
+                    document.getElementById('logoUploadError').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error uploading logo:', error);
+                document.getElementById('logoUploadError').textContent = 'Network error. Please try again.';
+                document.getElementById('logoUploadError').style.display = 'block';
+            }
+
+            // Reset file input
+            event.target.value = '';
+        }
+
+        async function removeLogo() {
+            if (!confirm('Are you sure you want to remove your logo?')) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/contractors/logo`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                if (response.ok) {
+                    document.getElementById('logoPreviewSection').style.display = 'none';
+                    document.getElementById('noLogoMessage').style.display = 'block';
+                    document.getElementById('logoFileName').textContent = '';
+
+                    showLearningToast('Logo removed successfully', '✓');
+
+                    // Track analytics
+                    {% if posthog_api_key %}
+                    if (window.posthog) {
+                        posthog.capture('logo_removed');
+                    }
+                    {% endif %}
+                } else {
+                    showError('Failed to remove logo');
+                }
+            } catch (error) {
+                console.error('Error removing logo:', error);
+                showError('Network error. Please try again.');
+            }
+        }
+
         // Close modal on outside click
         document.getElementById('upgradeModal').addEventListener('click', function(e) {
             if (e.target === this) {
@@ -7411,11 +7575,13 @@
             // Update tab buttons
             document.getElementById('billingTabBtn').classList.toggle('active', tab === 'billing');
             document.getElementById('referralTabBtn').classList.toggle('active', tab === 'referral');
+            document.getElementById('logoTabBtn').classList.toggle('active', tab === 'logo');
             document.getElementById('pricingBrainTabBtn').classList.toggle('active', tab === 'pricingBrain');
 
             // Update tab content
             document.getElementById('billingTabContent').classList.toggle('active', tab === 'billing');
             document.getElementById('referralTabContent').classList.toggle('active', tab === 'referral');
+            document.getElementById('logoTabContent').classList.toggle('active', tab === 'logo');
             document.getElementById('pricingBrainTabContent').classList.toggle('active', tab === 'pricingBrain');
 
             // Load data when switching tabs
@@ -7423,6 +7589,8 @@
                 loadPricingBrain();
             } else if (tab === 'billing') {
                 loadBillingStatus();
+            } else if (tab === 'logo') {
+                loadCurrentLogo();
             } else if (tab === 'referral') {
                 loadReferralStats();
             }

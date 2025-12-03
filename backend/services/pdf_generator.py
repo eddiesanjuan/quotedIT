@@ -6,6 +6,7 @@ Uses ReportLab for PDF generation with premium styling.
 
 import io
 import os
+import base64
 from datetime import datetime, timedelta
 from typing import Optional
 
@@ -304,7 +305,7 @@ class PDFGeneratorService:
         return pdf_bytes
 
     def _build_header(self, contractor: dict, quote_data: dict) -> list:
-        """Build the header with logo placeholder and business info."""
+        """Build the header with logo (custom or placeholder) and business info."""
         elements = []
 
         business_name = contractor.get('business_name', 'Your Business')
@@ -321,8 +322,33 @@ class PDFGeneratorService:
 
         contact_text = '<br/>'.join(contact_lines) if contact_lines else ''
 
-        # Create header table with logo on left, business info on right
-        logo = LogoPlaceholder(initial, size=48)
+        # Create logo - use custom logo if available, otherwise placeholder
+        logo_data = contractor.get('logo_data')
+        if logo_data:
+            # Custom logo from base64 data URI
+            try:
+                # Extract base64 data from data URI
+                if logo_data.startswith('data:'):
+                    # Format: data:image/png;base64,<base64_data>
+                    base64_str = logo_data.split(',', 1)[1]
+                else:
+                    base64_str = logo_data
+
+                # Decode base64 to binary
+                logo_binary = base64.b64decode(base64_str)
+
+                # Create BytesIO object for ReportLab
+                logo_buffer = io.BytesIO(logo_binary)
+
+                # Create Image object with fixed height, preserve aspect ratio
+                logo = Image(logo_buffer, width=48, height=48)
+            except Exception as e:
+                # If logo fails to load, fall back to placeholder
+                print(f"Warning: Failed to load custom logo: {e}")
+                logo = LogoPlaceholder(initial, size=48)
+        else:
+            # Use placeholder logo
+            logo = LogoPlaceholder(initial, size=48)
 
         # Business info column
         business_info = []

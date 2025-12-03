@@ -124,8 +124,10 @@ class DatabaseService:
                 return None
 
             for key, value in kwargs.items():
-                if hasattr(contractor, key) and value is not None:
-                    setattr(contractor, key, value)
+                # Allow setting logo_data to None (for deletion)
+                if hasattr(contractor, key):
+                    if key == 'logo_data' or value is not None:
+                        setattr(contractor, key, value)
 
             contractor.updated_at = datetime.utcnow()
             await session.commit()
