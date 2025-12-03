@@ -70,6 +70,7 @@
 | ~~UX-003~~ | ~~Improve Landing Page Headline~~ | ~~Frontend~~ | **COMPLETE** | Committed 66b25b9 |
 | ~~UX-004~~ | ~~Add Product Demo Animation to Landing Page~~ | ~~Frontend~~ | **COMPLETE** | Committed 2c7244e |
 | ~~BUG-004~~ | ~~Demo Page Broken + Strategic Review~~ | ~~Frontend + Executive~~ | **BUG FIXED** | Strategic direction pending DECISION-005 |
+| BUG-005 | Mobile Formatting & Layout Issues | Frontend | **READY** | Beta counter, z-index, hero overlap |
 
 ---
 
@@ -99,7 +100,63 @@
 
 ---
 
-## BUG-001: Help Button Navigation Broken (READY)
+## BUG-005: Mobile Formatting & Layout Issues (READY)
+
+**Scope**: Frontend (3-4h)
+**Priority**: HIGH (user-facing visual bugs)
+**Reported By**: Founder (2025-12-03)
+
+**Problem**: Multiple mobile layout issues identified after recent feature additions (beta counter, trial banners, modals). Elements overlapping, z-index conflicts, and content being covered.
+
+**Identified Issues**:
+
+1. **Beta counter overlaps hero content on mobile**
+   - Beta counter positioned at `top: 70px` on mobile (600px breakpoint)
+   - Hero `padding-top` only adjusted at 900px (80px), not at 600px
+   - Result: Beta counter may cover hero headline on smaller screens
+   - Files: `landing.html` lines 1057-1069, 570-572
+
+2. **Z-index stacking needs audit**
+   - Nav: z-index 100
+   - Beta counter: z-index 99
+   - Modals: z-index 1000/1001
+   - Trial banners (index.html): z-index 1000
+   - Potential conflicts when multiple fixed elements visible
+
+3. **Hero content offset missing for beta counter**
+   - Hero starts at `padding-top: 100px` (desktop), `80px` (tablet)
+   - No adjustment at 600px or 480px to account for beta counter height
+   - Content may be partially hidden behind fixed elements
+
+4. **Trial banner + beta counter stacking (index.html)**
+   - When trial banner shows, it shifts content
+   - Beta counter position doesn't adjust for trial banner height
+   - May cause double-overlap on trial users
+
+5. **Smallest viewport (375px) needs testing**
+   - Beta counter only adjusts at 600px, nothing at 375px
+   - Nav padding at 480px is 16px 20px - may be tight
+   - CTA buttons may be cramped
+
+**Recommended Fix Approach**:
+1. Add `padding-top` adjustment at 600px and 480px breakpoints for hero
+2. Increase beta counter `top` when referral/trial banner is visible
+3. Audit z-index values for consistent stacking order
+4. Add 375px breakpoint adjustments for beta counter
+5. Test all pages: landing, index, demo, help
+
+**Testing Requirements**:
+- Test on iPhone SE (375px)
+- Test on iPhone 14 (390px)
+- Test on iPad Mini (768px)
+- Test with/without trial banner visible
+- Test with/without referral banner visible
+
+**Playwright MCP Recommended**: Switch to browser profile for visual regression testing
+
+---
+
+## ~~BUG-001: Help Button Navigation Broken~~ (COMPLETE ✓)
 
 **Scope**: Frontend (1h)
 **Priority**: HIGH (broken user-facing feature)
