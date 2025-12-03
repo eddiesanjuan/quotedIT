@@ -1001,27 +1001,27 @@
 
             <div class="conversion-modal-icon">
                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M20 6L9 17L4 12" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
             </div>
 
-            <h2>Your quote is ready!</h2>
-            <p class="conversion-modal-subtitle">Sign up to save this quote and personalize your pricing</p>
+            <h2>Imagine doing that with YOUR pricing.</h2>
+            <p class="conversion-modal-subtitle">This was a generic demo. Try it with your real jobs—it learns how you price.</p>
 
             <div class="conversion-modal-benefit">
                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
                     <path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                 </svg>
-                <span>14-day free trial • Unlimited personalized quotes</span>
+                <span>75 quotes free • No credit card required</span>
             </div>
 
-            <a href="/" class="conversion-modal-cta" onclick="trackDemoSignupClick('Save This Quote & Start Free Trial')">
-                Save This Quote & Start Free Trial
+            <a href="/app" class="conversion-modal-cta" onclick="trackDemoSignupClick('Start Free Trial')">
+                Start Free Trial
             </a>
 
-            <a href="#" class="conversion-modal-secondary" onclick="closeConversionModal(); return false;">
-                Continue exploring demo
+            <a href="#" class="conversion-modal-secondary" onclick="hasShownConversionModal = false; closeConversionModal(); restartDemo(); return false;">
+                Watch again
             </a>
         </div>
     </div>

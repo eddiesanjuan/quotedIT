@@ -99,9 +99,9 @@ class Settings(BaseSettings):
     pro_price_monthly: int = 3900  # $39.00 in cents
     pro_overage_price: int = 35  # $0.35 in cents
 
-    team_monthly_quotes: int = 500
+    team_monthly_quotes: int = 999999  # Effectively unlimited
     team_price_monthly: int = 7900  # $79.00 in cents
-    team_overage_price: int = 25  # $0.25 in cents
+    team_overage_price: int = 0  # No overage - unlimited plan
 
     class Config:
         env_file = ".env"
