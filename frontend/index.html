@@ -4656,6 +4656,14 @@
             document.getElementById('quickSetupForm').style.display = 'block';
             document.getElementById('onboardingChat').classList.remove('active');
 
+            // Track onboarding path selection
+            {% if posthog_api_key %}
+            if (window.posthog) {
+                posthog.capture('onboarding_path_selected', { path: 'quick_setup' });
+                posthog.capture('onboarding_started', { onboarding_type: 'quick_setup' });
+            }
+            {% endif %}
+
             // Load template if industry is selected
             if (selectedIndustry && selectedIndustry.key !== 'other') {
                 document.getElementById('primaryTrade').value = selectedIndustry.key;
@@ -4928,6 +4936,13 @@
                 removeTypingIndicator();
                 addChatMessage('assistant', "Your pricing is saved. You're ready to start quoting!");
 
+                // Track onboarding completion
+                {% if posthog_api_key %}
+                if (window.posthog) {
+                    posthog.capture('onboarding_completed', { onboarding_type: 'interview' });
+                }
+                {% endif %}
+
                 // Set flag for first quote activation modal
                 localStorage.setItem('just_completed_onboarding', 'true');
 
@@ -5030,6 +5045,14 @@
                 }
 
                 await fetchUserInfo();
+
+                // Track onboarding completion
+                {% if posthog_api_key %}
+                if (window.posthog) {
+                    posthog.capture('onboarding_completed', { onboarding_type: 'quick_setup' });
+                }
+                {% endif %}
+
                 document.getElementById('onboardingNotice').style.display = 'none';
                 document.getElementById('inputSection').style.display = 'block';
 
@@ -6077,6 +6100,47 @@
             document.getElementById('pricingSection').scrollIntoView({ behavior: 'smooth' });
         }
 
+        // Single-click upgrade from trial banner
+        async function upgradeFromBanner() {
+            // Track banner click
+            {% if posthog_api_key %}
+            if (window.posthog) {
+                posthog.capture('trial_banner_upgrade_clicked');
+            }
+            {% endif %}
+
+            // Default to Professional monthly (most common choice)
+            await startCheckout('Professional', 'month');
+        }
+
+        // Upgrade from quote limit warning
+        async function upgradeFromQuoteLimitWarning() {
+            // Track warning click
+            {% if posthog_api_key %}
+            if (window.posthog) {
+                posthog.capture('quote_limit_warning_upgrade_clicked');
+            }
+            {% endif %}
+
+            // Default to Professional monthly
+            await startCheckout('Professional', 'month');
+        }
+
+        // Quick upgrade from modal
+        async function quickUpgrade(planTier, interval) {
+            // Track quick upgrade click
+            {% if posthog_api_key %}
+            if (window.posthog) {
+                posthog.capture('quote_limit_modal_upgrade_clicked', {
+                    plan_tier: planTier,
+                    interval: interval
+                });
+            }
+            {% endif %}
+
+            await startCheckout(planTier, interval);
+        }
+
         // Upgrade modal
         function showUpgradeModal() {
             document.getElementById('upgradeModal').style.display = 'flex';
@@ -6085,7 +6149,7 @@
             // Track upgrade modal open
             {% if posthog_api_key %}
             if (window.posthog) {
-                posthog.capture('upgrade_modal_opened');
+                posthog.capture('quote_limit_modal_shown');
             }
             {% endif %}
         }
