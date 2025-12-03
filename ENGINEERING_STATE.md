@@ -1221,15 +1221,15 @@ GET /api/billing/plans - Available pricing (public)
 
 ---
 
-### ~~DISC-006: Demo→Signup Conversion Flow~~ (DEPLOYED)
+### ~~DISC-006: Animation Walkthrough→Signup Conversion Flow~~ (DEPLOYED)
 
 **Commit**: c8addfa
 **Source**: Product + Growth Discovery Agents
 **Impact**: MEDIUM | **Effort**: M | **Score**: 1.0
-**Sprint Alignment**: Demo is acquisition lever for 30 of 100 users (BETA_SPRINT.md target)
+**Sprint Alignment**: Animation walkthrough is acquisition lever showing product value before signup
 
 **Implementation Summary**:
-- ✅ Conversion modal overlay after demo completes
+- ✅ Conversion modal overlay after animation walkthrough completes
 - ✅ Title: "Your quote is ready!" with trial benefits
 - ✅ Primary CTA: "Save This Quote & Start Free Trial" → signup
 - ✅ Secondary: "Continue exploring demo" dismisses modal
@@ -1237,29 +1237,33 @@ GET /api/billing/plans - Available pricing (public)
 - ✅ Glassmorphism styling matching brand (#00ff88 accents)
 - ✅ Shows once per session to avoid annoyance
 
-**Success Metric**: 20%+ demo→signup conversion (vs current unknown)
+**Note**: The /demo page shows an **animated walkthrough** of how Quoted works (not an interactive demo). This modal captures viewers at the end of the animation.
+
+**Success Metric**: 20%+ animation viewer→signup conversion (vs current unknown)
 
 ---
 
-### DISC-007: Onboarding Path A/B Testing (READY)
+### ~~DISC-007: Onboarding Path A/B Testing~~ (DEPLOYED)
 
+**Commit**: b5d55b1
 **Source**: Product + Growth Discovery Agents
 **Impact**: MEDIUM | **Effort**: S | **Score**: 2.0
 **Sprint Alignment**: Activation optimization - ensures users choose best onboarding path
 
-**Problem**: Two onboarding paths exist (Interview vs Quick Setup) but no measurement of which converts better to first quote and which leads to better retention.
+**Implementation Summary**:
+- ✅ Added `onboarding_path` field to User model ("interview" or "quick_setup")
+- ✅ Added `onboarding_completed_at` timestamp to User model
+- ✅ Backend: `/onboarding/start` tracks `onboarding_path_selected` with `path="interview"`
+- ✅ Backend: `/onboarding/quick` tracks `onboarding_path_selected` with `path="quick_setup"`
+- ✅ Backend: Both completion endpoints save path to User record
+- ✅ All `onboarding_completed` events include `onboarding_path` property
+- ✅ Database migrations applied
 
-**Evidence**:
-- UX-002 reframed to recommend Interview but acceptance rate unknown
-- No tracking of path selection vs downstream success
-- Current hypothesis: Interview → better accuracy → fewer edits → higher LTV
-- Can't validate without segmented analytics
-
-**Proposed Work**:
-1. Track `onboarding_path_selected` event (interview vs quick_setup)
-2. Compare downstream: first_quote_rate, quote_edit_rate, 7d_retention by path
-3. Create PostHog cohort comparison dashboard
-4. If Interview wins significantly, consider making it default/required
+**Now Measurable in PostHog**:
+- Path selection rate (% choose each path)
+- Activation rate by path (first_quote conversion)
+- Edit rate by path (quote quality proxy)
+- Time to first quote by path
 
 **Success Metric**: Clear data on which path produces better activation and retention
 
@@ -1289,51 +1293,48 @@ GET /api/billing/plans - Available pricing (public)
 
 ---
 
-### DISC-009: First Quote Celebration Enhancement (READY)
+### ~~DISC-009: First Quote Celebration Enhancement~~ (DEPLOYED)
 
+**Commit**: dd5c41e
 **Source**: Growth Discovery Agent
 **Impact**: HIGH | **Effort**: M | **Score**: 1.5
 **Sprint Alignment**: Peak emotional moment for referral and retention hooks
 
-**Problem**: First quote celebration modal exists (CONVERT-003) but is minimal - just "Nice job!" with share button. This is the peak emotional moment, perfect for referral intro and engagement hooks.
-
-**Evidence**:
-- Modal shows celebration but no secondary actions
-- No referral mention at moment of success
-- No email sent to reinforce
-- No upgrade mention for trial users
-
-**Proposed Work**:
-1. Redesign modal with 3 CTAs in hierarchy:
-   - "Share with Customer" (primary)
-   - "Invite Friend, Get 1 Month Free" (referral)
-   - "See Pricing Options" (upgrade for trial users)
-2. Send celebratory email: "Your first quote is live!"
-3. Show quote stats: "Generated in X seconds"
+**Implementation Summary**:
+- ✅ Enhanced celebration modal with 3-CTA hierarchy
+- ✅ Primary CTA: "Share Your First Quote" with Web Share API / clipboard fallback
+- ✅ Secondary: Referral section (from DISC-002) made more prominent
+- ✅ Tertiary: "View Quote" and "Create Another" buttons
+- ✅ Social proof badge: "You're in the first 100 beta testers!"
+- ✅ Progress indicator: "Your AI is Learning - Building your pricing intelligence"
+- ✅ Larger celebration icon with drop shadow and bounce animation
+- ✅ PostHog tracking: celebration_shown, celebration_share_clicked, celebration_share_completed, celebration_dismissed
+- ✅ Mobile responsive (buttons stack, icon scales)
 
 **Success Metric**: +30% retention; +20% referral awareness from celebration flow
 
 ---
 
-### DISC-010: Testimonial Collection System (READY)
+### ~~DISC-010: Testimonial Collection System~~ (DEPLOYED)
 
+**Commit**: fabe2c6
 **Source**: Growth Discovery Agent
 **Impact**: MEDIUM | **Effort**: M | **Score**: 1.0
 **Sprint Alignment**: Social proof increases landing page conversion
 
-**Problem**: Landing page has testimonial carousel (GROWTH-004) but placeholder content only. No mechanism to collect real testimonials from users.
+**Implementation Summary**:
+- ✅ Database: `Testimonial` model with rating, quote_text, name, company, approved fields
+- ✅ Backend API: `POST /api/testimonials/` - Submit testimonial
+- ✅ Backend API: `GET /api/testimonials/?approved_only=true` - Fetch for landing page
+- ✅ Backend API: `GET /api/testimonials/check-submitted` - Prevent duplicate submissions
+- ✅ Frontend: Collection modal triggers after 3rd quote
+- ✅ 5-star rating system with interactive gold stars
+- ✅ Optional attribution (name/company) with checkbox reveal
+- ✅ 500-character limit with live counter
+- ✅ Shows once per user (localStorage + API check)
+- ✅ PostHog tracking: testimonial_modal_shown, testimonial_submitted
 
-**Evidence**:
-- Frontend: Hard-coded placeholder testimonials
-- No submission API
-- No in-app collection prompt
-- First 20 users are ideal testimonial candidates
-
-**Proposed Work**:
-1. After 3rd quote, show modal: "Love Quoted? Share your story"
-2. Collect: Name, Company, Quote, Photo (optional)
-3. Manual approval workflow for landing page display
-4. Email first 20 users: "Share a testimonial, get 1 free month"
+**Admin Workflow**: Update `approved=true` in database, then fetch via API for landing page.
 
 **Success Metric**: 5+ real testimonials collected; +15% landing page conversion with real testimonials
 
@@ -1386,28 +1387,28 @@ GET /api/billing/plans - Available pricing (public)
 
 ---
 
-### DISC-013: Demo Distribution Strategy (READY)
+### DISC-013: Animation Walkthrough Distribution Strategy (READY)
 
 **Source**: Growth Discovery Agent
 **Impact**: HIGH | **Effort**: L | **Score**: 0.75
-**Sprint Alignment**: BETA_SPRINT targets 300 demos × 10% = 30 users from demo
+**Sprint Alignment**: BETA_SPRINT targets 300 animation views × 10% = 30 users from animation walkthrough
 
-**Problem**: Demo mode is built, DECISION-005 approved animation walkthrough, but no distribution strategy. Demo is accessible but invisible - no outreach to drive the 300 demo target.
+**Problem**: Animation walkthrough is built (DECISION-005), conversion modal added (DISC-006), but no distribution strategy. Animation page is accessible but invisible - no outreach to drive views.
 
 **Evidence**:
-- Backend: /api/demo/quote with rate limiting
-- Frontend: /demo page with animation
+- Frontend: /demo page with animation walkthrough
+- Conversion: DISC-006 added signup modal after animation completes
 - Distribution: Zero strategy documented
 - No social media, Reddit, or contractor community outreach planned
 
 **Proposed Work**:
-1. Create /demo-promo landing variant focused on demo
+1. Create /demo-promo landing variant focused on animation
 2. Message: "See voice-to-quote in 60 seconds - no signup"
-3. Add tracking: demo_source parameter for channel attribution
+3. Add tracking: utm_source parameter for channel attribution
 4. Start with 3 contractor subreddits + 2 Facebook groups
-5. Target: 300 demos in 14 days
+5. Target: 300 animation views in 14 days
 
-**Success Metric**: 300 demo_started events; demo→signup conversion baseline established
+**Success Metric**: 300 animation views; animation→signup conversion baseline established
 
 ---
 
