@@ -27,6 +27,50 @@
 <!-- Type 4: Founder-only decisions -->
 <!-- Type 3: Propose-then-do decisions -->
 
+### DECISION-006: Pricing Strategy Review - Are We Too Expensive?
+**Type**: 4 (Strategic - Pricing)
+**Added**: 2025-12-02 20:45 PST
+**Requested By**: Founder
+
+**Context**: Founder is questioning whether current pricing ($29/mo Starter, $49/mo Pro) is too high. The economics of producing quotes (AI API costs) are looking very affordable. Founder's philosophy: **"I would rather raise prices than be drastically off to the side of people feeling it's too expensive."**
+
+**Current Pricing**:
+| Plan | Price | Quotes/mo | Per Extra Quote |
+|------|-------|-----------|-----------------|
+| Starter | $29/mo | 75 | $0.50 |
+| Pro | $49/mo | 200 | $0.35 |
+
+**Key Questions for Executive Council**:
+1. What are the actual unit economics per quote? (AI costs, infrastructure)
+2. How does our pricing compare to competitor alternatives (manual quoting time, other tools)?
+3. What's the perceived value vs. actual cost for a contractor?
+4. Should we lower prices to accelerate adoption during beta?
+5. What pricing would feel like a "no-brainer" for target users?
+
+**Considerations**:
+- Beta goal: 100 users by Dec 16 - lower prices could accelerate
+- Building trust early may be more valuable than optimizing revenue
+- Can always raise prices later, but lowering after setting high is harder psychologically
+- Contractors are price-sensitive but value time savings highly
+
+**Options**:
+- [ ] **A) Keep Current Pricing** - $29/$49 is reasonable, focus on value messaging
+- [ ] **B) Lower Starter Plan** - e.g., $19/mo to reduce friction
+- [ ] **C) Lower Both Plans** - e.g., $19/$39 to be more aggressive
+- [ ] **D) Freemium Model** - Free tier with limited quotes, paid for more
+- [ ] **E) Other** - (specify below)
+
+**Executive Analysis Requested**: Full council review with:
+- CFO: Unit economics breakdown
+- CMO: Competitive pricing analysis
+- CGO: Impact on conversion/adoption
+- CPO: User perception research
+
+**Founder Response**:
+>
+
+---
+
 ### DECISION-004: Bespoke Onboarding Offer Structure
 **Type**: 4 (Strategic - Pricing/Positioning)
 **Added**: 2025-12-02 19:30 PST
