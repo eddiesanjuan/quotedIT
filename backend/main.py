@@ -225,5 +225,26 @@ if frontend_path.exists():
             "environment": settings.environment,
         })
 
+    @app.get("/shared/{token}", response_class=HTMLResponse)
+    async def serve_shared_quote(request: Request, token: str):
+        """Serve the public shared quote view with injected config."""
+        return templates.TemplateResponse("quote-view.html", {
+            "request": request,
+            "token": token,
+            "posthog_api_key": settings.posthog_api_key,
+            "sentry_dsn": settings.sentry_dsn,
+            "environment": settings.environment,
+        })
+
+    @app.get("/for-customers", response_class=HTMLResponse)
+    async def serve_customer_landing(request: Request):
+        """Serve the customer landing page (viral growth from shared quotes)."""
+        return templates.TemplateResponse("for-customers.html", {
+            "request": request,
+            "posthog_api_key": settings.posthog_api_key,
+            "sentry_dsn": settings.sentry_dsn,
+            "environment": settings.environment,
+        })
+
     # Mount static files (CSS, JS, images if any)
     app.mount("/static", StaticFiles(directory=str(frontend_path)), name="static")

@@ -3,7 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quote from {{ contractor_name }} | Quoted</title>
+    <title>Quote | Quoted</title>
+
+    <!-- PostHog Analytics -->
+    <script>
+        {% if posthog_api_key %}
+        !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.async=!0,p.src=s.api_host+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="capture identify alias people.set people.set_once set_config register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled onFeatureFlags getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures getActiveMatchingSurveys getSurveys".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
+        posthog.init('{{ posthog_api_key }}', {api_host: 'https://us.i.posthog.com'});
+        {% endif %}
+    </script>
+
     <style>
         :root {
             --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -209,7 +218,7 @@
         .branding {
             font-size: 0.875rem;
             color: var(--text-muted);
-            margin-bottom: 16px;
+            margin-bottom: 8px;
         }
 
         .branding-logo {
@@ -220,6 +229,17 @@
 
         .branding-logo-it {
             color: var(--accent);
+        }
+
+        .viral-message {
+            font-size: 0.9375rem;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+            line-height: 1.6;
+        }
+
+        .viral-message strong {
+            color: var(--text-primary);
         }
 
         .cta {
@@ -369,70 +389,181 @@
 
         <div class="card">
             <div class="quote-header">
-                <h1 class="quote-title">{{ customer_name }}</h1>
+                <h1 class="quote-title" id="customerName">Loading...</h1>
 
                 <div class="contractor-info">
                     <div class="info-item">
                         <div class="info-label">Contractor</div>
-                        <div class="info-value">{{ contractor_name }}</div>
+                        <div class="info-value" id="contractorName">...</div>
                     </div>
                     <div class="info-item">
                         <div class="info-label">Phone</div>
-                        <div class="info-value">{{ contractor_phone }}</div>
+                        <div class="info-value" id="contractorPhone">...</div>
                     </div>
                     <div class="info-item">
                         <div class="info-label">Quote Date</div>
-                        <div class="info-value">{{ quote_date }}</div>
+                        <div class="info-value" id="quoteDate">...</div>
                     </div>
                 </div>
             </div>
 
-            {% if customer_address %}
-            <div class="customer-info">
+            <div class="customer-info" id="addressSection" style="display: none;">
                 <h3>Project Location</h3>
-                <div class="info-value">{{ customer_address }}</div>
-            </div>
-            {% endif %}
-
-            <div class="job-description">
-                {{ job_description }}
+                <div class="info-value" id="customerAddress"></div>
             </div>
 
-            <div class="line-items">
-                {% for item in line_items %}
-                <div class="line-item">
-                    <div class="item-description">
-                        <div class="item-name">{{ item.item }}</div>
-                        {% if item.description %}
-                        <div class="item-details">{{ item.description }}</div>
-                        {% endif %}
-                    </div>
-                    <div class="item-cost">${{ "{:,.2f}".format(item.cost) }}</div>
-                </div>
-                {% endfor %}
+            <div class="job-description" id="jobDescription">
+                Loading quote details...
+            </div>
+
+            <div class="line-items" id="lineItems">
+                <!-- Populated via JavaScript -->
             </div>
 
             <div class="quote-total">
                 <span class="total-label">Estimated Total</span>
-                <span class="total-amount">${{ "{:,.2f}".format(total) }}</span>
+                <span class="total-amount" id="quoteTotal">$0.00</span>
             </div>
-
-            {% if notes %}
-            <div class="quote-notes">
-                <h4>Notes</h4>
-                <p>{{ notes }}</p>
-            </div>
-            {% endif %}
         </div>
 
         <div class="footer">
             <div class="branding">
                 Powered by <span class="branding-logo">quoted<span class="branding-logo-it">.it</span></span>
             </div>
-            <a href="https://quoted.it" class="cta" target="_blank" rel="noopener noreferrer">
-                Get instant voice quotes for your business
+            <div class="viral-message">
+                <strong>Get quotes like this in 60 seconds</strong> — Turn your voice notes into professional quotes instantly
+            </div>
+            <a href="/for-customers?utm_source=shared_quote&utm_medium=viral" class="cta" id="sharedQuoteCta">
+                Try Demo →
             </a>
         </div>
     </div>
+
+    <script>
+        // Get token from template variable
+        const shareToken = "{{ token }}";
+
+        // Fetch quote data from API
+        async function loadQuoteData() {
+            try {
+                const response = await fetch(`/api/quotes/shared/${shareToken}`);
+                if (!response.ok) {
+                    throw new Error('Quote not found');
+                }
+                const quoteData = await response.json();
+
+                // Update page title
+                document.title = `Quote from ${quoteData.contractor_name} | Quoted`;
+
+                // Populate the page with data (using textContent for safety)
+                document.getElementById('customerName').textContent = quoteData.customer_name || 'Customer';
+                document.getElementById('contractorName').textContent = quoteData.contractor_name;
+                document.getElementById('contractorPhone').textContent = quoteData.contractor_phone || 'N/A';
+
+                // Format and display date
+                if (quoteData.created_at) {
+                    const date = new Date(quoteData.created_at);
+                    document.getElementById('quoteDate').textContent = date.toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                    });
+                }
+
+                // Customer address
+                if (quoteData.customer_address) {
+                    document.getElementById('customerAddress').textContent = quoteData.customer_address;
+                    document.getElementById('addressSection').style.display = 'block';
+                }
+
+                // Job description
+                document.getElementById('jobDescription').textContent = quoteData.job_description || 'Project details';
+
+                // Line items (using safe DOM methods)
+                const lineItemsContainer = document.getElementById('lineItems');
+                lineItemsContainer.innerHTML = '';
+                (quoteData.line_items || []).forEach(item => {
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'line-item';
+
+                    const descDiv = document.createElement('div');
+                    descDiv.className = 'item-description';
+
+                    const nameDiv = document.createElement('div');
+                    nameDiv.className = 'item-name';
+                    nameDiv.textContent = item.item;
+                    descDiv.appendChild(nameDiv);
+
+                    if (item.description) {
+                        const detailsDiv = document.createElement('div');
+                        detailsDiv.className = 'item-details';
+                        detailsDiv.textContent = item.description;
+                        descDiv.appendChild(detailsDiv);
+                    }
+
+                    const costDiv = document.createElement('div');
+                    costDiv.className = 'item-cost';
+                    costDiv.textContent = `$${item.cost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+                    itemDiv.appendChild(descDiv);
+                    itemDiv.appendChild(costDiv);
+                    lineItemsContainer.appendChild(itemDiv);
+                });
+
+                // Total
+                document.getElementById('quoteTotal').textContent = `$${quoteData.total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+                // Track PostHog event with quote details
+                {% if posthog_api_key %}
+                if (window.posthog) {
+                    posthog.capture('shared_quote_viewed', {
+                        token: shareToken,
+                        quote_id: quoteData.id,
+                        contractor_name: quoteData.contractor_name,
+                        job_type: quoteData.job_type,
+                        total: quoteData.total
+                    });
+                }
+                {% endif %}
+
+            } catch (error) {
+                console.error('Error loading quote:', error);
+                const container = document.querySelector('.container');
+                container.textContent = '';
+
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.style.textAlign = 'center';
+                card.style.padding = '48px';
+
+                const heading = document.createElement('h2');
+                heading.style.color = '#666';
+                heading.style.marginBottom = '16px';
+                heading.textContent = 'Quote Not Found';
+
+                const message = document.createElement('p');
+                message.style.color = '#999';
+                message.textContent = 'This quote link may be invalid or expired.';
+
+                card.appendChild(heading);
+                card.appendChild(message);
+                container.appendChild(card);
+            }
+        }
+
+        // Track CTA click
+        document.getElementById('sharedQuoteCta').addEventListener('click', function() {
+            {% if posthog_api_key %}
+            if (window.posthog) {
+                posthog.capture('shared_quote_cta_clicked', {
+                    token: shareToken
+                });
+            }
+            {% endif %}
+        });
+
+        // Load data on page load
+        loadQuoteData();
+    </script>
 </body>
 </html>
