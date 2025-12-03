@@ -367,7 +367,7 @@ async def generate_quote(
         if not quote_data.get("job_type"):
             quote_data["job_type"] = detected_job_type
 
-        # Save to database
+        # Save to database (DISC-018: Mark grace quotes)
         quote = await db.create_quote(
             contractor_id=contractor.id,
             transcription=quote_request.transcription,
@@ -380,14 +380,19 @@ async def generate_quote(
             customer_phone=quote_data.get("customer_phone"),
             estimated_days=quote_data.get("estimated_days"),
             ai_generated_total=quote_data.get("subtotal", 0),
+            is_grace_quote=billing_check.get("is_grace_quote", False),
         )
 
         # Register the category so future quotes can match against it
         # This ensures the category list grows with usage, not just edits
         await db.ensure_category_exists(contractor.id, detected_job_type)
 
-        # Increment quote usage counter
-        await BillingService.increment_quote_usage(auth_db, current_user["id"])
+        # Increment quote usage counter (DISC-018: Track grace quotes separately)
+        await BillingService.increment_quote_usage(
+            auth_db,
+            current_user["id"],
+            is_grace_quote=billing_check.get("is_grace_quote", False)
+        )
 
         # Track quote generation event (DISC-012: Include user learning stats)
         try:
@@ -421,12 +426,25 @@ async def generate_quote(
                     "category_quote_count": category_quote_count,
                     "category_edit_count": category_edit_count,
                     "category_edit_rate": round(category_edit_count / category_quote_count * 100, 2) if category_quote_count > 0 else 0,
+                    # DISC-018: Trial warning tracking
+                    "warning_level": billing_check.get("warning_level"),
+                    "is_grace_quote": billing_check.get("is_grace_quote", False),
                 }
             )
         except Exception as e:
             print(f"Warning: Failed to track quote generation: {e}")
 
-        return quote_to_response(quote)
+        # DISC-018: Add billing info to response for frontend warnings
+        response = quote_to_response(quote)
+        response_dict = response.dict()
+        response_dict["billing_info"] = {
+            "warning_level": billing_check.get("warning_level"),
+            "is_grace_quote": billing_check.get("is_grace_quote", False),
+            "quotes_remaining": billing_check.get("quotes_remaining", 0),
+            "grace_remaining": billing_check.get("grace_remaining", 0),
+        }
+
+        return response_dict
 
     except HTTPException:
         raise
@@ -807,7 +825,7 @@ async def generate_quote_from_audio(
             if not quote_data.get("job_type"):
                 quote_data["job_type"] = detected_job_type
 
-            # Save to database
+            # Save to database (DISC-018: Mark grace quotes)
             quote = await db.create_quote(
                 contractor_id=contractor.id,
                 transcription=quote_data.get("transcription", ""),
@@ -820,14 +838,19 @@ async def generate_quote_from_audio(
                 customer_phone=quote_data.get("customer_phone"),
                 estimated_days=quote_data.get("estimated_days"),
                 ai_generated_total=quote_data.get("subtotal", 0),
+                is_grace_quote=billing_check.get("is_grace_quote", False),
             )
 
             # Register the category so future quotes can match against it
             # This ensures the category list grows with usage, not just edits
             await db.ensure_category_exists(contractor.id, detected_job_type)
 
-            # Increment quote usage counter
-            await BillingService.increment_quote_usage(auth_db, current_user["id"])
+            # Increment quote usage counter (DISC-018: Track grace quotes separately)
+            await BillingService.increment_quote_usage(
+                auth_db,
+                current_user["id"],
+                is_grace_quote=billing_check.get("is_grace_quote", False)
+            )
 
             # Track quote generation event (DISC-012: Include user learning stats)
             try:
@@ -861,12 +884,25 @@ async def generate_quote_from_audio(
                         "category_quote_count": category_quote_count,
                         "category_edit_count": category_edit_count,
                         "category_edit_rate": round(category_edit_count / category_quote_count * 100, 2) if category_quote_count > 0 else 0,
+                        # DISC-018: Trial warning tracking
+                        "warning_level": billing_check.get("warning_level"),
+                        "is_grace_quote": billing_check.get("is_grace_quote", False),
                     }
                 )
             except Exception as e:
                 print(f"Warning: Failed to track quote generation: {e}")
 
-            return quote_to_response(quote)
+            # DISC-018: Add billing info to response for frontend warnings
+            response = quote_to_response(quote)
+            response_dict = response.dict()
+            response_dict["billing_info"] = {
+                "warning_level": billing_check.get("warning_level"),
+                "is_grace_quote": billing_check.get("is_grace_quote", False),
+                "quotes_remaining": billing_check.get("quotes_remaining", 0),
+                "grace_remaining": billing_check.get("grace_remaining", 0),
+            }
+
+            return response_dict
 
         finally:
             # Clean up temp file
@@ -1160,7 +1196,7 @@ async def generate_pdf(request: Request, quote_id: str, current_user: dict = Dep
                 "labor_warranty_years": terms.labor_warranty_years,
             }
 
-        # Generate PDF
+        # Generate PDF (DISC-018: Add watermark for grace quotes)
         os.makedirs("./data/pdfs", exist_ok=True)
         output_path = f"./data/pdfs/{quote_id}.pdf"
 
@@ -1169,6 +1205,7 @@ async def generate_pdf(request: Request, quote_id: str, current_user: dict = Dep
             contractor=contractor_dict,
             terms=terms_dict,
             output_path=output_path,
+            watermark=quote.is_grace_quote,  # Add watermark if this is a grace quote
         )
 
         # Update quote with PDF URL

@@ -57,6 +57,12 @@ class BillingService:
         """
         Check if user can generate another quote.
         Returns dict with: can_generate, reason, quotes_remaining, plan_tier
+
+        DISC-018: Progressive warnings + grace period:
+        - 90% (67/75): soft_warning
+        - 95% (71/75): urgent_warning
+        - 100% (75/75): grace period (3 quotes with watermark)
+        - 103+ (78/75): hard_block
         """
         result = await db.execute(select(User).where(User.id == user_id))
         user = result.scalar_one_or_none()
@@ -82,9 +88,35 @@ class BillingService:
 
         # Check quote limit
         quotes_remaining = plan_config["monthly_quotes"] - user.quotes_used
+        quota_percent = (user.quotes_used / plan_config["monthly_quotes"]) * 100 if plan_config["monthly_quotes"] > 0 else 0
 
+        # DISC-018: Trial grace period logic
+        if user.plan_tier == "trial" and quotes_remaining <= 0:
+            grace_remaining = 3 - (user.grace_quotes_used or 0)
+
+            if grace_remaining > 0:
+                # Allow grace quote with watermark
+                return {
+                    "can_generate": True,
+                    "reason": "grace_period",
+                    "quotes_remaining": 0,
+                    "grace_remaining": grace_remaining,
+                    "is_grace_quote": True,
+                    "plan_tier": user.plan_tier,
+                    "warning_level": "grace",
+                }
+            else:
+                # Hard block after 3 grace quotes
+                return {
+                    "can_generate": False,
+                    "reason": "trial_limit_reached",
+                    "quotes_remaining": 0,
+                    "grace_remaining": 0,
+                    "plan_tier": user.plan_tier,
+                }
+
+        # Paid plans: overage allowed
         if quotes_remaining <= 0:
-            # Overage allowed for paid plans
             if user.plan_tier != "trial":
                 return {
                     "can_generate": True,
@@ -95,13 +127,14 @@ class BillingService:
                     "overage_price": plan_config["overage_price"],
                     "plan_tier": user.plan_tier,
                 }
-            else:
-                return {
-                    "can_generate": False,
-                    "reason": "trial_limit_reached",
-                    "quotes_remaining": 0,
-                    "plan_tier": user.plan_tier,
-                }
+
+        # DISC-018: Warning levels for trial users
+        warning_level = None
+        if user.plan_tier == "trial":
+            if quota_percent >= 95:  # 71+ quotes used
+                warning_level = "urgent"
+            elif quota_percent >= 90:  # 67+ quotes used
+                warning_level = "soft"
 
         return {
             "can_generate": True,
@@ -109,11 +142,18 @@ class BillingService:
             "quotes_remaining": quotes_remaining,
             "quotes_used": user.quotes_used,
             "plan_tier": user.plan_tier,
+            "quota_percent": round(quota_percent, 1),
+            "warning_level": warning_level,
+            "is_grace_quote": False,
         }
 
     @staticmethod
-    async def increment_quote_usage(db: AsyncSession, user_id: str) -> None:
-        """Increment the quote usage counter for a user."""
+    async def increment_quote_usage(db: AsyncSession, user_id: str, is_grace_quote: bool = False) -> None:
+        """
+        Increment the quote usage counter for a user.
+
+        DISC-018: If is_grace_quote=True, increment grace_quotes_used instead of quotes_used.
+        """
         result = await db.execute(select(User).where(User.id == user_id))
         user = result.scalar_one_or_none()
 
@@ -123,7 +163,12 @@ class BillingService:
                 detail="User not found"
             )
 
-        user.quotes_used += 1
+        # DISC-018: Track grace quotes separately
+        if is_grace_quote:
+            user.grace_quotes_used = (user.grace_quotes_used or 0) + 1
+        else:
+            user.quotes_used += 1
+
         await db.commit()
 
         # Report overage to Stripe if applicable

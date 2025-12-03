@@ -48,6 +48,7 @@ class User(Base):
     quotes_used = Column(Integer, default=0)  # Quotes used in current billing cycle
     billing_cycle_start = Column(DateTime, nullable=True)  # Start of current billing period
     trial_ends_at = Column(DateTime, nullable=True)  # When trial expires
+    grace_quotes_used = Column(Integer, default=0)  # DISC-018: Grace quotes used after trial limit (max 3)
 
     # Referrals (GROWTH-002)
     referral_code = Column(String(20), unique=True, nullable=True, index=True)  # User's unique referral code (e.g., JOHN-A3X9)
@@ -291,6 +292,7 @@ class Quote(Base):
     # Status
     status = Column(String(50), default="draft")  # draft, sent, won, lost, expired
     sent_at = Column(DateTime)
+    is_grace_quote = Column(Boolean, default=False)  # DISC-018: True if generated during grace period
 
     # Corrections (for learning)
     was_edited = Column(Boolean, default=False)

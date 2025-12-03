@@ -2217,6 +2217,64 @@
             background: var(--bg-card);
         }
 
+        /* DISC-018: Trial warning banners */
+        .trial-warning-banner {
+            padding: 14px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.9375rem;
+        }
+
+        .trial-warning-banner.active {
+            display: flex;
+        }
+
+        .trial-warning-banner.soft {
+            background: rgba(251, 191, 36, 0.08);
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            color: #fbbf24;
+        }
+
+        .trial-warning-banner.urgent {
+            background: rgba(239, 68, 68, 0.08);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+        }
+
+        .trial-warning-banner.grace {
+            background: rgba(239, 68, 68, 0.12);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            color: #ef4444;
+            font-weight: 500;
+        }
+
+        .trial-warning-banner .icon {
+            font-size: 1.25rem;
+        }
+
+        .trial-warning-banner .message {
+            flex: 1;
+        }
+
+        .trial-warning-banner .btn-small {
+            padding: 8px 16px;
+            font-size: 0.8125rem;
+            background: var(--text-primary);
+            color: var(--bg-primary);
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .trial-warning-banner .btn-small:hover {
+            background: var(--accent-hover);
+        }
+
         .billing-info-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -3241,6 +3299,13 @@
                         </button>
                     </div>
                 </div>
+            </div>
+
+            <!-- DISC-018: Trial Warning Banner -->
+            <div class="trial-warning-banner" id="trialWarningBanner">
+                <span class="icon" id="trialWarningIcon">⚠️</span>
+                <div class="message" id="trialWarningMessage"></div>
+                <button class="btn-small" onclick="showAccountView(); showAccountTab('billing')">Upgrade</button>
             </div>
 
             <!-- Input Section -->
@@ -4733,8 +4798,76 @@
             document.getElementById('quoteResult').classList.add('active');
             hideError();
 
+            // DISC-018: Show grace quote modal if this was a grace quote
+            if (quote.billing_info?.is_grace_quote) {
+                showGraceQuoteModal(quote.billing_info.grace_remaining);
+            }
+
+            // DISC-018: Update warning banner based on billing info
+            if (quote.billing_info) {
+                updateTrialWarning(quote.billing_info);
+            }
+
             // Mark that celebration is pending (will show when user navigates to My Quotes)
             markCelebrationPending();
+        }
+
+        // DISC-018: Update trial warning banner
+        function updateTrialWarning(billingInfo) {
+            const banner = document.getElementById('trialWarningBanner');
+            const icon = document.getElementById('trialWarningIcon');
+            const message = document.getElementById('trialWarningMessage');
+
+            if (!billingInfo.warning_level) {
+                banner.classList.remove('active', 'soft', 'urgent', 'grace');
+                return;
+            }
+
+            // Track warning shown
+            {% if posthog_api_key %}
+            if (window.posthog) {
+                posthog.capture('trial_warning_shown', {
+                    level: billingInfo.warning_level,
+                    quotes_remaining: billingInfo.quotes_remaining,
+                    grace_remaining: billingInfo.grace_remaining
+                });
+            }
+            {% endif %}
+
+            banner.classList.remove('soft', 'urgent', 'grace');
+            banner.classList.add('active', billingInfo.warning_level);
+
+            if (billingInfo.warning_level === 'soft') {
+                icon.textContent = '⚠️';
+                message.textContent = `You have ${billingInfo.quotes_remaining} quotes remaining in your trial.`;
+            } else if (billingInfo.warning_level === 'urgent') {
+                icon.textContent = '🚨';
+                message.textContent = `Trial ending soon! Only ${billingInfo.quotes_remaining} quotes left. Upgrade now to keep quoting.`;
+            } else if (billingInfo.warning_level === 'grace') {
+                icon.textContent = '🚫';
+                message.textContent = `Trial limit reached. ${billingInfo.grace_remaining} grace quotes remaining (with watermark).`;
+            }
+        }
+
+        // DISC-018: Show grace quote modal
+        function showGraceQuoteModal(graceRemaining) {
+            const message = graceRemaining > 1
+                ? `This quote has a "TRIAL EXPIRED" watermark. You have ${graceRemaining} grace quotes remaining. Upgrade now to remove watermarks and continue quoting.`
+                : `This is your last grace quote with a watermark. Upgrade now to continue generating quotes.`;
+
+            if (confirm(message + '\n\nGo to upgrade page?')) {
+                showAccountView();
+                showAccountTab('billing');
+            }
+
+            // Track grace quote modal shown
+            {% if posthog_api_key %}
+            if (window.posthog) {
+                posthog.capture('grace_quote_modal_shown', {
+                    grace_remaining: graceRemaining
+                });
+            }
+            {% endif %}
         }
 
         // Download PDF

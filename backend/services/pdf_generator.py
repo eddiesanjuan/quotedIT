@@ -235,6 +235,7 @@ class PDFGeneratorService:
         contractor: dict,
         terms: Optional[dict] = None,
         output_path: Optional[str] = None,
+        watermark: bool = False,
     ) -> bytes:
         """
         Generate a professional PDF quote document.
@@ -244,6 +245,7 @@ class PDFGeneratorService:
             contractor: Contractor information
             terms: Terms and conditions
             output_path: Optional file path to save PDF
+            watermark: If True, add "TRIAL EXPIRED" watermark (DISC-018)
 
         Returns:
             PDF as bytes
@@ -293,7 +295,11 @@ class PDFGeneratorService:
         # Disclaimer and branding
         elements.extend(self._build_footer_section())
 
-        doc.build(elements)
+        # DISC-018: Add watermark callback for grace quotes
+        if watermark:
+            doc.build(elements, onFirstPage=self._add_watermark, onLaterPages=self._add_watermark)
+        else:
+            doc.build(elements)
 
         pdf_bytes = buffer.getvalue()
         buffer.close()
@@ -303,6 +309,43 @@ class PDFGeneratorService:
                 f.write(pdf_bytes)
 
         return pdf_bytes
+
+    def _add_watermark(self, canvas, doc):
+        """
+        Add "TRIAL EXPIRED" watermark to PDF page.
+
+        DISC-018: For grace period quotes, add semi-transparent diagonal watermark.
+        """
+        canvas.saveState()
+
+        # Semi-transparent red-ish color
+        canvas.setFillColorRGB(0.9, 0.3, 0.3, alpha=0.15)
+        canvas.setStrokeColorRGB(0.9, 0.3, 0.3, alpha=0.3)
+        canvas.setLineWidth(2)
+
+        # Center of page
+        page_width = letter[0]
+        page_height = letter[1]
+
+        # Rotate and position text
+        canvas.translate(page_width / 2, page_height / 2)
+        canvas.rotate(45)
+
+        # Large text
+        canvas.setFont('Helvetica-Bold', 72)
+        text = "TRIAL EXPIRED"
+        text_width = canvas.stringWidth(text, 'Helvetica-Bold', 72)
+
+        # Draw text centered
+        canvas.drawString(-text_width / 2, -36, text)
+
+        # Add smaller subtitle
+        canvas.setFont('Helvetica', 24)
+        subtitle = "Upgrade to remove watermark"
+        subtitle_width = canvas.stringWidth(subtitle, 'Helvetica', 24)
+        canvas.drawString(-subtitle_width / 2, -70, subtitle)
+
+        canvas.restoreState()
 
     def _build_header(self, contractor: dict, quote_data: dict) -> list:
         """Build the header with logo (custom or placeholder) and business info."""
