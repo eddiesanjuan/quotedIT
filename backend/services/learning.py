@@ -20,6 +20,7 @@ import anthropic
 
 from ..config import settings
 from ..prompts import get_quote_refinement_prompt
+from .analytics import analytics_service
 
 
 class LearningService:
@@ -37,6 +38,9 @@ class LearningService:
         original_quote: dict,
         final_quote: dict,
         contractor_notes: Optional[str] = None,
+        contractor_id: Optional[str] = None,
+        category: Optional[str] = None,
+        user_id: Optional[str] = None,
     ) -> dict:
         """
         Process a quote correction and extract learnings.
@@ -45,6 +49,9 @@ class LearningService:
             original_quote: The AI-generated quote
             final_quote: The contractor-edited final quote
             contractor_notes: Any notes the contractor added about the correction
+            contractor_id: Contractor ID for analytics tracking
+            category: Job category for analytics tracking
+            user_id: User ID for analytics tracking
 
         Returns:
             dict with:
@@ -70,6 +77,27 @@ class LearningService:
 
         response = await self._call_claude(prompt)
         learnings = self._parse_learning_response(response)
+
+        # Track learning correction event (DISC-012: Learning system metrics)
+        if user_id and category:
+            try:
+                correction_magnitude = abs(corrections.get("total_change_percent", 0))
+
+                analytics_service.track_event(
+                    user_id=user_id,
+                    event_name="learning_correction_recorded",
+                    properties={
+                        "contractor_id": contractor_id,
+                        "category": category,
+                        "correction_magnitude": round(correction_magnitude, 2),
+                        "total_change_dollars": corrections.get("total_change", 0),
+                        "has_line_item_changes": len(corrections.get("line_item_changes", [])) > 0,
+                        "line_item_change_count": len(corrections.get("line_item_changes", [])),
+                    }
+                )
+            except Exception as e:
+                # Don't fail correction processing if analytics fails
+                print(f"Warning: Failed to track learning correction: {e}")
 
         return {
             "has_changes": True,

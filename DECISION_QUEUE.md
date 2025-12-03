@@ -71,6 +71,76 @@
 - CGO: Impact on conversion/adoption
 - CPO: User perception research
 
+---
+
+### Market Research: Competitor Pricing Analysis
+
+**Research Date**: 2025-12-02
+
+#### Category 1: Simple Invoicing/Estimate Apps (Most Similar in Simplicity)
+| Tool | Price | Notes |
+|------|-------|-------|
+| [Joist](https://www.joist.com/pricing/) | **Free / $14/mo** | Estimate + invoice for contractors, 79% users are 1-10 employees |
+| Invoice2go | **$10/mo** | Basic invoicing |
+
+#### Category 2: Field Service Management (Mid-Market)
+| Tool | Price | Notes |
+|------|-------|-------|
+| [Contractor Foreman](https://www.contractorforeman.com/) | **$49/mo** | Price lock guarantee |
+| [Housecall Pro](https://www.housecallpro.com/) | **$49-59/mo** | Single user starting price |
+| [Jobber](https://getjobber.com/) | **~$49/mo** | 14-day trial, tiered pricing |
+| ServiceTrade | **$59/mo** | Up to 5 techs |
+| [Workyard](https://workyard.com/) | **$6/user + $50 base** | ~$56/mo for 1 user |
+
+#### Category 3: Construction Estimating Software (Enterprise)
+| Tool | Price | Notes |
+|------|-------|-------|
+| Basic estimating tools | **$30-250/mo per estimator** | Online tools |
+| Mid-tier solutions | **$100-200/mo per user** | Growing companies |
+| Buildertrend | **$799-1,099/mo** | Full suite |
+| Procore | **Custom (expensive)** | Enterprise only |
+| ServiceTitan | **$259-398/user/mo** | Mid-to-large enterprises |
+
+#### Category 4: AI-Powered Business Tools
+| Tool | Price | Notes |
+|------|-------|-------|
+| ChatGPT Plus | **$20/mo** | General AI assistant |
+| QuickBooks (w/ AI) | **~$40/mo** | Accounting + AI features |
+| HubSpot Starter | **$50/mo** | CRM + AI |
+
+#### Key Findings
+
+**Where Quoted Sits**:
+- **Above** simple invoicing (Joist $14, Invoice2go $10)
+- **Competitive with** field service entry-tier (Housecall Pro $49, Jobber ~$49)
+- **Well below** construction estimating ($100-950/mo)
+- **In range** with AI productivity tools ($20-50/mo)
+
+**The Question**: What is Quoted most comparable to?
+1. ❌ NOT a full estimating system (those are $100+/mo)
+2. ❌ NOT a field service management platform (those are $49-300/mo with scheduling, dispatch, etc.)
+3. ✅ Voice-to-quote AI tool - closest to AI productivity tools ($20-50/mo)
+
+**Potential Misalignment Risk**:
+- At $29/mo, Quoted is **2x Joist** ($14) but does **less** (no invoicing, no payments, no QuickBooks integration)
+- Users might compare to Joist and feel overpriced
+- However, Quoted's **AI value proposition** is unique - no competitor does voice-to-quote
+
+**"No-Brainer" Threshold Analysis**:
+- Joist free tier exists - some users expect free
+- $14-19/mo = "cheaper than lunch" psychological threshold
+- $29/mo = "about a dollar a day" - still reasonable but requires value justification
+- $49/mo = approaching "real software" territory where comparison shopping begins
+
+**Sources**:
+- [Construction Coverage - Estimating Software](https://constructioncoverage.com/estimating-software)
+- [Software Advice - Construction Estimating Pricing](https://www.softwareadvice.com/resources/construction-estimating-software-pricing-models/)
+- [Fieldproxy - FSM Pricing Guide 2024](https://www.fieldproxy.com/blog/field-service-software-pricing-guide)
+- [ContractorPlus - Housecall Pro vs Jobber vs ServiceTitan](https://contractorplus.app/blog/housecall-pro-vs-jobber-vs-servicetitan)
+- [Joist Pricing](https://www.joist.com/pricing/)
+
+---
+
 **Founder Response**:
 >
 

@@ -3755,6 +3755,7 @@
         let currentQuoteId = null;
         let mediaRecorder = null;
         let audioChunks = [];
+        let lastInputMethod = null; // Track whether last quote was voice or text
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
@@ -4053,6 +4054,16 @@
                     btn.classList.add('recording');
                     btnText.textContent = 'Stop';
                     instructions.textContent = 'Recording... Click again when done';
+
+                    // Track voice input method
+                    lastInputMethod = 'voice';
+                    {% if posthog_api_key %}
+                    if (window.posthog) {
+                        posthog.capture('quote_input_method', {
+                            method: 'voice'
+                        });
+                    }
+                    {% endif %}
                 } catch (err) {
                     console.error('Microphone error:', err);
                     showError('Could not access microphone. Please allow access and try again.');
@@ -4082,6 +4093,17 @@
 
                 const quote = await response.json();
                 displayQuote(quote);
+
+                // Track quote generation from voice
+                {% if posthog_api_key %}
+                if (window.posthog) {
+                    posthog.capture('quote_generated', {
+                        quote_id: quote.id,
+                        total: quote.total,
+                        input_method: 'voice'
+                    });
+                }
+                {% endif %}
             } catch (err) {
                 console.error('Error:', err);
                 showError(err.message);
@@ -4099,6 +4121,16 @@
                 showError('Please enter a job description');
                 return;
             }
+
+            // Track text input method
+            lastInputMethod = 'text';
+            {% if posthog_api_key %}
+            if (window.posthog) {
+                posthog.capture('quote_input_method', {
+                    method: 'text'
+                });
+            }
+            {% endif %}
 
             // Check if this is first quote attempt
             const isFirstQuoteAttempt = currentBillingStatus?.quotes_used === 0;
@@ -4138,14 +4170,16 @@
                 if (window.posthog) {
                     posthog.capture('quote_generated', {
                         quote_id: quote.id,
-                        total: quote.total
+                        total: quote.total,
+                        input_method: lastInputMethod || 'text'
                     });
 
                     // Track first quote milestone
                     if (isFirstQuoteAttempt) {
                         posthog.capture('first_quote_generated', {
                             quote_id: quote.id,
-                            total: quote.total
+                            total: quote.total,
+                            input_method: lastInputMethod || 'text'
                         });
                     }
                 }

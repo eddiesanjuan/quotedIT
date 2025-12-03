@@ -389,8 +389,18 @@ async def generate_quote(
         # Increment quote usage counter
         await BillingService.increment_quote_usage(auth_db, current_user["id"])
 
-        # Track quote generation event
+        # Track quote generation event (DISC-012: Include user learning stats)
         try:
+            # Get user's total quote and edit counts for edit rate tracking
+            all_quotes = await db.get_quotes_by_contractor(contractor.id)
+            user_quote_count = len(all_quotes)
+            user_edit_count = sum(1 for q in all_quotes if q.was_edited)
+
+            # Get category-specific stats
+            category_quotes = [q for q in all_quotes if q.job_type == detected_job_type]
+            category_quote_count = len(category_quotes)
+            category_edit_count = sum(1 for q in category_quotes if q.was_edited)
+
             analytics_service.track_event(
                 user_id=str(current_user["id"]),
                 event_name="quote_generated",
@@ -402,6 +412,15 @@ async def generate_quote(
                     "has_customer_info": bool(quote_data.get("customer_name")),
                     "confidence": quote_data.get("confidence"),
                     "line_item_count": len(quote_data.get("line_items", [])),
+                    # DISC-011: Input method tracking (voice vs text)
+                    "input_method": "text",
+                    # DISC-012: User learning stats for edit rate trend analysis
+                    "user_quote_count": user_quote_count,
+                    "user_edit_count": user_edit_count,
+                    "user_edit_rate": round(user_edit_count / user_quote_count * 100, 2) if user_quote_count > 0 else 0,
+                    "category_quote_count": category_quote_count,
+                    "category_edit_count": category_edit_count,
+                    "category_edit_rate": round(category_edit_count / category_quote_count * 100, 2) if category_quote_count > 0 else 0,
                 }
             )
         except Exception as e:
@@ -810,6 +829,43 @@ async def generate_quote_from_audio(
             # Increment quote usage counter
             await BillingService.increment_quote_usage(auth_db, current_user["id"])
 
+            # Track quote generation event (DISC-012: Include user learning stats)
+            try:
+                # Get user's total quote and edit counts for edit rate tracking
+                all_quotes = await db.get_quotes_by_contractor(contractor.id)
+                user_quote_count = len(all_quotes)
+                user_edit_count = sum(1 for q in all_quotes if q.was_edited)
+
+                # Get category-specific stats
+                category_quotes = [q for q in all_quotes if q.job_type == detected_job_type]
+                category_quote_count = len(category_quotes)
+                category_edit_count = sum(1 for q in category_quotes if q.was_edited)
+
+                analytics_service.track_event(
+                    user_id=str(current_user["id"]),
+                    event_name="quote_generated",
+                    properties={
+                        "contractor_id": str(contractor.id),
+                        "quote_id": str(quote.id),
+                        "job_type": detected_job_type,
+                        "subtotal": quote_data.get("subtotal", 0),
+                        "has_customer_info": bool(quote_data.get("customer_name")),
+                        "confidence": quote_data.get("confidence"),
+                        "line_item_count": len(quote_data.get("line_items", [])),
+                        # DISC-011: Input method tracking (voice vs text)
+                        "input_method": "audio",
+                        # DISC-012: User learning stats for edit rate trend analysis
+                        "user_quote_count": user_quote_count,
+                        "user_edit_count": user_edit_count,
+                        "user_edit_rate": round(user_edit_count / user_quote_count * 100, 2) if user_quote_count > 0 else 0,
+                        "category_quote_count": category_quote_count,
+                        "category_edit_count": category_edit_count,
+                        "category_edit_rate": round(category_edit_count / category_quote_count * 100, 2) if category_quote_count > 0 else 0,
+                    }
+                )
+            except Exception as e:
+                print(f"Warning: Failed to track quote generation: {e}")
+
             return quote_to_response(quote)
 
         finally:
@@ -967,11 +1023,20 @@ async def update_quote(
             "estimated_days": updated_quote.estimated_days,
         }
 
-        # Process the correction
+        # Get category-specific correction stats for analytics
+        all_quotes = await db.get_quotes_by_contractor(contractor.id)
+        category_quotes = [q for q in all_quotes if q.job_type == quote.job_type]
+        corrections_for_category = sum(1 for q in category_quotes if q.was_edited)
+        user_total_corrections = sum(1 for q in all_quotes if q.was_edited)
+
+        # Process the correction (DISC-012: Now includes analytics tracking)
         learning_result = await learning_service.process_correction(
             original_quote=original_quote,
             final_quote=final_quote,
             contractor_notes=update.correction_notes,
+            contractor_id=str(contractor.id),
+            category=quote.job_type,
+            user_id=str(current_user["id"]),
         )
 
         # If there were learnings, apply them to the pricing model
@@ -1002,8 +1067,17 @@ async def update_quote(
         # Don't fail the update if learning fails
         print(f"[LEARNING ERROR] {e}")
 
-    # Track quote edit event
+    # Track quote edit event (DISC-012: Enhanced with learning context)
     try:
+        # Calculate edit metrics
+        subtotal_change = (updated_quote.subtotal or 0) - original_subtotal if update.line_items else 0
+        subtotal_change_percent = abs(subtotal_change / original_subtotal * 100) if original_subtotal > 0 else 0
+
+        # Get updated quote counts for edit rate tracking
+        all_quotes_updated = await db.get_quotes_by_contractor(contractor.id)
+        user_quote_count = len(all_quotes_updated)
+        user_edit_count = sum(1 for q in all_quotes_updated if q.was_edited)
+
         analytics_service.track_event(
             user_id=str(current_user["id"]),
             event_name="quote_edited",
@@ -1018,7 +1092,14 @@ async def update_quote(
                     update.customer_phone is not None,
                     update.customer_email is not None,
                 ]),
-                "subtotal_change": (updated_quote.subtotal or 0) - original_subtotal if update.line_items else 0,
+                "subtotal_change": round(subtotal_change, 2),
+                "subtotal_change_percent": round(subtotal_change_percent, 2),
+                # DISC-012: Learning system validation metrics
+                "user_quote_count": user_quote_count,
+                "user_edit_count": user_edit_count,
+                "user_edit_rate": round(user_edit_count / user_quote_count * 100, 2) if user_quote_count > 0 else 0,
+                "corrections_for_category": corrections_for_category,
+                "user_total_corrections": user_total_corrections,
             }
         )
     except Exception as e:
