@@ -32,7 +32,12 @@
 **Added**: 2025-12-02 20:45 PST
 **Requested By**: Founder
 
-**Context**: Founder is questioning whether current pricing ($29/mo Starter, $49/mo Pro) is too high. The economics of producing quotes (AI API costs) are looking very affordable. Founder's philosophy: **"I would rather raise prices than be drastically off to the side of people feeling it's too expensive."**
+**Context**: Founder is questioning whether current pricing ($29/mo Starter, $49/mo Pro) is too high. The economics of producing quotes (AI API costs) are looking very affordable.
+
+**Founder's Guidance**:
+- "I would rather raise prices than be drastically off to the side of people feeling it's too expensive."
+- "I want it to be a total no-brainer so that maintenance for me is pretty low."
+- **Translation**: Price low enough that there's zero friction, no price objection handling, minimal churn due to cost. The value is real, but the goal is frictionless adoption and low support burden—not maximizing per-user revenue right now.
 
 **Current Pricing**:
 | Plan | Price | Quotes/mo | Per Extra Quote |
