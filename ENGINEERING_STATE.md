@@ -1221,26 +1221,21 @@ GET /api/billing/plans - Available pricing (public)
 
 ---
 
-### DISC-006: Demo→Signup Conversion Flow (READY)
+### ~~DISC-006: Demo→Signup Conversion Flow~~ (DEPLOYED)
 
+**Commit**: c8addfa
 **Source**: Product + Growth Discovery Agents
 **Impact**: MEDIUM | **Effort**: M | **Score**: 1.0
 **Sprint Alignment**: Demo is acquisition lever for 30 of 100 users (BETA_SPRINT.md target)
 
-**Problem**: Demo at /demo.html generates quotes but no clear CTA to convert to signup. After generating demo quote, user sees results but must manually navigate to signup (context switching).
-
-**Evidence**:
-- Demo page has nav to landing but no signup CTA after quote generation
-- Share/save disabled for demo quotes
-- Missing: "This demo quote will disappear. Create account to save it."
-- No demo_to_signup tracking
-
-**Proposed Work**:
-1. After demo quote generates, show overlay: "Sign up to save this quote and personalize pricing"
-2. Show trial benefit: "14-day free trial, unlimited personalized quotes"
-3. Pre-fill signup with their example job context
-4. Add button: "Save This Quote" (goes to signup)
-5. Track: demo_generated → signup_clicked → signup_completed
+**Implementation Summary**:
+- ✅ Conversion modal overlay after demo completes
+- ✅ Title: "Your quote is ready!" with trial benefits
+- ✅ Primary CTA: "Save This Quote & Start Free Trial" → signup
+- ✅ Secondary: "Continue exploring demo" dismisses modal
+- ✅ PostHog tracking: demo_quote_generated, demo_signup_cta_shown, demo_signup_cta_clicked
+- ✅ Glassmorphism styling matching brand (#00ff88 accents)
+- ✅ Shows once per session to avoid annoyance
 
 **Success Metric**: 20%+ demo→signup conversion (vs current unknown)
 
@@ -1344,49 +1339,48 @@ GET /api/billing/plans - Available pricing (public)
 
 ---
 
-### DISC-011: Voice-First Assumption Validation (READY) ⚠️ Strategic
+### ~~DISC-011: Voice-First Assumption Validation~~ (DEPLOYED) ⚠️ Strategic
 
+**Commits**: f1053b8, ecc2be1
 **Source**: Strategy Discovery Agent
 **Impact**: HIGH | **Effort**: S | **Score**: 3.0
 **Sprint Alignment**: Core assumption - if wrong, entire positioning must shift
 
-**Problem**: Product hypothesis is contractors will use voice over text. This has never been validated. Current messaging is 100% voice-focused. If contractors default to text, positioning collapses.
+**Implementation Summary**:
+- ✅ Frontend: `quote_input_method` event fires with `method: "voice"` or `"text"`
+- ✅ Frontend: `quote_generated` and `first_quote_generated` include `input_method` property
+- ✅ Backend: `/generate` tracks `input_method: "text"` in PostHog
+- ✅ Backend: `/generate-from-audio` tracks `input_method: "voice"` in PostHog
+- ✅ Consistent terminology: "voice" (not "audio") for all analytics
 
-**Evidence**:
-- Landing page headlines focus entirely on voice
-- Onboarding doesn't test input method preference
-- No tracking of voice vs text usage planned
-- No fallback positioning if voice adoption is <40%
+**Now Measurable in PostHog**:
+- Voice vs text usage breakdown (pie chart)
+- Input method trends over time (line chart)
+- Edit rates by input method (correlation analysis)
 
-**Proposed Work**:
-1. Add PostHog tracking for input method (voice vs text) on every quote
-2. In first 20 beta users, explicitly ask about input preference
-3. Prepare fallback messaging: "Fastest quote tool for contractors" (method-agnostic)
-4. If voice <40%, escalate to founder for positioning pivot decision
-
-**Success Metric**: Know actual voice adoption rate; have fallback positioning ready
+**Success Metric**: Know actual voice adoption rate; can segment by input method
 
 ---
 
-### DISC-012: Learning System Critical Mass Risk (READY) ⚠️ Strategic
+### ~~DISC-012: Learning System Critical Mass Risk~~ (DEPLOYED) ⚠️ Strategic
 
+**Commit**: f1053b8
 **Source**: Strategy Discovery Agent
 **Impact**: HIGH | **Effort**: S | **Score**: 3.0
 **Sprint Alignment**: Must validate learning system works before scaling
 
-**Problem**: Learning system depends on corrections, but beta volume may be too low to validate learning actually works. 100 users × 5 quotes × 20% edit rate = ~100 corrections across 20 categories = ~5 corrections per category. Not statistically significant.
+**Implementation Summary**:
+- ✅ `learning_correction_recorded` event with category, correction_magnitude, line_item_change_count
+- ✅ `quote_generated` enhanced with user_quote_count, user_edit_count, user_edit_rate
+- ✅ `quote_generated` includes category_quote_count, category_edit_count, category_edit_rate
+- ✅ `quote_edited` enhanced with subtotal_change_percent, corrections_for_category, user_total_corrections
+- ✅ Learning service now passes contractor_id, category, user_id for analytics
 
-**Evidence**:
-- Learning requires 20-30 corrections per category minimum for significance
-- Current active learning questions disabled/minimal
-- No "learning velocity" metric in sprint goals
-- Risk: Reach 100 users but can't prove learning system works
-
-**Proposed Work**:
-1. Add metrics: accuracy_by_category_over_time, correction_volume_per_user, edit_rate_trend
-2. Implement proactive confidence-based questions to increase correction capture
-3. Track learning convergence (when do corrections plateau?)
-4. Contingency: if learning unmeasurable by day 14, pause "gets smarter" messaging
+**Now Measurable in PostHog**:
+- Edit rate trend: Does `user_edit_rate` decrease as `user_quote_count` increases?
+- Category learning: Which categories have highest correction magnitudes?
+- User learning velocity: Cohort analysis by quote count
+- Learning effectiveness: Scatter plot of `correction_magnitude` vs `user_quote_count`
 
 **Success Metric**: Can measure if edit rate decreases over time; can validate learning is working
 
