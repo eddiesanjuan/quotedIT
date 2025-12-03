@@ -2714,6 +2714,162 @@
             box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
         }
 
+        /* Learning Progress Styles (DISC-008) */
+        .learning-progress-card {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 16px;
+        }
+
+        .progress-title {
+            font-family: var(--font-serif);
+            font-size: 1.125rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin: 0 0 4px 0;
+        }
+
+        .progress-subtitle {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin: 0;
+        }
+
+        .progress-percentage {
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--accent);
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 12px;
+            background: var(--bg-secondary);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 6px;
+            transition: width 0.5s ease;
+        }
+
+        .learning-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .learning-stat-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-icon {
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .top-categories-section {
+            margin-top: 24px;
+        }
+
+        .subsection-title {
+            font-family: var(--font-serif);
+            font-size: 1.125rem;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: var(--text-primary);
+        }
+
+        .top-categories-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .category-progress-item {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .category-progress-info {
+            flex: 1;
+        }
+
+        .category-progress-name {
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .category-progress-meta {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .category-confidence-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: var(--bg-elevated);
+            border-radius: 20px;
+        }
+
+        .confidence-value {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .confidence-bar-mini {
+            width: 60px;
+            height: 6px;
+            background: var(--bg-card);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .confidence-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 3px;
+        }
+
         @media (max-width: 640px) {
             .pricing-grid {
                 grid-template-columns: 1fr;
@@ -2733,6 +2889,14 @@
 
             .global-settings-grid {
                 grid-template-columns: 1fr;
+            }
+
+            .learning-stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .progress-percentage {
+                font-size: 1.5rem;
             }
         }
 
@@ -3447,6 +3611,58 @@
                         <p class="section-subtitle">Base rates you configured during onboarding</p>
                         <div class="global-settings-grid" id="globalSettingsGrid">
                             <!-- Will be populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Learning Progress Section (DISC-008) -->
+                    <div class="pricing-brain-section" id="learningProgressSection" style="display: none;">
+                        <h3 class="section-title">Your AI Learning Progress</h3>
+                        <p class="section-subtitle">See how your AI is getting smarter with each quote</p>
+
+                        <!-- Overall Progress Bar -->
+                        <div class="learning-progress-card">
+                            <div class="progress-header">
+                                <div>
+                                    <h4 class="progress-title">AI Knowledge</h4>
+                                    <p class="progress-subtitle" id="learningProgressSubtitle">Loading...</p>
+                                </div>
+                                <div class="progress-percentage" id="learningProgressPercent">0%</div>
+                            </div>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar" id="learningProgressBar" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <!-- Learning Stats Grid -->
+                        <div class="learning-stats-grid">
+                            <div class="learning-stat-card">
+                                <div class="stat-icon">📋</div>
+                                <div class="stat-value" id="totalQuotesStat">0</div>
+                                <div class="stat-label">Quotes Generated</div>
+                            </div>
+                            <div class="learning-stat-card">
+                                <div class="stat-icon">✏️</div>
+                                <div class="stat-value" id="totalCorrectionsStat">0</div>
+                                <div class="stat-label">Corrections Made</div>
+                            </div>
+                            <div class="learning-stat-card">
+                                <div class="stat-icon">🎯</div>
+                                <div class="stat-value" id="categoriesLearnedStat">0</div>
+                                <div class="stat-label">Categories Learned</div>
+                            </div>
+                            <div class="learning-stat-card">
+                                <div class="stat-icon">⚡</div>
+                                <div class="stat-value" id="learningVelocityStat">-</div>
+                                <div class="stat-label">Learning Speed</div>
+                            </div>
+                        </div>
+
+                        <!-- Top Categories -->
+                        <div class="top-categories-section">
+                            <h4 class="subsection-title">Top Categories by Confidence</h4>
+                            <div class="top-categories-list" id="topCategoriesList">
+                                <!-- Will be populated by JavaScript -->
+                            </div>
                         </div>
                     </div>
 
@@ -7215,6 +7431,19 @@
         // Load pricing brain data
         async function loadPricingBrain() {
             try {
+                // Fetch learning progress (DISC-008)
+                try {
+                    const progressResponse = await fetch(`${API_BASE}/learning/progress`, {
+                        headers: { 'Authorization': `Bearer ${authToken}` }
+                    });
+                    if (progressResponse.ok) {
+                        const progressData = await progressResponse.json();
+                        renderLearningProgress(progressData);
+                    }
+                } catch (e) {
+                    console.error('Failed to load learning progress:', e);
+                }
+
                 // Fetch all categories
                 const response = await fetch(`${API_BASE}/pricing-brain`, {
                     headers: { 'Authorization': `Bearer ${authToken}` }
@@ -7297,6 +7526,109 @@
                     btn.disabled = false;
                     btn.textContent = 'Sync Categories from Quotes';
                 }
+            }
+        }
+
+        // Render learning progress (DISC-008)
+        function renderLearningProgress(data) {
+            const section = document.getElementById('learningProgressSection');
+
+            // Show section if we have data
+            if (data && data.total_quotes > 0) {
+                section.style.display = 'block';
+            } else {
+                section.style.display = 'none';
+                return;
+            }
+
+            // Update progress percentage
+            document.getElementById('learningProgressPercent').textContent = `${data.learning_progress_percent}%`;
+            document.getElementById('learningProgressBar').style.width = `${data.learning_progress_percent}%`;
+
+            // Update subtitle based on progress
+            let subtitle = '';
+            if (data.learning_progress_percent >= 80) {
+                subtitle = 'Your AI is highly confident in most categories';
+            } else if (data.learning_progress_percent >= 50) {
+                subtitle = 'Your AI is learning quickly, keep making corrections';
+            } else if (data.learning_progress_percent >= 20) {
+                subtitle = 'Your AI is building knowledge, corrections help it learn faster';
+            } else {
+                subtitle = 'Your AI is just getting started, each correction teaches it';
+            }
+            document.getElementById('learningProgressSubtitle').textContent = subtitle;
+
+            // Update stats
+            document.getElementById('totalQuotesStat').textContent = data.total_quotes;
+            document.getElementById('totalCorrectionsStat').textContent = data.total_corrections;
+            document.getElementById('categoriesLearnedStat').textContent = `${data.categories_learned}/${data.total_categories}`;
+
+            // Update learning velocity with emoji
+            let velocityText = '';
+            switch(data.learning_velocity) {
+                case 'fast':
+                    velocityText = '🚀 Fast';
+                    break;
+                case 'steady':
+                    velocityText = '⚡ Steady';
+                    break;
+                case 'slow':
+                    velocityText = '🐌 Slow';
+                    break;
+                default:
+                    velocityText = '🌱 Starting';
+            }
+            document.getElementById('learningVelocityStat').textContent = velocityText;
+
+            // Render top categories
+            const categoriesList = document.getElementById('topCategoriesList');
+            categoriesList.textContent = '';
+
+            if (data.top_categories && data.top_categories.length > 0) {
+                data.top_categories.forEach(cat => {
+                    const item = document.createElement('div');
+                    item.className = 'category-progress-item';
+
+                    const info = document.createElement('div');
+                    info.className = 'category-progress-info';
+
+                    const name = document.createElement('div');
+                    name.className = 'category-progress-name';
+                    name.textContent = cat.display_name;
+                    info.appendChild(name);
+
+                    const meta = document.createElement('div');
+                    meta.className = 'category-progress-meta';
+                    meta.textContent = `${cat.quotes} quotes, ${cat.corrections} corrections`;
+                    info.appendChild(meta);
+
+                    item.appendChild(info);
+
+                    const badge = document.createElement('div');
+                    badge.className = 'category-confidence-badge';
+
+                    const confidenceValue = document.createElement('span');
+                    confidenceValue.className = 'confidence-value';
+                    confidenceValue.textContent = `${cat.confidence}%`;
+                    badge.appendChild(confidenceValue);
+
+                    const miniBar = document.createElement('div');
+                    miniBar.className = 'confidence-bar-mini';
+                    const fill = document.createElement('div');
+                    fill.className = 'confidence-bar-fill';
+                    fill.style.width = `${cat.confidence}%`;
+                    miniBar.appendChild(fill);
+                    badge.appendChild(miniBar);
+
+                    item.appendChild(badge);
+                    categoriesList.appendChild(item);
+                });
+            } else {
+                const empty = document.createElement('p');
+                empty.style.color = 'var(--text-secondary)';
+                empty.style.textAlign = 'center';
+                empty.textContent = 'No categories learned yet. Generate and correct quotes to start learning.';
+                categoriesList.appendChild(empty);
             }
         }
 
