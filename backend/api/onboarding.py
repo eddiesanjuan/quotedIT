@@ -99,7 +99,10 @@ def _conversation_to_response(conversation) -> dict:
 
 
 @router.post("/start", response_model=SetupSessionResponse)
-async def start_setup(request: StartSetupRequest):
+async def start_setup(
+    request: StartSetupRequest,
+    contractor: Contractor = Depends(get_current_contractor),
+):
     """
     Start a new setup interview session.
 
@@ -108,6 +111,20 @@ async def start_setup(request: StartSetupRequest):
     try:
         onboarding_service = get_onboarding_service()
         db = get_database_service()
+
+        # Track onboarding path selection (DISC-007)
+        try:
+            analytics_service.track_event(
+                user_id=str(contractor.user_id),
+                event_name="onboarding_path_selected",
+                properties={
+                    "path": "interview",
+                    "contractor_id": str(contractor.id),
+                    "primary_trade": request.primary_trade,
+                }
+            )
+        except Exception as e:
+            print(f"Warning: Failed to track onboarding path selection: {e}")
 
         # Generate the initial session data
         session = await onboarding_service.start_setup(
@@ -273,12 +290,26 @@ async def complete_setup(
                 pricing_notes=pricing_model.get("pricing_notes"),
             )
 
-        # Track onboarding completion
+        # Update user record with onboarding path (DISC-007)
+        from sqlalchemy import update
+        from ..models.database import User
+
+        async_session = db.async_session_maker()
+        async with async_session as session:
+            stmt = update(User).where(User.id == contractor.user_id).values(
+                onboarding_path="interview",
+                onboarding_completed_at=datetime.utcnow()
+            )
+            await session.execute(stmt)
+            await session.commit()
+
+        # Track onboarding completion (DISC-007)
         try:
             analytics_service.track_event(
                 user_id=str(contractor.user_id),
                 event_name="onboarding_completed",
                 properties={
+                    "onboarding_path": "interview",  # DISC-007: Include path
                     "contractor_id": str(contractor.id),
                     "primary_trade": contractor.primary_trade,
                     "has_labor_rate": pricing_model.get("labor_rate_hourly") is not None,
@@ -296,7 +327,10 @@ async def complete_setup(
 
 
 @router.post("/quick", response_model=PricingModelResponse)
-async def quick_setup(request: QuickSetupRequest):
+async def quick_setup(
+    request: QuickSetupRequest,
+    contractor: Contractor = Depends(get_current_contractor),
+):
     """
     Quick setup without the full interview.
 
@@ -305,6 +339,21 @@ async def quick_setup(request: QuickSetupRequest):
     """
     try:
         onboarding_service = get_onboarding_service()
+        db = get_database_service()
+
+        # Track onboarding path selection (DISC-007)
+        try:
+            analytics_service.track_event(
+                user_id=str(contractor.user_id),
+                event_name="onboarding_path_selected",
+                properties={
+                    "path": "quick_setup",
+                    "contractor_id": str(contractor.id),
+                    "primary_trade": request.primary_trade,
+                }
+            )
+        except Exception as e:
+            print(f"Warning: Failed to track onboarding path selection: {e}")
 
         pricing_model = await onboarding_service.quick_setup(
             contractor_name=request.contractor_name,
@@ -321,6 +370,58 @@ async def quick_setup(request: QuickSetupRequest):
             minimum_job=request.minimum_job,
             pricing_notes=request.pricing_notes,
         )
+
+        # Save pricing model to the contractor's record
+        existing_pricing = await db.get_pricing_model(contractor.id)
+        if existing_pricing:
+            await db.update_pricing_model(
+                contractor_id=contractor.id,
+                labor_rate_hourly=pricing_model.get("labor_rate_hourly"),
+                helper_rate_hourly=pricing_model.get("helper_rate_hourly"),
+                material_markup_percent=pricing_model.get("material_markup_percent", 20.0),
+                minimum_job_amount=pricing_model.get("minimum_job_amount"),
+                pricing_knowledge=pricing_model.get("pricing_knowledge", {}),
+                pricing_notes=pricing_model.get("pricing_notes"),
+            )
+        else:
+            await db.create_pricing_model(
+                contractor_id=contractor.id,
+                labor_rate_hourly=pricing_model.get("labor_rate_hourly"),
+                helper_rate_hourly=pricing_model.get("helper_rate_hourly"),
+                material_markup_percent=pricing_model.get("material_markup_percent", 20.0),
+                minimum_job_amount=pricing_model.get("minimum_job_amount"),
+                pricing_knowledge=pricing_model.get("pricing_knowledge", {}),
+                pricing_notes=pricing_model.get("pricing_notes"),
+            )
+
+        # Update user record with onboarding path (DISC-007)
+        from sqlalchemy import update
+        from ..models.database import User
+
+        async_session = db.async_session_maker()
+        async with async_session as session:
+            stmt = update(User).where(User.id == contractor.user_id).values(
+                onboarding_path="quick_setup",
+                onboarding_completed_at=datetime.utcnow()
+            )
+            await session.execute(stmt)
+            await session.commit()
+
+        # Track onboarding completion (DISC-007)
+        try:
+            analytics_service.track_event(
+                user_id=str(contractor.user_id),
+                event_name="onboarding_completed",
+                properties={
+                    "onboarding_path": "quick_setup",  # DISC-007: Include path
+                    "contractor_id": str(contractor.id),
+                    "primary_trade": request.primary_trade,
+                    "has_labor_rate": pricing_model.get("labor_rate_hourly") is not None,
+                    "has_material_markup": pricing_model.get("material_markup_percent") is not None,
+                }
+            )
+        except Exception as e:
+            print(f"Warning: Failed to track onboarding completion: {e}")
 
         return PricingModelResponse(**pricing_model)
 
