@@ -1843,6 +1843,7 @@
         @media (max-width: 640px) {
             nav {
                 padding: 16px 20px;
+                background: var(--bg-primary); /* Solid background on mobile to prevent content showing through */
             }
 
             .container {
@@ -1850,7 +1851,7 @@
             }
 
             main {
-                padding-top: 100px;
+                padding-top: 100px; /* Keep buffer for nav height */
             }
 
             .card {
