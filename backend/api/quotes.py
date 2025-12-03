@@ -853,7 +853,7 @@ async def generate_quote_from_audio(
                         "confidence": quote_data.get("confidence"),
                         "line_item_count": len(quote_data.get("line_items", [])),
                         # DISC-011: Input method tracking (voice vs text)
-                        "input_method": "audio",
+                        "input_method": "voice",
                         # DISC-012: User learning stats for edit rate trend analysis
                         "user_quote_count": user_quote_count,
                         "user_edit_count": user_edit_count,
