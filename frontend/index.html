@@ -4545,10 +4545,16 @@
             // Load referral code
             await loadCelebrationReferralCode();
 
-            // Track referral shown
+            // Update social proof message
+            updateCelebrationSocialProof();
+
+            // Track celebration shown
             {% if posthog_api_key %}
             if (window.posthog) {
-                posthog.capture('referral_shown_at_celebration');
+                posthog.capture('celebration_shown', {
+                    is_first_quote: true
+                });
+                posthog.capture('celebration_referral_viewed');
             }
             {% endif %}
         }
@@ -4559,12 +4565,116 @@
 
             // Clear confetti
             document.getElementById('confetti').innerHTML = '';
+
+            // Track dismissal
+            {% if posthog_api_key %}
+            if (window.posthog) {
+                posthog.capture('celebration_dismissed', {
+                    method: 'close_button'
+                });
+            }
+            {% endif %}
         }
 
         function closeCelebrationAndCreate() {
+            // Track action
+            {% if posthog_api_key %}
+            if (window.posthog) {
+                posthog.capture('celebration_dismissed', {
+                    method: 'create_another'
+                });
+            }
+            {% endif %}
+
             closeCelebrationModal();
             // Navigate to New Quote section
             showAppSection('newQuote');
+        }
+
+        function viewQuoteDetails() {
+            // Track action
+            {% if posthog_api_key %}
+            if (window.posthog) {
+                posthog.capture('celebration_dismissed', {
+                    method: 'view_quote'
+                });
+            }
+            {% endif %}
+
+            closeCelebrationModal();
+            // Stay on My Quotes section (already there)
+        }
+
+        async function shareFirstQuote() {
+            // Track share click
+            {% if posthog_api_key %}
+            if (window.posthog) {
+                posthog.capture('celebration_share_clicked', {
+                    is_first_quote: true
+                });
+            }
+            {% endif %}
+
+            // Get most recent quote to share
+            try {
+                const response = await fetch(`${API_BASE}/quotes`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                if (response.ok) {
+                    const quotes = await response.json();
+                    if (quotes && quotes.length > 0) {
+                        const latestQuote = quotes[0];
+                        const shareText = `I just created my first quote with Quoted! 🎉\n\nProject: ${latestQuote.project_name}\nTotal: $${latestQuote.total.toLocaleString()}\n\nQuoted uses AI to help contractors create professional quotes in seconds. Check it out!`;
+
+                        // Try native share if available
+                        if (navigator.share) {
+                            try {
+                                await navigator.share({
+                                    title: 'My First Quote on Quoted',
+                                    text: shareText
+                                });
+                                {% if posthog_api_key %}
+                                if (window.posthog) {
+                                    posthog.capture('celebration_share_completed', {
+                                        method: 'native_share',
+                                        is_first_quote: true
+                                    });
+                                }
+                                {% endif %}
+                            } catch (err) {
+                                if (err.name !== 'AbortError') {
+                                    console.error('Share failed:', err);
+                                }
+                            }
+                        } else {
+                            // Fallback: copy to clipboard
+                            await navigator.clipboard.writeText(shareText);
+                            alert('Quote details copied to clipboard! Share it with your network.');
+                            {% if posthog_api_key %}
+                            if (window.posthog) {
+                                posthog.capture('celebration_share_completed', {
+                                    method: 'clipboard',
+                                    is_first_quote: true
+                                });
+                            }
+                            {% endif %}
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error sharing quote:', error);
+                alert('Unable to share quote. Please try again.');
+            }
+        }
+
+        function updateCelebrationSocialProof() {
+            // Placeholder for beta counter integration
+            // For now, use static message
+            const socialProofElement = document.getElementById('celebrationSocialProof');
+            if (socialProofElement) {
+                socialProofElement.textContent = "You're in the first 100 beta testers!";
+            }
         }
 
         function createConfetti() {
