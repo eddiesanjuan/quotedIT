@@ -1489,6 +1489,42 @@ GET /api/billing/plans - Available pricing (public)
 
 ---
 
+### DISC-017: Trial Abuse Prevention (READY) 🔒 Revenue Protection
+
+**Source**: Founder (2025-12-03)
+**Impact**: MEDIUM | **Effort**: M | **Score**: 1.0
+**Sprint Alignment**: Protects revenue as we scale; prevents gaming of generous 75-quote trial
+
+**Problem**: Currently no safeguards against common trial abuse patterns. As we grow, bad actors will exploit:
+- Creating duplicate accounts with same email variations (user+1@gmail.com)
+- Multiple accounts from same device/browser
+- Disposable email addresses
+- VPN/IP rotation to appear as new users
+- Sharing accounts across a team to avoid paying
+
+**Questions for Executive Council**:
+1. What abuse vectors are highest priority to block?
+2. How aggressive should detection be? (False positives vs. letting some abuse through)
+3. What's the right response? (Block, warn, flag for review, limit features)
+4. Should we implement before or after we hit scale issues?
+
+**Potential Safeguards**:
+1. **Email Normalization** - Detect gmail dot tricks and plus aliases (j.ohn+trial2@gmail.com → john@gmail.com)
+2. **Device Fingerprinting** - Track browser/device to detect same user, new email
+3. **IP Rate Limiting** - Flag multiple signups from same IP in short window
+4. **Disposable Email Blocking** - Block known temp email domains (mailinator, 10minutemail, etc.)
+5. **Phone Verification** - Require phone number for trial (high friction but effective)
+6. **Payment Method on File** - Require card upfront, don't charge until trial ends (industry standard)
+
+**Implementation Considerations**:
+- Balance friction vs. protection (too aggressive = lost legitimate users)
+- GDPR/privacy implications of fingerprinting
+- May want tiered approach: soft limits first, hard blocks for repeat offenders
+
+**Success Metric**: <5% trial abuse rate; no viral "how to get unlimited Quoted trials" posts
+
+---
+
 ## Technical Debt
 
 | Item | Priority | Effort | Notes |
