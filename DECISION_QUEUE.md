@@ -27,8 +27,8 @@
 <!-- Type 4: Founder-only decisions -->
 <!-- Type 3: Propose-then-do decisions -->
 
-### DECISION-007: External Consultant Architecture & Autonomy Review 🔴 PRIORITY
-**Type**: 4 (Strategic - Safety, Investment, Operations)
+### DECISION-007: External Consultant Architecture & Autonomy Review 🔴 PRIORITY ** Founder requests in next automatic run, no matter what.
+**Type**: 2
 **Added**: 2025-12-03 05:00 PST
 **Requested By**: Founder (Eddie)
 **Source Document**: `docs/2025-12-03-autonomous-operations-consultant-brief.md`

@@ -3666,6 +3666,46 @@
                             </button>
                         </div>
                     </div>
+
+                    <!-- Email Signature Referral Hack (DISC-021) -->
+                    <div class="referral-signature-section" style="background: var(--bg-card); border-radius: 12px; padding: 24px; margin-bottom: 24px; border: 1px solid var(--accent);">
+                        <h3 style="margin: 0 0 8px 0; font-size: 1.25rem; font-family: var(--font-serif);">Boost Your Referrals</h3>
+                        <p style="color: var(--text-secondary); margin: 0 0 16px 0; font-size: 0.9rem;">
+                            Add this to your email signature and turn every quote you send into a referral opportunity. Most contractors send 5-20 emails/day — that's 25-100 free impressions per week.
+                        </p>
+
+                        <!-- Projected Earnings -->
+                        <div style="background: rgba(0, 255, 136, 0.1); border-left: 3px solid var(--accent); padding: 12px 16px; margin-bottom: 16px; border-radius: 6px;">
+                            <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 4px;">Projected Monthly Earnings</div>
+                            <div style="font-size: 1.25rem; font-weight: 700; color: var(--accent);">$114/month in credits</div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">Based on 20 emails/day × 10% conversion × $19/referral</div>
+                        </div>
+
+                        <!-- Email Signature Text -->
+                        <div style="margin-bottom: 12px;">
+                            <label style="display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 8px; font-weight: 500;">Your Email Signature</label>
+                            <textarea id="email-signature-text" readonly
+                                      style="width: 100%; min-height: 80px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 8px; padding: 12px; color: var(--text-primary); font-family: var(--font-sans); font-size: 0.9rem; resize: vertical; line-height: 1.5;"
+                            >Loading...</textarea>
+                        </div>
+
+                        <!-- Copy Button -->
+                        <button onclick="copyEmailSignature()"
+                                style="background: var(--accent); color: var(--bg-primary); border: none; border-radius: 8px; padding: 12px 24px; cursor: pointer; font-weight: 600; width: 100%; font-family: var(--font-sans); font-size: 0.95rem;">
+                            📋 Copy Signature to Clipboard
+                        </button>
+
+                        <!-- Instructions -->
+                        <div style="margin-top: 16px; padding: 12px; background: var(--bg-elevated); border-radius: 6px;">
+                            <div style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">
+                                <strong style="color: var(--text-primary);">How to add to your email:</strong><br>
+                                1. Click "Copy Signature to Clipboard" above<br>
+                                2. Go to your email settings (Gmail, Outlook, etc.)<br>
+                                3. Paste into your signature section<br>
+                                4. Save and watch the referrals roll in!
+                            </div>
+                        </div>
+                    </div>
                 </div> <!-- End Referral Tab Content -->
 
                 <!-- Logo Tab Content (DISC-016) -->
@@ -7332,6 +7372,13 @@
                     document.getElementById('referral-credits').textContent = data.referral_credits || 0;
                     // API returns shareable_link, not referral_link
                     document.getElementById('referral-link').value = data.shareable_link || 'Error loading link';
+
+                    // Update email signature text (DISC-021)
+                    const signatureText = `PS: I use Quoted for instant voice quotes - Try it free: ${data.shareable_link || 'Error loading link'}`;
+                    const emailSignatureEl = document.getElementById('email-signature-text');
+                    if (emailSignatureEl) {
+                        emailSignatureEl.value = signatureText;
+                    }
                 } else {
                     console.error('Failed to load referral stats');
                     document.getElementById('referral-link').value = 'Error loading link';
@@ -7379,6 +7426,23 @@
                 posthog.capture('referral_shared', { method: 'sms' });
             }
             {% endif %}
+        }
+
+        // Email Signature Referral Hack (DISC-021)
+        function copyEmailSignature() {
+            const signatureText = document.getElementById('email-signature-text');
+            navigator.clipboard.writeText(signatureText.value).then(() => {
+                showLearningToast('Signature copied! Paste into your email client.', '✅');
+                // Track analytics
+                {% if posthog_api_key %}
+                if (window.posthog) {
+                    posthog.capture('referral_signature_copied');
+                }
+                {% endif %}
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+                showError('Failed to copy signature');
+            });
         }
 
         // ========================================
@@ -7846,6 +7910,12 @@
                 loadCurrentLogo();
             } else if (tab === 'referral') {
                 loadReferralStats();
+                // Track referral signature section view (DISC-021)
+                {% if posthog_api_key %}
+                if (window.posthog) {
+                    posthog.capture('referral_signature_section_viewed');
+                }
+                {% endif %}
             }
         }
 

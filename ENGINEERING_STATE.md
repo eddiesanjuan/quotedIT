@@ -1,7 +1,7 @@
 # Engineering State
 
-**Last Updated**: 2025-12-03 03:30 PST
-**Updated By**: CEO (AI) - Autonomous Cycle 3
+**Last Updated**: 2025-12-03 16:00 PST
+**Updated By**: CEO (AI) - Autonomous Cycle 1 (Continuous Run)
 
 ---
 
@@ -1519,75 +1519,64 @@ GET /api/billing/plans - Available pricing (public)
 
 ---
 
-### DISC-018: Trial Grace Period & Soft Warnings (DISCOVERED) ⭐ Priority #1
+### ~~DISC-018: Trial Grace Period & Soft Warnings~~ (COMPLETE ✅) ⭐ Priority #1
 
+**Commit**: 136d244
 **Source**: Product Discovery Agent (2025-12-03)
 **Impact**: HIGH | **Effort**: M | **Score**: 1.5
 **Sprint Alignment**: Direct conversion impact - prevents revenue loss at trial expiration
 
-**Problem**: When trial expires (7 days, 75 quotes), users are immediately hard-blocked. No warning before the wall. User discovers limitation at worst moment (on job site, customer waiting) - creates bad UX and lost conversions.
-
-**Evidence**:
-- `backend/api/quotes.py` lines 251-278: Raises 402 error immediately when trial_expired or trial_limit_reached
-- No soft warning at 5/7 quotes remaining
-- No "Generate 1 more quote to upgrade" offer
-- DISC-005 added upgrade modal but not grace mechanics
-
-**Proposed Work**:
-1. Soft warning at 90% quota (67/75 quotes): Banner "You have 8 quotes remaining"
-2. At 95% (71/75): Modal after quote generation: "Trial ending soon - upgrade to unlock unlimited"
-3. At 100%: Allow 3 grace quotes with watermark "TRIAL EXPIRED" on PDF
-4. Grace quote CTA: "Upgrade to remove watermark and continue"
-5. Track: How many users convert during grace vs. hard block
+**Implementation Summary**:
+- ✅ Database: Added `grace_quotes_used` field to User model, `is_grace_quote` to Quote model
+- ✅ Backend billing: Progressive warnings at 90% (soft), 95% (urgent), 100% (grace period)
+- ✅ Grace period: 3 quotes allowed with `is_grace_quote: true` flag
+- ✅ PDF watermark: Semi-transparent "TRIAL EXPIRED" diagonal watermark on grace quotes
+- ✅ Frontend: Warning banners (soft/urgent/grace) with one-click upgrade button
+- ✅ Grace quote modal: "This quote has a watermark. Upgrade to remove."
+- ✅ PostHog tracking: trial_warning_shown, grace_quote_generated, grace_period_upgrade_clicked
 
 **Success Metric**: Trial→paid conversion +10-15pp; <5% of users hit hard block without warning
 
 ---
 
-### DISC-019: "Try It First" Fast Activation Path (DISCOVERED) ⭐ Priority #2
+### ~~DISC-019: "Try It First" Fast Activation Path~~ (COMPLETE ✅) ⭐ Priority #2
 
+**Commit**: 0ade9e9
 **Source**: Product Discovery Agent (2025-12-03)
 **Impact**: HIGH | **Effort**: M | **Score**: 1.5
 **Sprint Alignment**: Removes biggest new user friction - accelerates time to first quote
 
-**Problem**: New users must complete full onboarding (5-15 min interview OR quick setup) before generating first quote. This delays activation and increases drop-off. Demo mode exists for anonymous users but not for logged-in activation.
-
-**Evidence**:
-- `/api/onboarding/start` and `/api/onboarding/quick` both require completing full setup before first quote
-- No "Skip for now" option to generate sample quote with default pricing
-- BETA_SPRINT targets 60% activation rate - likely hurt by this friction
-
-**Proposed Work**:
-1. After signup, offer choice: "Set up my pricing (5-10 min)" OR "Try a quote now (2 min)"
-2. "Try It First" → Pre-filled generic pricing for their trade (from pricing_templates)
-3. User generates first quote immediately
-4. After first quote: "Want better accuracy? Complete pricing setup now"
-5. Track which path users choose and activation rates for each
+**Implementation Summary**:
+- ✅ Backend: New `POST /api/onboarding/try-first` endpoint
+- ✅ Uses industry pricing templates for sensible defaults
+- ✅ Supports all pricing approaches (hourly, sqft, linear foot, per unit, etc.)
+- ✅ Marks user as `onboarding_path = "try_first"`
+- ✅ Frontend: 3 onboarding options with "Try a Quote Now" as fastest (2 min)
+- ✅ "Fastest" badge on Try It First option
+- ✅ Success notification + redirect to quotes tab after activation
+- ✅ PostHog tracking: onboarding_path_selected, try_first_activated, try_first_quote_generated
 
 **Success Metric**: Activation rate 70%+ (up from 60% baseline); Time to first quote <3 min
 
 ---
 
-### DISC-020: Exit-Intent Survey on Landing Page (DISCOVERED) ⭐ Priority #3
+### ~~DISC-020: Exit-Intent Survey on Landing Page~~ (COMPLETE ✅) ⭐ Priority #3
 
+**Commit**: 048d173
 **Source**: Growth Discovery Agent (2025-12-03)
 **Impact**: HIGH | **Effort**: M | **Score**: 1.5
 **Sprint Alignment**: Qualitative conversion data - know WHY visitors leave without signing up
 
-**Problem**: Landing page has traffic but conversion rate is unknown. Visitors leave without signing up and we don't know WHY. Are they confused? Not contractors? Price sensitive? Don't believe it works?
-
-**Evidence**:
-- PostHog analytics tracks clicks but not WHY people leave
-- Demo→signup baseline unknown (DISC-006 added modal but no data yet)
-- 6 days to iterate - need fast feedback loops
-
-**Proposed Work**:
-1. Exit-intent popup when mouse moves toward close/back button
-2. Single question: "What's holding you back from trying Quoted?"
-3. Options: "Not sure it works for my trade", "Pricing seems high", "Don't have time", "Need real examples", "Other"
-4. Submit → Thank you + "Join waitlist for updates?" (email capture)
-5. Analytics: exit_survey_shown, exit_survey_completed, exit_reason_selected
-6. Daily report: Top 3 objections → rapid iteration
+**Implementation Summary**:
+- ✅ Exit-intent detection: Triggers when mouse moves toward browser close (<10px from top)
+- ✅ Shows only ONCE per session (sessionStorage + localStorage)
+- ✅ 5 checkbox options + "Other" with text input (multi-select supported)
+- ✅ Optional email capture for waitlist with validation
+- ✅ Glassmorphism design matching brand (#00ff88 accents)
+- ✅ Mobile responsive with touch-friendly buttons
+- ✅ Multiple dismiss options (X, click outside, skip)
+- ✅ Data stored in localStorage (no backend required)
+- ✅ PostHog tracking: exit_survey_shown, exit_survey_completed, exit_survey_dismissed, waitlist_signup
 
 **Success Metric**: 100+ survey responses; identify top objection; +10-15% landing→signup after fix
 
@@ -1761,6 +1750,90 @@ GET /api/billing/plans - Available pricing (public)
 
 ---
 
+### DISC-028: PDF Quote Template Library (DISCOVERED) 🎨 Premium Differentiation
+
+**Source**: Founder's Wife (2025-12-03) - great product intuition!
+**Impact**: HIGH | **Effort**: L | **Score**: 0.75
+**Sprint Alignment**: Premium tier value proposition - differentiation beyond logo
+
+**Problem**: Currently all PDF quotes look identical. Users who don't have a logo get zero visual customization. The "premium" feeling is limited to logo upload only.
+
+**Wife's Core Insight**: Offering 5-10 different clean, professional template styles would:
+1. Let users feel ownership/customization without needing a logo
+2. Add tangible value to premium tiers
+3. Differentiate from competitors with one-size-fits-all outputs
+4. Appeal to contractors who care about professional appearance
+
+**Proposed Template Collection (8-10 styles)**:
+
+| Template | Style Description | Best For |
+|----------|-------------------|----------|
+| **Classic** | Traditional, conservative, serif headers | General contractors, established businesses |
+| **Modern Minimal** | Clean sans-serif, generous whitespace | Tech-forward contractors, younger pros |
+| **Bold Professional** | Strong headers, clear hierarchy, accent bars | Commercial contractors, larger jobs |
+| **Elegant** | Refined serif, subtle borders, sophisticated | High-end residential, design-build |
+| **Technical** | Grid-based, engineering feel, detailed | Electricians, HVAC, precision trades |
+| **Friendly** | Warmer styling, approachable layout | Residential services, handymen |
+| **Craftsman** | Artisan feel, quality emphasis | Custom work, carpenters, specialty trades |
+| **Corporate** | Very business-like, enterprise ready | B2B contractors, property managers |
+
+**Design Principles for ALL Templates**:
+- Clean, professional, modern aesthetics
+- Clear hierarchy (customer info → line items → totals → terms)
+- Mobile-friendly when viewed as PDF
+- Consistent information architecture (only styling changes)
+- Appropriate whitespace balance
+
+**Creative Enhancements from Executive Council**:
+
+1. **Accent Color Picker** (Pro tier)
+   - Pick a brand color applied to any template
+   - Headers, dividers, accent elements use chosen color
+   - Simple way to brand without uploading logo
+
+2. **Template Preview**
+   - Show real quote data in preview before committing
+   - "See how YOUR quote looks" selector
+
+3. **Industry Recommendations**
+   - "Most popular for electricians: Technical template"
+   - Based on aggregated user choices by trade
+
+4. **Future: Template Analytics** (post-launch)
+   - Track which templates correlate with higher quote acceptance
+   - Share insight with users: "Quotes using Modern Minimal have 12% higher acceptance"
+
+**Tier Structure**:
+| Tier | Templates Available | Accent Color |
+|------|---------------------|--------------|
+| Trial | 2 (Classic, Modern Minimal) | ❌ |
+| Starter | 4 templates | ❌ |
+| Pro | All 8-10 templates | ✅ |
+| Team | All + custom template upload | ✅ |
+
+**Technical Implementation Notes**:
+- Templates as CSS variations on base HTML structure
+- Store template_id on Contractor model (default: "classic")
+- Store accent_color on Contractor model (hex, nullable)
+- PDF generation applies template + accent color
+- Template selector in Account → Branding section (alongside logo)
+
+**Files to Modify**:
+- `backend/models/database.py` - Add template_id, accent_color fields
+- `backend/api/contractors.py` - Add template preference endpoints
+- `backend/services/pdf_service.py` - Template + color application
+- `frontend/index.html` - Template selector UI with previews
+- Create: `backend/templates/pdf/` directory with template variants
+
+**Dependencies**: None (standalone premium feature)
+
+**Success Metric**:
+- 60%+ Pro users select non-default template
+- Template selection correlates with retention
+- Adds perceived value to premium tier (survey: "worth paying for")
+
+---
+
 ## Technical Debt
 
 | Item | Priority | Effort | Notes |
@@ -1777,6 +1850,9 @@ GET /api/billing/plans - Available pricing (public)
 
 | Date | Commit | Description | Status |
 |------|--------|-------------|--------|
+| 2025-12-03 | 136d244 | Add Trial grace period with soft warnings (DISC-018) | **PENDING PUSH** |
+| 2025-12-03 | 0ade9e9 | Add "Try It First" fast activation path (DISC-019) | **PENDING PUSH** |
+| 2025-12-03 | 048d173 | Add Exit-intent survey on landing page (DISC-020) | **PENDING PUSH** |
 | 2025-12-03 | 94ba6dc | Add Custom logo upload for PDF quotes (DISC-016) | **PENDING PUSH** |
 | 2025-12-03 | 8c88de2 | Add Trial abuse prevention - email normalization (DISC-017) | **PENDING PUSH** |
 | 2025-12-03 | 5c1ebc3 | Add Referral visibility at first quote celebration (DISC-002) | **DEPLOYED** |
