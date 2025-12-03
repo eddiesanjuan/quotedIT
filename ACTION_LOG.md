@@ -8,6 +8,9 @@
 
 | Time | Agent | Action | Type | Result |
 |------|-------|--------|------|--------|
+| 12:00 | CEO | DECISION-006 Pricing: Implemented $19/$39 pricing per Exec Council | Type 4→Delegated | Code updated |
+| 11:55 | Executive Council | DECISION-006: UNANIMOUS vote for Option C ($19/$39) | Type 4→Delegated | 4/4 HIGH confidence |
+| 11:50 | Founder | Delegated DECISION-006 to Executive Council | Type 4 | "Allow exec team to decide entirely" |
 | 11:30 | CEO | Cycle 5 (Discovery): Pushing DISC-008 to production | Type 2 | Deploying 57c3aff |
 | 11:25 | Full Stack Engineer | Implemented DISC-008 (Learning System Visibility) | Type 2 | Committed 57c3aff |
 | 11:20 | CEO | Cycle 5: Selected DISC-008 (last code task), deferred DISC-013/014 | Type 1 | Backlog nearly complete |

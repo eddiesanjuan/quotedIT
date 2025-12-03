@@ -89,12 +89,14 @@ class Settings(BaseSettings):
     trial_quote_limit: int = 75
 
     # Plan limits and pricing
+    # Updated 2025-12-02: Executive Council unanimous decision (DECISION-006)
+    # Lowered from $29/$49 to $19/$39 for "no-brainer" adoption
     starter_monthly_quotes: int = 75
-    starter_price_monthly: int = 2900  # $29.00 in cents
+    starter_price_monthly: int = 1900  # $19.00 in cents
     starter_overage_price: int = 50  # $0.50 in cents
 
     pro_monthly_quotes: int = 200
-    pro_price_monthly: int = 4900  # $49.00 in cents
+    pro_price_monthly: int = 3900  # $39.00 in cents
     pro_overage_price: int = 35  # $0.35 in cents
 
     team_monthly_quotes: int = 500
