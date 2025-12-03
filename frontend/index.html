@@ -6955,7 +6955,9 @@
                     },
                     body: JSON.stringify({
                         plan_tier: planTier,
-                        billing_interval: interval
+                        billing_interval: interval,
+                        success_url: window.location.origin + '/?checkout=success',
+                        cancel_url: window.location.origin + '/?checkout=cancelled'
                     })
                 });
 
