@@ -884,6 +884,18 @@
             transform: scale(1.1);
         }
 
+        /* Testimonial Stars (DISC-010) */
+        #starRating .star {
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        #starRating .star:hover {
+            transform: scale(1.15);
+            opacity: 0.8;
+        }
+
         /* Pricing Buttons */
         .pricing-buttons {
             display: flex;
@@ -2325,11 +2337,12 @@
         }
 
         .celebration-icon {
-            font-size: 4rem;
-            margin-bottom: 24px;
-            animation: celebration-bounce 0.6s ease-out;
+            font-size: 5rem;
+            margin-bottom: 16px;
+            animation: celebration-bounce 0.8s ease-out;
             position: relative;
             z-index: 1;
+            filter: drop-shadow(0 4px 12px rgba(124, 58, 237, 0.3));
         }
 
         @keyframes celebration-bounce {
@@ -2338,11 +2351,79 @@
             100% { transform: scale(1) rotate(360deg); }
         }
 
+        .celebration-social-proof {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, rgba(124, 58, 237, 0.15), rgba(124, 58, 237, 0.08));
+            border: 1px solid rgba(124, 58, 237, 0.3);
+            border-radius: 20px;
+            padding: 8px 16px;
+            margin: 16px 0;
+            font-size: 0.875rem;
+            color: var(--text-primary);
+            animation: celebration-pulse 2s ease-in-out infinite;
+            position: relative;
+            z-index: 1;
+        }
+
+        @keyframes celebration-pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(124, 58, 237, 0.4); }
+            50% { box-shadow: 0 0 0 8px rgba(124, 58, 237, 0); }
+        }
+
+        .celebration-progress {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin: 20px 0;
+            padding: 16px;
+            background: var(--bg-elevated);
+            border-radius: 12px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .celebration-progress-icon {
+            font-size: 1.5rem;
+        }
+
+        .celebration-progress-text {
+            text-align: left;
+        }
+
+        .celebration-progress-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 4px;
+        }
+
+        .celebration-progress-value {
+            font-size: 1rem;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .celebration-primary-cta {
+            width: 100%;
+            margin: 24px 0 16px 0;
+            position: relative;
+            z-index: 1;
+        }
+
+        .celebration-referral-section {
+            position: relative;
+            z-index: 1;
+        }
+
         .celebration-actions {
             display: flex;
             gap: 16px;
             justify-content: center;
-            margin-top: 32px;
+            margin-top: 24px;
             position: relative;
             z-index: 1;
         }
@@ -2350,6 +2431,18 @@
         .celebration-actions .btn {
             flex: 1;
             max-width: 200px;
+        }
+
+        @media (max-width: 768px) {
+            .celebration-icon {
+                font-size: 4rem;
+            }
+            .celebration-actions {
+                flex-direction: column;
+            }
+            .celebration-actions .btn {
+                max-width: 100%;
+            }
         }
 
         /* Confetti Animation */
@@ -3667,16 +3760,39 @@
         <div class="modal-content celebration-content">
             <button class="modal-close" onclick="closeCelebrationModal()">&times;</button>
             <div class="celebration-confetti" id="confetti"></div>
+
+            <!-- Celebration Header -->
             <div class="celebration-icon">🎉</div>
             <h2 class="modal-title">You created your first quote!</h2>
+
+            <!-- Social Proof Badge -->
+            <div class="celebration-social-proof">
+                <span>⭐</span>
+                <span id="celebrationSocialProof">You're in the first 100 beta testers!</span>
+            </div>
+
             <p class="modal-subtitle">
                 You just saved yourself hours of manual work. The more you use Quoted, the smarter it gets.
             </p>
 
-            <!-- Referral Section -->
-            <div style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.1), rgba(124, 58, 237, 0.05)); border: 1px solid rgba(124, 58, 237, 0.3); border-radius: 12px; padding: 20px; margin: 24px 0;">
-                <h3 style="margin: 0 0 8px 0; font-size: 1.125rem; color: var(--text-primary); font-family: var(--font-serif);">
-                    🎁 Invite a Friend, You Both Get Rewards
+            <!-- Progress Indicator -->
+            <div class="celebration-progress">
+                <div class="celebration-progress-icon">🧠</div>
+                <div class="celebration-progress-text">
+                    <div class="celebration-progress-label">Your AI is Learning</div>
+                    <div class="celebration-progress-value">Building your pricing intelligence</div>
+                </div>
+            </div>
+
+            <!-- Primary CTA: Share Quote -->
+            <button class="btn btn-primary celebration-primary-cta" onclick="shareFirstQuote()">
+                📤 Share Your First Quote
+            </button>
+
+            <!-- Referral Section (Secondary) -->
+            <div class="celebration-referral-section" style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.1), rgba(124, 58, 237, 0.05)); border: 1px solid rgba(124, 58, 237, 0.3); border-radius: 12px; padding: 20px; margin: 16px 0;">
+                <h3 style="margin: 0 0 8px 0; font-size: 1rem; color: var(--text-primary); font-family: var(--font-serif);">
+                    🎁 Invite Friends, Earn Free Months
                 </h3>
                 <p style="color: var(--text-secondary); margin: 0 0 16px 0; font-size: 0.875rem;">
                     You get <strong style="color: var(--text-primary);">1 free month</strong>, they get <strong style="color: var(--text-primary);">14 extra days</strong>
@@ -3704,8 +3820,9 @@
                 </div>
             </div>
 
+            <!-- Tertiary Actions -->
             <div class="celebration-actions">
-                <button class="btn btn-primary" onclick="closeCelebrationModal()">Got it!</button>
+                <button class="btn btn-secondary" onclick="viewQuoteDetails()">View Quote</button>
                 <button class="btn btn-secondary" onclick="closeCelebrationAndCreate()">Create Another</button>
             </div>
         </div>
@@ -3739,6 +3856,87 @@
 
             <button class="first-quote-skip" onclick="closeFirstQuoteModal()">
                 I'll explore on my own
+            </button>
+        </div>
+    </div>
+
+    <!-- Testimonial Collection Modal (DISC-010) -->
+    <div id="testimonialModal" class="modal-overlay" style="display: none;">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content" style="max-width: 500px;">
+            <button class="modal-close" onclick="closeTestimonialModal()">&times;</button>
+
+            <div style="text-align: center; margin-bottom: 24px;">
+                <div style="font-size: 3rem; margin-bottom: 16px;">💭</div>
+                <h2 class="modal-title" style="margin-bottom: 8px;">How's Quoted working for you?</h2>
+                <p class="modal-subtitle">You've generated a few quotes. We'd love your feedback!</p>
+            </div>
+
+            <!-- Star Rating -->
+            <div style="margin-bottom: 24px;">
+                <label style="display: block; margin-bottom: 12px; font-size: 0.875rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em;">Your Rating</label>
+                <div id="starRating" style="display: flex; gap: 12px; justify-content: center; font-size: 2rem;">
+                    <span class="star" data-rating="1" onclick="setTestimonialRating(1)">☆</span>
+                    <span class="star" data-rating="2" onclick="setTestimonialRating(2)">☆</span>
+                    <span class="star" data-rating="3" onclick="setTestimonialRating(3)">☆</span>
+                    <span class="star" data-rating="4" onclick="setTestimonialRating(4)">☆</span>
+                    <span class="star" data-rating="5" onclick="setTestimonialRating(5)">☆</span>
+                </div>
+            </div>
+
+            <!-- Testimonial Text -->
+            <div style="margin-bottom: 24px;">
+                <label for="testimonialText" style="display: block; margin-bottom: 8px; font-size: 0.875rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em;">What would you tell a fellow contractor about Quoted?</label>
+                <textarea
+                    id="testimonialText"
+                    placeholder="1-2 sentences about your experience..."
+                    style="width: 100%; min-height: 100px; padding: 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary); font-family: var(--font-sans); font-size: 0.9375rem; resize: vertical;"
+                    maxlength="500"
+                ></textarea>
+                <div style="text-align: right; font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">
+                    <span id="testimonialCharCount">0</span>/500
+                </div>
+            </div>
+
+            <!-- Optional Attribution -->
+            <div style="margin-bottom: 24px;">
+                <label style="display: block; margin-bottom: 12px; font-size: 0.875rem; color: var(--text-secondary);">
+                    <input type="checkbox" id="includeAttribution" onchange="toggleAttribution()" style="margin-right: 8px;">
+                    Include my name and company (optional)
+                </label>
+                <div id="attributionFields" style="display: none; margin-top: 12px; padding: 16px; background: var(--bg-elevated); border-radius: 8px; border: 1px solid var(--border);">
+                    <input
+                        type="text"
+                        id="testimonialName"
+                        placeholder="Your name"
+                        style="width: 100%; padding: 10px; margin-bottom: 12px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; color: var(--text-primary); font-family: var(--font-sans);"
+                    >
+                    <input
+                        type="text"
+                        id="testimonialCompany"
+                        placeholder="Company name"
+                        style="width: 100%; padding: 10px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; color: var(--text-primary); font-family: var(--font-sans);"
+                    >
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button
+                id="submitTestimonialBtn"
+                class="btn btn-primary"
+                onclick="submitTestimonial()"
+                style="width: 100%; margin-bottom: 12px;"
+                disabled
+            >
+                Submit Feedback
+            </button>
+
+            <button
+                class="btn btn-secondary"
+                onclick="closeTestimonialModal()"
+                style="width: 100%;"
+            >
+                Maybe Later
             </button>
         </div>
     </div>
@@ -5261,7 +5459,10 @@
                 // Track onboarding completion
                 {% if posthog_api_key %}
                 if (window.posthog) {
-                    posthog.capture('onboarding_completed', { onboarding_type: 'interview' });
+                    posthog.capture('onboarding_completed', {
+                        onboarding_type: 'interview',
+                        onboarding_path: 'interview'  // DISC-007
+                    });
                 }
                 {% endif %}
 
@@ -5371,7 +5572,10 @@
                 // Track onboarding completion
                 {% if posthog_api_key %}
                 if (window.posthog) {
-                    posthog.capture('onboarding_completed', { onboarding_type: 'quick_setup' });
+                    posthog.capture('onboarding_completed', {
+                        onboarding_type: 'quick_setup',
+                        onboarding_path: 'quick_setup'  // DISC-007
+                    });
                 }
                 {% endif %}
 
@@ -5750,6 +5954,9 @@
                 } else {
                     emptyEl.style.display = 'block';
                 }
+
+                // Check if we should show testimonial modal (after 3rd quote)
+                checkAndShowTestimonialModal();
 
             } catch (err) {
                 console.error('Error loading quotes:', err);
@@ -7561,7 +7768,184 @@
                     }
                 });
             }
+
+            // Add event listener for testimonial character count
+            const testimonialText = document.getElementById('testimonialText');
+            if (testimonialText) {
+                testimonialText.addEventListener('input', function() {
+                    const count = this.value.length;
+                    document.getElementById('testimonialCharCount').textContent = count;
+                    updateTestimonialSubmitButton();
+                });
+            }
         });
+
+        // ============================================================================
+        // TESTIMONIAL COLLECTION (DISC-010)
+        // ============================================================================
+
+        let selectedTestimonialRating = 0;
+
+        function setTestimonialRating(rating) {
+            selectedTestimonialRating = rating;
+
+            // Update star display
+            const stars = document.querySelectorAll('#starRating .star');
+            stars.forEach((star, index) => {
+                if (index < rating) {
+                    star.textContent = '★';
+                    star.style.color = '#fbbf24'; // Gold color
+                } else {
+                    star.textContent = '☆';
+                    star.style.color = 'var(--text-secondary)';
+                }
+            });
+
+            updateTestimonialSubmitButton();
+        }
+
+        function toggleAttribution() {
+            const checkbox = document.getElementById('includeAttribution');
+            const fields = document.getElementById('attributionFields');
+            fields.style.display = checkbox.checked ? 'block' : 'none';
+        }
+
+        function updateTestimonialSubmitButton() {
+            const btn = document.getElementById('submitTestimonialBtn');
+            const text = document.getElementById('testimonialText').value.trim();
+            const hasRating = selectedTestimonialRating > 0;
+            const hasText = text.length >= 10; // Minimum 10 characters
+
+            btn.disabled = !(hasRating && hasText);
+        }
+
+        async function submitTestimonial() {
+            const btn = document.getElementById('submitTestimonialBtn');
+            const text = document.getElementById('testimonialText').value.trim();
+            const includeAttr = document.getElementById('includeAttribution').checked;
+            const name = includeAttr ? document.getElementById('testimonialName').value.trim() : null;
+            const company = includeAttr ? document.getElementById('testimonialCompany').value.trim() : null;
+
+            if (!selectedTestimonialRating || !text) {
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Submitting...';
+
+            try {
+                const response = await fetch(`${API_BASE}/testimonials/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        rating: selectedTestimonialRating,
+                        quote_text: text,
+                        name: name || null,
+                        company: company || null
+                    })
+                });
+
+                if (response.ok) {
+                    // Track submission
+                    {% if posthog_api_key %}
+                    if (window.posthog) {
+                        posthog.capture('testimonial_submitted', {
+                            rating: selectedTestimonialRating,
+                            has_attribution: includeAttr
+                        });
+                    }
+                    {% endif %}
+
+                    // Mark as submitted in localStorage
+                    localStorage.setItem('testimonial_submitted', 'true');
+
+                    // Close modal and show thank you
+                    closeTestimonialModal();
+                    showNotification('Thank you for your feedback!', 'success');
+                } else {
+                    const error = await response.json();
+                    showNotification(error.detail || 'Failed to submit testimonial', 'error');
+                    btn.disabled = false;
+                    btn.textContent = 'Submit Feedback';
+                }
+            } catch (error) {
+                console.error('Error submitting testimonial:', error);
+                showNotification('Failed to submit testimonial', 'error');
+                btn.disabled = false;
+                btn.textContent = 'Submit Feedback';
+            }
+        }
+
+        function closeTestimonialModal() {
+            const modal = document.getElementById('testimonialModal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        async function checkAndShowTestimonialModal() {
+            // Only show if user hasn't submitted testimonial yet
+            const hasSubmitted = localStorage.getItem('testimonial_submitted');
+            if (hasSubmitted) {
+                return;
+            }
+
+            // Check if user already submitted via API (in case they submitted from different device)
+            try {
+                const response = await fetch(`${API_BASE}/testimonials/check-submitted`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.has_submitted) {
+                        localStorage.setItem('testimonial_submitted', 'true');
+                        return;
+                    }
+                }
+            } catch (error) {
+                console.error('Error checking testimonial status:', error);
+                return;
+            }
+
+            // Count total quotes generated
+            try {
+                const response = await fetch(`${API_BASE}/quotes/`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                if (response.ok) {
+                    const quotes = await response.json();
+
+                    // Show modal after 3rd quote
+                    if (quotes.length === 3) {
+                        // Track modal shown
+                        {% if posthog_api_key %}
+                        if (window.posthog) {
+                            posthog.capture('testimonial_modal_shown');
+                        }
+                        {% endif %}
+
+                        // Show modal after brief delay
+                        setTimeout(() => {
+                            const modal = document.getElementById('testimonialModal');
+                            if (modal) {
+                                modal.style.display = 'flex';
+                            }
+                        }, 1000);
+                    }
+                }
+            } catch (error) {
+                console.error('Error checking quotes for testimonial trigger:', error);
+            }
+        }
     </script>
 </body>
 </html>

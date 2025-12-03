@@ -54,6 +54,10 @@ class User(Base):
     referral_count = Column(Integer, default=0)  # Number of successful referrals (referees who subscribed)
     referral_credits = Column(Integer, default=0)  # Months of credit earned from referrals
 
+    # Onboarding (DISC-007)
+    onboarding_path = Column(String(20), nullable=True)  # "interview" or "quick_setup"
+    onboarding_completed_at = Column(DateTime, nullable=True)  # When onboarding was completed
+
     # Relationship to contractor (one-to-one)
     contractor = relationship("Contractor", back_populates="user", uselist=False)
 
@@ -476,6 +480,39 @@ class UserIssue(Base):
     verified_at = Column(DateTime)
 
 
+class Testimonial(Base):
+    """
+    User testimonials collected from beta users.
+
+    Workflow:
+    1. After user generates 3rd quote, testimonial collection modal appears
+    2. User submits rating + testimonial text
+    3. Stored as pending (approved=False)
+    4. Admin manually reviews and approves for landing page display
+    """
+    __tablename__ = "testimonials"
+
+    id = Column(String, primary_key=True, default=generate_uuid)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Who submitted it
+    user_id = Column(String, ForeignKey("users.id"), nullable=False)
+
+    # Testimonial content
+    rating = Column(Integer, nullable=False)  # 1-5 stars
+    quote_text = Column(Text, nullable=False)  # What they said about Quoted
+
+    # Optional attribution
+    name = Column(String(255), nullable=True)  # Full name (optional)
+    company = Column(String(255), nullable=True)  # Company name (optional)
+
+    # Approval status
+    approved = Column(Boolean, default=False)  # Needs admin approval before showing on landing
+    approved_at = Column(DateTime, nullable=True)
+    approved_by = Column(String(255), nullable=True)
+
+
 # Database initialization
 def get_database_url(async_mode: bool = True) -> str:
     """Get database URL from config. Supports SQLite and PostgreSQL."""
@@ -618,6 +655,25 @@ async def run_migrations(engine):
                 WHERE table_name = 'users' AND column_name = 'referral_credits'
             """,
             "alter_sql": "ALTER TABLE users ADD COLUMN referral_credits INTEGER DEFAULT 0"
+        },
+        # Onboarding path tracking (DISC-007)
+        {
+            "table": "users",
+            "column": "onboarding_path",
+            "check_sql": """
+                SELECT column_name FROM information_schema.columns
+                WHERE table_name = 'users' AND column_name = 'onboarding_path'
+            """,
+            "alter_sql": "ALTER TABLE users ADD COLUMN onboarding_path VARCHAR(20)"
+        },
+        {
+            "table": "users",
+            "column": "onboarding_completed_at",
+            "check_sql": """
+                SELECT column_name FROM information_schema.columns
+                WHERE table_name = 'users' AND column_name = 'onboarding_completed_at'
+            """,
+            "alter_sql": "ALTER TABLE users ADD COLUMN onboarding_completed_at TIMESTAMP"
         },
         # Share Quote columns (GROWTH-003)
         {
