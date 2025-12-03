@@ -2586,6 +2586,103 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        /* First Quote Activation Modal */
+        .first-quote-modal-content {
+            max-width: 480px;
+            text-align: center;
+            padding: 48px 40px;
+        }
+
+        .first-quote-icon {
+            font-size: 3rem;
+            margin-bottom: 16px;
+        }
+
+        .first-quote-modal-content h2 {
+            font-family: var(--font-serif);
+            font-size: 1.75rem;
+            margin-bottom: 12px;
+        }
+
+        .first-quote-subtitle {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            margin-bottom: 32px;
+        }
+
+        .first-quote-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .first-quote-option {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 20px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+        }
+
+        .first-quote-option:hover {
+            background: var(--bg-elevated);
+            border-color: var(--border-hover);
+            transform: translateY(-2px);
+        }
+
+        .option-icon {
+            font-size: 1.5rem;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .option-text {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .option-text strong {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .option-text small {
+            color: var(--text-secondary);
+            font-size: 0.8125rem;
+        }
+
+        .first-quote-skip {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            cursor: pointer;
+            padding: 8px 16px;
+            transition: color 0.2s ease;
+        }
+
+        .first-quote-skip:hover {
+            color: var(--text-secondary);
+        }
+
+        /* Mobile adjustments for first quote modal */
+        @media (max-width: 480px) {
+            .first-quote-modal-content {
+                padding: 32px 24px;
+            }
+
+            .first-quote-option {
+                padding: 16px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -3498,6 +3595,38 @@
         </div>
     </div>
 
+    <!-- First Quote Activation Modal -->
+    <div id="first-quote-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content first-quote-modal-content">
+            <div class="first-quote-icon">🎉</div>
+            <h2>You're all set up!</h2>
+            <p class="first-quote-subtitle">Your pricing profile is ready. Let's generate your first quote.</p>
+
+            <div class="first-quote-options">
+                <button class="first-quote-option" onclick="startFirstQuote('voice')">
+                    <span class="option-icon">🎤</span>
+                    <span class="option-text">
+                        <strong>Record a job description</strong>
+                        <small>Speak naturally, like you're explaining it to a colleague</small>
+                    </span>
+                </button>
+
+                <button class="first-quote-option" onclick="startFirstQuote('text')">
+                    <span class="option-icon">⌨️</span>
+                    <span class="option-text">
+                        <strong>Type an example</strong>
+                        <small>We'll pre-fill a sample job for you to try</small>
+                    </span>
+                </button>
+            </div>
+
+            <button class="first-quote-skip" onclick="closeFirstQuoteModal()">
+                I'll explore on my own
+            </button>
+        </div>
+    </div>
+
     <script>
         // Configuration
         const API_BASE = window.location.hostname === 'localhost'
@@ -3734,6 +3863,9 @@
                     showIndustrySelection();
                 }
             }
+
+            // Check if we should show first quote activation modal
+            checkFirstQuoteActivation();
         }
 
         // Auth message
@@ -4795,6 +4927,9 @@
 
                 removeTypingIndicator();
                 addChatMessage('assistant', "Your pricing is saved. You're ready to start quoting!");
+
+                // Set flag for first quote activation modal
+                localStorage.setItem('just_completed_onboarding', 'true');
 
                 setTimeout(async () => {
                     await savePricingToContractor(pricingModel);
@@ -6916,6 +7051,87 @@
         document.getElementById('issueModal').addEventListener('click', function(e) {
             if (e.target === this) {
                 closeIssueModal();
+            }
+        });
+
+        // ========================================
+        // First Quote Activation Flow
+        // ========================================
+        const SAMPLE_JOB = "Quote for Sarah at 456 Oak Drive - kitchen cabinet refacing, about 20 linear feet of base cabinets and 15 feet of uppers, replacing hinges and adding soft-close, standard white paint finish.";
+
+        function showFirstQuoteModal() {
+            const modal = document.getElementById('first-quote-modal');
+            if (modal) {
+                modal.style.display = 'flex';
+                // Track modal view
+                if (window.posthog) {
+                    posthog.capture('first_quote_modal_shown');
+                }
+            }
+        }
+
+        function closeFirstQuoteModal() {
+            const modal = document.getElementById('first-quote-modal');
+            if (modal) {
+                modal.style.display = 'none';
+                // Track skip
+                if (window.posthog) {
+                    posthog.capture('first_quote_modal_skipped');
+                }
+            }
+            // Mark as seen
+            localStorage.setItem('first_quote_modal_seen', 'true');
+        }
+
+        function startFirstQuote(method) {
+            closeFirstQuoteModal();
+
+            // Track choice
+            if (window.posthog) {
+                posthog.capture('first_quote_started', { method: method });
+            }
+
+            // Navigate to new quote section
+            showAppSection('newQuote');
+
+            if (method === 'text') {
+                // Pre-fill the text input with sample job
+                const textInput = document.getElementById('jobDescription');
+                if (textInput) {
+                    textInput.value = SAMPLE_JOB;
+                    textInput.focus();
+                }
+            } else if (method === 'voice') {
+                // Focus the record button
+                const recordBtn = document.getElementById('recordBtn');
+                if (recordBtn) {
+                    recordBtn.focus();
+                }
+            }
+        }
+
+        // Check if user just completed onboarding and hasn't seen modal
+        function checkFirstQuoteActivation() {
+            const hasSeenModal = localStorage.getItem('first_quote_modal_seen');
+            const justCompletedOnboarding = localStorage.getItem('just_completed_onboarding');
+
+            if (justCompletedOnboarding && !hasSeenModal) {
+                // Clear the flag
+                localStorage.removeItem('just_completed_onboarding');
+                // Show modal after a brief delay
+                setTimeout(showFirstQuoteModal, 500);
+            }
+        }
+
+        // Close modal on backdrop click
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('first-quote-modal');
+            if (modal) {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal || e.target.classList.contains('modal-backdrop')) {
+                        closeFirstQuoteModal();
+                    }
+                });
             }
         });
     </script>
