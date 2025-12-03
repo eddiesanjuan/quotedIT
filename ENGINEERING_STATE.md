@@ -1269,25 +1269,27 @@ GET /api/billing/plans - Available pricing (public)
 
 ---
 
-### DISC-008: Learning System Visibility (READY)
+### ~~DISC-008: Learning System Visibility~~ (DEPLOYED)
 
+**Commit**: 57c3aff
 **Source**: Growth + Strategy Discovery Agents
 **Impact**: MEDIUM | **Effort**: M | **Score**: 1.0
-**Sprint Alignment**: Learning system is key differentiator - must validate it works
+**Sprint Alignment**: Learning system is key differentiator - users can now see it working
 
-**Problem**: Learning system is positioned as differentiator ("gets smarter with every correction") but users don't see learning in action. No progress indicator, no explanation of how corrections help, no feedback loop.
+**Implementation Summary**:
+- ✅ Backend: `GET /api/learning/progress` - Returns comprehensive learning stats
+- ✅ Calculates: total_quotes, total_corrections, categories_learned, learning_progress_percent
+- ✅ Per-category: confidence score, quote count, correction count
+- ✅ Learning velocity classification: fast/steady/slow/starting
+- ✅ Frontend: Learning Progress section in Pricing Brain tab
+- ✅ Large progress bar: "AI knows X% of your pricing"
+- ✅ 4-stat dashboard: Quotes, Corrections, Categories, Speed
+- ✅ Category cards with confidence badges and mini progress bars
+- ✅ Motivational messaging based on progress level
+- ✅ Auto-hides for new users with no quotes
+- ✅ Mobile responsive design
 
-**Evidence**:
-- Pricing Brain shows categories but no "learning progress" metric
-- No messaging: "AI learned 60% of your pricing from 12 quotes"
-- Users don't understand why corrections matter
-- Can't measure if learning system actually improves accuracy over time
-
-**Proposed Work**:
-1. Add confidence score per category: "Painting (80% confident - based on 4 quotes)"
-2. Add global progress: "AI knows your pricing for 6 of 12 common job types"
-3. Track quote_edit_rate over time per user (should decrease if learning works)
-4. Email day 5: "Your AI is learning - make 3 corrections and watch it improve"
+**Confidence Algorithm**: `min(100, base_confidence + corrections_boost + quotes_boost)`
 
 **Success Metric**: Users understand learning; correction rate increases 30%; edit_rate trends down after 5+ quotes
 
