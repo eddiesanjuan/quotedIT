@@ -9,6 +9,7 @@
 
 | Date | Commit | Description | Status |
 |------|--------|-------------|--------|
+| 2025-12-04 | 7488616 | Fix mobile quote disappearing after generation (BUG-006) | **DEPLOYED** |
 | 2025-12-03 | 6bdc08e | Fix Stripe product IDs to production values | **DEPLOYED** |
 | 2025-12-03 | e3c8786 | Add Customer memory autocomplete (DISC-022) | **DEPLOYED** |
 | 2025-12-03 | 1c3d0d3 | Add Viral footer enhancement on shared quotes (DISC-024) | **DEPLOYED** |
