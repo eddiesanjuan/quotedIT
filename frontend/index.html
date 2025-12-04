@@ -1984,6 +1984,11 @@
                 padding-bottom: 100px;
             }
 
+            /* Extra padding on cards for mobile nav clearance */
+            .quote-result {
+                padding-bottom: 80px;
+            }
+
             /* Make modal fit iPhone SE and small screens */
             .modal-content {
                 max-width: 95%;
@@ -3417,6 +3422,7 @@
 
                 <div class="quote-actions">
                     <button class="btn btn-primary" onclick="downloadPdf()">Download PDF</button>
+                    <button class="btn btn-secondary" onclick="editCurrentQuote()">Edit Quote</button>
                     <button class="btn btn-secondary" onclick="newQuote()">New Quote</button>
                 </div>
 
@@ -4993,6 +4999,18 @@
             } catch (err) {
                 console.error('Error:', err);
                 showError(err.message);
+            }
+        }
+
+        // Edit current quote (from new quote result view)
+        function editCurrentQuote() {
+            if (currentQuoteId) {
+                // Clear the quote result state
+                const quoteResult = document.getElementById('quoteResult');
+                quoteResult.classList.remove('active');
+                quoteResult.style.display = '';
+                // Open the edit detail view
+                openQuoteDetail(currentQuoteId);
             }
         }
 
