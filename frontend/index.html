@@ -5001,7 +5001,9 @@
             currentQuoteId = null;
             document.getElementById('jobDescription').value = '';
             document.getElementById('inputSection').style.display = 'block';
-            document.getElementById('quoteResult').classList.remove('active');
+            const quoteResult = document.getElementById('quoteResult');
+            quoteResult.classList.remove('active');
+            quoteResult.style.display = '';  // Clear inline style, let CSS control
             hideError();
             resetFeedbackForm();
         }
@@ -6593,7 +6595,14 @@
             document.getElementById('accountSection').style.display = 'none';
 
             if (section === 'newQuote') {
-                checkAndShowInputSection();
+                // Check if quote result is active (user just generated a quote)
+                const quoteResult = document.getElementById('quoteResult');
+                if (quoteResult.classList.contains('active')) {
+                    // Show the quote result, not the input section
+                    quoteResult.style.display = 'block';
+                } else {
+                    checkAndShowInputSection();
+                }
             } else if (section === 'myQuotes') {
                 document.getElementById('myQuotesSection').style.display = 'block';
                 loadQuotes();
