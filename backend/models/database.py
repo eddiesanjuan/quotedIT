@@ -727,6 +727,25 @@ async def run_migrations(engine):
             """,
             "alter_sql": "ALTER TABLE users ADD COLUMN normalized_email VARCHAR(255)"
         },
+        # Grace period columns (DISC-018)
+        {
+            "table": "users",
+            "column": "grace_quotes_used",
+            "check_sql": """
+                SELECT column_name FROM information_schema.columns
+                WHERE table_name = 'users' AND column_name = 'grace_quotes_used'
+            """,
+            "alter_sql": "ALTER TABLE users ADD COLUMN grace_quotes_used INTEGER DEFAULT 0"
+        },
+        {
+            "table": "quotes",
+            "column": "is_grace_quote",
+            "check_sql": """
+                SELECT column_name FROM information_schema.columns
+                WHERE table_name = 'quotes' AND column_name = 'is_grace_quote'
+            """,
+            "alter_sql": "ALTER TABLE quotes ADD COLUMN is_grace_quote BOOLEAN DEFAULT FALSE"
+        },
     ]
 
     # Constraint changes (PostgreSQL only - SQLite doesn't support these)
