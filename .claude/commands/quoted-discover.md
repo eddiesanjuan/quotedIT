@@ -12,17 +12,23 @@ Unlike the execution layer which clears a backlog, discovery **creates** the bac
 
 ### Phase 0: State Assessment
 
-Read all state files to understand the current situation:
+Read state files to understand the current situation (files split for readability):
+
+**Start here:**
+- `ENGINEERING_STATE.md` - Active work only (~100 lines) - READ FIRST
+
+**Then context files:**
+- `DISCOVERY_BACKLOG.md` - All DISC-XXX items, existing discoveries (~300 lines)
+- `DEPLOYMENT_LOG.md` - Recent deployments (~100 lines)
 - `COMPANY_STATE.md` - Strategic overview, current goals
-- `ENGINEERING_STATE.md` - What's built, what's deployed
 - `BETA_SPRINT.md` - Current sprint goals and metrics
 - `DECISION_QUEUE.md` - Pending decisions
-- `ACTION_LOG.md` - Recent work done
 
 Key questions:
 - What's our current sprint goal? (e.g., "100 users by Dec 16")
 - What's working? What's not?
 - What gaps exist between current state and goals?
+- What discoveries are already in the backlog? (Avoid duplicates)
 
 ### Phase 1: Discovery Council (Parallel)
 
@@ -65,14 +71,16 @@ After all agents return:
    - Impact/Effort ratio = score
 4. **Generate task tickets** for top discoveries
 
-### Phase 3: Output to Engineering State
+### Phase 3: Output to Discovery Backlog
 
-Write discovered tasks to `ENGINEERING_STATE.md` in the backlog section with:
-- Ticket ID (DISC-XXX)
+Write discovered tasks to `DISCOVERY_BACKLOG.md` in the "Discovered (Awaiting Review)" section with:
+- Ticket ID (DISC-XXX) - Use next available number
 - Title and description
 - Priority based on scoring
 - Source (which discovery agent)
 - Status: `DISCOVERED` (not `READY` - awaiting founder review)
+
+**Also update the Summary table** at the top of `DISCOVERY_BACKLOG.md` with new counts.
 
 Format:
 ```markdown
@@ -116,7 +124,7 @@ Current State: [Brief status]
 - [Any strategic questions that emerged]
 
 ---
-Next: Review DISC-XXX tasks in ENGINEERING_STATE.md
+Next: Review DISC-XXX tasks in DISCOVERY_BACKLOG.md
 Approve by changing status from DISCOVERED → READY
 Then run `/quoted-run` to execute
 ```
