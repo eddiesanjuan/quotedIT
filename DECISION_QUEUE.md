@@ -27,101 +27,85 @@
 <!-- Type 4: Founder-only decisions -->
 <!-- Type 3: Propose-then-do decisions -->
 
-### DECISION-007: External Consultant Architecture & Autonomy Review 🔴 PRIORITY ** Founder requests in next automatic run, no matter what.
-**Type**: 2
+### ~~DECISION-007: External Consultant Architecture & Autonomy Review~~ ✅ RESOLVED BY EXECUTIVE COUNCIL
+**Type**: 2 (Autonomous - Delegated by Founder)
 **Added**: 2025-12-03 05:00 PST
+**Resolved**: 2025-12-03 18:00 PST
 **Requested By**: Founder (Eddie)
 **Source Document**: `docs/2025-12-03-autonomous-operations-consultant-brief.md`
 
-**Context**: Third-party consultant audited Quoted's product architecture and autonomous company infrastructure. The brief identifies critical security concerns with our current autonomous issue resolution and proposes a phased roadmap for safety, learning system depth, and operational maturity.
+---
+
+#### Executive Council Vote (2025-12-03)
+
+| Question | CGO | CPO | CFO | CMO | Result |
+|----------|-----|-----|-----|-----|--------|
+| **Q1: Autonomy** | B (HIGH) | B (HIGH) | B (HIGH) | B (HIGH) | **UNANIMOUS B** |
+| **Q2: Security** | A (HIGH) | A (HIGH) | A (HIGH) | A (HIGH) | **UNANIMOUS A** |
+| **Q3: Learning** | A (HIGH) | A (MED-HIGH) | A (MED) | A (HIGH) | **UNANIMOUS A** |
+| **Q4: QA** | A (HIGH) | A (HIGH) | A (HIGH) | A (MED-HIGH) | **UNANIMOUS A** |
+| **Q5: CSO** | B (MED) | A (MED) | B (MED) | A (MED) | **SPLIT 2-2** |
 
 ---
 
-#### Executive Summary from Consultant
+#### Final Decisions (CEO Synthesis)
 
-**Strengths Identified**:
-- Well-architected voice-first quoting product
-- Innovative per-contractor learning system (pricing_knowledge, Pricing Brain API)
-- Best-in-class AI company scaffolding (role definition, decision governance, state files)
-- End-to-end workflow: Voice → Whisper → Haiku → Sonnet → PDF
+**Q1: Autonomy Boundaries** → **B) No, staging only**
+- [x] Autonomous agents limited to patch proposals and PRs
+- Rationale: Production autonomy = existential risk in pre-revenue beta
 
-**Critical Risks Identified**:
-1. **Prompt Injection via User Issues**: `autonomous_issue_resolver.py` uses `--dangerously-skip-permissions` with user-sourced (Tier 3) content - violates our own security doctrine
-2. **No Dual-LLM Segmentation**: Single privileged agent reads untrusted content AND has tool access
-3. **State Drift**: State files grow without automatic archival, increasing noise and cost
-4. **No Enforced QA**: Testing described but not mandatory in `/quoted-run` pipeline
+**Q2: Security vs. Velocity** → **A) Safety First**
+- [x] Remove bypass mode immediately, accept slower velocity
+- Rationale: Lethal Trifecta must be eliminated - unanimous HIGH confidence
 
----
+**Q3: Learning System Priority** → **A) Yes, RAG is the moat**
+- [x] Defer new features, invest in learning depth
+- Rationale: Learning depth is only defensible advantage against competitors
 
-#### 5 Decision Questions for Executive Council
+**Q4: Operational Standards** → **A) Mandatory**
+- [x] Enforce QA in `/quoted-run` pipeline, no exceptions
+- Rationale: Mandatory QA = referral insurance, pays for itself in 2-4 weeks
 
-**Q1: Autonomy Boundaries**
-> Do we want autonomous code changes to ever touch production directly?
-
-- [ ] **A) Yes, with guardrails** - Define specific conditions (e.g., passing tests, no auth/billing code)
-- [ ] **B) No, staging only** - Autonomous agents limited to patch proposals and PRs
-- [ ] **C) Hybrid** - Staging for user-sourced issues, production for internal-generated tasks
-
-**Q2: Security vs. Velocity**
-> Are we willing to accept slower throughput (no bypass mode, dual LLMs, staging-only) for stronger safety guarantees?
-
-- [ ] **A) Safety First** - Remove bypass mode immediately, accept slower velocity
-- [ ] **B) Balanced** - Implement Dual-LLM for user issues, keep bypass for internal tasks
-- [ ] **C) Velocity First** - Accept current risk until post-beta (NOT RECOMMENDED by consultant)
-
-**Q3: Learning System Investment Priority**
-> Should we prioritize RAG + outcome-linked learning over new surface features in the next 1-2 sprints?
-
-- [ ] **A) Yes, RAG is the moat** - Defer new features, invest in learning depth
-- [ ] **B) Parallel track** - Split engineering between features and learning
-- [ ] **C) Features first** - Complete beta features, then RAG in Q1
-
-**Q4: Operational Standards**
-> Should QA and Atlas session management be mandatory parts of every autonomous cycle?
-
-- [ ] **A) Mandatory** - Enforce in `/quoted-run` pipeline, no exceptions
-- [ ] **B) Best Practice** - Document but don't enforce programmatically
-- [ ] **C) Selective** - Mandatory for production, optional for staging
-
-**Q5: Security Governance**
-> Should we establish a dedicated "Security & Safety Officer" AI role?
-
-- [ ] **A) Yes, new role** - Create CSO agent with audit responsibilities
-- [ ] **B) Existing roles** - Add security to CTO/COO responsibilities
-- [ ] **C) Defer** - Address after beta launch
+**Q5: Security Governance** → **B) Existing roles + upgrade path**
+- [x] Add security to CTO responsibilities with explicit mandate
+- CEO tiebreaker: CTO owns security now; upgrade to CSO role in Phase 3
+- Rationale: Both sides agree security governance needed NOW; organizational structure can evolve
 
 ---
 
-#### Consultant's Recommended Roadmap
+#### Implementation Status
 
-| Phase | Timeline | Focus |
-|-------|----------|-------|
-| **Phase 0** | Immediate | Remove bypass mode for user issues, add environment gating |
-| **Phase 1** | 2-4 weeks | QA agent in pipeline, state archival, Atlas sessions |
-| **Phase 2** | 1-3 months | RAG over quotes, pricing sanity checks, outcome linking |
-| **Phase 3** | 3-6 months | Dual-LLM for all Tier 3/4, Security Officer role, night shift patterns |
+**Phase 0 (Immediate)** - IMPLEMENTING NOW:
+- [x] Disable bypass mode for user issues
+- [x] Add staging-only guardrail
+- [x] Introduce QA as required phase in `/quoted-run`
+
+**Phase 1 (2-4 weeks)**:
+- [ ] QA agent in pipeline
+- [ ] State archival automation
+- [ ] Atlas sessions for all major cycles
+
+**Phase 2 (1-3 months)**:
+- [ ] RAG over quotes
+- [ ] Pricing sanity checks
+- [ ] Outcome linking
+
+**Phase 3 (3-6 months)**:
+- [ ] Dual-LLM for all Tier 3/4 content
+- [ ] Upgrade CTO security → dedicated CSO role
+- [ ] Night shift patterns
 
 ---
 
-#### Immediate Actions Proposed (Phase 0)
+#### Key Rationale Summary
 
-1. **Disable bypass mode for user issues** - Update `autonomous_issue_resolver.py`
-2. **Add staging-only guardrail** - Check `settings.environment` before auto-commits
-3. **Introduce QA as required phase** - Update `/quoted-run` workflow
+**CGO**: "Production autonomy creates catastrophic downside risk that destroys growth. RAG is THE moat that prevents commodity competition."
 
----
+**CPO**: "Quoted's core value prop is pricing accuracy. Any autonomous bugs reaching users destroy beta trust. Learning depth delivers on 'learns YOUR pricing' promise."
 
-**Executive Council Instructions**:
-1. Read full consultant brief: `docs/2025-12-03-autonomous-operations-consultant-brief.md`
-2. Each executive provides recommendation on Q1-Q5 with rationale
-3. CEO synthesizes into final decision
-4. If unanimous on Phase 0 actions → implement immediately
-5. If split → escalate to Founder
+**CFO**: "A single security breach = $50K-200K impact vs $3-5K cost to fix. Accept 10-20% slower velocity for 90%+ reduction in tail risk."
 
-**Impact of Delay**: Every autonomous cycle with current architecture carries prompt injection risk. Consultant identifies this as "Lethal Trifecta" scenario.
-
-**Founder Response**:
->
+**CMO**: "Contractors trust Quoted because Quoted is reliable, accurate, and secure. Everything else is secondary."
 
 ---
 

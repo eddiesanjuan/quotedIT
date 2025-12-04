@@ -1750,7 +1750,7 @@ GET /api/billing/plans - Available pricing (public)
 
 ---
 
-### DISC-028: PDF Quote Template Library (DISCOVERED) 🎨 Premium Differentiation
+### DISC-028: PDF Quote Template Library (READY) 🎨 Premium Differentiation
 
 **Source**: Founder's Wife (2025-12-03) - great product intuition!
 **Impact**: HIGH | **Effort**: L | **Score**: 0.75

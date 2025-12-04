@@ -107,7 +107,13 @@ The original monolithic prompt approach had issues:
 - Phase 0: Executive Council (CGO, CPO, CFO, CMO) evaluates and prioritizes READY tasks
 - Phase 1: CEO synthesizes recommendations, selects work
 - Phase 2: Execution agents (Backend, Frontend, Content) implement in parallel
+- **Phase 2.5: QA VERIFICATION (MANDATORY per DECISION-007)**
+  - Run `pytest` for any backend changes
+  - Verify frontend renders correctly
+  - Check for regressions in core flows
 - Phase 3: Update state, commit, push, loop until backlog empty
+
+> ⚠️ **SECURITY (DECISION-007)**: QA is mandatory, not optional. No commits without verification.
 
 ---
 
