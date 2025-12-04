@@ -33,7 +33,8 @@ from ..services import (
 from ..services.auth import get_current_user, get_db
 from ..services.billing import BillingService
 from ..services.analytics import analytics_service
-from ..models.database import Quote, async_session_factory
+from ..models.database import Quote
+from ..services.database import async_session_factory
 
 
 router = APIRouter()
