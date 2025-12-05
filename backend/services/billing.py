@@ -253,6 +253,13 @@ class BillingService:
             )
 
         # Find price with matching interval
+        # Debug: Log all prices to understand configuration
+        print(f"[DEBUG] {plan_tier} has {len(prices.data)} prices:")
+        for i, p in enumerate(prices.data):
+            usage_type = p.recurring.usage_type if p.recurring else "one-time"
+            interval = p.recurring.interval if p.recurring else "N/A"
+            print(f"  [{i}] {p.id}: {interval}, usage_type={usage_type}, amount={p.unit_amount}")
+
         matching_price = None
         for price in prices.data:
             if price.recurring and price.recurring.interval == stripe_interval:

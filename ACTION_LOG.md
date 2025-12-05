@@ -8,9 +8,11 @@
 
 | Time | Agent | Action | Type | Result |
 |------|-------|--------|------|--------|
+| 16:45 | CEO | DISC-050 FIXED: Metered Stripe prices cannot have quantity param | Type 2 | Deployed 775f68a |
+| 16:30 | CEO | DISC-050 investigation: Used Playwright to test checkout, found real error | Type 1 | Root cause: metered prices |
 | 16:00 | CEO | Cycle 3: Pushed DISC-032 + DISC-050 (partial) to production | Type 2 | Deployed 50c2894, 143cc47 |
 | 15:55 | Full Stack Engineer | Implemented DISC-032 (Autosave Quote Drafts) | Type 2 | Committed 50c2894 |
-| 15:55 | Full Stack Engineer | DISC-050 Root Cause: Stripe prices not configured | Type 2 | Committed 143cc47 (error handling) |
+| 15:55 | Full Stack Engineer | DISC-050 Initial diagnosis: Stripe prices not configured (WRONG) | Type 2 | Committed 143cc47 (error handling) |
 | 15:45 | CEO | Cycle 3 Executive Council: 4/4 UNANIMOUS on DISC-050, DISC-032 | Type 1 | Selected 2 tasks |
 | 15:30 | CEO | Cycle 2: Pushed DISC-031 + DISC-038 to production | Type 2 | Deployed 90abdc6, 761b7be |
 | 15:25 | Full Stack Engineer | Implemented DISC-038 (Duplicate Quote Template) | Type 2 | Committed 761b7be |

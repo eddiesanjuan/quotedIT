@@ -22,11 +22,11 @@ To approve: Change status from DISCOVERED → READY
 
 | Status | Count |
 |--------|-------|
-| DEPLOYED | 26 |
+| DEPLOYED | 27 |
 | COMPLETE | 0 |
 | READY | 6 |
 | DISCOVERED | 16 |
-| **Total** | **48** |
+| **Total** | **49** |
 
 **Phase II Voice Control**: 8 tickets (DISC-042 through DISC-049) awaiting executive review
 
@@ -290,24 +290,25 @@ To approve: Change status from DISCOVERED → READY
 
 ---
 
-### DISC-050: Pricing Page Plan Buttons Not Working 🔴 FOUNDER ACTION (STRIPE CONFIG)
+
+### DISC-051: Quote Confidence Badge Positioning (READY) 🐛
 
 **Source**: Founder Request (Eddie, 2025-12-05)
-**Impact**: HIGH | **Effort**: S | **Score**: 3.0
-**Sprint Alignment**: Critical conversion blocker - users cannot purchase Starter or Team plans
-**Code Commit**: `143cc47` (2025-12-05) - Error handling deployed
+**Impact**: MEDIUM | **Effort**: S | **Score**: 2.0
+**Sprint Alignment**: UX polish - confidence indicator should be visible, not hidden
 
-**Root Cause Found**: Starter and Team products don't have active prices configured in Stripe Dashboard. Pro works because it has prices.
+**Problem**: The quote confidence badge (e.g., "MEDIUM CONFIDENCE") is incorrectly positioned. On desktop, it hides behind the header. On mobile, it's better but still partially clipped by the header.
 
-**⚠️ FOUNDER ACTION REQUIRED**:
-Configure active prices in Stripe Dashboard:
-1. Starter (`prod_TXB6SKP96LAlcM`): Add $19/month price
-2. Team (`prod_TXB6aO5kvAD4uV`): Add $79/month price
-3. See `/STRIPE_PRICE_SETUP.md` for step-by-step guide
+**Screenshot**: `/Users/eddiesanjuan/Downloads/Screenshot 2025-12-05 at 3.11.56 PM.png`
 
-**Code Fix Deployed**: Better error handling + user-friendly error messages
+**Proposed Work**:
+1. Inspect CSS positioning of confidence badge element
+2. Fix z-index or position to ensure it doesn't overlap with header
+3. Add proper margin-top or adjust placement so badge is fully visible
+4. Test on both desktop and mobile viewports
+5. Ensure badge doesn't interfere with other header elements
 
-**Success Metric**: All 3 plan buttons successfully redirect to Stripe checkout
+**Success Metric**: Confidence badge fully visible on both desktop and mobile without clipping
 
 ---
 
@@ -697,7 +698,10 @@ Quoted: [Shows comparison view]
 ## Completed & Deployed
 
 <details>
-<summary>Click to expand completed items (26 items)</summary>
+<summary>Click to expand completed items (27 items)</summary>
+
+### DISC-050: Pricing Page Plan Buttons Not Working ✅
+**Commit**: 775f68a | Root cause: metered Stripe prices can't have `quantity` param. Fixed billing.py to detect metered prices and exclude quantity. All 3 plans (Starter, Pro, Team) now redirect to Stripe Checkout correctly.
 
 ### DISC-032: Autosave Quote Drafts (Local Storage) ✅
 **Commit**: 50c2894 | 10-second autosave, recovery modal, PostHog tracking, 24-hour expiration
