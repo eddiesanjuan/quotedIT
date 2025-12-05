@@ -530,76 +530,6 @@
             opacity: 0.9;
         }
 
-        /* Share Section */
-        .share-section {
-            text-align: center;
-            padding: 32px 24px;
-            background: var(--bg-secondary);
-            border-radius: 12px;
-            margin-bottom: 48px;
-            opacity: 0;
-            transform: translateY(20px);
-            transition: all 0.5s ease;
-            pointer-events: none;
-        }
-
-        .share-section.visible {
-            opacity: 1;
-            transform: translateY(0);
-            pointer-events: auto;
-        }
-
-        .share-section h3 {
-            font-family: var(--font-serif);
-            font-size: 1.5rem;
-            font-weight: 500;
-            margin-bottom: 12px;
-        }
-
-        .share-section p {
-            color: var(--text-secondary);
-            margin-bottom: 24px;
-        }
-
-        .share-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        .share-btn {
-            padding: 12px 24px;
-            border: 1px solid var(--border);
-            background: transparent;
-            color: var(--text-primary);
-            font-family: var(--font-sans);
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            text-decoration: none;
-            min-height: 44px;
-        }
-
-        .share-btn:hover {
-            border-color: var(--text-primary);
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .share-btn svg {
-            width: 16px;
-            height: 16px;
-            flex-shrink: 0;
-        }
-
-        .share-btn.copied {
-            border-color: var(--success);
-            color: var(--success);
-        }
-
         .pause-icon, .play-icon {
             display: none;
         }
@@ -875,23 +805,6 @@
                 align-items: stretch;
             }
 
-            .share-section {
-                padding: 24px 16px;
-            }
-
-            .share-section h3 {
-                font-size: 1.25rem;
-            }
-
-            .share-buttons {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .share-btn {
-                justify-content: center;
-            }
-
             .conversion-modal {
                 padding: 32px 24px;
             }
@@ -1060,33 +973,6 @@
             <a href="/app" class="control-btn primary">
                 Start Your Free Trial
             </a>
-        </div>
-
-        <!-- Share Section -->
-        <div class="share-section" id="shareSection">
-            <h3>Share This Demo</h3>
-            <p>Help other contractors discover how voice-to-quote works</p>
-            <div class="share-buttons">
-                <button class="share-btn" onclick="copyDemoLink()">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                    </svg>
-                    <span id="copyLinkText">Copy Link</span>
-                </button>
-                <a class="share-btn" id="linkedinShareBtn" target="_blank" rel="noopener noreferrer">
-                    <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M20.5 2h-17A1.5 1.5 0 002 3.5v17A1.5 1.5 0 003.5 22h17a1.5 1.5 0 001.5-1.5v-17A1.5 1.5 0 0020.5 2zM8 19H5v-9h3zM6.5 8.25A1.75 1.75 0 118.3 6.5a1.78 1.78 0 01-1.8 1.75zM19 19h-3v-4.74c0-1.42-.6-1.93-1.38-1.93A1.74 1.74 0 0013 14.19a.66.66 0 000 .14V19h-3v-9h2.9v1.3a3.11 3.11 0 012.7-1.4c1.55 0 3.36.86 3.36 3.66z"></path>
-                    </svg>
-                    Share on LinkedIn
-                </a>
-                <a class="share-btn" id="twitterShareBtn" target="_blank" rel="noopener noreferrer">
-                    <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
-                    </svg>
-                    Share on X
-                </a>
-            </div>
         </div>
 
         <!-- CTA Section -->
@@ -1321,9 +1207,7 @@
 
             currentScene++;
             if (currentScene > 5) {
-                // Demo completed - show share section and conversion modal
-                showShareSection();
-
+                // Demo completed - show conversion modal after a short delay
                 setTimeout(function() {
                     showConversionModal();
                 }, 1000);
@@ -1374,96 +1258,8 @@
             }
         }
 
-        // Share functions
-        function showShareSection() {
-            var shareSection = document.getElementById('shareSection');
-            shareSection.classList.add('visible');
-            trackEvent('demo_share_section_shown', {
-                trigger: 'demo_completion'
-            });
-        }
-
-        function copyDemoLink() {
-            var demoUrl = 'https://quoted.it.com/demo?utm_source=demo_share';
-            var shareText = 'Just watched how @QuotedApp turns voice into quotes in 60 seconds - pretty wild for contractors! Try it: ' + demoUrl;
-
-            // Try to use Clipboard API first
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(demoUrl).then(function() {
-                    showCopyFeedback();
-                    trackEvent('demo_share_clicked', {
-                        platform: 'copy_link'
-                    });
-                }).catch(function(err) {
-                    fallbackCopy(demoUrl);
-                });
-            } else {
-                fallbackCopy(demoUrl);
-            }
-        }
-
-        function fallbackCopy(text) {
-            var textArea = document.createElement('textarea');
-            textArea.value = text;
-            textArea.style.position = 'fixed';
-            textArea.style.left = '-999999px';
-            document.body.appendChild(textArea);
-            textArea.select();
-            try {
-                document.execCommand('copy');
-                showCopyFeedback();
-                trackEvent('demo_share_clicked', {
-                    platform: 'copy_link'
-                });
-            } catch (err) {
-                console.error('Failed to copy:', err);
-            }
-            document.body.removeChild(textArea);
-        }
-
-        function showCopyFeedback() {
-            var copyBtn = document.getElementById('copyLinkText');
-            var originalText = copyBtn.textContent;
-            copyBtn.textContent = 'Copied!';
-            copyBtn.parentElement.classList.add('copied');
-
-            setTimeout(function() {
-                copyBtn.textContent = originalText;
-                copyBtn.parentElement.classList.remove('copied');
-            }, 2000);
-        }
-
-        function setupShareButtons() {
-            var demoUrl = encodeURIComponent('https://quoted.it.com/demo?utm_source=demo_share');
-            var shareText = encodeURIComponent('Just watched how @QuotedApp turns voice into quotes in 60 seconds - pretty wild for contractors!');
-
-            // LinkedIn share
-            var linkedinBtn = document.getElementById('linkedinShareBtn');
-            linkedinBtn.href = 'https://www.linkedin.com/sharing/share-offsite/?url=' + demoUrl;
-            linkedinBtn.onclick = function() {
-                trackEvent('demo_share_clicked', {
-                    platform: 'linkedin'
-                });
-            };
-
-            // Twitter/X share
-            var twitterBtn = document.getElementById('twitterShareBtn');
-            twitterBtn.href = 'https://twitter.com/intent/tweet?text=' + shareText + '&url=' + demoUrl;
-            twitterBtn.onclick = function() {
-                trackEvent('demo_share_clicked', {
-                    platform: 'twitter'
-                });
-            };
-
-            // Native share API for mobile (if available)
-            if (navigator.share) {
-                // Could add a native share button here if desired
-            }
-        }
-
         // Start the demo
         document.addEventListener('DOMContentLoaded', function() {
-            setupShareButtons();
             showScene(1);
             scheduleNextScene();
         });
