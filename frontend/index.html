@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>quoted.it - Voice to Quote</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230a0a0a'/%3E%3Ctext x='16' y='23' font-family='serif' font-size='20' font-weight='600' fill='white' text-anchor='middle'%3EQ%3C/text%3E%3C/svg%3E">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%230a0a0a'/%3E%3Ctext x='90' y='125' font-family='serif' font-size='110' font-weight='600' fill='white' text-anchor='middle'%3EQ%3C/text%3E%3C/svg%3E">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -450,6 +455,49 @@
             align-items: center;
             gap: 20px;
             width: 100%;
+        }
+
+        /* Transcription Preview */
+        .transcription-preview {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .preview-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 24px;
+        }
+
+        .transcription-textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 16px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: var(--font-sans);
+            font-size: 1rem;
+            line-height: 1.6;
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+            resize: vertical;
+            margin-bottom: 24px;
+        }
+
+        .transcription-textarea:focus {
+            outline: none;
+            border-color: var(--text-primary);
+        }
+
+        .preview-actions {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-icon {
+            font-size: 1rem;
         }
 
         /* Buttons */
@@ -2063,6 +2111,19 @@
                 padding: 12px 24px;
                 font-size: 0.8125rem;
             }
+
+            .transcription-preview {
+                padding: 24px 16px;
+            }
+
+            .preview-actions {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .preview-actions .btn {
+                width: 100%;
+            }
         }
 
         /* Billing & Pricing Styles */
@@ -3117,7 +3178,7 @@
 <body>
     <!-- Navigation -->
     <nav>
-        <a href="/" class="logo">quoted<span>.it</span></a>
+        <a href="/" class="logo">Quoted™<span>.it</span></a>
         <div class="nav-right" id="navRight" style="display: none;">
             <div class="app-nav" id="appNav" style="display: none;">
                 <button class="app-nav-btn active" id="newQuoteNavBtn" onclick="showAppSection('newQuote')">New Quote</button>
@@ -3391,7 +3452,28 @@
             <!-- Loading State -->
             <div class="card loading" id="loadingSection">
                 <div class="spinner"></div>
-                <p class="loading-text">Generating your quote...</p>
+                <p class="loading-text" id="loadingText">Generating your quote...</p>
+            </div>
+
+            <!-- Transcription Preview Section -->
+            <div class="card transcription-preview" id="transcriptionPreview" style="display: none;">
+                <h2 class="card-title" style="font-family: var(--font-serif); font-weight: 400;">Review your transcription</h2>
+                <p class="preview-subtitle">Edit any mistakes before generating your quote</p>
+
+                <textarea
+                    id="transcriptionText"
+                    class="transcription-textarea"
+                    placeholder="Your transcription will appear here..."
+                ></textarea>
+
+                <div class="preview-actions">
+                    <button class="btn btn-secondary" onclick="reRecord()">
+                        <span class="btn-icon">🎤</span> Re-record
+                    </button>
+                    <button class="btn btn-primary" onclick="generateFromTranscription()">
+                        Generate Quote
+                    </button>
+                </div>
             </div>
 
             <!-- Error Message -->
@@ -3617,7 +3699,7 @@
                     <button class="account-tab-btn active" id="billingTabBtn" onclick="showAccountTab('billing')">Billing</button>
                     <button class="account-tab-btn" id="referralTabBtn" onclick="showAccountTab('referral')">Referral</button>
                     <button class="account-tab-btn" id="logoTabBtn" onclick="showAccountTab('logo')">Business Logo</button>
-                    <button class="account-tab-btn" id="pricingBrainTabBtn" onclick="showAccountTab('pricingBrain')">Pricing Brain</button>
+                    <button class="account-tab-btn" id="pricingBrainTabBtn" onclick="showAccountTab('pricingBrain')">Pricing Brain™</button>
                 </div>
 
                 <!-- Billing Tab Content -->
@@ -3885,7 +3967,7 @@
                         <!-- Empty state -->
                         <div class="empty-state" id="categoriesEmptyState" style="display: none;">
                             <div class="empty-icon">🧠</div>
-                            <h3>Your Pricing Brain is learning</h3>
+                            <h3>Your Pricing Brain™ is learning</h3>
                             <p>Generate a few quotes and the AI will start learning your pricing patterns.</p>
                             <p class="subtext">Every correction you make teaches the AI how YOU price jobs.</p>
                             <button class="cta-button" onclick="showAppSection('newQuote')">Generate a Quote to Start Learning</button>
@@ -4670,7 +4752,7 @@
 
                     mediaRecorder.onstop = async () => {
                         const audioBlob = new Blob(audioChunks, { type: mimeType || 'audio/webm' });
-                        await sendAudioForQuote(audioBlob);
+                        await sendAudioForTranscription(audioBlob);
                         stream.getTracks().forEach(track => track.stop());
                     };
 
@@ -4695,16 +4777,15 @@
             }
         }
 
-        // Send audio
-        async function sendAudioForQuote(audioBlob) {
-            showLoading(true);
+        // Send audio for transcription only (step 1 of voice flow)
+        async function sendAudioForTranscription(audioBlob) {
+            showLoading(true, 'Transcribing...');
 
             try {
                 const formData = new FormData();
                 formData.append('audio', audioBlob, 'recording.webm');
-                formData.append('contractor_id', currentUser?.contractor_id || 'default');
 
-                const response = await fetch(`${API_BASE}/quotes/generate-from-audio`, {
+                const response = await fetch(`${API_BASE}/quotes/transcribe`, {
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${authToken}` },
                     body: formData,
@@ -4712,19 +4793,18 @@
 
                 if (!response.ok) {
                     const error = await response.json();
-                    throw new Error(error.detail || 'Failed to generate quote');
+                    throw new Error(error.detail || 'Failed to transcribe audio');
                 }
 
-                const quote = await response.json();
-                displayQuote(quote);
+                const result = await response.json();
+                showTranscriptionPreview(result.text);
 
-                // Track quote generation from voice
+                // Track transcription complete
                 {% if posthog_api_key %}
                 if (window.posthog) {
-                    posthog.capture('quote_generated', {
-                        quote_id: quote.id,
-                        total: quote.total,
-                        input_method: 'voice'
+                    posthog.capture('transcription_complete', {
+                        duration: result.duration,
+                        text_length: result.text?.length || 0
                     });
                 }
                 {% endif %}
@@ -4735,6 +4815,45 @@
                 showLoading(false);
                 document.getElementById('recordInstructions').textContent = 'Click to start recording your voice note';
             }
+        }
+
+        // Show transcription preview for review/edit
+        function showTranscriptionPreview(text) {
+            document.getElementById('inputSection').style.display = 'none';
+            document.getElementById('transcriptionPreview').style.display = 'block';
+            document.getElementById('transcriptionText').value = text;
+            document.getElementById('transcriptionText').focus();
+        }
+
+        // Re-record: go back to input section
+        function reRecord() {
+            document.getElementById('transcriptionPreview').style.display = 'none';
+            document.getElementById('inputSection').style.display = 'block';
+            document.getElementById('transcriptionText').value = '';
+
+            // Track re-record
+            {% if posthog_api_key %}
+            if (window.posthog) {
+                posthog.capture('transcription_rerecord');
+            }
+            {% endif %}
+        }
+
+        // Generate quote from reviewed/edited transcription
+        async function generateFromTranscription() {
+            const transcription = document.getElementById('transcriptionText').value.trim();
+
+            if (!transcription) {
+                showError('Please enter or record a job description');
+                return;
+            }
+
+            // Hide preview, populate the main textarea, and generate
+            document.getElementById('transcriptionPreview').style.display = 'none';
+            document.getElementById('jobDescription').value = transcription;
+
+            // Use existing generateQuote function
+            await generateQuote();
         }
 
         // Generate quote from text
@@ -5018,7 +5137,9 @@
         function newQuote() {
             currentQuoteId = null;
             document.getElementById('jobDescription').value = '';
+            document.getElementById('transcriptionText').value = '';
             document.getElementById('inputSection').style.display = 'block';
+            document.getElementById('transcriptionPreview').style.display = 'none';
             const quoteResult = document.getElementById('quoteResult');
             quoteResult.classList.remove('active');
             quoteResult.style.display = '';  // Clear inline style, let CSS control
@@ -6317,9 +6438,11 @@
         }
 
         // UI helpers
-        function showLoading(show) {
+        function showLoading(show, message = 'Generating your quote...') {
             document.getElementById('inputSection').style.display = show ? 'none' : 'block';
+            document.getElementById('transcriptionPreview').style.display = 'none';
             document.getElementById('loadingSection').classList.toggle('active', show);
+            document.getElementById('loadingText').textContent = message;
         }
 
         function showError(message) {
