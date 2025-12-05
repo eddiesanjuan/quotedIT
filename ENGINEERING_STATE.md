@@ -17,6 +17,30 @@
 
 ---
 
+## ⚠️ Current Product Reality (AGENTS MUST READ)
+
+**Last verified**: 2025-12-04
+
+This section is the **authoritative source** for what features actually exist in production. Some planning documents contain aspirational specs that were never built. Always check here first.
+
+| Feature | Status | Reality |
+|---------|--------|---------|
+| **Demo mode** | ANIMATION ONLY | `demo.html` shows animated walkthrough. Does NOT generate quotes. Users must sign up to use product. |
+| **Quote generation** | ✅ WORKING | Voice → AI → PDF quote generation is fully functional |
+| **Magic link auth** | ✅ WORKING | Email-based passwordless login |
+| **Stripe billing** | ✅ WORKING | Starter/Pro/Team plans, trial tracking |
+| **Referral system** | ✅ WORKING | Referral codes, share link, rewards |
+| **Pricing brain** | ✅ WORKING | Category management, AI analysis, learning |
+| **PostHog analytics** | ✅ WORKING | Event tracking, funnels |
+| **First quote celebration** | ✅ WORKING | Confetti modal on first quote |
+| **PDF download** | ✅ WORKING | Professional PDF generation |
+
+**Common misunderstandings**:
+- "Demo mode" ≠ "try before signup". The demo is an animation showing how the product works, NOT functional quote generation without auth.
+- Some specs in `BETA_SPRINT.md` describe planned features that were never fully implemented.
+
+---
+
 ## Current Sprint
 
 **Sprint**: 2 (100 Users)

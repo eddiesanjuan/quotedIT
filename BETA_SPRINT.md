@@ -14,7 +14,7 @@ The product is technically functional but missing critical infrastructure for gr
 |----------|--------|------------------------|
 | **Error Tracking** | MISSING | Can't detect/fix issues before users report |
 | **Analytics** | MISSING | Can't measure conversion or identify dropoff |
-| **Demo Mode** | MISSING | Friction: must signup before trying product |
+| **Demo Mode** | PARTIAL (animation only) | See note below - animation walkthrough exists, not functional demo |
 | **Referral System** | MISSING | No viral growth mechanism |
 | **Share Quotes** | MISSING | Can't easily send quotes to customers |
 | **Mobile UX** | PARTIAL | Contractors use phones on job sites |
@@ -45,7 +45,7 @@ The product is technically functional but missing critical infrastructure for gr
 |--------|-------------|-------|--------------|
 | **INFRA-001** | Sentry Error Tracking | 2h | Can't fix what we can't see |
 | **INFRA-002** | Basic Analytics (PostHog) | 4h | Can't optimize without data |
-| **GROWTH-001** | Demo Mode (Try Before Signup) | 6h | Removes biggest conversion barrier |
+| **GROWTH-001** | Demo Mode (Try Before Signup) | 6h | ⚠️ PARTIAL: Animation exists, functional demo NOT built |
 | **UX-001** | Mobile Responsiveness Audit | 4h | Contractors use phones on job sites |
 
 ### Tier 2: Growth Levers
@@ -180,9 +180,15 @@ feature_used (feature_name)
 **Scope**: Frontend + Backend (6h)
 **Dependencies**: None
 
+> ⚠️ **STATUS UPDATE (2025-12-04)**: This feature was PARTIALLY implemented.
+> - **What EXISTS**: `demo.html` is an **animation walkthrough** showing how the product works
+> - **What DOES NOT EXIST**: Functional quote generation without signup (the spec below was never built)
+> - **Current reality**: Users see an animated demonstration, then must sign up to actually use the product
+> - Agents should NOT reference this as "try before signup" - it's "watch before signup"
+
 **Problem**: Users must create account and complete 5-15 min onboarding before seeing if product works. High friction = low conversion.
 
-**Solution**: 2-minute demo that generates a real quote without signup.
+**Solution (PLANNED, NOT IMPLEMENTED)**: 2-minute demo that generates a real quote without signup.
 
 **Demo Flow**:
 1. Landing page: "Try it now - no signup required" button
@@ -464,7 +470,7 @@ feature_used (feature_name)
 - INFRA-001: Sentry (Day 1-2)
 - INFRA-002: Analytics (Day 2-3)
 - UX-001: Mobile audit (Day 3-4)
-- GROWTH-001: Demo mode (Day 4-6)
+- GROWTH-001: Demo mode (Day 4-6) - ⚠️ Animation walkthrough exists; full functional demo NOT built
 
 **Week 2 (Dec 9-16): Growth**
 - GROWTH-002: Referrals (Day 1-2)
@@ -489,10 +495,11 @@ feature_used (feature_name)
    - Each user refers 1.3 users on average
    - 30 initial × 1.3 referral rate = ~40 additional
 
-3. **Demo Conversion (30 users)**
-   - Share demo link on social/forums
+3. **Animation → Signup Conversion (30 users)**
+   - Share animated demo link on social/forums
    - Contractor subreddits, Facebook groups
-   - 300 demo tries × 10% conversion = 30 users
+   - NOTE: Demo is animation walkthrough, NOT functional quote generation
+   - Users watch animation, then decide to sign up
 
 **Total**: 30 + 40 + 30 = 100 users
 
@@ -517,7 +524,7 @@ Sprint is complete when:
 - [ ] GROWTH-002, GROWTH-003, UX-002, CONTENT-001 deployed (Tier 2)
 - [ ] Conversion funnel visible in analytics
 - [ ] 0 unhandled errors in Sentry for 24h
-- [ ] Demo mode tested and live
+- [ ] Animation demo (demo.html) drives signups (functional demo spec NOT implemented)
 - [ ] Referral system generating codes
 
 ---

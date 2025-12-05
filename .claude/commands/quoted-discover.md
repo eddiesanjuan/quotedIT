@@ -16,12 +16,13 @@ Read state files to understand the current situation (files split for readabilit
 
 **Start here:**
 - `ENGINEERING_STATE.md` - Active work only (~100 lines) - READ FIRST
+  - ⚠️ **CRITICAL**: Read the "Current Product Reality" section before making ANY assumptions about what features exist
 
 **Then context files:**
 - `DISCOVERY_BACKLOG.md` - All DISC-XXX items, existing discoveries (~300 lines)
 - `DEPLOYMENT_LOG.md` - Recent deployments (~100 lines)
 - `COMPANY_STATE.md` - Strategic overview, current goals
-- `BETA_SPRINT.md` - Current sprint goals and metrics
+- `BETA_SPRINT.md` - Current sprint goals and metrics (NOTE: Some specs are aspirational, not implemented)
 - `DECISION_QUEUE.md` - Pending decisions
 
 Key questions:
@@ -29,6 +30,7 @@ Key questions:
 - What's working? What's not?
 - What gaps exist between current state and goals?
 - What discoveries are already in the backlog? (Avoid duplicates)
+- **What features actually exist** vs. what was planned? (Check Current Product Reality table)
 
 ### Phase 1: Discovery Council (Parallel)
 
@@ -136,6 +138,18 @@ Then run `/quoted-run` to execute
 3. **Founder review gate** - DISCOVERED status means "proposed, not approved"
 4. **Sprint-aligned** - Prioritize discoveries that help current sprint goals
 5. **Diverse perspectives** - Three agents catch different opportunity types
+6. **Reality-based** - NEVER assume features exist based on specs; always verify against Current Product Reality table
+7. **Production health is critical** - Any proposed changes must not break existing functionality
+
+## Production Safety
+
+**Production is now live with real users.** All discoveries that become execution work must follow these safety rules:
+
+1. **Verify before assuming** - Check `ENGINEERING_STATE.md` → "Current Product Reality" for what actually exists
+2. **Test before deploy** - Run `/run-qa smoke` before any deployment
+3. **Incremental changes** - Prefer small, testable changes over large refactors
+4. **Rollback plan** - Every change should be easy to revert
+5. **Monitor after deploy** - Check Railway logs and PostHog for issues post-deployment
 
 ## When to Run
 

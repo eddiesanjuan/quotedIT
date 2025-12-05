@@ -19,7 +19,7 @@ Read these files for context:
 ### 1. Acquisition
 How do users find us?
 - Organic channels (SEO, word of mouth)
-- Demo conversion (try before signup)
+- Animation demo → signup (demo.html is animation walkthrough, NOT functional quote generation)
 - Landing page optimization
 - Content/social opportunities
 
