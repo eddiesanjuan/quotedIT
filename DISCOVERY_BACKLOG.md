@@ -1,6 +1,6 @@
 # Discovery Backlog
 
-**Last Updated**: 2025-12-03
+**Last Updated**: 2025-12-04
 **Source**: `/quoted-discover` autonomous discovery cycles
 
 ---
@@ -25,8 +25,8 @@ To approve: Change status from DISCOVERED → READY
 | DEPLOYED | 20 |
 | COMPLETE | 2 |
 | READY | 5 |
-| DISCOVERED | 13 |
-| **Total** | **40** |
+| DISCOVERED | 14 |
+| **Total** | **41** |
 
 ---
 
@@ -349,6 +349,29 @@ To approve: Change status from DISCOVERED → READY
 4. This becomes "reason not to switch" even if competitor launches voice
 
 **Success Metric**: 40%+ of Pro tier users enable QuickBooks sync; Users with integration active have 3x lower churn
+
+---
+
+### DISC-041: Prompt Injection Learning Optimization 🧠 BRAINSTORM (DISCOVERED)
+
+**Source**: Founder Request (Eddie)
+**Impact**: HIGH | **Effort**: M | **Score**: 0.85
+**Sprint Alignment**: Core learning system enhancement. Next strategic R&D cycle.
+
+**Problem**: Current learning system uses prompt injection to teach Claude about contractor pricing patterns. This works but could be significantly smarter. Need executive brainstorm on:
+1. How to better structure injected context for model comprehension
+2. Optimal format for learned adjustments (JSON vs natural language)
+3. Memory efficiency - which patterns provide most signal per token
+4. Feedback loop optimization - getting better faster with less data
+
+**Proposed Work**:
+1. Executive team brainstorm session on prompt engineering improvements
+2. Research latest Claude prompt optimization techniques
+3. A/B test different context injection formats
+4. Measure quote accuracy delta per approach
+5. Document optimal patterns for Quoted learning system
+
+**Success Metric**: 15% improvement in quote accuracy; 20% reduction in prompt tokens needed
 
 ---
 

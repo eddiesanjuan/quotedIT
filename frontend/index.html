@@ -2104,6 +2104,28 @@
                 padding: 24px 20px;
                 max-height: 85vh;
             }
+
+            /* Account tabs - horizontal scroll on mobile */
+            .account-tabs {
+                overflow-x: auto;
+                overflow-y: hidden;
+                white-space: nowrap;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;  /* Firefox */
+                -ms-overflow-style: none;  /* IE/Edge */
+                margin: 16px -16px 24px -16px;  /* Extend to card edges */
+                padding: 0 16px;
+            }
+
+            .account-tabs::-webkit-scrollbar {
+                display: none;  /* Chrome/Safari */
+            }
+
+            .account-tab-btn {
+                padding: 10px 16px;
+                font-size: 0.8125rem;
+                flex-shrink: 0;
+            }
         }
 
         /* Responsive - Tablet (641px - 768px) */
@@ -5090,6 +5112,9 @@
             document.getElementById('quoteResult').classList.add('active');
             hideError();
 
+            // Scroll to top so confidence badge is visible
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
             // DISC-018: Show grace quote modal if this was a grace quote
             if (quote.billing_info?.is_grace_quote) {
                 showGraceQuoteModal(quote.billing_info.grace_remaining);
@@ -6993,6 +7018,9 @@
             document.getElementById('myQuotesSection').style.display = 'none';
             document.getElementById('quoteDetailView').style.display = 'block';
 
+            // Scroll to top so confidence badge is visible
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
             let quote = quotesCache.find(q => q.id === quoteId);
             if (!quote) {
                 try {
@@ -7035,7 +7063,7 @@
             const confidence = quote.confidence || 'medium';
             const confidenceBadge = document.getElementById('detailConfidenceBadge');
             confidenceBadge.textContent = confidence.charAt(0).toUpperCase() + confidence.slice(1) + ' Confidence';
-            confidenceBadge.className = 'confidence-badge ' + confidence;
+            confidenceBadge.className = 'confidence-badge confidence-' + confidence;
 
             if (quote.notes) {
                 document.getElementById('detailQuoteNotes').style.display = 'block';
@@ -8776,7 +8804,7 @@
                 currentCategory = await response.json();
 
                 // Populate form
-                document.getElementById('editCategoryName').value = currentCategory.display_name || currentCategory.name;
+                document.getElementById('editCategoryName').value = currentCategory.display_name || currentCategory.category;
                 document.getElementById('editRateModifier').value = currentCategory.rate_modifier || 0;
                 document.getElementById('editLearnedRules').value = (currentCategory.learned_rules || []).join('\n');
 
@@ -8835,7 +8863,7 @@
             analyzeBtn.textContent = 'Analyzing...';
 
             try {
-                const response = await fetch(`${API_BASE}/pricing-brain/${encodeURIComponent(currentCategory.name)}/analyze`, {
+                const response = await fetch(`${API_BASE}/pricing-brain/${encodeURIComponent(currentCategory.category)}/analyze`, {
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${authToken}` }
                 });
@@ -8885,7 +8913,7 @@
                         .filter(rule => rule.length > 0)
                 };
 
-                const response = await fetch(`${API_BASE}/pricing-brain/${encodeURIComponent(currentCategory.name)}`, {
+                const response = await fetch(`${API_BASE}/pricing-brain/${encodeURIComponent(currentCategory.category)}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -8917,7 +8945,7 @@
         function confirmDeleteCategory() {
             if (!currentCategory) return;
 
-            const confirmed = confirm(`Are you sure you want to delete the "${currentCategory.display_name || currentCategory.name}" category?\n\nThis will remove all learned patterns and rules for this category. This action cannot be undone.`);
+            const confirmed = confirm(`Are you sure you want to delete the "${currentCategory.display_name || currentCategory.category}" category?\n\nThis will remove all learned patterns and rules for this category. This action cannot be undone.`);
 
             if (confirmed) {
                 deleteCategory();
@@ -8929,7 +8957,7 @@
             if (!currentCategory) return;
 
             try {
-                const response = await fetch(`${API_BASE}/pricing-brain/${encodeURIComponent(currentCategory.name)}`, {
+                const response = await fetch(`${API_BASE}/pricing-brain/${encodeURIComponent(currentCategory.category)}`, {
                     method: 'DELETE',
                     headers: { 'Authorization': `Bearer ${authToken}` }
                 });
