@@ -25,8 +25,10 @@ To approve: Change status from DISCOVERED → READY
 | DEPLOYED | 21 |
 | COMPLETE | 2 |
 | READY | 4 |
-| DISCOVERED | 14 |
-| **Total** | **41** |
+| DISCOVERED | 22 |
+| **Total** | **49** |
+
+**Phase II Voice Control**: 8 tickets (DISC-042 through DISC-049) awaiting executive review
 
 ---
 
@@ -353,6 +355,389 @@ To approve: Change status from DISCOVERED → READY
 5. Document optimal patterns for Quoted learning system
 
 **Success Metric**: 15% improvement in quote accuracy; 20% reduction in prompt tokens needed
+
+---
+
+## 🎯 Phase II: Voice-Controlled Professional's Paradise
+
+**Status**: DISCOVERED - Pending Executive Review
+**Source**: Founder Vision (Eddie, 2025-12-05)
+**Theme**: Transform Quoted from "voice input" to "fully voice-controlled" professional tool
+**Timeline**: Post-beta (Q1-Q2 2025)
+
+**Core Insight**: Contractors work from trucks and job sites, not desks. The natural evolution of Quoted is complete hands-free operation where complex workflows happen through natural language. Voice input was Phase I. Voice control is Phase II.
+
+**Strategic Value**: This creates a moat that's nearly impossible to replicate quickly. Competitors can copy "voice-to-text". They can't easily copy "understands 'add more fluff for a difficult customer' and modifies quote tone accordingly."
+
+---
+
+### DISC-042: Voice Command Interpreter Engine 🧠 PHASE II FOUNDATION (DISCOVERED)
+
+**Source**: Founder Vision (Phase II)
+**Impact**: CRITICAL | **Effort**: XL | **Score**: Strategic
+**Sprint Alignment**: Foundation for all Phase II features. Must be robust before other voice features.
+**Dependencies**: None (foundational)
+
+**Problem**: Current voice input is transcription-only. User speaks, AI transcribes, generates quote. No interpretation of commands or intent. Can't say "increase the deck by 10 feet" and have it actually happen.
+
+**Vision**: Natural language command processing that understands contractor intent and executes complex multi-step actions.
+
+**Example Commands to Support**:
+- CREATE: "Go ahead and make another quote for John Smith at 1234 Prospect Promenade"
+- MODIFY PARAMETERS: "Increase the size of his deck by 10 feet in each direction"
+- MODIFY TONE: "Edit this quote so it has a little bit more fluff because this customer is going to be difficult"
+- SEARCH: "Pull up the quote I did for the Johnsons last week"
+- DUPLICATE: "Clone this quote but change the address to 456 Oak Street"
+- SHARE: "Email this to the customer"
+
+**Technical Architecture**:
+1. **Intent Classification Layer**: Determine action type (create, edit, search, share, regenerate)
+2. **Entity Extraction**: Parse names, addresses, measurements, materials, descriptors
+3. **Context Resolution**: "His deck" refers to current quote's deck line item
+4. **Action Router**: Map intent + entities to specific backend actions
+5. **Confirmation Generation**: Create natural language confirmation before execution
+
+**Proposed Work**:
+1. Design intent taxonomy (10-15 core intents covering 95% of use cases)
+2. Build entity extraction pipeline (names, addresses, numbers with units, materials)
+3. Create context resolution system (current quote, recent history, customer relationships)
+4. Implement action router with confirmation loop
+5. Train/prompt-engineer Claude for command interpretation
+6. Build fallback to clarifying questions when intent is ambiguous
+
+**Success Metric**: 90% intent classification accuracy; <3% false-positive command execution; users prefer voice commands over clicking for 60%+ of actions
+
+**Executive Review Questions**:
+- Should we use Claude for interpretation or a dedicated NLU model?
+- What's minimum viable intent set for Phase II launch?
+- Latency budget: How long can users wait between command and action?
+
+---
+
+### DISC-043: Continuous Listening Mode 🎤 PHASE II CORE (DISCOVERED)
+
+**Source**: Founder Vision (Phase II)
+**Impact**: HIGH | **Effort**: L | **Score**: 1.0
+**Sprint Alignment**: Enables true hands-free operation for on-the-go professionals
+**Dependencies**: DISC-042 (Voice Command Interpreter)
+
+**Problem**: Current voice requires clicking record button, speaking, clicking stop. This is fine for initial quote creation but terrible for editing workflow. Contractors with dirty hands, driving between jobs, or walking a job site can't keep clicking buttons.
+
+**Vision**: True hands-free operation where the app listens continuously and responds to voice commands.
+
+**User Experience**:
+1. User enables "Hands-Free Mode" (toggle or voice command)
+2. App displays listening indicator
+3. User speaks naturally: "Quoted, increase the deck price by $500"
+4. App confirms: "Increase deck from $2,400 to $2,900. Confirm?"
+5. User: "Yes" or "No, make it $2,800"
+6. App executes and provides audio/visual confirmation
+
+**Proposed Work**:
+1. Implement wake word detection ("Quoted", "Hey Quote", or custom)
+2. Add push-to-talk alternative for noisy environments
+3. Visual listening state indicator (pulsing mic, waveform)
+4. Audio feedback option (voice confirmations for eyes-free use)
+5. Timeout and auto-sleep after inactivity
+6. Battery optimization for mobile PWA/native
+
+**Success Metric**: 40% of power users (5+ quotes/week) enable continuous mode; average session uses 3+ voice commands
+
+**Executive Review Questions**:
+- Wake word vs push-to-talk vs always-listening? (Privacy/battery implications)
+- Should confirmations be voice, visual, or user-configurable?
+- PWA limitations: Is native app required for background listening?
+
+---
+
+### DISC-044: Quote Modification via Natural Language ✏️ PHASE II CORE (DISCOVERED)
+
+**Source**: Founder Vision (Phase II)
+**Impact**: HIGH | **Effort**: L | **Score**: 1.0
+**Sprint Alignment**: The "magic" of Phase II - speak changes, watch them happen
+**Dependencies**: DISC-042 (Voice Command Interpreter)
+
+**Problem**: Editing quotes currently requires finding the right field, clicking, typing. For simple changes like "add $200 to the labor line", this is friction. For complex changes like "make this quote less aggressive because the customer seemed price-sensitive", there's no way to do it at all.
+
+**Vision**: Natural language modifications that AI interprets and applies to quotes.
+
+**Modification Categories**:
+
+1. **Parameter Changes** (quantitative):
+   - "Increase the deck size by 10 feet in each direction"
+   - "Add $500 to the labor line item"
+   - "Change the total to $15,000" (AI adjusts line items proportionally)
+   - "Apply a 15% discount"
+
+2. **Scope Changes** (structural):
+   - "Add a pergola to this quote"
+   - "Remove the lighting package"
+   - "Split the deck into two phases"
+   - "Combine these three items into one 'Materials' line"
+
+3. **Tone/Style Changes** (qualitative):
+   - "Add more fluff because this customer is going to be difficult"
+   - "Make it more professional - this is a commercial client"
+   - "Simplify the descriptions - customer said they don't need details"
+   - "Add more technical specs - customer is an engineer"
+
+4. **Customer Context Changes**:
+   - "This is a repeat customer, add our loyal customer discount"
+   - "They mentioned budget constraints, show value emphasis"
+   - "They're in a hurry, emphasize quick turnaround"
+
+**Proposed Work**:
+1. Build modification intent classifier (parameter/scope/tone/context)
+2. Create parameter change executor (understands units, percentages, relative changes)
+3. Implement scope change handler (add/remove/restructure line items)
+4. Develop tone modification prompts (regenerate with style guidance)
+5. Add preview/diff view before applying changes
+6. Maintain edit history for undo capability
+
+**Success Metric**: 80% of voice modification commands execute correctly; users make 2x more edits per quote with voice vs click
+
+**Executive Review Questions**:
+- How much regeneration is acceptable? (Tone changes require AI rewrite)
+- Should we show AI confidence before applying changes?
+- Undo depth: How many modifications should be reversible?
+
+---
+
+### DISC-045: Customer & Address Memory System 📇 PHASE II ENABLER (DISCOVERED)
+
+**Source**: Founder Vision (Phase II)
+**Impact**: HIGH | **Effort**: M | **Score**: 1.5
+**Sprint Alignment**: Required for "make a quote for John Smith" to work
+**Dependencies**: Builds on DISC-022 (Customer Autocomplete)
+
+**Problem**: Voice commands like "make another quote for John Smith" require the system to know who John Smith is, his address, and his history. Current customer autocomplete (DISC-022) is search-based, not voice-command-ready.
+
+**Vision**: Rich customer database that voice commands can reference naturally.
+
+**Required Capabilities**:
+1. **Name Resolution**: "John Smith" → correct John Smith from database (handle duplicates)
+2. **Address Book**: Store multiple addresses per customer ("his office", "the rental property")
+3. **History Context**: Know what quotes were done for customer previously
+4. **Relationship Memory**: "Repeat customer", "referred by Mike", "always negotiates"
+5. **Preference Storage**: "Prefers detailed quotes", "always asks for military discount"
+
+**Voice Commands Enabled**:
+- "Make another quote for John Smith at the usual address"
+- "Quote the same job we did for the Hendersons, but for the Wilsons"
+- "What was our last quote for the customer on Elm Street?"
+- "Add John's wife Mary as a contact on this quote"
+
+**Proposed Work**:
+1. Extend customer model: multiple addresses, relationship notes, preferences
+2. Build fuzzy name matching for voice (handles "Jon" vs "John", nicknames)
+3. Create disambiguation flow: "I found 2 John Smiths. Oak Street or Maple Avenue?"
+4. Implement quote history per customer with searchable context
+5. Add customer preference storage with voice-settable fields
+6. Design customer merge/dedup workflow
+
+**Success Metric**: 95% correct customer resolution on voice commands; customers with 2+ quotes have 40% faster quote creation
+
+**Executive Review Questions**:
+- How to handle common names? (Voice disambiguation vs visual list?)
+- Customer data import from contacts/CRM?
+- Privacy: How long to retain customer history?
+
+---
+
+### DISC-046: Prompt Tweaking & Quote Regeneration 🔄 PHASE II CORE (DISCOVERED)
+
+**Source**: Founder Vision (Phase II)
+**Impact**: HIGH | **Effort**: M | **Score**: 1.5
+**Sprint Alignment**: Enables iterative refinement without re-recording
+**Dependencies**: DISC-042 (Voice Command Interpreter)
+
+**Problem**: User generates a quote but it's not quite right. Currently must either manually edit every field OR re-record the entire job description. No middle ground. User can't say "regenerate with more emphasis on quality materials" or "redo this assuming premium pricing".
+
+**Vision**: Expose and allow modification of the prompt that generated the quote, then regenerate.
+
+**Two User Paths**:
+
+1. **Voice-Guided Regeneration** (most common):
+   - "Regenerate this quote with more detail on materials"
+   - "Redo assuming the customer wants premium everything"
+   - "Make this quote 20% higher and justify the pricing"
+   - "Regenerate but assume we're competing on price"
+
+2. **Prompt Template Editing** (power users):
+   - Show the actual prompt that was sent to Claude
+   - Allow direct editing of prompt text
+   - Save as template for future quotes
+   - Per-category prompt customization
+
+**User Experience - Voice Path**:
+1. User views generated quote
+2. User: "Regenerate this with more emphasis on durability"
+3. System shows: "I'll regenerate emphasizing durability and quality materials. The new quote may have different pricing."
+4. User: "Go ahead"
+5. System regenerates, shows diff from original
+6. User: "Keep the new version" or "Undo, go back to original"
+
+**Proposed Work**:
+1. Store generation prompt with each quote (not just output)
+2. Build prompt modification interpreter ("more detail" → specific prompt additions)
+3. Create regeneration pipeline with original context + modifications
+4. Implement side-by-side or diff view for comparing versions
+5. Add version history (keep last 3 generations per quote)
+6. Build prompt template library for common scenarios
+
+**Success Metric**: 30% of quotes regenerated at least once; regenerated quotes have 20% fewer manual edits
+
+**Executive Review Questions**:
+- Token cost: Regeneration = 2x API cost. Acceptable?
+- Should original quote be preserved or replaced?
+- Prompt template sharing between users? (Marketplace opportunity?)
+
+---
+
+### DISC-047: Voice Interpretation Correction UI 🎯 PHASE II POLISH (DISCOVERED)
+
+**Source**: Founder Vision (Phase II)
+**Impact**: HIGH | **Effort**: S | **Score**: 3.0
+**Sprint Alignment**: Critical for trust - users must be able to fix misheard commands
+**Dependencies**: DISC-042 (Voice Command Interpreter)
+
+**Problem**: Voice recognition will sometimes fail. "John Smith" becomes "Jon Smyth". "$2,500" becomes "$25,000". If users can't quickly correct these errors, trust in the system collapses. The founder specifically noted: "there will inevitably be some text interpretation problems here and there that a quick fix would be nice on."
+
+**Vision**: Seamless correction flow where misheard commands are easy to fix without starting over.
+
+**Correction Flow**:
+1. User speaks command
+2. System shows interpretation BEFORE executing:
+   ```
+   I heard: "Make a quote for Jon Smyth at 1234 Prospect Road"
+   → Creating quote for Jon Smyth at 1234 Prospect Road
+
+   [Execute] [Edit] [Cancel]
+   ```
+3. User taps "Edit" → inline editing of interpreted text
+4. System re-parses corrected text
+5. User confirms, system executes
+
+**Quick Fix Patterns**:
+- **Tap-to-correct**: Tap any word to edit just that word
+- **Voice correction**: "No, I said Smith, not Smyth"
+- **Suggestions**: "Did you mean 'John Smith' from your contacts?"
+- **History learn**: Remember corrections to improve future recognition
+
+**Proposed Work**:
+1. Always show interpretation before execution (no silent actions)
+2. Build inline word-level editing UI
+3. Implement "Did you mean...?" suggestions from context
+4. Add voice-based correction path ("No, I said...")
+5. Create correction learning system (user-specific improvements)
+6. Track correction rate as quality metric
+
+**Success Metric**: <5% of commands need correction; corrections take <3 seconds; correction rate decreases 50% over first month of use
+
+**Executive Review Questions**:
+- How much friction is acceptable? (Always confirm vs trust mode?)
+- Should corrections feed back to improve recognition? (Privacy implications)
+- Voice-only correction or must have visual? (Accessibility for eyes-free use)
+
+---
+
+### DISC-048: Multi-Turn Conversational Interface 💬 PHASE II ADVANCED (DISCOVERED)
+
+**Source**: Founder Vision (Phase II)
+**Impact**: MEDIUM | **Effort**: XL | **Score**: 0.5
+**Sprint Alignment**: Advanced capability after core voice features stable
+**Dependencies**: DISC-042, DISC-043, DISC-044 (all core voice features)
+
+**Problem**: Complex workflows currently require multiple separate commands or clicking through UI. No conversational flow. User can't have a back-and-forth dialogue to refine a quote.
+
+**Vision**: Natural multi-turn conversations where context carries forward.
+
+**Example Conversation**:
+```
+User: "Start a new deck quote"
+Quoted: "Sure, who's the customer?"
+User: "The Hendersons on Oak Street"
+Quoted: "Got it - Mike Henderson, 456 Oak Street. What size deck?"
+User: "About 400 square feet, pressure-treated lumber"
+Quoted: "400 sq ft deck, pressure-treated. Should I include railing?"
+User: "Yeah, and add stairs"
+Quoted: "Here's a $12,500 estimate for a 400 sq ft deck with pressure-treated lumber, railing, and stairs. Would you like to see the breakdown?"
+User: "That's high - can you do it closer to $10k?"
+Quoted: "I can bring it to $10,200 by switching to standard lumber and simpler railing. Want me to make that change?"
+User: "Show me both options"
+Quoted: [Shows comparison view]
+```
+
+**Key Capabilities**:
+1. **Context Persistence**: Remember what was discussed in current session
+2. **Clarifying Questions**: AI asks for missing info instead of guessing
+3. **Progressive Refinement**: Build quote through dialogue, not single command
+4. **Negotiation Assistance**: Help contractor think through pricing options
+5. **Teaching Moments**: "Based on similar jobs, you might want to consider..."
+
+**Proposed Work**:
+1. Build conversation state management (session memory)
+2. Create guided quote creation flow (required fields as questions)
+3. Implement clarifying question generation
+4. Add comparison/option generation for negotiation
+5. Build conversation history UI
+6. Design graceful handoff between voice and visual editing
+
+**Success Metric**: Users complete 25% of quotes through conversation; conversational quotes have 15% higher customer conversion
+
+**Executive Review Questions**:
+- How much "personality" should Quoted have in conversations?
+- Conversation history retention: Per session or persistent?
+- This is a major UX shift - A/B test or full rollout?
+
+---
+
+### DISC-049: Phase II Architecture & Technical Spike 🏗️ (DISCOVERED)
+
+**Source**: Engineering Planning
+**Impact**: CRITICAL | **Effort**: L | **Score**: Strategic
+**Sprint Alignment**: Must complete before any Phase II development begins
+**Dependencies**: None (planning activity)
+
+**Problem**: Phase II features require significant architectural decisions. Current system is request-response; Phase II is stateful and conversational. Need technical spike before committing to implementation.
+
+**Questions to Answer**:
+1. **Voice Processing**: Web Speech API vs Whisper vs Deepgram vs Assembly AI?
+   - Accuracy comparison for contractor terminology
+   - Latency requirements for conversational flow
+   - Cost at scale (1000+ users, 10+ commands/day)
+   - Offline capability for job site use
+
+2. **Intent Classification**: Claude prompt engineering vs fine-tuned model vs hybrid?
+   - Latency budget (user speaks → action)
+   - Cost per command
+   - Accuracy on edge cases
+   - Ability to improve over time
+
+3. **State Management**: How to maintain conversation context?
+   - Session storage architecture
+   - Context window management for long conversations
+   - Multi-device sync (start on phone, continue on desktop?)
+
+4. **Native vs PWA**: Can Phase II work as PWA or does continuous listening require native?
+   - iOS/Android audio API limitations
+   - Background processing requirements
+   - Push notification for async operations
+
+**Proposed Work**:
+1. Prototype voice command pipeline with 3 different speech-to-text services
+2. Benchmark intent classification approaches (latency, accuracy, cost)
+3. Design state management architecture for conversational UI
+4. PWA feasibility assessment for continuous listening
+5. Cost model at 1000 users × 50 commands/day
+6. Deliver technical recommendation document
+
+**Success Metric**: Clear go/no-go decision on architecture; cost model within 2x of estimates; all technical risks identified
+
+**Executive Review Questions**:
+- Budget for Phase II technical spike? (Estimate: 40-80 engineering hours)
+- Is native app acceptable if PWA can't support Phase II?
+- Latency requirement: What's acceptable for voice command response?
 
 ---
 

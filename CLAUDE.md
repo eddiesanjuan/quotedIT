@@ -49,8 +49,14 @@ quoted/
 
 | Command | Purpose |
 |---------|---------|
+| `/add-ticket <description>` | Add ticket to backlog as READY (auto-approved). Does NOT start implementation. |
 | `/quoted-discover` | Generate new tasks/opportunities for backlog |
 | `/run-qa` | Run QA test fleet (requires browser profile) |
+
+**Quick ticket examples**:
+- `/add-ticket voice command to duplicate a quote`
+- `/add-ticket PDF footer looks cramped on mobile`
+- `/add-ticket add support for multiple addresses per customer`
 
 ### Development
 
@@ -84,8 +90,14 @@ Always read these before making changes:
 | `UX-XXX` | User experience |
 | `GROWTH-XXX` | Growth/conversion |
 | `ONBOARD-XXX` | Onboarding |
-| `DISC-XXX` | Discovery (proposed, not approved) |
+| `DISC-XXX` | Discovery backlog items |
 | `INFRA-XXX` | Infrastructure |
+
+**DISC ticket statuses**:
+- **DISCOVERED**: AI-proposed, awaiting founder review
+- **READY**: Approved for implementation (includes founder-requested via `/add-ticket`)
+- **COMPLETE**: Implemented, pending deploy
+- **DEPLOYED**: Live in production
 
 ## External Services
 
