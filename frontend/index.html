@@ -4937,6 +4937,136 @@
             }
         });
 
+        // DISC-036: Keyboard Shortcuts
+        document.addEventListener('keydown', (e) => {
+            // Ignore if user is typing in input/textarea
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) {
+                // Allow Cmd/Ctrl+Enter in textarea for generate
+                if (e.target.id === 'jobDescription' && (e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+                    e.preventDefault();
+                    const generateBtn = document.getElementById('generateBtn');
+                    if (generateBtn && !generateBtn.disabled) {
+                        generateBtn.click();
+                    }
+                }
+                return;
+            }
+
+            const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+            const modifier = isMac ? e.metaKey : e.ctrlKey;
+
+            // Cmd/Ctrl + N: New Quote
+            if (modifier && e.key === 'n') {
+                e.preventDefault();
+                if (currentView === 'quotes' || currentView === 'quoteDetail') {
+                    switchToView('app');
+                    clearQuoteForm();
+                }
+            }
+
+            // Cmd/Ctrl + E: Edit current quote (if in detail view)
+            else if (modifier && e.key === 'e') {
+                e.preventDefault();
+                if (currentView === 'quoteDetail' && currentQuoteId) {
+                    toggleEditMode();
+                }
+            }
+
+            // Cmd/Ctrl + D: Download PDF (if quote is visible)
+            else if (modifier && e.key === 'd') {
+                e.preventDefault();
+                if (currentView === 'quoteDetail' && currentQuoteId) {
+                    const pdfBtn = document.querySelector('#quoteDetailView .btn-secondary');
+                    if (pdfBtn) pdfBtn.click();
+                } else if (document.getElementById('quoteResult').classList.contains('active')) {
+                    const pdfBtn = document.getElementById('downloadPdfBtn');
+                    if (pdfBtn) pdfBtn.click();
+                }
+            }
+
+            // Cmd/Ctrl + S: Save (if in edit mode)
+            else if (modifier && e.key === 's') {
+                e.preventDefault();
+                if (isEditMode && currentView === 'quoteDetail') {
+                    saveQuoteChanges();
+                }
+            }
+
+            // Cmd/Ctrl + ?: Show keyboard shortcuts help
+            else if (modifier && (e.key === '?' || e.key === '/')) {
+                e.preventDefault();
+                showKeyboardShortcutsModal();
+            }
+        });
+
+        function showKeyboardShortcutsModal() {
+            const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+            const modKey = isMac ? '⌘' : 'Ctrl';
+
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay';
+            modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.8);backdrop-filter:blur(8px);z-index:1000;display:flex;align-items:center;justify-content:center;';
+
+            const modalContent = document.createElement('div');
+            modalContent.className = 'modal-content';
+            modalContent.style.cssText = 'max-width:500px;width:90%;background:var(--bg-card);border-radius:16px;padding:32px;border:1px solid var(--border);';
+
+            const title = document.createElement('h2');
+            title.style.cssText = 'font-family:var(--font-serif);font-size:1.75rem;margin-bottom:24px;';
+            title.textContent = 'Keyboard Shortcuts';
+            modalContent.appendChild(title);
+
+            const shortcutsGrid = document.createElement('div');
+            shortcutsGrid.style.cssText = 'display:grid;gap:16px;';
+
+            const shortcuts = [
+                { label: 'New Quote', key: modKey + '+N' },
+                { label: 'Edit Quote', key: modKey + '+E' },
+                { label: 'Download PDF', key: modKey + '+D' },
+                { label: 'Save Changes', key: modKey + '+S' },
+                { label: 'Generate Quote', key: modKey + '+Enter' },
+                { label: 'Show Shortcuts', key: modKey + '+?' }
+            ];
+
+            shortcuts.forEach(shortcut => {
+                const row = document.createElement('div');
+                row.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:12px;background:var(--bg-elevated);border-radius:8px;';
+
+                const label = document.createElement('span');
+                label.textContent = shortcut.label;
+                row.appendChild(label);
+
+                const kbd = document.createElement('kbd');
+                kbd.style.cssText = 'background:var(--bg-secondary);padding:4px 12px;border-radius:4px;font-family:monospace;font-size:0.875rem;border:1px solid var(--border);';
+                kbd.textContent = shortcut.key;
+                row.appendChild(kbd);
+
+                shortcutsGrid.appendChild(row);
+            });
+
+            modalContent.appendChild(shortcutsGrid);
+
+            const closeBtn = document.createElement('button');
+            closeBtn.className = 'btn btn-primary';
+            closeBtn.style.cssText = 'width:100%;margin-top:24px;';
+            closeBtn.textContent = 'Got it';
+            closeBtn.onclick = () => modal.remove();
+            modalContent.appendChild(closeBtn);
+
+            modal.appendChild(modalContent);
+
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) modal.remove();
+            });
+
+            document.body.appendChild(modal);
+
+            // Track shortcut help view
+            if (window.posthog) {
+                posthog.capture('keyboard_shortcuts_viewed');
+            }
+        }
+
         // Auth tab switching
         function showAuthTab(tab) {
             document.getElementById('loginTab').classList.toggle('active', tab === 'login');
