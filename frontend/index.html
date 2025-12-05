@@ -4679,6 +4679,190 @@
         let mediaRecorder = null;
         let audioChunks = [];
         let lastInputMethod = null; // Track whether last quote was voice or text
+        let autosaveInterval = null; // Autosave interval timer
+
+        // ========== DRAFT AUTOSAVE (DISC-032) ==========
+
+        const AUTOSAVE_KEY = 'quoted_draft';
+        const AUTOSAVE_INTERVAL_MS = 10000; // 10 seconds
+
+        // Save current quote state to localStorage
+        function saveDraft() {
+            try {
+                const jobDescription = document.getElementById('jobDescription').value.trim();
+                const transcriptionText = document.getElementById('transcriptionText').value.trim();
+
+                // Only save if there's actual content
+                if (!jobDescription && !transcriptionText) {
+                    return;
+                }
+
+                const draft = {
+                    timestamp: Date.now(),
+                    transcription: transcriptionText,
+                    jobDescription: jobDescription,
+                    currentQuoteId: currentQuoteId,
+                };
+
+                // If we have a generated quote, save its data
+                if (currentQuoteId) {
+                    const quoteResult = document.getElementById('quoteResult');
+                    if (quoteResult.classList.contains('active')) {
+                        draft.quoteData = {
+                            id: currentQuoteId,
+                            jobDescription: document.getElementById('jobDescriptionDisplay').textContent,
+                            confidence: document.getElementById('confidenceBadge').textContent,
+                            notes: document.getElementById('notesContent').textContent,
+                            total: document.getElementById('totalAmount').textContent,
+                        };
+                    }
+                }
+
+                localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(draft));
+
+                // Track autosave
+                {% if posthog_api_key %}
+                if (window.posthog) {
+                    posthog.capture('draft_autosaved', {
+                        has_quote_data: !!draft.quoteData,
+                        has_transcription: !!draft.transcription,
+                        has_job_description: !!draft.jobDescription,
+                    });
+                }
+                {% endif %}
+            } catch (err) {
+                console.error('Failed to save draft:', err);
+            }
+        }
+
+        // Load draft from localStorage
+        function loadDraft() {
+            try {
+                const draftJson = localStorage.getItem(AUTOSAVE_KEY);
+                if (!draftJson) return null;
+
+                const draft = JSON.parse(draftJson);
+
+                // Check if draft is not too old (24 hours)
+                const age = Date.now() - draft.timestamp;
+                const MAX_AGE = 24 * 60 * 60 * 1000; // 24 hours
+
+                if (age > MAX_AGE) {
+                    clearDraft();
+                    return null;
+                }
+
+                return draft;
+            } catch (err) {
+                console.error('Failed to load draft:', err);
+                return null;
+            }
+        }
+
+        // Clear saved draft
+        function clearDraft() {
+            localStorage.removeItem(AUTOSAVE_KEY);
+        }
+
+        // Start autosave interval
+        function startAutosave() {
+            if (autosaveInterval) return; // Already running
+
+            autosaveInterval = setInterval(() => {
+                saveDraft();
+            }, AUTOSAVE_INTERVAL_MS);
+        }
+
+        // Stop autosave interval
+        function stopAutosave() {
+            if (autosaveInterval) {
+                clearInterval(autosaveInterval);
+                autosaveInterval = null;
+            }
+        }
+
+        // Show draft recovery modal
+        function showDraftRecoveryModal(draft) {
+            const age = Date.now() - draft.timestamp;
+            const minutes = Math.floor(age / 60000);
+            const hours = Math.floor(minutes / 60);
+
+            let timeAgo;
+            if (hours > 0) {
+                timeAgo = `${hours} hour${hours > 1 ? 's' : ''} ago`;
+            } else {
+                timeAgo = `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+            }
+
+            document.getElementById('draftTimeAgo').textContent = timeAgo;
+
+            // Preview content
+            const preview = draft.transcription || draft.jobDescription || '';
+            const previewText = preview.length > 100 ? preview.substring(0, 100) + '...' : preview;
+            document.getElementById('draftPreview').textContent = previewText;
+
+            document.getElementById('draftRecoveryModal').style.display = 'flex';
+
+            // Track recovery modal shown
+            {% if posthog_api_key %}
+            if (window.posthog) {
+                posthog.capture('draft_recovery_shown', {
+                    age_minutes: minutes,
+                    has_quote_data: !!draft.quoteData,
+                });
+            }
+            {% endif %}
+        }
+
+        // Restore draft
+        function restoreDraft() {
+            const draft = loadDraft();
+            if (!draft) {
+                closeDraftRecoveryModal();
+                return;
+            }
+
+            // Restore transcription and job description
+            if (draft.transcription) {
+                document.getElementById('transcriptionText').value = draft.transcription;
+            }
+            if (draft.jobDescription) {
+                document.getElementById('jobDescription').value = draft.jobDescription;
+            }
+
+            // Close modal
+            closeDraftRecoveryModal();
+
+            // Track recovery
+            {% if posthog_api_key %}
+            if (window.posthog) {
+                posthog.capture('draft_recovered', {
+                    had_quote_data: !!draft.quoteData,
+                });
+            }
+            {% endif %}
+
+            // Show success message
+            showToast('Draft restored successfully', 'success');
+        }
+
+        // Discard draft
+        function discardDraft() {
+            clearDraft();
+            closeDraftRecoveryModal();
+
+            // Track discard
+            {% if posthog_api_key %}
+            if (window.posthog) {
+                posthog.capture('draft_discarded');
+            }
+            {% endif %}
+        }
+
+        // Close draft recovery modal
+        function closeDraftRecoveryModal() {
+            document.getElementById('draftRecoveryModal').style.display = 'none';
+        }
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
@@ -4694,6 +4878,15 @@
 
             if (authToken && currentUser) {
                 showAppView();
+
+                // Check for saved draft (DISC-032)
+                const draft = loadDraft();
+                if (draft) {
+                    // Show recovery modal after a brief delay to let UI settle
+                    setTimeout(() => {
+                        showDraftRecoveryModal(draft);
+                    }, 500);
+                }
             } else {
                 showAuthView();
             }

@@ -236,11 +236,20 @@ class BillingService:
         # Map billing_interval to Stripe interval
         stripe_interval = "year" if billing_interval == "annual" else "month"
 
-        prices = stripe.Price.list(product=plan_config["product_id"], active=True)
-        if not prices.data:
+        try:
+            prices = stripe.Price.list(product=plan_config["product_id"], active=True)
+        except Exception as e:
+            print(f"Error listing prices for product {plan_config['product_id']}: {e}")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"No active prices found for product {plan_config['product_id']}"
+                detail=f"Failed to retrieve pricing information for {plan_tier} plan. Please contact support."
+            )
+
+        if not prices.data:
+            print(f"No active prices found for product {plan_config['product_id']} (plan: {plan_tier})")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Pricing not configured for {plan_tier} plan. Please contact support or try a different plan."
             )
 
         # Find price with matching interval
@@ -252,6 +261,7 @@ class BillingService:
 
         # Fallback to first price if no interval match
         if not matching_price:
+            print(f"No {stripe_interval} price found for {plan_tier}, using first available price")
             matching_price = prices.data[0]
 
         # Create checkout session
