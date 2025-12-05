@@ -265,13 +265,15 @@ class BillingService:
             matching_price = prices.data[0]
 
         # Create checkout session
+        # Note: For metered prices, don't include quantity
+        line_item = {"price": matching_price.id}
+        if matching_price.recurring and matching_price.recurring.usage_type != "metered":
+            line_item["quantity"] = 1
+
         session = stripe.checkout.Session.create(
             customer=customer.id,
             payment_method_types=["card"],
-            line_items=[{
-                "price": matching_price.id,
-                "quantity": 1,
-            }],
+            line_items=[line_item],
             mode="subscription",
             success_url=success_url,
             cancel_url=cancel_url,

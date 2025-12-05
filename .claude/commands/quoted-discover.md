@@ -1,96 +1,187 @@
-# Quoted Discovery Cycle
+# Quoted Discovery - Thin Orchestrator
 
-You are initiating a **discovery cycle** for Quoted, Inc. - the work generation layer of an autonomous AI company.
+You are the **orchestrator** for Quoted discovery cycles. Your job is simple: **spawn discovery agents and synthesize results**.
 
-## Purpose
+## Architecture
 
-Generate new tasks, opportunities, and initiatives that feed into the execution layer (`/quoted-run`).
+```
+YOU (Orchestrator) - Stay thin, preserve context
+  │
+  ├─→ Task: Discovery Agent (fresh context, full budget)
+  │      └─→ Spawns 3 specialist agents (Product, Growth, Strategy)
+  │      └─→ Synthesizes discoveries
+  │      └─→ Returns structured report
+  │      └─→ Context discarded
+  │
+  └─→ You write results to DISCOVERY_BACKLOG.md
+```
 
-Unlike the execution layer which clears a backlog, discovery **creates** the backlog.
+**Why this architecture**: Discovery agents get the FULL context window to deeply analyze opportunities. Clean output goes to backlog.
 
-## Discovery Protocol
+---
 
-### Phase 0: State Assessment
+## YOUR ONLY JOB
 
-Read state files to understand the current situation (files split for readability):
+1. **Spawn a discovery agent** via Task tool
+2. **Receive structured discoveries**
+3. **Write to DISCOVERY_BACKLOG.md**
+4. **Report summary to founder**
 
-**Start here:**
-- `ENGINEERING_STATE.md` - Active work only (~100 lines) - READ FIRST
-  - ⚠️ **CRITICAL**: Read the "Current Product Reality" section before making ANY assumptions about what features exist
+You do NOT:
+- Run discovery analysis yourself
+- Read all the state files deeply
+- Do complex reasoning
+- Accumulate context
 
-**Then context files:**
-- `DISCOVERY_BACKLOG.md` - All DISC-XXX items, existing discoveries (~300 lines)
-- `DEPLOYMENT_LOG.md` - Recent deployments (~100 lines)
-- `COMPANY_STATE.md` - Strategic overview, current goals
-- `BETA_SPRINT.md` - Current sprint goals and metrics (NOTE: Some specs are aspirational, not implemented)
-- `DECISION_QUEUE.md` - Pending decisions
+---
 
-Key questions:
-- What's our current sprint goal? (e.g., "100 users by Dec 16")
-- What's working? What's not?
+## ORCHESTRATOR FLOW
+
+### Step 1: Spawn Discovery Agent
+
+Use the Task tool with this EXACT structure:
+
+```
+Task tool call:
+- subagent_type: "general-purpose"
+- description: "Quoted Discovery Cycle"
+- prompt: [See DISCOVERY_AGENT_PROMPT below]
+```
+
+**DISCOVERY_AGENT_PROMPT**:
+
+```
+You are running a discovery cycle for Quoted, Inc. - a voice-to-quote AI for contractors.
+
+## YOUR MISSION
+Find new opportunities, improvements, and initiatives. Generate the backlog that /quoted-run will execute.
+
+## PHASE 0: STATE ASSESSMENT
+
+Read these files to understand current situation:
+1. quoted/ENGINEERING_STATE.md - What's built, current product reality
+2. quoted/DISCOVERY_BACKLOG.md - Existing discoveries (avoid duplicates!)
+3. quoted/COMPANY_STATE.md - Strategic goals
+4. quoted/BETA_SPRINT.md - Current sprint target
+
+Key questions to answer:
+- What's our sprint goal?
 - What gaps exist between current state and goals?
-- What discoveries are already in the backlog? (Avoid duplicates)
-- **What features actually exist** vs. what was planned? (Check Current Product Reality table)
+- What discoveries already exist? (Don't duplicate)
+- What features actually exist vs. planned?
 
-### Phase 1: Discovery Council (Parallel)
+## PHASE 1: DISCOVERY COUNCIL (Parallel Sub-Agents)
 
-Spawn 3 discovery agents in parallel using the Task tool:
+Spawn 3 discovery specialists in ONE message using Task tool (parallel):
 
-**1. Product Discovery Agent** (`agents/product-discovery.md`)
-- Reviews user feedback, support issues, feature requests
-- Identifies friction points in current product
-- Proposes product improvements with business case
+**Product Discovery Agent:**
+"You are the Product Discovery Agent for Quoted.
+Read: quoted/ENGINEERING_STATE.md, quoted/DISCOVERY_BACKLOG.md, quoted/BETA_SPRINT.md
 
-**2. Growth Discovery Agent** (`agents/growth-discovery.md`)
-- Analyzes growth funnel and metrics goals
-- Identifies acquisition/activation/retention opportunities
-- Proposes growth experiments with expected impact
+Find product improvements:
+- Friction points in user journey
+- Feature gaps
+- Technical debt impacting UX
+- Mobile experience issues
 
-**3. Strategy Discovery Agent** (`agents/strategy-discovery.md`)
-- Reviews competitive landscape and market trends
-- Identifies strategic opportunities and risks
-- Proposes strategic initiatives or pivots
+Return JSON:
+{
+  discoveries: [{
+    title: string,
+    problem: string,
+    proposed_work: string[],
+    success_metric: string,
+    impact: 'HIGH'|'MEDIUM'|'LOW',
+    effort: 'S'|'M'|'L'|'XL',
+    sprint_alignment: string
+  }],
+  anti_discoveries: [string]
+}"
 
-Each agent returns structured discoveries:
-```
-DISCOVERIES:
-1. [Title] - [Impact: HIGH/MEDIUM/LOW]
-   Problem: [What problem this solves]
-   Proposed Task: [What to build/do]
-   Success Metric: [How we'd measure success]
-   Effort: [T-shirt size: S/M/L/XL]
-```
+**Growth Discovery Agent:**
+"You are the Growth Discovery Agent for Quoted.
+Read: quoted/ENGINEERING_STATE.md, quoted/DISCOVERY_BACKLOG.md, quoted/BETA_SPRINT.md
 
-### Phase 2: Synthesis & Prioritization
+Find growth opportunities:
+- Acquisition channel gaps
+- Activation friction
+- Retention risks
+- Viral/referral opportunities
+
+Return JSON: [same structure as Product]"
+
+**Strategy Discovery Agent:**
+"You are the Strategy Discovery Agent for Quoted.
+Read: quoted/ENGINEERING_STATE.md, quoted/DISCOVERY_BACKLOG.md, quoted/COMPANY_STATE.md
+
+Find strategic opportunities:
+- Competitive threats
+- Market positioning gaps
+- Moat-building opportunities
+- Strategic risks
+
+Return JSON: [same structure as Product]"
+
+Use subagent_type: "general-purpose" for all.
+
+## PHASE 2: SYNTHESIS
 
 After all agents return:
+1. Collect all discoveries
+2. Deduplicate similar ideas
+3. Score each: Impact/Effort ratio
+4. Sort by score (highest first)
 
-1. **Collect all discoveries** from the three agents
-2. **Deduplicate** similar ideas
-3. **Score each discovery**:
-   - Impact on sprint goals (HIGH=3, MEDIUM=2, LOW=1)
-   - Effort required (S=1, M=2, L=3, XL=4)
-   - Impact/Effort ratio = score
-4. **Generate task tickets** for top discoveries
+## PHASE 3: OUTPUT
 
-### Phase 3: Output to Discovery Backlog
+Return this EXACT JSON structure:
 
-Write discovered tasks to `DISCOVERY_BACKLOG.md` in the "Discovered (Awaiting Review)" section with:
-- Ticket ID (DISC-XXX) - Use next available number
-- Title and description
-- Priority based on scoring
-- Source (which discovery agent)
-- Status: `DISCOVERED` (not `READY` - awaiting founder review)
+{
+  "sprint_context": {
+    "goal": "100 users by Dec 16",
+    "current_state": "5 users, funnel needs work"
+  },
+  "discoveries": [
+    {
+      "suggested_id": "DISC-051",
+      "title": "...",
+      "source": "Product|Growth|Strategy",
+      "problem": "...",
+      "proposed_work": ["Step 1", "Step 2"],
+      "success_metric": "...",
+      "impact": "HIGH",
+      "effort": "M",
+      "score": 1.5,
+      "sprint_alignment": "..."
+    }
+  ],
+  "anti_discoveries": [
+    "Don't build X because Y"
+  ],
+  "questions_for_founder": [
+    "Should we prioritize A or B?"
+  ],
+  "existing_ready_count": 7,
+  "new_discovery_count": 4
+}
+```
 
-**Also update the Summary table** at the top of `DISCOVERY_BACKLOG.md` with new counts.
+### Step 2: Process Discovery Results
 
-Format:
+When discovery agent returns:
+
+1. **Parse the JSON response**
+2. **Get next DISC number** from DISCOVERY_BACKLOG.md
+3. **Write each discovery** to DISCOVERY_BACKLOG.md in "Discovered (Awaiting Review)" section
+4. **Update summary counts** at top of DISCOVERY_BACKLOG.md
+
+Format for each discovery:
 ```markdown
-## DISC-001: [Title] (DISCOVERED)
+### DISC-XXX: [Title] (DISCOVERED)
 
 **Source**: [Product/Growth/Strategy] Discovery Agent
-**Impact**: [HIGH/MEDIUM/LOW] | **Effort**: [S/M/L/XL]
-**Sprint Alignment**: [How this helps current sprint goal]
+**Impact**: [HIGH/MEDIUM/LOW] | **Effort**: [S/M/L/XL] | **Score**: [X.X]
+**Sprint Alignment**: [How this helps current goal]
 
 **Problem**: [What problem this solves]
 
@@ -99,67 +190,67 @@ Format:
 2. [Step 2]
 
 **Success Metric**: [How we measure success]
-```
-
-### Phase 4: Summary Report
-
-Output a summary for the founder:
-
-```
-DISCOVERY_REPORT:
-
-## Sprint Context
-Current Goal: [Sprint goal]
-Current State: [Brief status]
-
-## Discoveries Found
-| ID | Title | Source | Impact | Effort | Score |
-|----|-------|--------|--------|--------|-------|
-| DISC-001 | ... | Product | HIGH | M | 1.5 |
-
-## Top Recommendations
-1. DISC-XXX: [Why this is priority #1]
-2. DISC-XXX: [Why this is priority #2]
-3. DISC-XXX: [Why this is priority #3]
-
-## Questions for Founder
-- [Any strategic questions that emerged]
 
 ---
-Next: Review DISC-XXX tasks in DISCOVERY_BACKLOG.md
-Approve by changing status from DISCOVERED → READY
-Then run `/quoted-run` to execute
 ```
 
-## Key Principles
+### Step 3: Final Report
 
-1. **Discovery creates, execution consumes** - This command fills the backlog
-2. **Scored, not arbitrary** - Every discovery has impact/effort scoring
-3. **Founder review gate** - DISCOVERED status means "proposed, not approved"
-4. **Sprint-aligned** - Prioritize discoveries that help current sprint goals
-5. **Diverse perspectives** - Three agents catch different opportunity types
-6. **Reality-based** - NEVER assume features exist based on specs; always verify against Current Product Reality table
-7. **Production health is critical** - Any proposed changes must not break existing functionality
+Output summary for founder:
 
-## Production Safety
+```
+═══════════════════════════════════════════════════════════
+DISCOVERY CYCLE COMPLETE
+═══════════════════════════════════════════════════════════
 
-**Production is now live with real users.** All discoveries that become execution work must follow these safety rules:
+## Sprint Context
+Goal: [Sprint goal]
+Current State: [Brief status]
 
-1. **Verify before assuming** - Check `ENGINEERING_STATE.md` → "Current Product Reality" for what actually exists
-2. **Test before deploy** - Run `/run-qa smoke` before any deployment
-3. **Incremental changes** - Prefer small, testable changes over large refactors
-4. **Rollback plan** - Every change should be easy to revert
-5. **Monitor after deploy** - Check Railway logs and PostHog for issues post-deployment
+## New Discoveries Added: [N]
 
-## When to Run
+| ID | Title | Source | Impact | Effort | Score |
+|----|-------|--------|--------|--------|-------|
+| DISC-051 | ... | Growth | HIGH | S | 3.0 |
 
-- After clearing the backlog (execution has nothing to do)
-- Weekly strategic refresh
-- When sprint goals change
-- After major product changes or user feedback
+## Top Recommendations
+1. **DISC-XXX**: [Why priority #1]
+2. **DISC-XXX**: [Why priority #2]
+3. **DISC-XXX**: [Why priority #3]
 
-## Notes
+## Anti-Discoveries (Things NOT to Do)
+- [Thing and why]
 
-- Discovery agents should be opinionated but evidence-based
-- Prefer small, testable experiments over large initiatives
-- Include "anti-discoveries" - things we should NOT do and why
+## Questions for Founder
+- [Strategic question]
+
+## Current Backlog Status
+- READY: [X] tasks
+- DISCOVERED: [Y] tasks (awaiting approval)
+
+---
+**Next Steps**:
+1. Review new DISCOVERED items in DISCOVERY_BACKLOG.md
+2. Approve by changing status: DISCOVERED → READY
+3. Run `/quoted-run` to execute approved work
+═══════════════════════════════════════════════════════════
+```
+
+---
+
+## CRITICAL RULES
+
+1. **Stay thin**: You spawn agents, you don't analyze
+2. **No duplicates**: Agent should check existing backlog
+3. **DISCOVERED status**: All new items start as DISCOVERED, not READY
+4. **Evidence-based**: Discoveries must be grounded in actual analysis
+5. **Sprint-aligned**: Prioritize what helps current sprint goal
+
+---
+
+## BEGIN
+
+1. Spawn Discovery Agent
+2. Wait for results
+3. Write to DISCOVERY_BACKLOG.md
+4. Report to founder
