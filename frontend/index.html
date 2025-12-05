@@ -4811,14 +4811,17 @@
             } catch (err) {
                 console.error('Error:', err);
                 showError(err.message);
-            } finally {
-                showLoading(false);
-                document.getElementById('recordInstructions').textContent = 'Click to start recording your voice note';
+                // Only reset to input section on error
+                document.getElementById('loadingSection').classList.remove('active');
+                document.getElementById('inputSection').style.display = 'block';
             }
+            // Always reset instructions
+            document.getElementById('recordInstructions').textContent = 'Click to start recording your voice note';
         }
 
         // Show transcription preview for review/edit
         function showTranscriptionPreview(text) {
+            document.getElementById('loadingSection').classList.remove('active');
             document.getElementById('inputSection').style.display = 'none';
             document.getElementById('transcriptionPreview').style.display = 'block';
             document.getElementById('transcriptionText').value = text;
