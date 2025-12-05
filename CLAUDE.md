@@ -113,9 +113,9 @@ Always read these before making changes:
 
 | Plan | Product ID | Price |
 |------|------------|-------|
-| Starter | `prod_TXB6SKP96LAlcM` | $29/mo |
-| Pro | `prod_TXB6du0ylntvVV` | $49/mo |
-| Team | `prod_TXB6aO5kvAD4uV` | $99/mo |
+| Starter | `prod_TXB6SKP96LAlcM` | $19/mo (75 quotes, $0.50 overage) |
+| Pro | `prod_TXB6du0ylntvVV` | $39/mo (200 quotes, $0.35 overage) |
+| Team | `prod_TXB6aO5kvAD4uV` | $79/mo (Unlimited, no overage) |
 
 ## Key Conventions
 
