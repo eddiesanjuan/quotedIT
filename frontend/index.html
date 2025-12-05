@@ -649,14 +649,60 @@
             display: block;
         }
 
-        .spinner {
-            width: 48px;
-            height: 48px;
-            border: 2px solid var(--border);
-            border-top-color: var(--text-primary);
+        /* Animated Quote Marks Loading */
+        .loading-animation {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 32px;
+            height: 80px;
+        }
+
+        .quote-mark {
+            font-family: var(--font-serif);
+            font-size: 4rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            opacity: 0.2;
+            animation: quotePulse 2s ease-in-out infinite;
+        }
+
+        .quote-mark.left {
+            animation-delay: 0s;
+        }
+
+        .quote-mark.right {
+            animation-delay: 0.3s;
+        }
+
+        .loading-dots {
+            display: flex;
+            gap: 6px;
+            padding: 0 12px;
+        }
+
+        .loading-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--text-primary);
             border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 24px;
+            opacity: 0.2;
+            animation: dotPulse 1.4s ease-in-out infinite;
+        }
+
+        .loading-dot:nth-child(1) { animation-delay: 0s; }
+        .loading-dot:nth-child(2) { animation-delay: 0.2s; }
+        .loading-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes quotePulse {
+            0%, 100% { opacity: 0.2; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.05); }
+        }
+
+        @keyframes dotPulse {
+            0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); }
+            40% { opacity: 1; transform: scale(1); }
         }
 
         .loading-text {
@@ -664,6 +710,20 @@
             font-size: 1.25rem;
             font-style: italic;
             color: var(--text-secondary);
+            min-height: 1.5em;
+        }
+
+        .loading-subtext {
+            font-family: var(--font-sans);
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 12px;
+            opacity: 0;
+            animation: fadeIn 0.5s ease-out 2s forwards;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
         }
 
         /* Quote Result */
@@ -3178,7 +3238,7 @@
 <body>
     <!-- Navigation -->
     <nav>
-        <a href="/" class="logo">Quoted™<span>.it</span></a>
+        <a href="/" class="logo">quoted<span>.it</span></a>
         <div class="nav-right" id="navRight" style="display: none;">
             <div class="app-nav" id="appNav" style="display: none;">
                 <button class="app-nav-btn active" id="newQuoteNavBtn" onclick="showAppSection('newQuote')">New Quote</button>
@@ -3451,8 +3511,17 @@
 
             <!-- Loading State -->
             <div class="card loading" id="loadingSection">
-                <div class="spinner"></div>
+                <div class="loading-animation">
+                    <span class="quote-mark left">"</span>
+                    <div class="loading-dots">
+                        <div class="loading-dot"></div>
+                        <div class="loading-dot"></div>
+                        <div class="loading-dot"></div>
+                    </div>
+                    <span class="quote-mark right">"</span>
+                </div>
                 <p class="loading-text" id="loadingText">Generating your quote...</p>
+                <p class="loading-subtext" id="loadingSubtext">Analyzing your pricing model</p>
             </div>
 
             <!-- Transcription Preview Section -->
@@ -6441,11 +6510,38 @@
         }
 
         // UI helpers
+        let loadingMessageInterval = null;
+        const loadingMessages = [
+            { text: 'Generating your quote...', sub: 'Analyzing your pricing model' },
+            { text: 'Building line items...', sub: 'Applying learned adjustments' },
+            { text: 'Calculating totals...', sub: 'Checking similar past quotes' },
+            { text: 'Almost there...', sub: 'Finalizing your estimate' }
+        ];
+
         function showLoading(show, message = 'Generating your quote...') {
             document.getElementById('inputSection').style.display = show ? 'none' : 'block';
             document.getElementById('transcriptionPreview').style.display = 'none';
             document.getElementById('loadingSection').classList.toggle('active', show);
             document.getElementById('loadingText').textContent = message;
+
+            // Clear any existing interval
+            if (loadingMessageInterval) {
+                clearInterval(loadingMessageInterval);
+                loadingMessageInterval = null;
+            }
+
+            if (show && message !== 'Transcribing...') {
+                let messageIndex = 0;
+                const loadingText = document.getElementById('loadingText');
+                const loadingSubtext = document.getElementById('loadingSubtext');
+
+                // Cycle through messages
+                loadingMessageInterval = setInterval(() => {
+                    messageIndex = (messageIndex + 1) % loadingMessages.length;
+                    loadingText.textContent = loadingMessages[messageIndex].text;
+                    loadingSubtext.textContent = loadingMessages[messageIndex].sub;
+                }, 2500);
+            }
         }
 
         function showError(message) {
