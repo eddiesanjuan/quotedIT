@@ -7228,7 +7228,6 @@
             quotes.forEach(quote => {
                 const item = document.createElement('div');
                 item.className = 'quote-list-item';
-                item.onclick = () => openQuoteDetail(quote.id);
 
                 const customerName = quote.customer_name || 'Unnamed Customer';
                 const jobType = quote.job_type ? quote.job_type.replace(/_/g, ' ') : 'General';
@@ -7236,6 +7235,12 @@
                 const createdAt = quote.created_at ? new Date(quote.created_at).toLocaleDateString() : 'Unknown date';
                 const lineItemCount = quote.line_items ? quote.line_items.length : 0;
                 const wasEdited = quote.was_edited ? ' (edited)' : '';
+
+                // Main clickable area
+                const clickableArea = document.createElement('div');
+                clickableArea.style.flex = '1';
+                clickableArea.style.cursor = 'pointer';
+                clickableArea.onclick = () => openQuoteDetail(quote.id);
 
                 // Header row
                 const header = document.createElement('div');
@@ -7269,8 +7274,31 @@
                 meta.appendChild(itemsSpan);
                 meta.appendChild(dateSpan);
 
-                item.appendChild(header);
-                item.appendChild(meta);
+                clickableArea.appendChild(header);
+                clickableArea.appendChild(meta);
+
+                // Actions row (DISC-038: Duplicate button)
+                const actions = document.createElement('div');
+                actions.className = 'quote-list-item-actions';
+                actions.style.display = 'flex';
+                actions.style.gap = '8px';
+                actions.style.marginTop = '8px';
+                actions.style.paddingTop = '8px';
+                actions.style.borderTop = '1px solid var(--border)';
+
+                const duplicateBtn = document.createElement('button');
+                duplicateBtn.className = 'btn-icon';
+                duplicateBtn.title = 'Duplicate this quote';
+                duplicateBtn.textContent = '📋';
+                duplicateBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    duplicateQuoteFromList(quote.id);
+                };
+
+                actions.appendChild(duplicateBtn);
+
+                item.appendChild(clickableArea);
+                item.appendChild(actions);
                 listEl.appendChild(item);
             });
         }
@@ -7600,6 +7628,96 @@
             } catch (err) {
                 console.error('PDF download error:', err);
                 alert('Failed to download PDF: ' + err.message);
+            }
+        }
+
+        // ========================================
+        // DISC-038: Quote Duplication Functions
+        // ========================================
+
+        // Duplicate quote from detail view
+        async function duplicateQuote() {
+            if (!currentDetailQuote) return;
+
+            try {
+                // Track duplication click event
+                if (typeof posthog !== 'undefined') {
+                    posthog.capture('quote_duplicate_clicked', {
+                        source_quote_id: currentDetailQuote.id,
+                        source: 'detail_view'
+                    });
+                }
+
+                const response = await fetch(`${API_BASE}/quotes/${currentDetailQuote.id}/duplicate`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to duplicate quote');
+                }
+
+                const newQuote = await response.json();
+
+                // Show success message
+                showToast('Quote duplicated successfully! Opening for editing...', 'success');
+
+                // Refresh quotes cache
+                await loadQuotes();
+
+                // Open the new quote for editing
+                setTimeout(() => {
+                    openQuoteDetail(newQuote.id);
+                }, 500);
+
+            } catch (err) {
+                console.error('Duplication error:', err);
+                showToast('Failed to duplicate quote: ' + err.message, 'error');
+            }
+        }
+
+        // Duplicate quote from list view
+        async function duplicateQuoteFromList(quoteId) {
+            try {
+                // Track duplication click event
+                if (typeof posthog !== 'undefined') {
+                    posthog.capture('quote_duplicate_clicked', {
+                        source_quote_id: quoteId,
+                        source: 'list_view'
+                    });
+                }
+
+                const response = await fetch(`${API_BASE}/quotes/${quoteId}/duplicate`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to duplicate quote');
+                }
+
+                const newQuote = await response.json();
+
+                // Show success message
+                showToast('Quote duplicated successfully! Opening for editing...', 'success');
+
+                // Refresh quotes list
+                await loadQuotes();
+
+                // Open the new quote for editing
+                setTimeout(() => {
+                    openQuoteDetail(newQuote.id);
+                }, 500);
+
+            } catch (err) {
+                console.error('Duplication error:', err);
+                showToast('Failed to duplicate quote: ' + err.message, 'error');
             }
         }
 
