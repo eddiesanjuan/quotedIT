@@ -22,35 +22,13 @@ To approve: Change status from DISCOVERED → READY
 
 | Status | Count |
 |--------|-------|
-| DEPLOYED | 25 |
-| COMPLETE | 1 |
+| DEPLOYED | 26 |
+| COMPLETE | 0 |
 | READY | 6 |
 | DISCOVERED | 16 |
 | **Total** | **48** |
 
 **Phase II Voice Control**: 8 tickets (DISC-042 through DISC-049) awaiting executive review
-
----
-
-## Complete (Pending Deploy)
-
-### DISC-032: Autosave Quote Drafts (Local Storage) (COMPLETE)
-
-**Source**: Product Discovery Agent
-**Impact**: HIGH | **Effort**: M | **Score**: 1.5
-**Sprint Alignment**: Removes anxiety around losing work, reduces rage-quit abandonment during critical first-quote experience
-**Commit**: `50c2894` (2025-12-05)
-
-**Problem**: Users lose entire quote if they accidentally close tab, navigate away, or experience browser crash during editing.
-
-**Implemented**:
-1. ✅ localStorage autosave every 10 seconds during quote generation/editing
-2. ✅ Recovery modal on app load: "You have an unsaved quote from X minutes ago. Restore it?"
-3. ✅ Stores transcription text, generated quote data, and edit state
-4. ✅ Clears draft after successful PDF download or explicit "Discard" action
-5. ✅ PostHog tracking: `draft_autosaved`, `draft_recovery_shown`, `draft_recovered`, `draft_discarded`
-
-**Success Metric**: Recovery modal shown 5-10% of sessions; quote-edit → PDF-download completion rate increases 15%
 
 ---
 
@@ -312,20 +290,22 @@ To approve: Change status from DISCOVERED → READY
 
 ---
 
-### DISC-050: Pricing Page Plan Buttons Not Working (READY) 🐛
+### DISC-050: Pricing Page Plan Buttons Not Working 🔴 FOUNDER ACTION (STRIPE CONFIG)
 
 **Source**: Founder Request (Eddie, 2025-12-05)
 **Impact**: HIGH | **Effort**: S | **Score**: 3.0
 **Sprint Alignment**: Critical conversion blocker - users cannot purchase Starter or Team plans
+**Code Commit**: `143cc47` (2025-12-05) - Error handling deployed
 
-**Problem**: On the pricing page, only the Pro plan button successfully redirects to Stripe checkout. The Starter and Team plan buttons do not work, blocking users from purchasing those tiers.
+**Root Cause Found**: Starter and Team products don't have active prices configured in Stripe Dashboard. Pro works because it has prices.
 
-**Proposed Work**:
-1. Inspect frontend pricing page button click handlers for all 3 plans
-2. Verify Stripe product IDs are correctly configured for Starter and Team
-3. Debug backend `/api/billing/create-checkout-session` endpoint for non-Pro plans
-4. Test all 3 checkout flows end-to-end
-5. Add error logging if checkout creation fails
+**⚠️ FOUNDER ACTION REQUIRED**:
+Configure active prices in Stripe Dashboard:
+1. Starter (`prod_TXB6SKP96LAlcM`): Add $19/month price
+2. Team (`prod_TXB6aO5kvAD4uV`): Add $79/month price
+3. See `/STRIPE_PRICE_SETUP.md` for step-by-step guide
+
+**Code Fix Deployed**: Better error handling + user-friendly error messages
 
 **Success Metric**: All 3 plan buttons successfully redirect to Stripe checkout
 
@@ -717,7 +697,10 @@ Quoted: [Shows comparison view]
 ## Completed & Deployed
 
 <details>
-<summary>Click to expand completed items (25 items)</summary>
+<summary>Click to expand completed items (26 items)</summary>
+
+### DISC-032: Autosave Quote Drafts (Local Storage) ✅
+**Commit**: 50c2894 | 10-second autosave, recovery modal, PostHog tracking, 24-hour expiration
 
 ### DISC-031: Voice Recording Fallback & Recovery ✅
 **Commit**: 90abdc6 | Voice support detection, browser badges, fallback UI, PostHog events
