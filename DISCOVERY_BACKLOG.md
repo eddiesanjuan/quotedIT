@@ -1,6 +1,6 @@
 # Discovery Backlog
 
-**Last Updated**: 2025-12-04
+**Last Updated**: 2025-12-05
 **Source**: `/quoted-discover` autonomous discovery cycles
 
 ---
@@ -22,36 +22,17 @@ To approve: Change status from DISCOVERED → READY
 
 | Status | Count |
 |--------|-------|
-| DEPLOYED | 21 |
-| COMPLETE | 2 |
-| READY | 4 |
+| DEPLOYED | 23 |
+| COMPLETE | 0 |
+| READY | 2 |
 | DISCOVERED | 22 |
-| **Total** | **49** |
+| **Total** | **47** |
 
 **Phase II Voice Control**: 8 tickets (DISC-042 through DISC-049) awaiting executive review
 
 ---
 
 ## Ready for Implementation
-
-### DISC-013: Animation Walkthrough Distribution Strategy (READY)
-
-**Source**: Growth Discovery Agent
-**Impact**: HIGH | **Effort**: L | **Score**: 0.75
-**Sprint Alignment**: BETA_SPRINT targets 300 animation views × 10% = 30 users
-
-**Problem**: Animation walkthrough built but no distribution strategy. Animation page is invisible.
-
-**Proposed Work**:
-1. Create /demo-promo landing variant focused on animation
-2. Message: "See voice-to-quote in 60 seconds - no signup"
-3. Add tracking: utm_source parameter for channel attribution
-4. Start with 3 contractor subreddits + 2 Facebook groups
-5. Target: 300 animation views in 14 days
-
-**Success Metric**: 300 animation views; animation→signup conversion baseline
-
----
 
 ### DISC-014: Buildxact Competitive Defense (READY) ⚠️ Strategic
 
@@ -70,17 +51,22 @@ To approve: Change status from DISCOVERED → READY
 
 ---
 
-### DISC-028: PDF Quote Template Library (READY) 🎨 Premium Differentiation
+### DISC-033: Reddit Contractor Launch Post 🚀 FOUNDER ACTION (READY)
 
-**Source**: Founder's Wife (2025-12-03)
-**Impact**: HIGH | **Effort**: L | **Score**: 0.75
-**Sprint Alignment**: Premium tier value proposition
+**Source**: Growth Discovery Agent
+**Impact**: HIGH | **Effort**: M | **Score**: 1.5
+**Sprint Alignment**: 410K+ contractors on Reddit, single post could deliver 20%+ of beta goal
 
-**Problem**: All PDF quotes look identical. No visual customization without logo.
+**Problem**: 410K+ contractors on Reddit, zero awareness of Quoted. Warm audience that complains daily about quoting friction. Demo ready but not distributed.
 
-**Proposed**: 8-10 professional template styles (Classic, Modern Minimal, Bold Professional, Elegant, Technical, Friendly, Craftsman, Corporate) + accent color picker for Pro tier.
+**Proposed Work**:
+1. Craft founder-story Reddit post for r/contractors, r/Construction, r/smallbusiness
+2. Format: "I built a voice-to-quote tool because I was tired of 30-minute spreadsheets - would love beta feedback"
+3. Include demo link, emphasize learning system
+4. Post during peak hours (Tuesday-Thursday 9am-11am EST)
+5. Respond to every comment within 1 hour
 
-**Success Metric**: 60%+ Pro users select non-default template
+**Success Metric**: 5,000+ impressions; 3% click demo (150 views); 15% convert = 22 signups
 
 ---
 
@@ -744,7 +730,13 @@ Quoted: [Shows comparison view]
 ## Completed & Deployed
 
 <details>
-<summary>Click to expand completed items (20 items)</summary>
+<summary>Click to expand completed items (23 items)</summary>
+
+### DISC-013: Animation Walkthrough Distribution Strategy ✅
+**Commit**: 856f051 | Demo-promo landing page with UTM tracking, PostHog events, pre-written social copy
+
+### DISC-028: PDF Quote Template Library ✅
+**Commit**: 2e88a94 | 8 templates (classic, modern, bold, elegant, technical, friendly, craftsman, corporate) + accent colors, tier-gated
 
 ### DISC-001: First Quote Activation Flow ✅
 **Commit**: 8628869 | Post-onboarding modal with voice/text paths

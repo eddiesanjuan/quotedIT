@@ -750,6 +750,25 @@ async def run_migrations(engine):
             """,
             "alter_sql": "ALTER TABLE quotes ADD COLUMN is_grace_quote BOOLEAN DEFAULT FALSE"
         },
+        # PDF Template columns (DISC-028)
+        {
+            "table": "contractors",
+            "column": "pdf_template",
+            "check_sql": """
+                SELECT column_name FROM information_schema.columns
+                WHERE table_name = 'contractors' AND column_name = 'pdf_template'
+            """,
+            "alter_sql": "ALTER TABLE contractors ADD COLUMN pdf_template VARCHAR(50) DEFAULT 'modern'"
+        },
+        {
+            "table": "contractors",
+            "column": "pdf_accent_color",
+            "check_sql": """
+                SELECT column_name FROM information_schema.columns
+                WHERE table_name = 'contractors' AND column_name = 'pdf_accent_color'
+            """,
+            "alter_sql": "ALTER TABLE contractors ADD COLUMN pdf_accent_color VARCHAR(50)"
+        },
     ]
 
     # Constraint changes (PostgreSQL only - SQLite doesn't support these)
