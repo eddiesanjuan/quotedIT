@@ -34,6 +34,106 @@ BRAND_BG_ALT = colors.HexColor('#fafafa')
 BRAND_WHITE = colors.white
 
 
+# ============================================================================
+# PDF Template System (DISC-028)
+# ============================================================================
+
+PDF_TEMPLATES = {
+    "classic": {
+        "name": "Classic",
+        "description": "Traditional professional look",
+        "title_font": "Times-Roman",
+        "body_font": "Helvetica",
+        "header_color": "#000000",
+        "accent_color": "#2563eb",  # Blue
+        "bg_alt_color": "#f8fafc",
+        "available_to": ["starter", "pro", "team"]
+    },
+    "modern": {
+        "name": "Modern Minimal",
+        "description": "Clean, contemporary design",
+        "title_font": "Helvetica",
+        "body_font": "Helvetica",
+        "header_color": "#18181b",
+        "accent_color": "#6366f1",  # Indigo
+        "bg_alt_color": "#fafafa",
+        "available_to": ["starter", "pro", "team"]
+    },
+    "bold": {
+        "name": "Bold Professional",
+        "description": "Strong, confident impression",
+        "title_font": "Helvetica-Bold",
+        "body_font": "Helvetica",
+        "header_color": "#0f172a",
+        "accent_color": "#dc2626",  # Red
+        "bg_alt_color": "#f1f5f9",
+        "available_to": ["pro", "team"]  # Pro+ only
+    },
+    "elegant": {
+        "name": "Elegant",
+        "description": "Sophisticated, premium feel",
+        "title_font": "Times-Roman",
+        "body_font": "Times-Roman",
+        "header_color": "#1e293b",
+        "accent_color": "#0d9488",  # Teal
+        "bg_alt_color": "#f8fafc",
+        "available_to": ["pro", "team"]  # Pro+ only
+    },
+    "technical": {
+        "name": "Technical",
+        "description": "Detailed, engineering-focused",
+        "title_font": "Courier",
+        "body_font": "Helvetica",
+        "header_color": "#374151",
+        "accent_color": "#4f46e5",  # Purple
+        "bg_alt_color": "#f3f4f6",
+        "available_to": ["pro", "team"]  # Pro+ only
+    },
+    "friendly": {
+        "name": "Friendly",
+        "description": "Warm, approachable style",
+        "title_font": "Helvetica",
+        "body_font": "Helvetica",
+        "header_color": "#292524",
+        "accent_color": "#f59e0b",  # Amber
+        "bg_alt_color": "#fefce8",
+        "available_to": ["starter", "pro", "team"]
+    },
+    "craftsman": {
+        "name": "Craftsman",
+        "description": "Rustic, handcrafted feel",
+        "title_font": "Times-Bold",
+        "body_font": "Times-Roman",
+        "header_color": "#422006",
+        "accent_color": "#92400e",  # Brown
+        "bg_alt_color": "#fef3c7",
+        "available_to": ["pro", "team"]  # Pro+ only
+    },
+    "corporate": {
+        "name": "Corporate",
+        "description": "Formal, business-oriented",
+        "title_font": "Helvetica",
+        "body_font": "Helvetica",
+        "header_color": "#1e3a5f",
+        "accent_color": "#1e40af",  # Dark blue
+        "bg_alt_color": "#eff6ff",
+        "available_to": ["team"]  # Team only
+    }
+}
+
+# Accent color presets for Pro tier
+ACCENT_COLORS = {
+    "blue": "#2563eb",
+    "indigo": "#6366f1",
+    "purple": "#9333ea",
+    "red": "#dc2626",
+    "orange": "#ea580c",
+    "amber": "#d97706",
+    "green": "#16a34a",
+    "teal": "#0d9488",
+}
+
+
 class LogoPlaceholder(Flowable):
     """
     A circular logo placeholder with the business initial.
@@ -90,26 +190,65 @@ class PDFGeneratorService:
     """
     Generates professional PDF quotes with minimalist, premium styling.
     Matches the quoted.it website aesthetic.
+
+    DISC-028: Now supports multiple template styles with accent color customization.
     """
 
     def __init__(self):
         self.styles = getSampleStyleSheet()
-        self._setup_custom_styles()
         self.page_width = letter[0] - 1.5 * inch  # Account for margins
+        # Template-specific colors (set in _setup_custom_styles)
+        self.template_colors = {}
+        self._setup_custom_styles()  # Uses default template initially
 
-    def _setup_custom_styles(self):
-        """Set up custom paragraph styles matching site branding."""
+    def _setup_custom_styles(self, template_key: str = "modern", accent_color: Optional[str] = None):
+        """
+        Set up custom paragraph styles based on selected template.
 
-        # Main title - elegant serif style
+        DISC-028: Template system - styles adapt to template selection.
+
+        Args:
+            template_key: Template identifier (e.g., "modern", "classic")
+            accent_color: Optional hex color override for accent color
+        """
+        # Get template config or fall back to modern
+        template = PDF_TEMPLATES.get(template_key, PDF_TEMPLATES["modern"])
+
+        # Apply accent color override if provided (Pro feature)
+        if accent_color:
+            # Check if it's a preset name or hex color
+            if accent_color.startswith("#"):
+                template["accent_color"] = accent_color
+            elif accent_color in ACCENT_COLORS:
+                template["accent_color"] = ACCENT_COLORS[accent_color]
+
+        # Convert template colors to ReportLab color objects
+        self.template_colors = {
+            "header": colors.HexColor(template["header_color"]),
+            "accent": colors.HexColor(template["accent_color"]),
+            "bg_alt": colors.HexColor(template["bg_alt_color"]),
+        }
+
+        # Clear existing custom styles if re-initializing
+        custom_style_names = [
+            'QuoteTitle', 'QuoteSubtitle', 'BusinessName', 'ContactInfo',
+            'SectionHeader', 'QuoteBody', 'QuoteBodyLight', 'CustomerName',
+            'TotalLabel', 'TotalAmount', 'FinePrint', 'FooterBrand'
+        ]
+        for style_name in custom_style_names:
+            if style_name in self.styles:
+                del self.styles[style_name]
+
+        # Main title - uses template title font
         self.styles.add(ParagraphStyle(
             name='QuoteTitle',
             parent=self.styles['Heading1'],
-            fontName='Times-Roman',
+            fontName=template["title_font"],
             fontSize=32,
             alignment=TA_LEFT,
             spaceAfter=8,
             spaceBefore=0,
-            textColor=BRAND_DARK,
+            textColor=self.template_colors["header"],
             leading=38,
         ))
 
@@ -117,7 +256,7 @@ class PDFGeneratorService:
         self.styles.add(ParagraphStyle(
             name='QuoteSubtitle',
             parent=self.styles['Normal'],
-            fontName='Helvetica',
+            fontName=template["body_font"],
             fontSize=11,
             alignment=TA_LEFT,
             textColor=BRAND_GRAY,
@@ -128,10 +267,10 @@ class PDFGeneratorService:
         self.styles.add(ParagraphStyle(
             name='BusinessName',
             parent=self.styles['Normal'],
-            fontName='Helvetica-Bold',
+            fontName=template["body_font"] + '-Bold' if 'Bold' not in template["body_font"] else template["body_font"],
             fontSize=14,
             alignment=TA_RIGHT,
-            textColor=BRAND_DARK,
+            textColor=self.template_colors["header"],
             spaceAfter=2,
         ))
 
@@ -139,22 +278,22 @@ class PDFGeneratorService:
         self.styles.add(ParagraphStyle(
             name='ContactInfo',
             parent=self.styles['Normal'],
-            fontName='Helvetica',
+            fontName=template["body_font"],
             fontSize=10,
             alignment=TA_RIGHT,
             textColor=BRAND_GRAY,
             leading=14,
         ))
 
-        # Section headers
+        # Section headers - use accent color
         self.styles.add(ParagraphStyle(
             name='SectionHeader',
             parent=self.styles['Heading2'],
-            fontName='Helvetica-Bold',
+            fontName=template["body_font"] + '-Bold' if 'Bold' not in template["body_font"] else template["body_font"],
             fontSize=10,
             spaceBefore=24,
             spaceAfter=12,
-            textColor=BRAND_LIGHT_GRAY,
+            textColor=self.template_colors["accent"],
             leading=12,
         ))
 
@@ -162,18 +301,18 @@ class PDFGeneratorService:
         self.styles.add(ParagraphStyle(
             name='QuoteBody',
             parent=self.styles['Normal'],
-            fontName='Helvetica',
+            fontName=template["body_font"],
             fontSize=11,
             leading=16,
             spaceAfter=8,
-            textColor=BRAND_DARK,
+            textColor=self.template_colors["header"],
         ))
 
         # Body text - light color
         self.styles.add(ParagraphStyle(
             name='QuoteBodyLight',
             parent=self.styles['Normal'],
-            fontName='Helvetica',
+            fontName=template["body_font"],
             fontSize=11,
             leading=16,
             spaceAfter=4,
@@ -184,9 +323,9 @@ class PDFGeneratorService:
         self.styles.add(ParagraphStyle(
             name='CustomerName',
             parent=self.styles['Normal'],
-            fontName='Helvetica-Bold',
+            fontName=template["body_font"] + '-Bold' if 'Bold' not in template["body_font"] else template["body_font"],
             fontSize=12,
-            textColor=BRAND_DARK,
+            textColor=self.template_colors["header"],
             spaceAfter=4,
         ))
 
@@ -194,7 +333,7 @@ class PDFGeneratorService:
         self.styles.add(ParagraphStyle(
             name='TotalLabel',
             parent=self.styles['Normal'],
-            fontName='Helvetica',
+            fontName=template["body_font"],
             fontSize=12,
             alignment=TA_RIGHT,
             textColor=BRAND_GRAY,
@@ -203,17 +342,17 @@ class PDFGeneratorService:
         self.styles.add(ParagraphStyle(
             name='TotalAmount',
             parent=self.styles['Normal'],
-            fontName='Helvetica-Bold',
+            fontName=template["body_font"] + '-Bold' if 'Bold' not in template["body_font"] else template["body_font"],
             fontSize=24,
             alignment=TA_RIGHT,
-            textColor=BRAND_DARK,
+            textColor=self.template_colors["accent"],  # Use accent color for total
         ))
 
         # Fine print / disclaimer
         self.styles.add(ParagraphStyle(
             name='FinePrint',
             parent=self.styles['Normal'],
-            fontName='Helvetica',
+            fontName=template["body_font"],
             fontSize=8,
             textColor=BRAND_LIGHT_GRAY,
             leading=11,
@@ -223,7 +362,7 @@ class PDFGeneratorService:
         self.styles.add(ParagraphStyle(
             name='FooterBrand',
             parent=self.styles['Normal'],
-            fontName='Times-Italic',
+            fontName=template["title_font"] + '-Italic' if template["title_font"] == 'Times-Roman' else template["body_font"],
             fontSize=9,
             alignment=TA_CENTER,
             textColor=BRAND_LIGHT_GRAY,
@@ -236,6 +375,8 @@ class PDFGeneratorService:
         terms: Optional[dict] = None,
         output_path: Optional[str] = None,
         watermark: bool = False,
+        template: str = "modern",
+        accent_color: Optional[str] = None,
     ) -> bytes:
         """
         Generate a professional PDF quote document.
@@ -246,10 +387,15 @@ class PDFGeneratorService:
             terms: Terms and conditions
             output_path: Optional file path to save PDF
             watermark: If True, add "TRIAL EXPIRED" watermark (DISC-018)
+            template: Template style key (DISC-028)
+            accent_color: Optional accent color override (hex or preset name) (DISC-028)
 
         Returns:
             PDF as bytes
         """
+        # DISC-028: Apply template styles before generating PDF
+        self._setup_custom_styles(template_key=template, accent_color=accent_color)
+
         buffer = io.BytesIO()
 
         doc = SimpleDocTemplate(
@@ -531,6 +677,8 @@ class PDFGeneratorService:
         )
 
         # Build row styles - alternating backgrounds
+        # DISC-028: Use template accent color for borders
+        border_color = self.template_colors.get("accent", BRAND_BORDER)
         style_commands = [
             # Alignment
             ('ALIGN', (0, 0), (0, -1), 'LEFT'),
@@ -543,7 +691,7 @@ class PDFGeneratorService:
             ('LEFTPADDING', (0, 0), (0, -1), 0),
             ('RIGHTPADDING', (1, 0), (1, -1), 0),
 
-            # Bottom border on each row
+            # Bottom border on each row - use template accent color at low opacity
             ('LINEBELOW', (0, 0), (-1, -1), 0.5, BRAND_BORDER),
         ]
 

@@ -90,6 +90,10 @@ class Contractor(Base):
     primary_trade = Column(String(100))  # e.g., "deck_builder", "painter", "landscaper"
     services = Column(JSON)  # List of services they offer
 
+    # PDF Template Settings (DISC-028)
+    pdf_template = Column(String(50), default="modern")  # Template style key
+    pdf_accent_color = Column(String(50), nullable=True)  # Hex color or preset name
+
     # Subscription
     plan = Column(String(50), default="starter")  # starter, team
     is_active = Column(Boolean, default=True)

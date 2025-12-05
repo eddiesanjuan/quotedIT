@@ -1280,6 +1280,7 @@ async def generate_pdf(request: Request, quote_id: str, current_user: dict = Dep
             "email": contractor.email,
             "phone": contractor.phone,
             "address": contractor.address,
+            "logo_data": contractor.logo_data,  # Include logo for PDF
         }
 
         terms_dict = {}
@@ -1290,7 +1291,11 @@ async def generate_pdf(request: Request, quote_id: str, current_user: dict = Dep
                 "labor_warranty_years": terms.labor_warranty_years,
             }
 
-        # Generate PDF (DISC-018: Add watermark for grace quotes)
+        # DISC-028: Get contractor's template preferences
+        template = contractor.pdf_template or "modern"
+        accent_color = contractor.pdf_accent_color
+
+        # Generate PDF (DISC-018: Add watermark for grace quotes, DISC-028: Use template)
         os.makedirs("./data/pdfs", exist_ok=True)
         output_path = f"./data/pdfs/{quote_id}.pdf"
 
@@ -1300,6 +1305,8 @@ async def generate_pdf(request: Request, quote_id: str, current_user: dict = Dep
             terms=terms_dict,
             output_path=output_path,
             watermark=quote.is_grace_quote,  # Add watermark if this is a grace quote
+            template=template,  # DISC-028: Use contractor's template
+            accent_color=accent_color,  # DISC-028: Use contractor's accent color
         )
 
         # Update quote with PDF URL
@@ -1615,3 +1622,72 @@ async def get_customers(
             )
 
         return unique_customers
+
+
+# ============================================================================
+# PDF Template Endpoints (DISC-028)
+# ============================================================================
+
+class TemplateInfo(BaseModel):
+    """Template information."""
+    key: str
+    name: str
+    description: str
+    available_to: List[str]
+
+
+class TemplatesResponse(BaseModel):
+    """Response with available templates."""
+    templates: List[TemplateInfo]
+    accent_colors: dict
+    current_template: Optional[str] = None
+    current_accent_color: Optional[str] = None
+
+
+@router.get("/pdf/templates", response_model=TemplatesResponse)
+async def get_pdf_templates(
+    current_user: dict = Depends(get_current_user),
+    auth_db: AsyncSession = Depends(get_db)
+):
+    """
+    Get available PDF templates for the current user's plan tier.
+
+    DISC-028: Template library - returns templates user can access based on
+    their subscription tier (starter, pro, team).
+    """
+    from ..services.pdf_generator import PDF_TEMPLATES, ACCENT_COLORS
+    from ..models.database import User
+
+    db = get_db_service()
+
+    # Get contractor to determine plan tier
+    contractor = await db.get_contractor_by_user_id(current_user["id"])
+    if not contractor:
+        raise HTTPException(status_code=400, detail="Contractor not found")
+
+    # Get user's plan tier from database
+    result = await auth_db.execute(
+        select(User).where(User.id == current_user["id"])
+    )
+    user = result.scalar_one_or_none()
+    user_tier = user.plan_tier if user else contractor.plan or "starter"
+
+    # Filter templates by tier
+    available_templates = []
+    for key, template in PDF_TEMPLATES.items():
+        if user_tier in template["available_to"]:
+            available_templates.append(
+                TemplateInfo(
+                    key=key,
+                    name=template["name"],
+                    description=template["description"],
+                    available_to=template["available_to"]
+                )
+            )
+
+    return TemplatesResponse(
+        templates=available_templates,
+        accent_colors=ACCENT_COLORS,
+        current_template=contractor.pdf_template or "modern",
+        current_accent_color=contractor.pdf_accent_color,
+    )

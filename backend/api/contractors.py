@@ -467,3 +467,73 @@ async def delete_logo(
         "success": True,
         "message": "Logo deleted successfully"
     }
+
+
+# ============================================================================
+# PDF Template Settings (DISC-028)
+# ============================================================================
+
+class TemplateSettingsUpdate(BaseModel):
+    """Request to update PDF template settings."""
+    pdf_template: Optional[str] = None
+    pdf_accent_color: Optional[str] = None
+
+
+class TemplateSettingsResponse(BaseModel):
+    """PDF template settings response."""
+    pdf_template: str
+    pdf_accent_color: Optional[str] = None
+
+
+@router.put("/template-settings", response_model=TemplateSettingsResponse)
+async def update_template_settings(
+    settings: TemplateSettingsUpdate,
+    contractor: Contractor = Depends(get_current_contractor),
+):
+    """
+    Update PDF template settings for contractor.
+
+    DISC-028: Allows Pro/Team users to customize their PDF quote appearance.
+    """
+    from ..services.pdf_generator import PDF_TEMPLATES
+
+    db = get_database_service()
+
+    # Validate template exists
+    if settings.pdf_template and settings.pdf_template not in PDF_TEMPLATES:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid template. Available: {', '.join(PDF_TEMPLATES.keys())}"
+        )
+
+    # Build update dict
+    update_data = {}
+    if settings.pdf_template is not None:
+        update_data["pdf_template"] = settings.pdf_template
+    if settings.pdf_accent_color is not None:
+        update_data["pdf_accent_color"] = settings.pdf_accent_color
+
+    # Update contractor
+    updated = await db.update_contractor(
+        contractor_id=contractor.id,
+        **update_data
+    )
+
+    if not updated:
+        raise HTTPException(status_code=500, detail="Failed to update template settings")
+
+    return TemplateSettingsResponse(
+        pdf_template=updated.pdf_template or "modern",
+        pdf_accent_color=updated.pdf_accent_color,
+    )
+
+
+@router.get("/template-settings", response_model=TemplateSettingsResponse)
+async def get_template_settings(
+    contractor: Contractor = Depends(get_current_contractor),
+):
+    """Get current PDF template settings."""
+    return TemplateSettingsResponse(
+        pdf_template=contractor.pdf_template or "modern",
+        pdf_accent_color=contractor.pdf_accent_color,
+    )
