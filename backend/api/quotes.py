@@ -1691,3 +1691,72 @@ async def get_pdf_templates(
         current_template=contractor.pdf_template or "modern",
         current_accent_color=contractor.pdf_accent_color,
     )
+
+
+# ============================================================================
+# Quote Duplication Endpoint (DISC-038)
+# ============================================================================
+
+@router.post("/{quote_id}/duplicate", response_model=QuoteResponse)
+async def duplicate_quote(
+    quote_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Duplicate an existing quote.
+
+    DISC-038: Quote Template Feature - Creates a new quote with copied data
+    from an existing quote. User can then edit and regenerate.
+
+    Flow:
+    1. Copy customer info, transcription, and line items from source quote
+    2. Create new quote in draft state (status = 'draft')
+    3. Track source quote for analytics
+    4. Return new quote for editing
+    """
+    db = get_db_service()
+
+    # Get the source quote
+    source_quote = await db.get_quote(quote_id)
+    if not source_quote:
+        raise HTTPException(status_code=404, detail="Quote not found")
+
+    # Verify ownership
+    contractor = await db.get_contractor_by_user_id(current_user["id"])
+    if not contractor or source_quote.contractor_id != contractor.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    # Create new quote with copied data
+    new_quote = await db.create_quote(
+        contractor_id=contractor.id,
+        transcription=source_quote.transcription,
+        job_type=source_quote.job_type,
+        job_description=source_quote.job_description,
+        line_items=source_quote.line_items,
+        subtotal=source_quote.subtotal,
+        customer_name=source_quote.customer_name,
+        customer_address=source_quote.customer_address,
+        customer_phone=source_quote.customer_phone,
+        estimated_days=source_quote.estimated_days,
+        ai_generated_total=source_quote.ai_generated_total,
+        duplicate_source_quote_id=quote_id,  # Track the source
+        status="draft",  # Mark as draft for editing
+    )
+
+    # Track duplication event
+    try:
+        analytics_service.track_event(
+            user_id=str(current_user["id"]),
+            event_name="quote_duplicate_created",
+            properties={
+                "contractor_id": str(contractor.id),
+                "source_quote_id": quote_id,
+                "new_quote_id": str(new_quote.id),
+                "job_type": source_quote.job_type,
+                "subtotal": source_quote.subtotal,
+            }
+        )
+    except Exception as e:
+        print(f"Warning: Failed to track quote duplication: {e}")
+
+    return quote_to_response(new_quote)

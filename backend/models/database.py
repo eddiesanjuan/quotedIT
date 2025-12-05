@@ -325,6 +325,9 @@ class Quote(Base):
     shared_at = Column(DateTime, nullable=True)  # When first shared
     share_count = Column(Integer, default=0)  # Track total shares
 
+    # Duplication (DISC-038)
+    duplicate_source_quote_id = Column(String(36), nullable=True)  # Quote this was duplicated from
+
     # Relationship
     contractor = relationship("Contractor", back_populates="quotes")
     feedback = relationship("QuoteFeedback", back_populates="quote", uselist=False)
@@ -768,6 +771,16 @@ async def run_migrations(engine):
                 WHERE table_name = 'contractors' AND column_name = 'pdf_accent_color'
             """,
             "alter_sql": "ALTER TABLE contractors ADD COLUMN pdf_accent_color VARCHAR(50)"
+        },
+        # Duplicate source tracking (DISC-038)
+        {
+            "table": "quotes",
+            "column": "duplicate_source_quote_id",
+            "check_sql": """
+                SELECT column_name FROM information_schema.columns
+                WHERE table_name = 'quotes' AND column_name = 'duplicate_source_quote_id'
+            """,
+            "alter_sql": "ALTER TABLE quotes ADD COLUMN duplicate_source_quote_id VARCHAR(36)"
         },
     ]
 

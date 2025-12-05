@@ -24,9 +24,9 @@ To approve: Change status from DISCOVERED → READY
 |--------|-------|
 | DEPLOYED | 23 |
 | COMPLETE | 0 |
-| READY | 2 |
-| DISCOVERED | 22 |
-| **Total** | **47** |
+| READY | 9 |
+| DISCOVERED | 16 |
+| **Total** | **48** |
 
 **Phase II Voice Control**: 8 tickets (DISC-042 through DISC-049) awaiting executive review
 
@@ -341,6 +341,25 @@ To approve: Change status from DISCOVERED → READY
 5. Document optimal patterns for Quoted learning system
 
 **Success Metric**: 15% improvement in quote accuracy; 20% reduction in prompt tokens needed
+
+---
+
+### DISC-050: Pricing Page Plan Buttons Not Working (READY) 🐛
+
+**Source**: Founder Request (Eddie, 2025-12-05)
+**Impact**: HIGH | **Effort**: S | **Score**: 3.0
+**Sprint Alignment**: Critical conversion blocker - users cannot purchase Starter or Team plans
+
+**Problem**: On the pricing page, only the Pro plan button successfully redirects to Stripe checkout. The Starter and Team plan buttons do not work, blocking users from purchasing those tiers.
+
+**Proposed Work**:
+1. Inspect frontend pricing page button click handlers for all 3 plans
+2. Verify Stripe product IDs are correctly configured for Starter and Team
+3. Debug backend `/api/billing/create-checkout-session` endpoint for non-Pro plans
+4. Test all 3 checkout flows end-to-end
+5. Add error logging if checkout creation fails
+
+**Success Metric**: All 3 plan buttons successfully redirect to Stripe checkout
 
 ---
 

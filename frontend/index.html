@@ -638,6 +638,83 @@
             background: var(--border);
         }
 
+        /* Voice Fallback UI */
+        .voice-warning {
+            display: none;
+            padding: 16px 20px;
+            margin-bottom: 24px;
+            background: rgba(251, 191, 36, 0.1);
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            border-radius: 8px;
+            color: var(--warning);
+            font-size: 0.875rem;
+            line-height: 1.5;
+            text-align: left;
+        }
+
+        .voice-warning.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .voice-fallback-link {
+            display: none;
+            margin-top: 16px;
+            color: var(--text-secondary);
+            font-size: 0.8125rem;
+            text-decoration: none;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .voice-fallback-link:hover {
+            color: var(--text-primary);
+        }
+
+        .voice-fallback-link.active {
+            display: inline-block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .voice-fallback-link.prominent {
+            color: var(--warning);
+            font-weight: 500;
+        }
+
+        .browser-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            margin-left: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            border-radius: 100px;
+            font-size: 0.6875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-secondary);
+        }
+
+        .browser-badge.compatible {
+            background: rgba(74, 222, 128, 0.1);
+            border-color: rgba(74, 222, 128, 0.3);
+            color: var(--success);
+        }
+
+        .browser-badge.limited {
+            background: rgba(251, 191, 36, 0.1);
+            border-color: rgba(251, 191, 36, 0.3);
+            color: var(--warning);
+        }
+
+        .browser-badge-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
         /* Loading */
         .loading {
             display: none;
@@ -3543,7 +3620,18 @@
 
             <!-- Input Section -->
             <div class="card voice-section" id="inputSection">
-                <h2 class="card-title" style="font-family: var(--font-serif); font-weight: 400;">Describe the job.</h2>
+                <h2 class="card-title" style="font-family: var(--font-serif); font-weight: 400;">
+                    Describe the job.
+                    <span class="browser-badge" id="browserBadge" style="display: none;">
+                        <span class="browser-badge-dot"></span>
+                        <span id="browserBadgeText">Voice Ready</span>
+                    </span>
+                </h2>
+
+                <!-- Voice not supported warning -->
+                <div class="voice-warning" id="voiceWarning">
+                    Voice recording works best on Chrome or Edge. You can also type your job description below.
+                </div>
 
                 <button class="record-btn" id="recordBtn" onclick="toggleRecording()">
                     <span id="recordBtnText">Record</span>
@@ -3551,6 +3639,11 @@
                 <p class="record-instructions" id="recordInstructions">
                     Click to start recording your voice note
                 </p>
+
+                <!-- Fallback link for voice issues -->
+                <a class="voice-fallback-link" id="voiceFallbackLink" onclick="switchToTextInput()">
+                    Having trouble? Type instead →
+                </a>
 
                 <div class="text-divider">or type it out</div>
 
@@ -3809,6 +3902,7 @@
                 <div class="quote-actions" id="detailQuoteActions">
                     <button class="btn btn-primary" onclick="downloadDetailPdf()">Download PDF</button>
                     <button class="btn btn-primary" onclick="openShareModal()">📤 Share</button>
+                    <button class="btn btn-secondary" onclick="duplicateQuote()">📋 Duplicate</button>
                     <button class="btn btn-secondary" onclick="backToQuoteList()">Back to My Quotes</button>
                 </div>
             </div>
@@ -4588,6 +4682,9 @@
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
+            // Check voice support
+            checkVoiceSupport();
+
             // Check for referral code in URL
             const urlParams = new URLSearchParams(window.location.search);
             const refCode = urlParams.get('ref');
@@ -4830,6 +4927,106 @@
             document.getElementById('authMessage').classList.remove('active');
         }
 
+        // Voice support detection and fallback handling
+        let voiceSilenceTimeout = null;
+        let hasRecordedAudio = false;
+
+        // Check voice support on page load
+        function checkVoiceSupport() {
+            const hasMediaDevices = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+            const hasMediaRecorder = typeof MediaRecorder !== 'undefined';
+            const isSupported = hasMediaDevices && hasMediaRecorder;
+
+            const badge = document.getElementById('browserBadge');
+            const badgeText = document.getElementById('browserBadgeText');
+            const warning = document.getElementById('voiceWarning');
+
+            if (!isSupported) {
+                // Voice not supported - show warning
+                warning.classList.add('active');
+                badge.style.display = 'inline-flex';
+                badge.classList.add('limited');
+                badgeText.textContent = 'Text Only';
+
+                // Track unsupported browser
+                {% if posthog_api_key %}
+                if (window.posthog) {
+                    posthog.capture('voice_api_unsupported', {
+                        has_media_devices: hasMediaDevices,
+                        has_media_recorder: hasMediaRecorder,
+                        user_agent: navigator.userAgent
+                    });
+                }
+                {% endif %}
+
+                return false;
+            } else {
+                // Voice supported
+                badge.style.display = 'inline-flex';
+                badge.classList.add('compatible');
+                badgeText.textContent = 'Voice Ready';
+                return true;
+            }
+        }
+
+        // Show fallback link (subtle or prominent)
+        function showVoiceFallback(prominent = false) {
+            const fallbackLink = document.getElementById('voiceFallbackLink');
+            fallbackLink.classList.add('active');
+
+            if (prominent) {
+                fallbackLink.classList.add('prominent');
+                fallbackLink.textContent = '⚠️ Voice issue detected. Switch to text →';
+            }
+
+            // Track fallback shown
+            {% if posthog_api_key %}
+            if (window.posthog) {
+                posthog.capture('voice_fallback_shown', {
+                    prominent: prominent,
+                    has_recorded_audio: hasRecordedAudio
+                });
+            }
+            {% endif %}
+        }
+
+        // Switch to text input
+        function switchToTextInput() {
+            const textarea = document.getElementById('jobDescription');
+            textarea.focus();
+            textarea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            // Track fallback used
+            {% if posthog_api_key %}
+            if (window.posthog) {
+                posthog.capture('voice_fallback_used');
+            }
+            {% endif %}
+        }
+
+        // Start silence detection during recording
+        function startSilenceDetection() {
+            // Clear any existing timeout
+            if (voiceSilenceTimeout) {
+                clearTimeout(voiceSilenceTimeout);
+            }
+
+            // After 10 seconds of recording without stopping, show fallback
+            voiceSilenceTimeout = setTimeout(() => {
+                if (mediaRecorder && mediaRecorder.state === 'recording') {
+                    showVoiceFallback(false);
+                }
+            }, 10000);
+        }
+
+        // Stop silence detection
+        function stopSilenceDetection() {
+            if (voiceSilenceTimeout) {
+                clearTimeout(voiceSilenceTimeout);
+                voiceSilenceTimeout = null;
+            }
+        }
+
         // Get supported audio MIME type for recording (iOS Safari compatibility)
         function getSupportedAudioMimeType() {
             const types = [
@@ -4861,6 +5058,8 @@
                 btn.classList.remove('recording');
                 btnText.textContent = 'Record';
                 instructions.textContent = 'Processing...';
+                stopSilenceDetection();
+                hasRecordedAudio = true;
             } else {
                 try {
                     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -4877,12 +5076,32 @@
                         const audioBlob = new Blob(audioChunks, { type: mimeType || 'audio/webm' });
                         await sendAudioForTranscription(audioBlob);
                         stream.getTracks().forEach(track => track.stop());
+                        stopSilenceDetection();
+                    };
+
+                    // Handle MediaRecorder errors
+                    mediaRecorder.onerror = (event) => {
+                        console.error('MediaRecorder error:', event);
+                        showVoiceFallback(true);
+
+                        // Track error
+                        {% if posthog_api_key %}
+                        if (window.posthog) {
+                            posthog.capture('voice_error', {
+                                error_type: 'mediarecorder_error',
+                                error_name: event.error?.name || 'unknown'
+                            });
+                        }
+                        {% endif %}
                     };
 
                     mediaRecorder.start();
                     btn.classList.add('recording');
                     btnText.textContent = 'Stop';
                     instructions.textContent = 'Recording... Click again when done';
+
+                    // Start silence detection
+                    startSilenceDetection();
 
                     // Track voice input method
                     lastInputMethod = 'voice';
@@ -4896,6 +5115,18 @@
                 } catch (err) {
                     console.error('Microphone error:', err);
                     showError('Could not access microphone. Please allow access and try again.');
+                    showVoiceFallback(true);
+
+                    // Track error
+                    {% if posthog_api_key %}
+                    if (window.posthog) {
+                        posthog.capture('voice_error', {
+                            error_type: 'microphone_access',
+                            error_name: err.name || 'unknown',
+                            error_message: err.message
+                        });
+                    }
+                    {% endif %}
                 }
             }
         }
