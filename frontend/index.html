@@ -4666,6 +4666,48 @@
         </div>
     </div>
 
+    <!-- Draft Recovery Modal (DISC-032) -->
+    <div id="draftRecoveryModal" class="modal-overlay" style="display: none;">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content" style="max-width: 500px;">
+            <button class="modal-close" onclick="closeDraftRecoveryModal()">&times;</button>
+
+            <div style="text-align: center; margin-bottom: 24px;">
+                <div style="font-size: 3rem; margin-bottom: 16px;">💾</div>
+                <h2 class="modal-title" style="margin-bottom: 8px;">Unsaved Quote Found</h2>
+                <p class="modal-subtitle">
+                    You have an unsaved quote from <strong id="draftTimeAgo"></strong>
+                </p>
+            </div>
+
+            <!-- Draft Preview -->
+            <div style="margin-bottom: 24px;">
+                <div style="background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 8px; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Draft Preview</label>
+                    <p id="draftPreview" style="color: var(--text-secondary); font-size: 0.9375rem; margin: 0; line-height: 1.5; font-style: italic;"></p>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div style="display: flex; gap: 12px; flex-direction: column;">
+                <button
+                    class="btn btn-primary"
+                    onclick="restoreDraft()"
+                    style="width: 100%;"
+                >
+                    Restore Draft
+                </button>
+                <button
+                    class="btn btn-secondary"
+                    onclick="discardDraft()"
+                    style="width: 100%;"
+                >
+                    Discard & Start Fresh
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Configuration
         const API_BASE = window.location.hostname === 'localhost'
@@ -5670,6 +5712,9 @@
                 a.click();
                 window.URL.revokeObjectURL(url);
                 document.body.removeChild(a);
+
+                // Clear draft after successful download (DISC-032)
+                clearDraft();
             } catch (err) {
                 console.error('Error:', err);
                 showError(err.message);
@@ -5700,6 +5745,8 @@
             quoteResult.style.display = '';  // Clear inline style, let CSS control
             hideError();
             resetFeedbackForm();
+            // Clear draft when starting new quote (DISC-032)
+            clearDraft();
         }
 
         // ========== CELEBRATION MODAL ==========
@@ -7334,14 +7381,20 @@
                 } else {
                     checkAndShowInputSection();
                 }
+                // Start autosave when in New Quote section (DISC-032)
+                startAutosave();
             } else if (section === 'myQuotes') {
                 document.getElementById('myQuotesSection').style.display = 'block';
                 loadQuotes();
                 // Check if first quote celebration should show
                 checkAndShowCelebration();
+                // Stop autosave when leaving New Quote section (DISC-032)
+                stopAutosave();
             } else if (section === 'account') {
                 document.getElementById('accountSection').style.display = 'block';
                 loadBillingStatus();
+                // Stop autosave when leaving New Quote section (DISC-032)
+                stopAutosave();
             }
         }
 
