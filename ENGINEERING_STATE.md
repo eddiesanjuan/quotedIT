@@ -1,6 +1,6 @@
 # Engineering State
 
-**Last Updated**: 2025-12-04 10:30 PST
+**Last Updated**: 2025-12-05 14:50 PST
 **Updated By**: Autonomous AI (CEO)
 
 ---
@@ -19,13 +19,14 @@
 
 ## ⚠️ Current Product Reality (AGENTS MUST READ)
 
-**Last verified**: 2025-12-04
+**Last verified**: 2025-12-05
 
 This section is the **authoritative source** for what features actually exist in production. Some planning documents contain aspirational specs that were never built. Always check here first.
 
 | Feature | Status | Reality |
 |---------|--------|---------|
 | **Demo mode** | ANIMATION ONLY | `demo.html` shows animated walkthrough. Does NOT generate quotes. Users must sign up to use product. |
+| **Demo promo page** | ✅ WORKING | `/demo-promo` landing page with UTM tracking for distribution (DISC-013) |
 | **Quote generation** | ✅ WORKING | Voice → AI → PDF quote generation is fully functional |
 | **Magic link auth** | ✅ WORKING | Email-based passwordless login |
 | **Stripe billing** | ✅ WORKING | Starter/Pro/Team plans, trial tracking |
@@ -34,6 +35,7 @@ This section is the **authoritative source** for what features actually exist in
 | **PostHog analytics** | ✅ WORKING | Event tracking, funnels |
 | **First quote celebration** | ✅ WORKING | Confetti modal on first quote |
 | **PDF download** | ✅ WORKING | Professional PDF generation |
+| **PDF templates** | ✅ WORKING | 8 templates (classic, modern, bold, elegant, technical, friendly, craftsman, corporate) + accent colors, tier-gated (DISC-028) |
 | **Pricing sanity check** | ✅ WORKING | Statistical bounds on quote generation, flags/blocks hallucinations |
 
 **Common misunderstandings**:
@@ -66,9 +68,15 @@ This section is the **authoritative source** for what features actually exist in
 |--------|-------------|--------|----------|
 | MOBILE-001 | Mobile App Strategy (iOS + Android) | **QUEUED** | Strategic |
 | QA-001 | QA Fleet Implementation | **READY** | Autonomous |
-| DISC-013 | Animation Distribution Strategy | **READY** | Growth |
 | DISC-014 | Buildxact Competitive Defense | **READY** | Strategy |
-| DISC-028 | PDF Template Library | **READY** | Product |
+| DISC-033 | Reddit Contractor Launch Post | **READY** | 🔴 FOUNDER ACTION |
+
+### Recently Deployed (2025-12-05)
+
+| Ticket | Description | Commits |
+|--------|-------------|---------|
+| DISC-013 | Animation Distribution Strategy | 856f051, 889556c |
+| DISC-028 | PDF Template Library | 2e88a94, 2c94a7c (migration fix) |
 
 ---
 
