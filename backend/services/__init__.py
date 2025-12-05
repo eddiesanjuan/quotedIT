@@ -10,6 +10,7 @@ from .onboarding import OnboardingService, get_onboarding_service
 from .learning import LearningService, get_learning_service
 from .database import DatabaseService, get_db_service
 from .pricing_brain import PricingBrainService, get_pricing_brain_service
+from .pricing_sanity_check import PricingSanityCheckService, get_sanity_check_service
 
 # Alias for backward compatibility
 get_database_service = get_db_service
@@ -30,4 +31,6 @@ __all__ = [
     "get_database_service",
     "PricingBrainService",
     "get_pricing_brain_service",
+    "PricingSanityCheckService",
+    "get_sanity_check_service",
 ]

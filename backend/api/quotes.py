@@ -29,6 +29,7 @@ from ..services import (
     get_pdf_service,
     get_learning_service,
     get_db_service,
+    get_sanity_check_service,
 )
 from ..services.auth import get_current_user, get_db
 from ..services.billing import BillingService
@@ -369,6 +370,51 @@ async def generate_quote(
         # Ensure detected job_type is used if AI didn't return one
         if not quote_data.get("job_type"):
             quote_data["job_type"] = detected_job_type
+
+        # DISC-034: Pricing sanity check to prevent catastrophic hallucinations
+        sanity_check_service = get_sanity_check_service()
+        sanity_result = await sanity_check_service.check_quote_sanity(
+            db=auth_db,
+            contractor_id=contractor.id,
+            quote_total=quote_data.get("subtotal", 0),
+            category=detected_job_type,
+        )
+
+        # If quote is blocked (>10x P95), return error
+        if not sanity_result["is_sane"]:
+            # Log the blocked quote for pattern analysis
+            await sanity_check_service.log_flagged_quote(
+                db=auth_db,
+                contractor_id=contractor.id,
+                quote_total=quote_data.get("subtotal", 0),
+                category=detected_job_type,
+                action="block",
+                bounds=sanity_result["bounds"],
+                transcription=quote_request.transcription,
+            )
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "error": "quote_sanity_check_failed",
+                    "message": sanity_result["message"],
+                    "quote_total": quote_data.get("subtotal", 0),
+                    "bounds": sanity_result["bounds"],
+                }
+            )
+
+        # If quote is flagged with warning (>3x P95), add warning to quote
+        if sanity_result["action"] == "warn":
+            quote_data["sanity_warning"] = sanity_result["message"]
+            # Log the warning for pattern analysis
+            await sanity_check_service.log_flagged_quote(
+                db=auth_db,
+                contractor_id=contractor.id,
+                quote_total=quote_data.get("subtotal", 0),
+                category=detected_job_type,
+                action="warn",
+                bounds=sanity_result["bounds"],
+                transcription=quote_request.transcription,
+            )
 
         # Save to database (DISC-018: Mark grace quotes)
         quote = await db.create_quote(
@@ -827,6 +873,51 @@ async def generate_quote_from_audio(
             # Ensure detected job_type is used if AI didn't return one
             if not quote_data.get("job_type"):
                 quote_data["job_type"] = detected_job_type
+
+            # DISC-034: Pricing sanity check to prevent catastrophic hallucinations
+            sanity_check_service = get_sanity_check_service()
+            sanity_result = await sanity_check_service.check_quote_sanity(
+                db=auth_db,
+                contractor_id=contractor.id,
+                quote_total=quote_data.get("subtotal", 0),
+                category=detected_job_type,
+            )
+
+            # If quote is blocked (>10x P95), return error
+            if not sanity_result["is_sane"]:
+                # Log the blocked quote for pattern analysis
+                await sanity_check_service.log_flagged_quote(
+                    db=auth_db,
+                    contractor_id=contractor.id,
+                    quote_total=quote_data.get("subtotal", 0),
+                    category=detected_job_type,
+                    action="block",
+                    bounds=sanity_result["bounds"],
+                    transcription=transcription_text,
+                )
+                raise HTTPException(
+                    status_code=400,
+                    detail={
+                        "error": "quote_sanity_check_failed",
+                        "message": sanity_result["message"],
+                        "quote_total": quote_data.get("subtotal", 0),
+                        "bounds": sanity_result["bounds"],
+                    }
+                )
+
+            # If quote is flagged with warning (>3x P95), add warning to quote
+            if sanity_result["action"] == "warn":
+                quote_data["sanity_warning"] = sanity_result["message"]
+                # Log the warning for pattern analysis
+                await sanity_check_service.log_flagged_quote(
+                    db=auth_db,
+                    contractor_id=contractor.id,
+                    quote_total=quote_data.get("subtotal", 0),
+                    category=detected_job_type,
+                    action="warn",
+                    bounds=sanity_result["bounds"],
+                    transcription=transcription_text,
+                )
 
             # Save to database (DISC-018: Mark grace quotes)
             quote = await db.create_quote(

@@ -19,7 +19,7 @@ from pydantic import BaseModel
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 
-from ..services import get_transcription_service, get_quote_service
+from ..services import get_transcription_service, get_quote_service, get_sanity_check_service
 
 
 router = APIRouter()
@@ -202,6 +202,25 @@ async def generate_demo_quote(
             correction_examples=None,  # No learning for demo
             detected_category=detected_job_type,
         )
+
+        # DISC-034: Simple sanity check for demo quotes using global bounds
+        sanity_check_service = get_sanity_check_service()
+        quote_total = quote_data.get("subtotal", 0)
+
+        # Check against global bounds (no historical data for demo)
+        if quote_total > sanity_check_service.GLOBAL_MAX_QUOTE:
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "error": "quote_sanity_check_failed",
+                    "message": f"This quote amount (${quote_total:,.0f}) exceeds reasonable bounds. This might be an AI error. Please try describing your project again with more details.",
+                    "quote_total": quote_total,
+                }
+            )
+        elif quote_total > (sanity_check_service.GLOBAL_MAX_QUOTE * 0.5):
+            # Add warning for unusually high demo quotes
+            warning_msg = f"⚠️ This quote (${quote_total:,.0f}) is unusually high. Please review carefully."
+            quote_data["sanity_warning"] = warning_msg
 
         # Add demo-specific metadata
         quote_data["is_demo"] = True
