@@ -253,21 +253,25 @@ class BillingService:
             )
 
         # Find price with matching interval
-        # Debug: Log all prices to understand configuration
-        print(f"[DEBUG] {plan_tier} has {len(prices.data)} prices:")
-        for i, p in enumerate(prices.data):
-            usage_type = p.recurring.usage_type if p.recurring else "one-time"
-            interval = p.recurring.interval if p.recurring else "N/A"
-            print(f"  [{i}] {p.id}: {interval}, usage_type={usage_type}, amount={p.unit_amount}")
+        # Prefer licensed (fixed) prices over metered prices for checkout
+        # Metered prices are for overage tracking, not initial subscription
+        licensed_prices = []
+        metered_prices = []
 
-        matching_price = None
         for price in prices.data:
             if price.recurring and price.recurring.interval == stripe_interval:
-                matching_price = price
-                break
+                if price.recurring.usage_type == "metered":
+                    metered_prices.append(price)
+                else:
+                    licensed_prices.append(price)
 
-        # Fallback to first price if no interval match
-        if not matching_price:
+        # Use licensed price if available, fall back to metered
+        if licensed_prices:
+            matching_price = licensed_prices[0]
+        elif metered_prices:
+            matching_price = metered_prices[0]
+        else:
+            # Fallback to first price if no interval match
             print(f"No {stripe_interval} price found for {plan_tier}, using first available price")
             matching_price = prices.data[0]
 
