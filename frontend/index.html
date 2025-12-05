@@ -2696,9 +2696,10 @@
 
         .confetti-piece {
             position: absolute;
-            width: 10px;
-            height: 10px;
-            background: var(--accent);
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            opacity: 0.8;
             animation: confetti-fall 3s linear infinite;
         }
 
@@ -5097,10 +5098,12 @@
             // DISC-018: Update warning banner based on billing info
             if (quote.billing_info) {
                 updateTrialWarning(quote.billing_info);
-            }
 
-            // Mark that celebration is pending (will show when user navigates to My Quotes)
-            markCelebrationPending();
+                // Only mark celebration pending for first quote (quotes_used == 1)
+                if (quote.billing_info.quotes_used === 1) {
+                    markCelebrationPending();
+                }
+            }
         }
 
         // DISC-018: Update trial warning banner
@@ -5390,13 +5393,15 @@
 
         function createConfetti() {
             const confettiContainer = document.getElementById('confetti');
-            const colors = ['#ffffff', '#fbbf24', '#4ade80', '#60a5fa', '#f87171'];
-            const confettiCount = 50;
+            const colors = ['#7c3aed', '#fbbf24', '#4ade80', '#60a5fa', '#f87171'];
+            const confettiCount = 25;  // Reduced for cleaner look
 
             for (let i = 0; i < confettiCount; i++) {
                 const confetti = document.createElement('div');
                 confetti.className = 'confetti-piece';
-                confetti.style.left = Math.random() * 100 + '%';
+                // Position only on edges (left 20% or right 20%)
+                const leftOrRight = Math.random() < 0.5;
+                confetti.style.left = leftOrRight ? (Math.random() * 20) + '%' : (80 + Math.random() * 20) + '%';
                 confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
                 confetti.style.animationDelay = Math.random() * 3 + 's';
                 confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
@@ -6521,7 +6526,13 @@
         function showLoading(show, message = 'Generating your quote...') {
             document.getElementById('inputSection').style.display = show ? 'none' : 'block';
             document.getElementById('transcriptionPreview').style.display = 'none';
-            document.getElementById('loadingSection').classList.toggle('active', show);
+
+            // Clear any inline style that might override the CSS class
+            const loadingSection = document.getElementById('loadingSection');
+            if (show) {
+                loadingSection.style.display = '';  // Clear inline style so CSS .active works
+            }
+            loadingSection.classList.toggle('active', show);
             document.getElementById('loadingText').textContent = message;
 
             // Clear any existing interval
