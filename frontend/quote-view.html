@@ -491,7 +491,8 @@
 
                     const nameDiv = document.createElement('div');
                     nameDiv.className = 'item-name';
-                    nameDiv.textContent = item.item;
+                    // Support both API formats: item.name (database) or item.item (legacy)
+                    nameDiv.textContent = item.name || item.item || 'Item';
                     descDiv.appendChild(nameDiv);
 
                     if (item.description) {
@@ -503,7 +504,9 @@
 
                     const costDiv = document.createElement('div');
                     costDiv.className = 'item-cost';
-                    costDiv.textContent = `$${item.cost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                    // Support both API formats: item.amount (database) or item.cost (legacy)
+                    const itemCost = item.amount || item.cost || 0;
+                    costDiv.textContent = `$${itemCost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
                     itemDiv.appendChild(descDiv);
                     itemDiv.appendChild(costDiv);

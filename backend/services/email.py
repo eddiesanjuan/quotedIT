@@ -536,6 +536,9 @@ class EmailService:
         greeting = f"Hi {customer_name}" if customer_name else "Hello"
         personal_msg = f"<p>{message}</p>" if message else ""
 
+        # Format the total amount
+        formatted_total = f"${total:,.2f}"
+
         content = f"""
             <h1>Quote from {contractor_name}</h1>
 
@@ -556,7 +559,7 @@ class EmailService:
                     Total Investment
                 </div>
                 <div class="stat-value" style="font-family: 'Playfair Display', Georgia, serif; font-size: 32px; font-weight: 600; color: #ffffff;">
-                    ${total:,.2f}
+                    {formatted_total}
                 </div>
             </div>
 
@@ -570,7 +573,11 @@ class EmailService:
             </p>
         """
 
-        html = EmailService._get_base_template().format(content=content)
+        # Escape curly braces in content to prevent format() from interpreting them
+        # This fixes the '\n margin' error when job_description contains CSS-like syntax
+        content = content.replace('{', '{{').replace('}', '}}')
+
+        html = EmailService._get_base_template().replace('{content}', content)
 
         try:
             email_data = {

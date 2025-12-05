@@ -2059,6 +2059,37 @@
                 width: 100%;
             }
 
+            /* Quote header: stack vertically on mobile so confidence badge is visible below nav */
+            .quote-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+
+            .quote-header h2 {
+                font-size: 1.5rem;
+            }
+
+            /* Line item editing: stack vertically on mobile for better alignment */
+            .line-item.editable {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .line-item-edit-group {
+                width: 100%;
+            }
+
+            .line-item-name-input,
+            .line-item-desc-input {
+                width: 100%;
+            }
+
+            .line-item-amount-input {
+                width: 100%;
+                text-align: left;
+            }
+
             .issue-form .form-row {
                 grid-template-columns: 1fr;
             }
