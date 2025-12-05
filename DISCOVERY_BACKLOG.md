@@ -22,9 +22,9 @@ To approve: Change status from DISCOVERED → READY
 
 | Status | Count |
 |--------|-------|
-| DEPLOYED | 20 |
+| DEPLOYED | 21 |
 | COMPLETE | 2 |
-| READY | 5 |
+| READY | 4 |
 | DISCOVERED | 14 |
 | **Total** | **41** |
 
@@ -226,25 +226,6 @@ To approve: Change status from DISCOVERED → READY
 
 ---
 
-### DISC-034: Pricing Sanity Check ⚠️ CRITICAL (READY)
-
-**Source**: Strategy Discovery Agent
-**Impact**: HIGH | **Effort**: M | **Score**: 1.5
-**Sprint Alignment**: CRITICAL for 100-user sprint. With 100 users generating 500 quotes, probability of catastrophic hallucination approaches 1.0.
-
-**Problem**: Quote generation has no sanity bounds. AI could hallucinate $500K bathroom remodel or $50 whole-house renovation. Unlike generic ChatGPT errors, pricing errors destroy trust permanently. One viral "$1M deck quote" Reddit post = brand death.
-
-**Proposed Work**:
-1. Implement statistical sanity checks on quote generation
-2. Per-category median/P95 from all historical quotes
-3. Flag quotes >3x P95 for manual review before showing user
-4. Block quotes >10x P95 entirely with "Please re-record" message
-5. Admin dashboard showing flagged quotes for pattern analysis
-
-**Success Metric**: Zero viral "AI quoted me $X for Y" posts in beta; Flagged quote rate <5%; Hallucination detection precision >90%
-
----
-
 ### DISC-035: Learning System Trust Indicators (DISCOVERED)
 
 **Source**: Strategy Discovery Agent
@@ -442,6 +423,9 @@ To approve: Change status from DISCOVERED → READY
 
 ### DISC-024: Viral Footer Enhancement ✅
 **Commit**: 1c3d0d3 | CTA in shared quote footer
+
+### DISC-034: Pricing Sanity Check ✅
+**Commit**: 926c135 | Statistical bounds on quote generation to prevent hallucinations
 
 </details>
 
