@@ -204,6 +204,16 @@ if frontend_path.exists():
         """Serve the demo page for try-before-signup."""
         return FileResponse(frontend_path / "demo.html")
 
+    @app.get("/demo-promo", response_class=HTMLResponse)
+    async def serve_demo_promo(request: Request):
+        """Serve the promotional demo landing page with injected config."""
+        return templates.TemplateResponse("demo-promo.html", {
+            "request": request,
+            "posthog_api_key": settings.posthog_api_key,
+            "sentry_dsn": settings.sentry_dsn,
+            "environment": settings.environment,
+        })
+
     @app.get("/terms")
     async def serve_terms():
         """Serve the Terms of Service page."""
