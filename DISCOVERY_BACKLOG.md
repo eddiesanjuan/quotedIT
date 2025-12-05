@@ -22,9 +22,9 @@ To approve: Change status from DISCOVERED → READY
 
 | Status | Count |
 |--------|-------|
-| DEPLOYED | 23 |
+| DEPLOYED | 25 |
 | COMPLETE | 0 |
-| READY | 9 |
+| READY | 7 |
 | DISCOVERED | 16 |
 | **Total** | **48** |
 
@@ -159,24 +159,6 @@ To approve: Change status from DISCOVERED → READY
 
 ---
 
-### DISC-031: Voice Recording Fallback & Recovery (READY)
-
-**Source**: Product Discovery Agent
-**Impact**: HIGH | **Effort**: M | **Score**: 1.5
-**Sprint Alignment**: Voice failure is likely top cause of demo/first-quote abandonment. Fixing this could increase activation to 60% target.
-
-**Problem**: Voice input has no error recovery or fallback when browser Speech API fails (iOS Safari, privacy-blocked microphones, network issues). Users hit dead-end and abandon if voice fails.
-
-**Proposed Work**:
-1. Pre-check Speech API availability with friendly warning if unsupported
-2. "Having trouble? Switch to text input" button during voice recording
-3. Auto-detect 10s silence or errors and offer text alternative
-4. Add browser compatibility badge ("Voice works best on Chrome/Edge")
-
-**Success Metric**: Reduce quote-generation-started → quote-abandoned rate by 20%; voice-attempt → text-fallback conversion rate 40%+
-
----
-
 ### DISC-032: Autosave Quote Drafts (Local Storage) (READY)
 
 **Source**: Product Discovery Agent
@@ -264,24 +246,6 @@ To approve: Change status from DISCOVERED → READY
 4. Creates immediate viral loop from demo conversion moment
 
 **Success Metric**: 40% of demo signups submit referral emails; 30% of referrals sign up = 3.6x viral coefficient
-
----
-
-### DISC-038: Duplicate Quote Template Feature (READY)
-
-**Source**: Product Discovery Agent
-**Impact**: MEDIUM | **Effort**: M | **Score**: 1.0
-**Sprint Alignment**: Increases engagement and retention for repeat users who quote similar jobs
-
-**Problem**: Contractors often quote similar jobs (same customer repeat work, similar scope projects). Currently must re-record or re-type entire job description each time.
-
-**Proposed Work**:
-1. Add "Duplicate" button to quote detail view and quote history items
-2. Creates new quote pre-filled with: customer info, job type, line items structure, notes template
-3. User makes quick adjustments and regenerates
-4. Track duplicate_source_quote_id for learning insights
-
-**Success Metric**: 25%+ of quotes marked as duplicates within 30 days; users who duplicate generate 2.5x more quotes
 
 ---
 
@@ -749,7 +713,13 @@ Quoted: [Shows comparison view]
 ## Completed & Deployed
 
 <details>
-<summary>Click to expand completed items (23 items)</summary>
+<summary>Click to expand completed items (25 items)</summary>
+
+### DISC-031: Voice Recording Fallback & Recovery ✅
+**Commit**: 90abdc6 | Voice support detection, browser badges, fallback UI, PostHog events
+
+### DISC-038: Duplicate Quote Template Feature ✅
+**Commit**: 761b7be | Duplicate endpoint, database tracking, UI buttons in quote detail and list views
 
 ### DISC-013: Animation Walkthrough Distribution Strategy ✅
 **Commit**: 856f051 | Demo-promo landing page with UTM tracking, PostHog events, pre-written social copy
