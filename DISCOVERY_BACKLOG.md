@@ -23,12 +23,34 @@ To approve: Change status from DISCOVERED → READY
 | Status | Count |
 |--------|-------|
 | DEPLOYED | 25 |
-| COMPLETE | 0 |
-| READY | 7 |
+| COMPLETE | 1 |
+| READY | 6 |
 | DISCOVERED | 16 |
 | **Total** | **48** |
 
 **Phase II Voice Control**: 8 tickets (DISC-042 through DISC-049) awaiting executive review
+
+---
+
+## Complete (Pending Deploy)
+
+### DISC-032: Autosave Quote Drafts (Local Storage) (COMPLETE)
+
+**Source**: Product Discovery Agent
+**Impact**: HIGH | **Effort**: M | **Score**: 1.5
+**Sprint Alignment**: Removes anxiety around losing work, reduces rage-quit abandonment during critical first-quote experience
+**Commit**: `50c2894` (2025-12-05)
+
+**Problem**: Users lose entire quote if they accidentally close tab, navigate away, or experience browser crash during editing.
+
+**Implemented**:
+1. ✅ localStorage autosave every 10 seconds during quote generation/editing
+2. ✅ Recovery modal on app load: "You have an unsaved quote from X minutes ago. Restore it?"
+3. ✅ Stores transcription text, generated quote data, and edit state
+4. ✅ Clears draft after successful PDF download or explicit "Discard" action
+5. ✅ PostHog tracking: `draft_autosaved`, `draft_recovery_shown`, `draft_recovered`, `draft_discarded`
+
+**Success Metric**: Recovery modal shown 5-10% of sessions; quote-edit → PDF-download completion rate increases 15%
 
 ---
 
@@ -156,24 +178,6 @@ To approve: Change status from DISCOVERED → READY
 5. Pre-fill with user's referral code automatically
 
 **Success Metric**: 60%+ users copy signature (vs current ~5%); each active user sends 20-50 emails/week = 300-500 signature impressions; 2-3% click-through = 6-15 signups from existing 5 users
-
----
-
-### DISC-032: Autosave Quote Drafts (Local Storage) (READY)
-
-**Source**: Product Discovery Agent
-**Impact**: HIGH | **Effort**: M | **Score**: 1.5
-**Sprint Alignment**: Removes anxiety around losing work, reduces rage-quit abandonment during critical first-quote experience
-
-**Problem**: Users lose entire quote if they accidentally close tab, navigate away, or experience browser crash during editing. No draft recovery means they must restart from voice/text input.
-
-**Proposed Work**:
-1. Implement localStorage autosave every 10 seconds during quote generation/editing
-2. On app load, detect unsaved draft and show recovery modal: "You have an unsaved quote from 15 minutes ago. Restore it?"
-3. Store transcription text, generated quote data, and edit state
-4. Clear draft after successful PDF download or explicit "Discard" action
-
-**Success Metric**: Recovery modal shown 5-10% of sessions (proves value); quote-edit → PDF-download completion rate increases 15%
 
 ---
 
