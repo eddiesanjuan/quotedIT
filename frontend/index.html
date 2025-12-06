@@ -3703,6 +3703,9 @@
                 </div>
             </div>
 
+            <!-- Success Message -->
+            <div class="message success" id="successMessage"></div>
+
             <!-- Error Message -->
             <div class="message error" id="errorMessage"></div>
 
@@ -5598,6 +5601,10 @@
                 return;
             }
 
+            // Hide any existing messages
+            hideError();
+            hideSuccess();
+
             // Track text input method
             lastInputMethod = 'text';
             {% if posthog_api_key %}
@@ -5640,6 +5647,9 @@
 
                 const quote = await response.json();
                 displayQuote(quote);
+
+                // Show success message at top of screen
+                showSuccess('✓ Quote generated successfully!');
 
                 // Track quote generation
                 {% if posthog_api_key %}
@@ -7268,6 +7278,26 @@
 
         function hideError() {
             document.getElementById('errorMessage').classList.remove('active');
+        }
+
+        function showSuccess(message, autoDismiss = true) {
+            const successEl = document.getElementById('successMessage');
+            successEl.textContent = message;
+            successEl.classList.add('active');
+
+            // Scroll to top to ensure visibility
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            // Auto-dismiss after 4 seconds if enabled
+            if (autoDismiss) {
+                setTimeout(() => {
+                    hideSuccess();
+                }, 4000);
+            }
+        }
+
+        function hideSuccess() {
+            document.getElementById('successMessage').classList.remove('active');
         }
 
         // Issue Reporter
