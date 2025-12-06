@@ -23,8 +23,8 @@ To approve: Change status from DISCOVERED → READY
 | Status | Count |
 |--------|-------|
 | DEPLOYED | 28 |
-| COMPLETE | 7 |
-| READY | 6 |
+| COMPLETE | 8 |
+| READY | 5 |
 | DISCOVERED | 18 |
 | **Total** | **59** |
 
@@ -91,6 +91,32 @@ To approve: Change status from DISCOVERED → READY
 - Token reduction: 720 → 240 tokens (67% reduction)
 
 **Success Metric**: 60% token reduction target exceeded (achieved 67%) ✅
+
+---
+
+### DISC-063: Horizontal Market Positioning Strategy (COMPLETE) 📝 STRATEGIC
+
+**Source**: Founder Request (Eddie, 2025-12-06)
+**Impact**: HIGH | **Effort**: M | **Score**: 1.5
+**Commit**: 0a8a8f4
+
+**Problem**: Current positioning frames Quoted as contractor-only tool competing with Buildxact (wrong category). Quoted is horizontal quoting platform for ALL custom work.
+
+**Solution Delivered**:
+- Comprehensive strategy document: `/docs/HORIZONTAL_POSITIONING_STRATEGY.md`
+- Corrected competitive landscape (Buildxact = different category, not competitor)
+- 4 moats identified: Learning system, trade-agnostic, voice-first, right-sized
+- Messaging updates for landing page, demo, onboarding
+- Multi-industry demo expansion plan
+- 4-phase implementation roadmap
+
+**Key Strategic Shifts**:
+1. Buildxact is project management ($100-500+/mo), not competitor
+2. Real competition: Paper/Excel, FreshBooks/Wave, vertical-specific tools
+3. Contractors = beachhead, not ceiling (10x TAM expansion)
+4. Deprioritize DISC-060/061/062 (Buildxact defense - wrong focus)
+
+**Success Metric**: Strategy document delivered ✅; actionable roadmap created ✅
 
 ---
 
@@ -262,46 +288,6 @@ class Learning:
 
 ---
 
-### DISC-063: Horizontal Market Positioning & Messaging Update 📝 STRATEGIC (READY)
-
-**Source**: Founder Request (Eddie, 2025-12-06)
-**Impact**: HIGH | **Effort**: M | **Score**: 1.5
-**Sprint Alignment**: Strategic messaging - affects all marketing, landing pages, and competitive positioning
-
-**Problem**: Current positioning and competitive analysis frames Quoted as a "contractor tool" competing with construction-specific platforms like Buildxact. This is too narrow. Quoted is a horizontal quoting tool for anyone who prices custom work - contractors are the beachhead, not the ceiling.
-
-**Strategic Reframe**:
-- **Buildxact is NOT a competitor.** They are a construction-specific project management platform ($100-500+/month) targeting growing contractors who need crews, scheduling, materials, and timelines. Completely different game.
-- **Quoted is horizontal.** Works for anyone pricing custom work: contractors, event planners, freelancers, caterers, photographers, personal trainers, wedding vendors, etc.
-- **The moats are different.** Buildxact competes on depth (construction features). Quoted competes on simplicity, adaptability, learning, and price.
-- **Future play**: Platforms like Buildxact would more likely want to *integrate* Quoted as a quick estimate step than compete with it.
-
-**Proposed Work**:
-1. **Audit current messaging** - Landing page, demo, onboarding, emails - identify "contractor-only" framing
-2. **Update landing page hero** - From contractor-specific to universal: "The fastest way to quote custom work. Any industry. Describe the job, send the quote."
-3. **Broaden demo examples** - Show event planner, freelancer, and contractor use cases (not just contractor)
-4. **Update COMPANY_STATE.md** - Reflect horizontal positioning in strategic docs
-5. **Deprioritize Buildxact competitive defense** - Mark DISC-060/061/062 as lower priority; Buildxact is adjacent, not competitive
-6. **Create "Who Uses Quoted" section** - Show diverse use cases (contractors, event planners, freelancers, service providers)
-
-**Key Moats (Updated)**:
-1. **Learning system** - Gets smarter with YOUR pricing, not industry averages. Sticky after 50+ quotes.
-2. **Trade-agnostic** - No industry assumptions. Learns YOUR pricing model, whatever it is.
-3. **Right-sized** - Not "cheap" but appropriate. Solo operators don't need project management.
-4. **Voice-first simplicity** - Describe the job, get the quote. Works for any service business.
-
-**Real Competition** (Updated):
-1. Paper/Excel/nothing (biggest)
-2. Generic invoicing apps (FreshBooks, Wave) - no voice, no learning
-3. Vertical-specific tools (Honeybook for creatives, Jobber for service) - category-locked
-4. Big players if they add voice (Square, Intuit)
-
-**NOT Competition**:
-- Buildxact, Procore, CoConstruct - different category (construction project management)
-
-**Success Metric**: Landing page copy updated; demo shows 3 industry examples; positioning docs updated; competitive defense tickets deprioritized
-
----
 
 ## Discovered (Awaiting Review)
 
