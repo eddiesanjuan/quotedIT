@@ -1384,7 +1384,11 @@ async def generate_pdf(request: Request, quote_id: str, current_user: dict = Dep
         )
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        import traceback
+        print(f"PDF generation error for quote {quote_id}: {e}")
+        print(f"Quote data: {quote_dict}")
+        print(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=f"PDF error: {str(e)}")
 
 
 @router.get("/")
