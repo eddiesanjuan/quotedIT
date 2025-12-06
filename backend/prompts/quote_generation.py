@@ -33,6 +33,7 @@ def get_quote_generation_prompt(
     """
 
     # Extract category-specific learnings (THE KEY LEARNING INJECTION)
+    # DISC-052: Hybrid format + priority selection for token efficiency
     category_learnings_str = ""
     pricing_knowledge = pricing_model.get("pricing_knowledge", {})
 
@@ -43,19 +44,39 @@ def get_quote_generation_prompt(
             learned_adjustments = cat_data.get("learned_adjustments", [])
             cat_confidence = cat_data.get("confidence", 0.5)
             cat_samples = cat_data.get("samples", 0)
+            correction_count = cat_data.get("correction_count", 0)
 
             if learned_adjustments:
-                adjustments_list = "\n".join(f"- {adj}" for adj in learned_adjustments)
+                # DISC-052: Priority selection - inject only top 7 most recent learnings
+                # Most recent corrections are most relevant (recency bias)
+                # Token budget: ~240 tokens for learnings (60% reduction from ~720)
+                top_learnings = learned_adjustments[-7:]  # Last 7 are most recent
+
+                # DISC-052: Hybrid format - structured data + natural language summary
+                # Calculate learning pattern summary
+                increase_pattern = sum(1 for adj in top_learnings if "increase" in adj.lower() or "higher" in adj.lower())
+                decrease_pattern = sum(1 for adj in top_learnings if "reduce" in adj.lower() or "lower" in adj.lower())
+
+                if increase_pattern > decrease_pattern:
+                    tendency = "Conservative pricing - you typically price HIGHER than industry averages"
+                elif decrease_pattern > increase_pattern:
+                    tendency = "Aggressive pricing - you typically price LOWER to win jobs"
+                else:
+                    tendency = "Balanced pricing - mixed adjustments based on job specifics"
+
+                # Format learnings in compact hybrid format
+                adjustments_compact = "\n".join(f"- {adj}" for adj in top_learnings)
+
                 category_learnings_str = f"""
-## ⚠️ CRITICAL: Apply These Learned Adjustments for "{cat_data.get('display_name', detected_category)}"
+## ⚠️ CRITICAL: Your Learned Pricing Pattern for "{cat_data.get('display_name', detected_category)}"
 
-Based on {cat_samples} past corrections, YOU MUST apply these adjustments to your quote:
+**Pattern Summary** ({correction_count} corrections, {cat_confidence:.0%} confidence):
+{tendency}
 
-{adjustments_list}
+**Top Adjustments to Apply**:
+{adjustments_compact}
 
-Confidence: {cat_confidence:.0%} (based on {cat_samples} corrections)
-
-IMPORTANT: These are real corrections the contractor made. Apply them to get the pricing right.
+IMPORTANT: Apply these learned adjustments to match your actual pricing style.
 """
 
     # Format pricing knowledge for the prompt
