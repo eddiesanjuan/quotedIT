@@ -17,7 +17,7 @@ from sqlalchemy.orm import sessionmaker, attributes
 from ..config import settings
 from ..models.database import (
     Base, User, Contractor, PricingModel, ContractorTerms,
-    Quote, JobType, SetupConversation, UserIssue, QuoteFeedback
+    Quote, JobType, SetupConversation, UserIssue, QuoteFeedback, Learning
 )
 from .analytics import analytics_service
 
@@ -357,9 +357,158 @@ class DatabaseService:
             pricing_model.updated_at = datetime.utcnow()
             attributes.flag_modified(pricing_model, 'pricing_knowledge')
 
+            # DISC-053: Dual-write to structured Learning table
+            # Create Learning records for new learnings during transition period
+            if category:
+                await self._create_structured_learnings(
+                    session=session,
+                    contractor_id=contractor_id,
+                    category=category,
+                    learnings=learnings,
+                    cat_data=pricing_knowledge["categories"][category]
+                )
+
             await session.commit()
             await session.refresh(pricing_model)
             return pricing_model
+
+    async def _create_structured_learnings(
+        self,
+        session: AsyncSession,
+        contractor_id: str,
+        category: str,
+        learnings: Dict[str, Any],
+        cat_data: Dict[str, Any],
+    ):
+        """
+        DISC-053: Create structured Learning records (dual-write mode).
+
+        This is called during apply_learnings_to_pricing_model to maintain
+        both text-based and structured formats during the transition period.
+        """
+        # Get category metadata
+        confidence = cat_data.get("confidence", 0.5)
+        correction_count = cat_data.get("correction_count", 1)
+
+        # Process pricing adjustments
+        for adjustment in learnings.get("pricing_adjustments", []):
+            item_type = adjustment.get("item_type", "item")
+            original = adjustment.get("original_value", 0)
+            corrected = adjustment.get("corrected_value", 0)
+            reason = adjustment.get("reason", "")
+
+            # Build statement (same logic as text-based)
+            if corrected > original:
+                change_pct = ((corrected - original) / original * 100) if original > 0 else 0
+                statement = f"Increase {item_type} by ~{change_pct:.0f}%"
+                if reason:
+                    statement += f" ({reason})"
+            elif corrected < original:
+                change_pct = ((original - corrected) / original * 100) if original > 0 else 0
+                statement = f"Reduce {item_type} by ~{change_pct:.0f}%"
+                if reason:
+                    statement += f" ({reason})"
+            else:
+                continue  # No change
+
+            # Calculate impact
+            impact_dollars = abs(corrected - original)
+
+            # Calculate priority score
+            priority_score = 0.8 * 0.3 + confidence * 0.5 + min(1.0, impact_dollars / 1000) * 0.2
+
+            # Check if similar learning already exists
+            existing_result = await session.execute(
+                select(Learning).where(
+                    Learning.contractor_id == contractor_id,
+                    Learning.category == category,
+                    Learning.target == item_type,
+                    Learning.adjustment.like(f"%{item_type}%")
+                ).order_by(Learning.created_at.desc()).limit(5)
+            )
+            existing_learnings = existing_result.scalars().all()
+
+            # Simple deduplication: if exact same statement exists in last 5, update it
+            found_match = False
+            for existing in existing_learnings:
+                if statement.lower() in existing.adjustment.lower() or existing.adjustment.lower() in statement.lower():
+                    # Update existing learning
+                    existing.sample_count += 1
+                    existing.total_impact_dollars += impact_dollars
+                    existing.last_seen_at = datetime.utcnow()
+                    existing.confidence = min(0.95, existing.confidence + 0.02)
+                    existing.priority_score = priority_score
+                    found_match = True
+                    break
+
+            if not found_match:
+                # Create new Learning record
+                learning = Learning(
+                    contractor_id=contractor_id,
+                    category=category,
+                    learning_type="adjustment",
+                    target=item_type,
+                    adjustment=statement,
+                    reason=reason if reason else None,
+                    confidence=confidence,
+                    sample_count=1,
+                    total_impact_dollars=impact_dollars,
+                    priority_score=priority_score,
+                    created_at=datetime.utcnow(),
+                    last_seen_at=datetime.utcnow(),
+                    examples=[{
+                        "original": original,
+                        "corrected": corrected,
+                        "timestamp": datetime.utcnow().isoformat()
+                    }],
+                )
+                session.add(learning)
+
+        # Process new pricing rules
+        for rule in learnings.get("new_pricing_rules", []):
+            rule_text = rule.get("rule", "")
+            applies_to = rule.get("applies_to", "general")
+
+            if rule_text and (applies_to == category or applies_to in ["general", ""]):
+                # Calculate priority (rules are generally important)
+                priority_score = 0.7 * 0.3 + confidence * 0.5 + 0.3 * 0.2
+
+                learning = Learning(
+                    contractor_id=contractor_id,
+                    category=category,
+                    learning_type="rule",
+                    target=applies_to,
+                    adjustment=rule_text,
+                    reason=None,
+                    confidence=confidence,
+                    sample_count=1,
+                    total_impact_dollars=0.0,
+                    priority_score=priority_score,
+                    created_at=datetime.utcnow(),
+                    last_seen_at=datetime.utcnow(),
+                )
+                session.add(learning)
+
+        # Process overall tendency
+        tendency = learnings.get("overall_tendency", "")
+        if tendency:
+            priority_score = 0.6 * 0.3 + confidence * 0.5 + 0.2 * 0.2
+
+            learning = Learning(
+                contractor_id=contractor_id,
+                category=category,
+                learning_type="tendency",
+                target="general",
+                adjustment=tendency,
+                reason=None,
+                confidence=confidence,
+                sample_count=correction_count,
+                total_impact_dollars=0.0,
+                priority_score=priority_score,
+                created_at=datetime.utcnow(),
+                last_seen_at=datetime.utcnow(),
+            )
+            session.add(learning)
 
     async def ensure_category_exists(
         self,
