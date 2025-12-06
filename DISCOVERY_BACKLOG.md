@@ -23,8 +23,8 @@ To approve: Change status from DISCOVERED → READY
 | Status | Count |
 |--------|-------|
 | DEPLOYED | 28 |
-| COMPLETE | 10 |
-| READY | 3 |
+| COMPLETE | 8 |
+| READY | 5 |
 | DISCOVERED | 18 |
 | **Total** | **59** |
 
@@ -35,67 +35,6 @@ To approve: Change status from DISCOVERED → READY
 ---
 
 ## Complete (Pending Deploy)
-
-### DISC-055: Semantic Learning Deduplication (COMPLETE) 🧠
-
-**Source**: DISC-041 Brainstorm (Phase 4 - Polish)
-**Impact**: MEDIUM | **Effort**: M | **Score**: 1.0
-**Commit**: 3951141
-
-**Problem**: Redundant learnings accumulate ("Increase demo 20%" and "Demo typically 20% higher" are the same). Wastes tokens and confuses model with duplicate signals.
-
-**Solution Implemented**:
-- Created EmbeddingService for semantic similarity detection
-- generate_embedding(): Vector embeddings for learning text
-- cosine_similarity(): Calculate similarity between learnings
-- find_similar_learnings(): Find 0.90+ similar learnings
-- cluster_learnings(): Group similar learnings via greedy clustering
-- Updated dual-write to check for semantic duplicates before creating
-- Automatic deduplication during learning creation
-- Migration script for cleaning up existing duplicates
-
-**Implementation Details**:
-- Simple hash-based embedding (placeholder for production)
-- 0.90 similarity threshold (conservative, very similar only)
-- Merges metadata (sample_count, impact, confidence) from duplicates
-- select_best_from_cluster(): Keeps highest quality learning
-- Supports manual cleanup: `python -m backend.migrations.deduplicate_learnings`
-
-**Success Metric**: 20-30% reduction in learning count with no information loss ✅; cleaner signal from eliminating redundant learnings ✅
-
----
-
-### DISC-053: Structured Learning Storage (COMPLETE) 🧠
-
-**Source**: DISC-041 Brainstorm (Phase 2 - Foundation)
-**Impact**: HIGH | **Effort**: M | **Score**: 1.5
-**Commit**: 7096dfb
-
-**Problem**: Converting text → JSON → text loses structure. No metadata for smart prioritization. Can't track learning quality over time.
-
-**Solution Implemented**:
-- Created Learning model with full metadata:
-  - Core: category, learning_type, target, adjustment
-  - Metadata: confidence, sample_count, total_impact_dollars
-  - Recency: created_at, last_seen_at
-  - Search: embedding (JSON vector for DISC-055)
-  - Priority: priority_score (recency + confidence + impact)
-- Migration script to convert existing text learnings
-- Dual-write mode in apply_learnings_to_pricing_model
-- Maintains backward compatibility with text-based format
-- Simple deduplication during creation (updates if exists)
-
-**Technical Implementation**:
-- Updated database.py to import Learning model
-- Created _create_structured_learnings helper method
-- Parses learning type (adjustment, rule, tendency, pattern)
-- Calculates priority score: 0.3*recency + 0.5*confidence + 0.2*impact
-- Migration script: migrate_learnings_to_structured.py
-- Supports dry-run mode for safety
-
-**Success Metric**: Zero data loss in migration ✅; structured format enables priority-based injection ✅; foundation for DISC-055 semantic features ✅
-
----
 
 ### DISC-056: Confidence Badge Still Clipped Behind Nav (COMPLETE) 🐛
 
@@ -240,6 +179,69 @@ To approve: Change status from DISCOVERED → READY
 ---
 
 ## Ready for Implementation
+
+
+### DISC-053: Structured Learning Storage (READY) 🧠
+
+**Source**: DISC-041 Brainstorm (Phase 2 - Foundation)
+**Impact**: HIGH | **Effort**: M | **Score**: 1.5
+**Sprint Alignment**: Enables future optimizations, better learning quality
+
+**Problem**: Converting text → JSON → text loses structure. No metadata for smart prioritization. Can't track learning quality over time.
+
+**Proposed Work**:
+1. Create Learning model with full metadata (impact, confidence, recency, embeddings)
+2. Migration script: convert existing text learnings to structured format
+3. Update learning extraction to populate metadata
+4. Dual-write period (maintain both formats for safety)
+5. Comprehensive testing and validation
+
+**Schema**:
+```python
+class Learning:
+    id, category, learning_type
+    target, adjustment, confidence
+    sample_count, total_impact_dollars
+    created_at, last_seen
+    reason, examples
+    priority_score, embedding
+```
+
+**Technical Details**:
+- Estimated effort: 24 hours
+- DB migration with rollback plan
+- 2-week dual-write period
+- Feature flag: use structured vs text
+
+**Success Metric**: Zero data loss in migration; structured format enables 20% better prioritization; foundation for Phase 4 semantic features
+
+---
+
+
+### DISC-055: Semantic Learning Deduplication (READY) 🧠
+
+**Source**: DISC-041 Brainstorm (Phase 4 - Polish)
+**Impact**: MEDIUM | **Effort**: M | **Score**: 1.0
+**Sprint Alignment**: Optional enhancement, 20-30% learning count reduction
+
+**Problem**: Redundant learnings accumulate ("Increase demo 20%" and "Demo typically 20% higher" are the same). Wastes tokens and confuses model with duplicate signals.
+
+**Proposed Work**:
+1. Add pgvector extension or embedding column to DB
+2. Generate embeddings for all learnings
+3. Implement clustering-based deduplication (0.90+ similarity threshold)
+4. Keep highest confidence learning from each cluster
+5. Optional: Cross-category semantic search
+
+**Technical Details**:
+- Estimated effort: 32 hours
+- Requires pgvector or embedding service
+- Conservative similarity threshold (avoid over-deduplication)
+- Optional feature (only if Phase 1-3 succeed)
+
+**Success Metric**: 20-30% reduction in learning count with no information loss; improved model comprehension from cleaner signal
+
+---
 
 ### DISC-014: Buildxact Competitive Defense (DEPLOYED) ⚠️ Strategic
 

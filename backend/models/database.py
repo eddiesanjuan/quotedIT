@@ -429,61 +429,6 @@ class SetupConversation(Base):
     completed_at = Column(DateTime)
 
 
-class Learning(Base):
-    """
-    Structured storage for pricing learnings extracted from quote corrections.
-
-    DISC-053: Structured Learning Storage
-
-    Replaces text-based learned_adjustments with rich metadata for:
-    - Semantic search and deduplication
-    - Priority-based injection
-    - Learning quality tracking
-    - Cross-category pattern recognition
-
-    Each learning represents one atomic pricing insight.
-    """
-    __tablename__ = "learnings"
-
-    id = Column(String, primary_key=True, default=generate_uuid)
-    contractor_id = Column(String, ForeignKey("contractors.id"), nullable=False, index=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-
-    # Core learning data
-    category = Column(String(100), nullable=False, index=True)  # Job type (deck_composite, fence_wood, etc.)
-    learning_type = Column(String(50), nullable=False)  # adjustment, rule, tendency, pattern
-
-    # What changed
-    target = Column(String(255), nullable=False)  # What this applies to (e.g., "labor", "materials", "demolition")
-    adjustment = Column(Text, nullable=False)  # The learning statement (human-readable)
-
-    # Metadata for prioritization
-    confidence = Column(Float, default=0.5)  # How confident we are (0.0-1.0)
-    sample_count = Column(Integer, default=1)  # How many corrections contributed
-    total_impact_dollars = Column(Float, default=0.0)  # Total $ impact across all quotes
-
-    # Recency tracking
-    last_seen_at = Column(DateTime, default=datetime.utcnow)  # Last time this pattern appeared
-
-    # Context and examples
-    reason = Column(Text, nullable=True)  # Why this learning exists
-    examples = Column(JSON, nullable=True)  # Example corrections that led to this
-
-    # For semantic search and deduplication (DISC-055)
-    # embedding will be populated with vector embeddings for similarity search
-    # Note: In production, this would use pgvector extension
-    # For now, we'll store as JSON array of floats
-    embedding = Column(JSON, nullable=True)  # Vector embedding for semantic search
-
-    # Priority score (computed field for sorting)
-    priority_score = Column(Float, default=0.5)  # Weighted score: recency + confidence + impact
-
-    # Relationship
-    # Note: We don't add relationship to Contractor to avoid circular imports
-    # Access via contractor_id foreign key
-
-
 class UserIssue(Base):
     """
     User-reported issues for autonomous Claude Code resolution.
