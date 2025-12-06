@@ -16,7 +16,7 @@ from typing import Optional, List
 from datetime import datetime
 
 from fastapi import APIRouter, HTTPException, UploadFile, File, Form, Depends, Request
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from pydantic import BaseModel
 from slowapi import Limiter
 from slowapi.util import get_remote_address
@@ -1304,27 +1304,23 @@ async def generate_pdf(request: Request, quote_id: str, current_user: dict = Dep
         template = contractor.pdf_template or "modern"
         accent_color = contractor.pdf_accent_color
 
-        # Generate PDF (DISC-018: Add watermark for grace quotes, DISC-028: Use template)
-        os.makedirs("./data/pdfs", exist_ok=True)
-        output_path = f"./data/pdfs/{quote_id}.pdf"
-
-        pdf_service.generate_quote_pdf(
+        # DISC-066: Generate PDF in memory to avoid filesystem issues on Railway
+        pdf_bytes = pdf_service.generate_quote_pdf(
             quote_data=quote_dict,
             contractor=contractor_dict,
             terms=terms_dict,
-            output_path=output_path,
             watermark=quote.is_grace_quote,  # Add watermark if this is a grace quote
             template=template,  # DISC-028: Use contractor's template
             accent_color=accent_color,  # DISC-028: Use contractor's accent color
         )
 
-        # Update quote with PDF URL
-        await db.update_quote(quote_id, pdf_url=output_path)
-
-        return FileResponse(
-            output_path,
+        # Return PDF directly from memory
+        return Response(
+            content=pdf_bytes,
             media_type="application/pdf",
-            filename=f"quote_{quote_id}.pdf",
+            headers={
+                "Content-Disposition": f'attachment; filename="quote_{quote_id}.pdf"'
+            }
         )
 
     except Exception as e:
