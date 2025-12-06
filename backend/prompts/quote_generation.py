@@ -202,14 +202,18 @@ def get_quote_refinement_prompt(
 
     When a contractor edits a generated quote, we use this to:
     1. Understand what was wrong
-    2. Extract learnings for future quotes
-    """
+    2. Extract learning STATEMENTS that will be injected into future prompts
 
-    return f"""A contractor has corrected a quote you generated. Learn from this correction.
+    CRITICAL: The learning_statements output will be directly injected into
+    future quote generation prompts. Write them as instructions to yourself.
+    """
+    job_type = original_quote.get('job_type', 'unknown')
+
+    return f"""A contractor has corrected a quote you generated. Your job is to extract LEARNING STATEMENTS that will help you generate more accurate quotes in the future.
 
 ## Original Quote Generated
 
-Job Type: {original_quote.get('job_type')}
+Job Type: {job_type}
 Job Description: {original_quote.get('job_description')}
 
 Original Line Items:
@@ -225,39 +229,40 @@ Original Total: ${original_quote.get('subtotal', 0):.2f}
 
 ## Your Task
 
-Analyze this correction and extract learnings. Consider:
+Generate LEARNING STATEMENTS that will be injected into future quote prompts for "{job_type}" jobs. These statements should be:
 
-1. Was the pricing too high or too low overall?
-2. Which specific line items were adjusted and by how much?
-3. What does this tell us about the contractor's pricing patterns?
-4. Are there any new pricing rules we should remember?
+1. **Self-contained**: Include all context needed to understand and apply the learning
+2. **Specific**: Reference actual dollar amounts, percentages, or conditions when possible
+3. **Actionable**: Written as instructions to yourself for future quotes
+4. **Contextual**: Include the WHY when you can infer it (job conditions, customer type, etc.)
+
+### Good Learning Statement Examples:
+- "For demolition on deck projects, charge $1,200 minimum - the $1,000 estimate was consistently too low"
+- "When the job involves difficult access (steep yard, narrow gates), add 15% to labor costs"
+- "This contractor prices labor at $75/hour, not $65 - always use their rate, not industry average"
+- "Composite decking materials should be estimated at $14/sqft, not $12 - they use premium Trex"
+
+### Bad Learning Statement Examples:
+- "Increase demolition" (too vague - by how much? under what conditions?)
+- "Price higher" (not actionable - which items? by what percentage?)
+- "Labor was wrong" (no guidance on what the correct approach is)
 
 ## Output Format
 
 Respond with valid JSON:
 
 {{
-    "pricing_adjustments": [
-        {{
-            "item_type": "e.g., decking, labor, demolition",
-            "original_value": 0.00,
-            "corrected_value": 0.00,
-            "percent_change": 0.0,
-            "learning": "What we learned from this correction"
-        }}
+    "learning_statements": [
+        "First learning statement - specific, actionable instruction for future quotes",
+        "Second learning statement - include context and reasoning",
+        "Third learning statement (if applicable)"
     ],
-    "new_pricing_rules": [
-        {{
-            "rule": "Natural language rule to remember",
-            "applies_to": "job_type or item_type this applies to",
-            "confidence": "high/medium/low"
-        }}
-    ],
-    "overall_tendency": "Does this contractor typically price higher or lower than our estimates?",
-    "summary": "One paragraph summary of what we learned"
+    "pricing_direction": "higher" | "lower" | "mixed",
+    "confidence": "high" | "medium" | "low",
+    "summary": "One sentence summary of the key insight from this correction"
 }}
 
-Analyze the correction:"""
+Generate 1-3 learning statements (more is not better - only include distinct, valuable learnings):"""
 
 
 def _format_pricing_knowledge(pricing_knowledge: dict) -> str:

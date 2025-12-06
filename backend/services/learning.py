@@ -327,21 +327,62 @@ class LearningService:
             raise Exception(f"Claude API error: {str(e)}")
 
     def _parse_learning_response(self, response: str) -> dict:
-        """Parse Claude's learning analysis response."""
+        """
+        Parse Claude's learning analysis response.
+
+        Supports both new format (learning_statements) and legacy format (pricing_adjustments).
+        """
         # Try to find JSON
         json_match = re.search(r'\{[\s\S]*\}', response)
         if json_match:
             try:
-                return json.loads(json_match.group())
+                parsed = json.loads(json_match.group())
+
+                # If using new format, ensure learning_statements exists
+                if "learning_statements" in parsed:
+                    return parsed
+
+                # Legacy format - convert to new format for consistency
+                if "pricing_adjustments" in parsed or "new_pricing_rules" in parsed:
+                    statements = []
+
+                    # Convert pricing adjustments to statements
+                    for adj in parsed.get("pricing_adjustments", []):
+                        learning = adj.get("learning", "")
+                        if learning:
+                            statements.append(learning)
+
+                    # Convert rules to statements
+                    for rule in parsed.get("new_pricing_rules", []):
+                        rule_text = rule.get("rule", "")
+                        if rule_text:
+                            statements.append(rule_text)
+
+                    # Add tendency as a statement if present
+                    tendency = parsed.get("overall_tendency", "")
+                    if tendency and len(tendency) > 10:  # Skip short/empty tendencies
+                        statements.append(tendency)
+
+                    return {
+                        "learning_statements": statements,
+                        "pricing_direction": "mixed",
+                        "confidence": "medium",
+                        "summary": parsed.get("summary", ""),
+                        # Keep legacy fields for backward compatibility
+                        **parsed
+                    }
+
+                return parsed
+
             except json.JSONDecodeError:
                 pass
 
-        # Fallback
+        # Fallback - try to extract learnings from raw text
         return {
-            "pricing_adjustments": [],
-            "new_pricing_rules": [],
-            "overall_tendency": "Could not parse learning response",
-            "summary": response[:500],
+            "learning_statements": [],
+            "pricing_direction": "mixed",
+            "confidence": "low",
+            "summary": response[:500] if response else "Could not parse learning response",
         }
 
     def calculate_accuracy_stats(

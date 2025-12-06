@@ -249,46 +249,47 @@ class DatabaseService:
                 if "learned_adjustments" not in cat_data:
                     cat_data["learned_adjustments"] = []
 
-                # Convert pricing adjustments to text statements
-                for adjustment in learnings.get("pricing_adjustments", []):
-                    item_type = adjustment.get("item_type", "item")
-                    original = adjustment.get("original_value", 0)
-                    corrected = adjustment.get("corrected_value", 0)
-                    reason = adjustment.get("reason", "")
+                # NEW FORMAT: Use learning_statements directly from Claude
+                # These are already well-crafted, self-contained instructions
+                learning_statements = learnings.get("learning_statements", [])
 
-                    # Build a human-readable learning statement
-                    if corrected > original:
-                        change_pct = ((corrected - original) / original * 100) if original > 0 else 0
-                        statement = f"Increase {item_type} by ~{change_pct:.0f}%"
-                        if reason:
-                            statement += f" ({reason})"
-                    elif corrected < original:
-                        change_pct = ((original - corrected) / original * 100) if original > 0 else 0
-                        statement = f"Reduce {item_type} by ~{change_pct:.0f}%"
-                        if reason:
-                            statement += f" ({reason})"
-                    else:
-                        continue  # No change, skip
+                for statement in learning_statements:
+                    if not statement or not isinstance(statement, str):
+                        continue
 
-                    # Add if not duplicate (fuzzy check)
-                    if statement and not any(statement.lower() in adj.lower() or adj.lower() in statement.lower()
-                                             for adj in cat_data["learned_adjustments"]):
+                    # Skip if too short (likely not useful)
+                    if len(statement) < 15:
+                        continue
+
+                    # Add if not duplicate (fuzzy check - avoid similar statements)
+                    is_duplicate = False
+                    for existing in cat_data["learned_adjustments"]:
+                        # Check for substantial overlap
+                        if (statement.lower() in existing.lower() or
+                            existing.lower() in statement.lower() or
+                            self._statements_similar(statement, existing)):
+                            is_duplicate = True
+                            break
+
+                    if not is_duplicate:
                         cat_data["learned_adjustments"].append(statement)
 
-                # Add new pricing rules as learned adjustments
-                for rule in learnings.get("new_pricing_rules", []):
-                    applies_to = rule.get("applies_to", "")
-                    rule_text = rule.get("rule", "")
+                # LEGACY FORMAT: Fall back to old approach if no learning_statements
+                # This ensures backward compatibility during transition
+                if not learning_statements:
+                    for adjustment in learnings.get("pricing_adjustments", []):
+                        learning = adjustment.get("learning", "")
+                        if learning and learning not in cat_data["learned_adjustments"]:
+                            cat_data["learned_adjustments"].append(learning)
 
-                    # If rule applies to this category or is general, add it
-                    if applies_to == category or applies_to in ["general", ""]:
+                    for rule in learnings.get("new_pricing_rules", []):
+                        rule_text = rule.get("rule", "")
                         if rule_text and rule_text not in cat_data["learned_adjustments"]:
                             cat_data["learned_adjustments"].append(rule_text)
 
-                # Add overall tendency as a learned adjustment
-                tendency = learnings.get("overall_tendency", "")
-                if tendency and tendency not in cat_data["learned_adjustments"]:
-                    cat_data["learned_adjustments"].append(tendency)
+                    tendency = learnings.get("overall_tendency", "")
+                    if tendency and len(tendency) > 15 and tendency not in cat_data["learned_adjustments"]:
+                        cat_data["learned_adjustments"].append(tendency)
 
                 # Update samples and correction count
                 cat_data["samples"] = cat_data.get("samples", 0) + 1
@@ -360,6 +361,35 @@ class DatabaseService:
             await session.commit()
             await session.refresh(pricing_model)
             return pricing_model
+
+    def _statements_similar(self, statement1: str, statement2: str, threshold: float = 0.6) -> bool:
+        """
+        Check if two learning statements are semantically similar using word overlap.
+
+        Uses Jaccard similarity on word sets to detect near-duplicate statements.
+        This is a simple but effective approach that doesn't require embeddings.
+
+        Args:
+            statement1: First statement
+            statement2: Second statement
+            threshold: Similarity threshold (0.0-1.0). Default 0.6 = 60% word overlap
+
+        Returns:
+            True if statements are similar (should be considered duplicates)
+        """
+        # Normalize: lowercase, extract words only
+        words1 = set(word.lower() for word in statement1.split() if len(word) > 2)
+        words2 = set(word.lower() for word in statement2.split() if len(word) > 2)
+
+        if not words1 or not words2:
+            return False
+
+        # Jaccard similarity: intersection / union
+        intersection = len(words1 & words2)
+        union = len(words1 | words2)
+
+        similarity = intersection / union if union > 0 else 0
+        return similarity >= threshold
 
     async def ensure_category_exists(
         self,
