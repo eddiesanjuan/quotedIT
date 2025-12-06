@@ -258,15 +258,9 @@ class PDFGeneratorService:
             "bg_alt": colors.HexColor(template["bg_alt_color"]),
         }
 
-        # Clear existing custom styles if re-initializing
-        custom_style_names = [
-            'QuoteTitle', 'QuoteSubtitle', 'BusinessName', 'ContactInfo',
-            'SectionHeader', 'QuoteBody', 'QuoteBodyLight', 'CustomerName',
-            'TotalLabel', 'TotalAmount', 'FinePrint', 'FooterBrand'
-        ]
-        for style_name in custom_style_names:
-            if style_name in self.styles:
-                del self.styles[style_name]
+        # DISC-066: Create fresh stylesheet each time to avoid deletion issues
+        # StyleSheet1 doesn't support item deletion, so we recreate it
+        self.styles = getSampleStyleSheet()
 
         # Main title - uses template title font
         self.styles.add(ParagraphStyle(
