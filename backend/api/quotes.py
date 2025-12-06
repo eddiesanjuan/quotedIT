@@ -79,6 +79,10 @@ class QuoteResponse(BaseModel):
     notes: Optional[str] = None
     estimated_days: Optional[int] = None
     estimated_crew_size: Optional[int] = None
+    # Per-quote terms
+    deposit_percent: Optional[int] = None
+    quote_valid_days: Optional[int] = None
+    warranty_years: Optional[int] = None
     confidence: Optional[str] = None
     questions: List[str] = []
     transcription: Optional[str] = None
@@ -99,6 +103,10 @@ class QuoteUpdateRequest(BaseModel):
     estimated_crew_size: Optional[int] = None
     notes: Optional[str] = None
     correction_notes: Optional[str] = None  # Why the user made changes
+    # Per-quote terms (overrides contractor defaults)
+    deposit_percent: Optional[int] = None
+    quote_valid_days: Optional[int] = None
+    warranty_years: Optional[int] = None
 
 
 # Enhancement 5: Active Learning Models
@@ -231,6 +239,9 @@ def quote_to_response(quote) -> QuoteResponse:
         notes=getattr(quote, 'notes', None),
         estimated_days=quote.estimated_days,
         estimated_crew_size=quote.estimated_crew_size,
+        deposit_percent=getattr(quote, 'deposit_percent', None),
+        quote_valid_days=getattr(quote, 'quote_valid_days', None),
+        warranty_years=getattr(quote, 'warranty_years', None),
         transcription=quote.transcription,
         was_edited=quote.was_edited or False,
         created_at=quote.created_at.isoformat() if quote.created_at else None,
@@ -1180,6 +1191,13 @@ async def update_quote(
     if update.notes is not None:
         # Store notes as part of job_description for now
         pass
+    # Per-quote terms
+    if update.deposit_percent is not None:
+        update_data["deposit_percent"] = update.deposit_percent
+    if update.quote_valid_days is not None:
+        update_data["quote_valid_days"] = update.quote_valid_days
+    if update.warranty_years is not None:
+        update_data["warranty_years"] = update.warranty_years
 
     # Mark as edited
     update_data["was_edited"] = True
@@ -1352,6 +1370,7 @@ async def generate_pdf(request: Request, quote_id: str, current_user: dict = Dep
             "logo_data": contractor.logo_data,  # Include logo for PDF
         }
 
+        # Build terms dict: per-quote terms override contractor defaults
         terms_dict = {}
         if terms:
             terms_dict = {
@@ -1359,6 +1378,13 @@ async def generate_pdf(request: Request, quote_id: str, current_user: dict = Dep
                 "quote_valid_days": terms.quote_valid_days,
                 "labor_warranty_years": terms.labor_warranty_years,
             }
+        # Override with per-quote terms if set
+        if quote.deposit_percent is not None:
+            terms_dict["deposit_percent"] = quote.deposit_percent
+        if quote.quote_valid_days is not None:
+            terms_dict["quote_valid_days"] = quote.quote_valid_days
+        if quote.warranty_years is not None:
+            terms_dict["labor_warranty_years"] = quote.warranty_years
 
         # DISC-028: Get contractor's template preferences
         template = contractor.pdf_template or "modern"

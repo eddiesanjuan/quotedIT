@@ -300,6 +300,61 @@ async def update_terms(contractor_id: str, update: TermsUpdate):
     return TermsResponse(**terms)
 
 
+@router.get("/me/terms", response_model=TermsResponse)
+async def get_my_terms(contractor: Contractor = Depends(get_current_contractor)):
+    """Get the current contractor's default quote terms."""
+    db = get_database_service()
+    terms = await db.get_terms(contractor.id)
+
+    if not terms:
+        # Return defaults if no terms exist
+        return TermsResponse()
+
+    return TermsResponse(
+        deposit_percent=terms.deposit_percent,
+        final_payment_terms=terms.final_payment_terms,
+        quote_valid_days=terms.quote_valid_days,
+        labor_warranty_years=terms.labor_warranty_years,
+        accepted_payment_methods=terms.accepted_payment_methods,
+        custom_terms=terms.custom_terms,
+    )
+
+
+@router.put("/me/terms", response_model=TermsResponse)
+async def update_my_terms(update: TermsUpdate, contractor: Contractor = Depends(get_current_contractor)):
+    """Update the current contractor's default quote terms."""
+    db = get_database_service()
+
+    # Build update dict
+    update_data = {}
+    if update.deposit_percent is not None:
+        update_data["deposit_percent"] = update.deposit_percent
+    if update.quote_valid_days is not None:
+        update_data["quote_valid_days"] = update.quote_valid_days
+    if update.labor_warranty_years is not None:
+        update_data["labor_warranty_years"] = update.labor_warranty_years
+    if update.final_payment_terms is not None:
+        update_data["final_payment_terms"] = update.final_payment_terms
+    if update.accepted_payment_methods is not None:
+        update_data["accepted_payment_methods"] = update.accepted_payment_methods
+    if update.custom_terms is not None:
+        update_data["custom_terms"] = update.custom_terms
+
+    terms = await db.update_terms(contractor.id, **update_data)
+
+    if not terms:
+        raise HTTPException(status_code=404, detail="Terms not found")
+
+    return TermsResponse(
+        deposit_percent=terms.deposit_percent,
+        final_payment_terms=terms.final_payment_terms,
+        quote_valid_days=terms.quote_valid_days,
+        labor_warranty_years=terms.labor_warranty_years,
+        accepted_payment_methods=terms.accepted_payment_methods,
+        custom_terms=terms.custom_terms,
+    )
+
+
 @router.get("/{contractor_id}/accuracy", response_model=AccuracyStatsResponse)
 async def get_accuracy_stats(contractor_id: str):
     """Get accuracy statistics for a contractor."""

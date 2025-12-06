@@ -305,6 +305,11 @@ class Quote(Base):
     estimated_days = Column(Integer)
     estimated_crew_size = Column(Integer)
 
+    # Per-quote terms (overrides contractor defaults if set)
+    deposit_percent = Column(Integer)  # e.g., 50
+    quote_valid_days = Column(Integer)  # e.g., 30
+    warranty_years = Column(Integer)  # e.g., 2
+
     # Status
     status = Column(String(50), default="draft")  # draft, sent, won, lost, expired
     sent_at = Column(DateTime)

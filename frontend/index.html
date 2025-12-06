@@ -125,7 +125,8 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: linear-gradient(to bottom, var(--bg-primary) 0%, transparent 100%);
+            background: var(--bg-primary);
+            border-bottom: 1px solid var(--border-color);
         }
 
         .logo {
@@ -938,6 +939,71 @@
         .customer-info-value {
             font-size: 1rem;
             color: var(--text-primary);
+        }
+
+        /* Timeline & Terms Section */
+        .timeline-terms-section {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 32px;
+        }
+
+        .timeline-terms-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 32px;
+        }
+
+        .timeline-section h4,
+        .terms-section h4 {
+            font-family: var(--font-serif);
+            font-size: 1rem;
+            font-weight: 500;
+            margin: 0 0 16px 0;
+            color: var(--text-primary);
+        }
+
+        .timeline-fields,
+        .terms-fields {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .timeline-terms-section .field-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            min-width: 100px;
+        }
+
+        .timeline-terms-section .field-group label {
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .timeline-terms-section .field-group input {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-size: 0.875rem;
+            color: var(--text-primary);
+            width: 100px;
+            transition: border-color 0.2s ease;
+        }
+
+        .timeline-terms-section .field-group input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .timeline-terms-section .field-group input::placeholder {
+            color: var(--text-muted);
         }
 
         /* Line Items */
@@ -2147,7 +2213,6 @@
         @media (max-width: 640px) {
             nav {
                 padding: 16px 20px;
-                background: var(--bg-primary); /* Solid background on mobile to prevent content showing through */
             }
 
             .container {
@@ -2199,6 +2264,16 @@
 
             .quote-header h2 {
                 font-size: 1.5rem;
+            }
+
+            /* Timeline & Terms: stack on mobile */
+            .timeline-terms-grid {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+
+            .timeline-terms-section .field-group input {
+                width: 80px;
             }
 
             /* Line item editing: stack vertically on mobile for better alignment */
@@ -2934,6 +3009,71 @@
 
         .account-tab-content.active {
             display: block;
+        }
+
+        /* Quote Defaults Styles */
+        .quote-defaults-section {
+            margin-bottom: 48px;
+        }
+
+        .quote-defaults-form {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 24px;
+        }
+
+        .defaults-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .default-field {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .default-field label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .default-field input {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px 14px;
+            font-size: 1rem;
+            color: var(--text-primary);
+            transition: border-color 0.2s ease;
+        }
+
+        .default-field input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .default-field input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .field-hint {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .defaults-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .save-status {
+            font-size: 0.875rem;
+            color: var(--success);
         }
 
         /* Pricing Brain Styles */
@@ -3946,6 +4086,42 @@
                     <span class="total-amount" id="detailTotalAmount">$0</span>
                 </div>
 
+                <!-- Timeline & Terms Section -->
+                <div class="timeline-terms-section">
+                    <div class="timeline-terms-grid">
+                        <div class="timeline-section">
+                            <h4>Timeline</h4>
+                            <div class="timeline-fields">
+                                <div class="field-group">
+                                    <label>Estimated Days</label>
+                                    <input type="number" id="detailEstimatedDays" min="1" placeholder="e.g., 3" onchange="trackTimelineTermsChange()">
+                                </div>
+                                <div class="field-group">
+                                    <label>Crew Size</label>
+                                    <input type="number" id="detailCrewSize" min="1" placeholder="e.g., 2" onchange="trackTimelineTermsChange()">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="terms-section">
+                            <h4>Terms</h4>
+                            <div class="terms-fields">
+                                <div class="field-group">
+                                    <label>Deposit %</label>
+                                    <input type="number" id="detailDepositPercent" min="0" max="100" placeholder="50" onchange="trackTimelineTermsChange()">
+                                </div>
+                                <div class="field-group">
+                                    <label>Quote Valid (days)</label>
+                                    <input type="number" id="detailQuoteValidDays" min="1" placeholder="30" onchange="trackTimelineTermsChange()">
+                                </div>
+                                <div class="field-group">
+                                    <label>Warranty (years)</label>
+                                    <input type="number" id="detailWarrantyYears" min="0" placeholder="2" onchange="trackTimelineTermsChange()">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="quote-notes" id="detailQuoteNotes" style="display: none;">
                     <h4>Notes</h4>
                     <p id="detailNotesContent"></p>
@@ -3983,6 +4159,7 @@
                     <button class="account-tab-btn active" id="billingTabBtn" onclick="showAccountTab('billing')">Billing</button>
                     <button class="account-tab-btn" id="referralTabBtn" onclick="showAccountTab('referral')">Referral</button>
                     <button class="account-tab-btn" id="logoTabBtn" onclick="showAccountTab('logo')">Business Logo</button>
+                    <button class="account-tab-btn" id="quoteDefaultsTabBtn" onclick="showAccountTab('quoteDefaults')">Quote Defaults</button>
                     <button class="account-tab-btn" id="pricingBrainTabBtn" onclick="showAccountTab('pricingBrain')">Pricing Brain™</button>
                 </div>
 
@@ -4169,6 +4346,38 @@
                         </div>
                     </div>
                 </div> <!-- End Logo Tab Content -->
+
+                <!-- Quote Defaults Tab Content -->
+                <div id="quoteDefaultsTabContent" class="account-tab-content">
+                    <div class="quote-defaults-section">
+                        <h3 class="section-title">Default Quote Terms</h3>
+                        <p class="section-subtitle">Set default values for new quotes. These can be overridden on individual quotes.</p>
+
+                        <div class="quote-defaults-form">
+                            <div class="defaults-grid">
+                                <div class="default-field">
+                                    <label for="defaultDepositPercent">Deposit %</label>
+                                    <input type="number" id="defaultDepositPercent" min="0" max="100" placeholder="50">
+                                    <span class="field-hint">Percentage required to schedule</span>
+                                </div>
+                                <div class="default-field">
+                                    <label for="defaultQuoteValidDays">Quote Valid (days)</label>
+                                    <input type="number" id="defaultQuoteValidDays" min="1" placeholder="30">
+                                    <span class="field-hint">How long quotes remain valid</span>
+                                </div>
+                                <div class="default-field">
+                                    <label for="defaultWarrantyYears">Labor Warranty (years)</label>
+                                    <input type="number" id="defaultWarrantyYears" min="0" placeholder="2">
+                                    <span class="field-hint">Years of labor warranty included</span>
+                                </div>
+                            </div>
+                            <div class="defaults-actions">
+                                <button class="btn btn-primary" onclick="saveQuoteDefaults()">Save Defaults</button>
+                                <span id="defaultsSaveStatus" class="save-status"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div> <!-- End Quote Defaults Tab Content -->
 
                 <!-- Pricing Brain Tab Content -->
                 <div id="pricingBrainTabContent" class="account-tab-content">
@@ -7862,7 +8071,12 @@
             originalQuoteState = {
                 line_items: JSON.parse(JSON.stringify(quote.line_items || [])),
                 job_description: quote.job_description,
-                total: quote.total || quote.subtotal || 0
+                total: quote.total || quote.subtotal || 0,
+                estimated_days: quote.estimated_days,
+                estimated_crew_size: quote.estimated_crew_size,
+                deposit_percent: quote.deposit_percent,
+                quote_valid_days: quote.quote_valid_days,
+                warranty_years: quote.warranty_years
             };
             editedLineItems = JSON.parse(JSON.stringify(quote.line_items || []));
             hasUnsavedChanges = false;
@@ -7878,6 +8092,13 @@
 
             // DISC-035: Update confidence badge based on category
             updateConfidenceBadge(quote.job_type, 'detailConfidenceBadge');
+
+            // Populate timeline/terms fields
+            document.getElementById('detailEstimatedDays').value = quote.estimated_days || '';
+            document.getElementById('detailCrewSize').value = quote.estimated_crew_size || '';
+            document.getElementById('detailDepositPercent').value = quote.deposit_percent ?? '';
+            document.getElementById('detailQuoteValidDays').value = quote.quote_valid_days ?? '';
+            document.getElementById('detailWarrantyYears').value = quote.warranty_years ?? '';
 
             if (quote.notes) {
                 document.getElementById('detailQuoteNotes').style.display = 'block';
@@ -7967,6 +8188,11 @@
             });
         }
 
+        // Track changes to timeline/terms
+        function trackTimelineTermsChange() {
+            checkForChanges();
+        }
+
         // Track changes to line items
         function trackLineItemChange(index, field, value) {
             if (field === 'amount') {
@@ -8029,6 +8255,29 @@
                 }
             }
 
+            // Track timeline/terms changes
+            const currentDays = parseInt(document.getElementById('detailEstimatedDays').value) || null;
+            const currentCrew = parseInt(document.getElementById('detailCrewSize').value) || null;
+            const currentDeposit = parseInt(document.getElementById('detailDepositPercent').value);
+            const currentValidDays = parseInt(document.getElementById('detailQuoteValidDays').value);
+            const currentWarranty = parseInt(document.getElementById('detailWarrantyYears').value);
+
+            if (currentDays !== (original.estimated_days || null)) {
+                changes.push('Timeline: ' + (original.estimated_days || '—') + ' days -> ' + (currentDays || '—') + ' days');
+            }
+            if (currentCrew !== (original.estimated_crew_size || null)) {
+                changes.push('Crew size: ' + (original.estimated_crew_size || '—') + ' -> ' + (currentCrew || '—'));
+            }
+            if (!isNaN(currentDeposit) && currentDeposit !== original.deposit_percent) {
+                changes.push('Deposit: ' + (original.deposit_percent ?? '—') + '% -> ' + currentDeposit + '%');
+            }
+            if (!isNaN(currentValidDays) && currentValidDays !== original.quote_valid_days) {
+                changes.push('Quote valid: ' + (original.quote_valid_days ?? '—') + ' days -> ' + currentValidDays + ' days');
+            }
+            if (!isNaN(currentWarranty) && currentWarranty !== original.warranty_years) {
+                changes.push('Warranty: ' + (original.warranty_years ?? '—') + ' yrs -> ' + currentWarranty + ' yrs');
+            }
+
             hasUnsavedChanges = changes.length > 0;
 
             const editBanner = document.getElementById('editModeBanner');
@@ -8063,6 +8312,13 @@
 
             const correctionNotes = document.getElementById('correctionNotes').value;
 
+            // Gather timeline/terms values
+            const estimatedDays = parseInt(document.getElementById('detailEstimatedDays').value) || null;
+            const crewSize = parseInt(document.getElementById('detailCrewSize').value) || null;
+            const depositPercent = parseInt(document.getElementById('detailDepositPercent').value);
+            const quoteValidDays = parseInt(document.getElementById('detailQuoteValidDays').value);
+            const warrantyYears = parseInt(document.getElementById('detailWarrantyYears').value);
+
             try {
                 const response = await fetch(`${API_BASE}/quotes/${currentDetailQuote.id}`, {
                     method: 'PUT',
@@ -8072,7 +8328,12 @@
                     },
                     body: JSON.stringify({
                         line_items: editedLineItems,
-                        correction_notes: correctionNotes || null
+                        correction_notes: correctionNotes || null,
+                        estimated_days: estimatedDays,
+                        estimated_crew_size: crewSize,
+                        deposit_percent: isNaN(depositPercent) ? null : depositPercent,
+                        quote_valid_days: isNaN(quoteValidDays) ? null : quoteValidDays,
+                        warranty_years: isNaN(warrantyYears) ? null : warrantyYears
                     })
                 });
 
@@ -8092,7 +8353,12 @@
                 originalQuoteState = {
                     line_items: JSON.parse(JSON.stringify(updatedQuote.line_items || [])),
                     job_description: updatedQuote.job_description,
-                    total: updatedQuote.total || updatedQuote.subtotal || 0
+                    total: updatedQuote.total || updatedQuote.subtotal || 0,
+                    estimated_days: updatedQuote.estimated_days,
+                    estimated_crew_size: updatedQuote.estimated_crew_size,
+                    deposit_percent: updatedQuote.deposit_percent,
+                    quote_valid_days: updatedQuote.quote_valid_days,
+                    warranty_years: updatedQuote.warranty_years
                 };
                 hasUnsavedChanges = false;
 
@@ -9369,12 +9635,14 @@
             document.getElementById('billingTabBtn').classList.toggle('active', tab === 'billing');
             document.getElementById('referralTabBtn').classList.toggle('active', tab === 'referral');
             document.getElementById('logoTabBtn').classList.toggle('active', tab === 'logo');
+            document.getElementById('quoteDefaultsTabBtn').classList.toggle('active', tab === 'quoteDefaults');
             document.getElementById('pricingBrainTabBtn').classList.toggle('active', tab === 'pricingBrain');
 
             // Update tab content
             document.getElementById('billingTabContent').classList.toggle('active', tab === 'billing');
             document.getElementById('referralTabContent').classList.toggle('active', tab === 'referral');
             document.getElementById('logoTabContent').classList.toggle('active', tab === 'logo');
+            document.getElementById('quoteDefaultsTabContent').classList.toggle('active', tab === 'quoteDefaults');
             document.getElementById('pricingBrainTabContent').classList.toggle('active', tab === 'pricingBrain');
 
             // Load data when switching tabs
@@ -9384,6 +9652,8 @@
                 loadBillingStatus();
             } else if (tab === 'logo') {
                 loadCurrentLogo();
+            } else if (tab === 'quoteDefaults') {
+                loadQuoteDefaults();
             } else if (tab === 'referral') {
                 loadReferralStats();
                 // Track referral signature section view (DISC-021)
@@ -9392,6 +9662,65 @@
                     posthog.capture('referral_signature_section_viewed');
                 }
                 {% endif %}
+            }
+        }
+
+        // ========================================
+        // Quote Defaults Management
+        // ========================================
+
+        async function loadQuoteDefaults() {
+            try {
+                const response = await fetch(`${API_BASE}/contractors/me/terms`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                if (response.ok) {
+                    const terms = await response.json();
+                    document.getElementById('defaultDepositPercent').value = terms.deposit_percent ?? '';
+                    document.getElementById('defaultQuoteValidDays').value = terms.quote_valid_days ?? '';
+                    document.getElementById('defaultWarrantyYears').value = terms.labor_warranty_years ?? '';
+                }
+            } catch (err) {
+                console.error('Failed to load quote defaults:', err);
+            }
+        }
+
+        async function saveQuoteDefaults() {
+            const statusEl = document.getElementById('defaultsSaveStatus');
+            statusEl.textContent = 'Saving...';
+            statusEl.style.color = 'var(--text-secondary)';
+
+            const depositPercent = parseInt(document.getElementById('defaultDepositPercent').value);
+            const quoteValidDays = parseInt(document.getElementById('defaultQuoteValidDays').value);
+            const warrantyYears = parseInt(document.getElementById('defaultWarrantyYears').value);
+
+            try {
+                const response = await fetch(`${API_BASE}/contractors/me/terms`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        deposit_percent: isNaN(depositPercent) ? null : depositPercent,
+                        quote_valid_days: isNaN(quoteValidDays) ? null : quoteValidDays,
+                        labor_warranty_years: isNaN(warrantyYears) ? null : warrantyYears
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to save defaults');
+                }
+
+                statusEl.textContent = '✓ Saved';
+                statusEl.style.color = 'var(--success)';
+                setTimeout(() => { statusEl.textContent = ''; }, 3000);
+
+            } catch (err) {
+                console.error('Failed to save quote defaults:', err);
+                statusEl.textContent = 'Failed to save';
+                statusEl.style.color = 'var(--error)';
             }
         }
 
