@@ -134,6 +134,35 @@ ACCENT_COLORS = {
 }
 
 
+# DISC-066: Font name mapping for variants
+# ReportLab uses specific names for font variants
+FONT_BOLD_MAP = {
+    "Helvetica": "Helvetica-Bold",
+    "Times-Roman": "Times-Bold",
+    "Courier": "Courier-Bold",
+}
+
+FONT_ITALIC_MAP = {
+    "Helvetica": "Helvetica-Oblique",
+    "Times-Roman": "Times-Italic",
+    "Courier": "Courier-Oblique",
+}
+
+
+def get_bold_font(font_name: str) -> str:
+    """Get the correct bold variant for a font name."""
+    if "Bold" in font_name:
+        return font_name
+    return FONT_BOLD_MAP.get(font_name, font_name + "-Bold")
+
+
+def get_italic_font(font_name: str) -> str:
+    """Get the correct italic variant for a font name."""
+    if "Italic" in font_name or "Oblique" in font_name:
+        return font_name
+    return FONT_ITALIC_MAP.get(font_name, font_name)
+
+
 class LogoPlaceholder(Flowable):
     """
     A circular logo placeholder with the business initial.
@@ -267,7 +296,7 @@ class PDFGeneratorService:
         self.styles.add(ParagraphStyle(
             name='BusinessName',
             parent=self.styles['Normal'],
-            fontName=template["body_font"] + '-Bold' if 'Bold' not in template["body_font"] else template["body_font"],
+            fontName=get_bold_font(template["body_font"]),
             fontSize=14,
             alignment=TA_RIGHT,
             textColor=self.template_colors["header"],
@@ -289,7 +318,7 @@ class PDFGeneratorService:
         self.styles.add(ParagraphStyle(
             name='SectionHeader',
             parent=self.styles['Heading2'],
-            fontName=template["body_font"] + '-Bold' if 'Bold' not in template["body_font"] else template["body_font"],
+            fontName=get_bold_font(template["body_font"]),
             fontSize=10,
             spaceBefore=24,
             spaceAfter=12,
@@ -323,7 +352,7 @@ class PDFGeneratorService:
         self.styles.add(ParagraphStyle(
             name='CustomerName',
             parent=self.styles['Normal'],
-            fontName=template["body_font"] + '-Bold' if 'Bold' not in template["body_font"] else template["body_font"],
+            fontName=get_bold_font(template["body_font"]),
             fontSize=12,
             textColor=self.template_colors["header"],
             spaceAfter=4,
@@ -342,7 +371,7 @@ class PDFGeneratorService:
         self.styles.add(ParagraphStyle(
             name='TotalAmount',
             parent=self.styles['Normal'],
-            fontName=template["body_font"] + '-Bold' if 'Bold' not in template["body_font"] else template["body_font"],
+            fontName=get_bold_font(template["body_font"]),
             fontSize=24,
             alignment=TA_RIGHT,
             textColor=self.template_colors["accent"],  # Use accent color for total
@@ -362,7 +391,7 @@ class PDFGeneratorService:
         self.styles.add(ParagraphStyle(
             name='FooterBrand',
             parent=self.styles['Normal'],
-            fontName=template["title_font"] + '-Italic' if template["title_font"] == 'Times-Roman' else template["body_font"],
+            fontName=get_italic_font(template["title_font"]) if template["title_font"] == 'Times-Roman' else template["body_font"],
             fontSize=9,
             alignment=TA_CENTER,
             textColor=BRAND_LIGHT_GRAY,
