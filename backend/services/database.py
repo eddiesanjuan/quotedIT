@@ -19,6 +19,7 @@ from ..models.database import (
     Base, User, Contractor, PricingModel, ContractorTerms,
     Quote, JobType, SetupConversation, UserIssue, QuoteFeedback
 )
+from .analytics import analytics_service
 
 
 # Create async engine and session factory
@@ -289,12 +290,42 @@ class DatabaseService:
                 if tendency and tendency not in cat_data["learned_adjustments"]:
                     cat_data["learned_adjustments"].append(tendency)
 
-                # Update samples and confidence
+                # Update samples and correction count
                 cat_data["samples"] = cat_data.get("samples", 0) + 1
-                cat_data["confidence"] = min(0.95, cat_data.get("confidence", 0.5) + 0.02)
-
-                # DISC-035: Track correction count for trust indicators
                 cat_data["correction_count"] = cat_data.get("correction_count", 0) + 1
+
+                # DISC-054: Dynamic Learning Rate - adjust confidence increment based on correction count
+                # Early learning (< 5 corrections): aggressive learning, larger confidence increments
+                # Mid learning (5-15 corrections): balanced learning, moderate increments
+                # Late learning (> 15 corrections): conservative refinement, small increments
+                correction_count = cat_data["correction_count"]
+                if correction_count < 5:
+                    confidence_increment = 0.04  # Aggressive: 60% new learning (2x baseline)
+                elif correction_count < 15:
+                    confidence_increment = 0.02  # Balanced: 30% new learning (1x baseline)
+                else:
+                    confidence_increment = 0.01  # Conservative: 15% new learning (0.5x baseline)
+
+                cat_data["confidence"] = min(0.95, cat_data.get("confidence", 0.5) + confidence_increment)
+
+                # DISC-054: Track learning velocity metrics
+                try:
+                    # Get user_id for analytics (contractor_id is user_id)
+                    analytics_service.track_event(
+                        user_id=contractor_id,
+                        event_name="dynamic_learning_rate_applied",
+                        properties={
+                            "category": category,
+                            "correction_count": correction_count,
+                            "learning_phase": "aggressive" if correction_count < 5 else ("balanced" if correction_count < 15 else "conservative"),
+                            "confidence_increment": confidence_increment,
+                            "new_confidence": cat_data["confidence"],
+                            "samples": cat_data["samples"],
+                        }
+                    )
+                except Exception as e:
+                    # Don't fail learning if analytics fails
+                    print(f"Warning: Failed to track learning velocity: {e}")
 
                 # Keep learned_adjustments manageable (max 20 per category)
                 if len(cat_data["learned_adjustments"]) > 20:
