@@ -22,9 +22,9 @@ To approve: Change status from DISCOVERED → READY
 
 | Status | Count |
 |--------|-------|
-| DEPLOYED | 28 |
+| DEPLOYED | 29 |
 | COMPLETE | 10 |
-| READY | 4 |
+| READY | 3 |
 | DISCOVERED | 18 |
 | **Total** | **60** |
 
@@ -217,25 +217,24 @@ To approve: Change status from DISCOVERED → READY
 
 ## Ready for Implementation
 
-### DISC-066: PDF Generation Failure in Production (READY) 🐛 CRITICAL
+### DISC-066: PDF Generation Failure in Production (DEPLOYED) 🐛 CRITICAL
 
 **Source**: Founder Report (Eddie, 2025-12-06)
 **Impact**: CRITICAL | **Effort**: M | **Score**: Strategic
-**Sprint Alignment**: Blocking core functionality - users cannot generate PDFs
+**Commits**: 70a6e1d, 22e9635
 
 **Problem**: PDF generation fails in production with error "Failed to download PDF: Failed to generate PDF". Quote displays correctly (shows line items, total $4,210) but clicking "Download PDF" throws an error dialog.
 
-**Screenshot Evidence**: User attempted to download PDF for a painting quote (Large Painting, Small Paintings, Custom Wood Frames, Rush Charge, Shipping) totaling $4,210. Error modal appeared instead of PDF download.
+**Root Causes Identified & Fixed**:
+1. **Type Safety** (70a6e1d): Format string `:g` failed when quantity/amount were string types from JSON. Added try/except float() conversion.
+2. **Filesystem Permissions** (22e9635): Railway ephemeral filesystem caused FileResponse failures. Switched to in-memory Response - PDF generated and streamed directly without disk I/O.
 
-**Proposed Work**:
-1. Check Railway logs for PDF generation errors
-2. Verify WeasyPrint/PDF service is running correctly in production
-3. Check for memory limits or timeout issues on Railway
-4. Test PDF generation endpoint directly via API
-5. Add better error logging to identify root cause
-6. Fix and verify PDF generation works end-to-end
+**Solution**:
+- Force numeric types for amount/quantity in PDF line items
+- Return PDF bytes directly from memory via Response instead of FileResponse from disk
+- Eliminated `./data/pdfs/` filesystem dependency entirely
 
-**Success Metric**: PDF downloads work reliably for all quote types in production
+**Success Metric**: PDF downloads work reliably for all quote types in production ✅
 
 ---
 
