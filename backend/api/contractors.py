@@ -54,6 +54,7 @@ class PricingModelResponse(BaseModel):
     minimum_job_amount: Optional[float] = None
     pricing_knowledge: dict = {}
     pricing_notes: Optional[str] = None
+    pricing_philosophy: Optional[str] = None  # Global pricing DNA
     correction_count: int = 0
     last_learning_at: Optional[str] = None
 
@@ -65,6 +66,7 @@ class PricingModelUpdate(BaseModel):
     material_markup_percent: Optional[float] = None
     minimum_job_amount: Optional[float] = None
     pricing_notes: Optional[str] = None
+    pricing_philosophy: Optional[str] = None  # Global pricing DNA
 
 
 class TermsResponse(BaseModel):

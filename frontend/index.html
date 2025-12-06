@@ -1855,6 +1855,49 @@
             border-color: var(--text-primary);
         }
 
+        /* Quantity/Unit row */
+        .line-item-qty-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .line-item-qty-input {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 8px 10px;
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+            font-size: 0.875rem;
+            width: 70px;
+            text-align: center;
+        }
+
+        .line-item-unit-input {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 8px 10px;
+            color: var(--text-secondary);
+            font-family: var(--font-sans);
+            font-size: 0.875rem;
+            width: 80px;
+        }
+
+        .line-item-qty-input:focus,
+        .line-item-unit-input:focus {
+            outline: none;
+            border-color: var(--text-primary);
+        }
+
+        .line-item-qty-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
         /* Edit Mode Indicator */
         .edit-mode-banner {
             display: none;
@@ -2176,6 +2219,16 @@
             .line-item-amount-input {
                 width: 100%;
                 text-align: left;
+            }
+
+            .line-item-qty-row {
+                flex-wrap: wrap;
+            }
+
+            .line-item-qty-input,
+            .line-item-unit-input {
+                flex: 1;
+                min-width: 60px;
             }
 
             .issue-form .form-row {
@@ -5704,10 +5757,13 @@
             descDiv.className = 'line-item-desc';
 
             // Build description with quantity info if available
+            // Show breakdown when: qty > 1, OR unit is specified
             let descText = item.description || '';
-            if (item.quantity && item.quantity > 1) {
-                const unitPrice = item.amount / item.quantity;
-                const qtyText = `Qty: ${item.quantity}${item.unit ? ' ' + item.unit : ''} × $${unitPrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} = $${item.amount.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            const qty = item.quantity || 1;
+            const hasUnit = item.unit && item.unit.trim();
+            if (qty > 1 || hasUnit) {
+                const unitPrice = item.amount / qty;
+                const qtyText = `Qty: ${qty}${hasUnit ? ' ' + item.unit : ''} × $${unitPrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} = $${item.amount.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
                 descText = descText ? `${descText}\n${qtyText}` : qtyText;
             }
             descDiv.textContent = descText;
@@ -7866,8 +7922,36 @@
                 descInput.placeholder = 'Description (optional)';
                 descInput.oninput = function() { trackLineItemChange(index, 'details', this.value); };
 
+                // Quantity/Unit row
+                const qtyRow = document.createElement('div');
+                qtyRow.className = 'line-item-qty-row';
+
+                const qtyLabel = document.createElement('span');
+                qtyLabel.className = 'line-item-qty-label';
+                qtyLabel.textContent = 'Qty:';
+
+                const qtyInput = document.createElement('input');
+                qtyInput.type = 'number';
+                qtyInput.className = 'line-item-qty-input';
+                qtyInput.value = item.quantity || 1;
+                qtyInput.min = '1';
+                qtyInput.step = '1';
+                qtyInput.oninput = function() { trackLineItemChange(index, 'quantity', this.value); };
+
+                const unitInput = document.createElement('input');
+                unitInput.type = 'text';
+                unitInput.className = 'line-item-unit-input';
+                unitInput.value = item.unit || '';
+                unitInput.placeholder = 'unit (optional)';
+                unitInput.oninput = function() { trackLineItemChange(index, 'unit', this.value); };
+
+                qtyRow.appendChild(qtyLabel);
+                qtyRow.appendChild(qtyInput);
+                qtyRow.appendChild(unitInput);
+
                 editGroup.appendChild(nameInput);
                 editGroup.appendChild(descInput);
+                editGroup.appendChild(qtyRow);
 
                 const amountInput = document.createElement('input');
                 amountInput.type = 'number';
@@ -7893,6 +7977,10 @@
                 editedLineItems[index].description = value;
             } else if (field === 'details') {
                 editedLineItems[index].details = value;
+            } else if (field === 'quantity') {
+                editedLineItems[index].quantity = parseFloat(value) || 1;
+            } else if (field === 'unit') {
+                editedLineItems[index].unit = value || null;
             }
             checkForChanges();
         }
@@ -7911,6 +7999,7 @@
             for (let i = 0; i < edited.length; i++) {
                 const origItem = original.line_items[i] || {};
                 const editItem = edited[i] || {};
+                const itemName = editItem.name || editItem.description || 'Item ' + (i + 1);
 
                 const origAmount = parseFloat(origItem.amount) || 0;
                 const editAmount = parseFloat(editItem.amount) || 0;
@@ -7918,12 +8007,25 @@
                 if (origAmount !== editAmount) {
                     const diff = editAmount - origAmount;
                     totalDiff += diff;
-                    const itemName = editItem.name || editItem.description || 'Item ' + (i + 1);
                     changes.push(itemName + ': $' + origAmount + ' -> $' + editAmount + ' (' + (diff >= 0 ? '+' : '') + '$' + diff + ')');
                 }
 
                 if ((origItem.name || origItem.description) !== (editItem.name || editItem.description)) {
-                    changes.push('Renamed: "' + (origItem.name || origItem.description) + '" -> "' + (editItem.name || editItem.description) + '"');
+                    changes.push('Renamed: "' + (origItem.name || origItem.description) + '" -> "' + itemName + '"');
+                }
+
+                // Track quantity changes
+                const origQty = parseFloat(origItem.quantity) || 1;
+                const editQty = parseFloat(editItem.quantity) || 1;
+                if (origQty !== editQty) {
+                    changes.push(itemName + ' qty: ' + origQty + ' -> ' + editQty);
+                }
+
+                // Track unit changes
+                const origUnit = origItem.unit || '';
+                const editUnit = editItem.unit || '';
+                if (origUnit !== editUnit) {
+                    changes.push(itemName + ' unit: "' + origUnit + '" -> "' + editUnit + '"');
                 }
             }
 

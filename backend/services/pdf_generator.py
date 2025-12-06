@@ -647,12 +647,14 @@ class PDFGeneratorService:
             quantity = item.get('quantity')
             unit = item.get('unit', '')
 
-            # Build quantity display if quantity exists and is > 1
+            # Build quantity display when qty > 1 OR unit is specified
             qty_display = ""
-            if quantity and quantity > 1:
-                unit_price = amount / quantity
-                qty_display = f"<br/><font size='9' color='#666666'>Qty: {quantity:g}"
-                if unit:
+            qty = quantity if quantity else 1
+            has_unit = bool(unit and unit.strip())
+            if qty > 1 or has_unit:
+                unit_price = amount / qty if qty > 0 else amount
+                qty_display = f"<br/><font size='9' color='#666666'>Qty: {qty:g}"
+                if has_unit:
                     qty_display += f" {unit}"
                 qty_display += f" × ${unit_price:,.2f} = ${amount:,.2f}</font>"
 

@@ -24,9 +24,9 @@ To approve: Change status from DISCOVERED → READY
 |--------|-------|
 | DEPLOYED | 28 |
 | COMPLETE | 10 |
-| READY | 3 |
+| READY | 4 |
 | DISCOVERED | 18 |
-| **Total** | **59** |
+| **Total** | **60** |
 
 **Prompt Optimization**: DISC-041 complete → DISC-052, DISC-054 (learning improvements via prompt injection)
 **Deprioritized**: DISC-053, DISC-055 (structured storage/embeddings - over-engineering; prompt injection approach preferred)
@@ -216,6 +216,28 @@ To approve: Change status from DISCOVERED → READY
 ---
 
 ## Ready for Implementation
+
+### DISC-066: PDF Generation Failure in Production (READY) 🐛 CRITICAL
+
+**Source**: Founder Report (Eddie, 2025-12-06)
+**Impact**: CRITICAL | **Effort**: M | **Score**: Strategic
+**Sprint Alignment**: Blocking core functionality - users cannot generate PDFs
+
+**Problem**: PDF generation fails in production with error "Failed to download PDF: Failed to generate PDF". Quote displays correctly (shows line items, total $4,210) but clicking "Download PDF" throws an error dialog.
+
+**Screenshot Evidence**: User attempted to download PDF for a painting quote (Large Painting, Small Paintings, Custom Wood Frames, Rush Charge, Shipping) totaling $4,210. Error modal appeared instead of PDF download.
+
+**Proposed Work**:
+1. Check Railway logs for PDF generation errors
+2. Verify WeasyPrint/PDF service is running correctly in production
+3. Check for memory limits or timeout issues on Railway
+4. Test PDF generation endpoint directly via API
+5. Add better error logging to identify root cause
+6. Fix and verify PDF generation works end-to-end
+
+**Success Metric**: PDF downloads work reliably for all quote types in production
+
+---
 
 ### DISC-014: Buildxact Competitive Defense (DEPLOYED) ⚠️ Strategic
 

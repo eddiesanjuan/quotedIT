@@ -146,6 +146,7 @@ class DatabaseService:
         minimum_job_amount: Optional[float] = None,
         pricing_knowledge: Optional[Dict] = None,
         pricing_notes: Optional[str] = None,
+        pricing_philosophy: Optional[str] = None,
     ) -> PricingModel:
         """Create a new pricing model for a contractor."""
         async with async_session_factory() as session:
@@ -157,6 +158,7 @@ class DatabaseService:
                 minimum_job_amount=minimum_job_amount,
                 pricing_knowledge=pricing_knowledge or {},
                 pricing_notes=pricing_notes,
+                pricing_philosophy=pricing_philosophy,
             )
             session.add(pricing_model)
             await session.commit()
@@ -237,17 +239,20 @@ class DatabaseService:
                 if category not in pricing_knowledge["categories"]:
                     pricing_knowledge["categories"][category] = {
                         "display_name": category.replace("_", " ").title(),
-                        "learned_adjustments": [],
+                        "tailored_prompt": None,  # Category-specific pricing understanding
+                        "learned_adjustments": [],  # Specific injection learnings
                         "samples": 0,
                         "confidence": 0.5,
-                        "correction_count": 0,  # DISC-035
+                        "correction_count": 0,
                     }
 
                 cat_data = pricing_knowledge["categories"][category]
 
-                # Ensure learned_adjustments list exists
+                # Ensure fields exist (for backward compatibility with old data)
                 if "learned_adjustments" not in cat_data:
                     cat_data["learned_adjustments"] = []
+                if "tailored_prompt" not in cat_data:
+                    cat_data["tailored_prompt"] = None
 
                 # NEW FORMAT: Claude returns the COMPLETE optimized list
                 # Claude has already seen existing learnings and returned updated list
@@ -430,7 +435,8 @@ class DatabaseService:
             # (no learned_adjustments yet - that comes from quote edits)
             pricing_knowledge["categories"][category] = {
                 "display_name": display_name or category.replace("_", " ").title(),
-                "learned_adjustments": [],
+                "tailored_prompt": None,  # Category-specific pricing understanding
+                "learned_adjustments": [],  # Specific injection learnings
                 "samples": 0,
                 "confidence": 0.5,
                 "correction_count": 0,  # DISC-035

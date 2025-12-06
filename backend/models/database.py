@@ -169,6 +169,18 @@ class PricingModel(Base):
     parking is a pain. For repeat customers I knock off 5%."
     """
 
+    # Global pricing philosophy - the contractor's overall pricing DNA
+    # Generated during onboarding, updated when fundamental changes are learned
+    pricing_philosophy = Column(Text)
+    """
+    Example: "You're a premium residential contractor in Austin specializing in
+    high-end deck and outdoor living projects. You price labor at $85/hour because
+    you do meticulous finish work. Materials are marked up 25% - you handle all
+    procurement and delivery. You always include a 10% contingency buffer because
+    scope creep is common. Your minimums are $1,500 because quality costs more.
+    You prefer to quote slightly high and come in under budget."
+    """
+
     # Relationship
     contractor = relationship("Contractor", back_populates="pricing_model")
 

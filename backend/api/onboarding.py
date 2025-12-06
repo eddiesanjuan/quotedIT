@@ -78,6 +78,7 @@ class PricingModelResponse(BaseModel):
     minimum_job_amount: Optional[float] = None
     pricing_knowledge: dict = {}
     pricing_notes: Optional[str] = None
+    pricing_philosophy: Optional[str] = None  # Global pricing DNA
     terms: Optional[dict] = None
     job_types: Optional[List[dict]] = None
     confidence_summary: Optional[str] = None
