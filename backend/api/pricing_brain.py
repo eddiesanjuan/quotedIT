@@ -38,6 +38,7 @@ class CategoryDetail(BaseModel):
     learned_adjustments: List[str]
     samples: int
     confidence: float
+    correction_count: int  # DISC-035
 
 
 class UpdateCategoryRequest(BaseModel):
@@ -62,6 +63,15 @@ class GlobalSettings(BaseModel):
     material_markup_percent: Optional[float]
     minimum_job_amount: Optional[float]
     pricing_notes: Optional[str]
+
+
+class ConfidenceInfo(BaseModel):
+    """Confidence information for a category (DISC-035)."""
+    category: str
+    correction_count: int
+    confidence_level: str  # "low", "medium", "good", "high"
+    confidence_label: str  # Human-readable label with count
+    description: str  # Description of what this means
 
 
 # ============================================================================
@@ -409,3 +419,54 @@ async def update_global_settings(
     # Return updated settings
     updated_settings = pricing_brain.get_global_settings(updated_model)
     return updated_settings
+
+
+@router.get("/{category}/confidence", response_model=ConfidenceInfo)
+async def get_category_confidence(
+    category: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get confidence information for a specific category.
+
+    DISC-035: Learning System Trust Indicators
+    Returns correction count and confidence label to show learning progress.
+    """
+    db = get_db_service()
+    pricing_brain = get_pricing_brain_service()
+
+    # Get contractor
+    contractor = await db.get_contractor_by_user_id(current_user["id"])
+    if not contractor:
+        raise HTTPException(status_code=400, detail="Contractor not found")
+
+    # Get pricing model
+    pricing_model = await db.get_pricing_model(contractor.id)
+    if not pricing_model:
+        raise HTTPException(status_code=400, detail="Pricing model not found")
+
+    # Get category detail
+    category_data = pricing_brain.get_category_detail(
+        pricing_knowledge=pricing_model.pricing_knowledge or {},
+        category=category,
+    )
+
+    if not category_data:
+        # Category doesn't exist yet, return low confidence
+        confidence_info = pricing_brain.get_confidence_label(0, 0)
+        return ConfidenceInfo(
+            category=category,
+            correction_count=0,
+            **confidence_info
+        )
+
+    # Get confidence label
+    correction_count = category_data.get("correction_count", 0)
+    samples = category_data.get("samples", 0)
+    confidence_info = pricing_brain.get_confidence_label(correction_count, samples)
+
+    return ConfidenceInfo(
+        category=category,
+        correction_count=correction_count,
+        **confidence_info
+    )

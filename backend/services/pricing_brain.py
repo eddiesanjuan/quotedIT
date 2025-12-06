@@ -97,7 +97,51 @@ class PricingBrainService:
             "learned_adjustments": category_data.get("learned_adjustments", []),
             "samples": category_data.get("samples", 0),
             "confidence": category_data.get("confidence", 0.5),
+            "correction_count": category_data.get("correction_count", 0),  # DISC-035
         }
+
+    def get_confidence_label(
+        self,
+        correction_count: int,
+        samples: int = 0,
+    ) -> Dict[str, Any]:
+        """
+        Get confidence label and level for a category based on correction count.
+
+        DISC-035: Learning System Trust Indicators
+        With <10 corrections per user in beta, need to set realistic expectations.
+
+        Args:
+            correction_count: Number of corrections for this category
+            samples: Total quotes generated (optional, for additional context)
+
+        Returns:
+            Dict with confidence_level and confidence_label
+        """
+        if correction_count >= 10:
+            return {
+                "confidence_level": "high",
+                "confidence_label": f"High Confidence ({correction_count} corrections)",
+                "description": "Well-calibrated from many corrections",
+            }
+        elif correction_count >= 5:
+            return {
+                "confidence_level": "good",
+                "confidence_label": f"Good ({correction_count} corrections)",
+                "description": "Learning from your patterns",
+            }
+        elif correction_count >= 2:
+            return {
+                "confidence_level": "medium",
+                "confidence_label": f"Learning ({correction_count} corrections)",
+                "description": "Still learning, review carefully",
+            }
+        else:
+            return {
+                "confidence_level": "low",
+                "confidence_label": f"Limited Data ({correction_count} corrections)",
+                "description": "Few corrections, AI is still learning",
+            }
 
     async def analyze_category(
         self,

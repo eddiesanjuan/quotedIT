@@ -844,6 +844,12 @@
             border: 1px solid rgba(74, 222, 128, 0.3);
         }
 
+        .confidence-good {
+            background: rgba(96, 165, 250, 0.15);
+            color: #60a5fa;
+            border: 1px solid rgba(96, 165, 250, 0.3);
+        }
+
         .confidence-medium {
             background: rgba(251, 191, 36, 0.15);
             color: var(--warning);
@@ -5706,10 +5712,8 @@
             document.getElementById('jobDescriptionDisplay').textContent =
                 quote.job_description || 'No description provided';
 
-            const badge = document.getElementById('confidenceBadge');
-            const confidence = quote.confidence || 'medium';
-            badge.textContent = confidence.charAt(0).toUpperCase() + confidence.slice(1) + ' Confidence';
-            badge.className = 'confidence-badge confidence-' + confidence;
+            // DISC-035: Fetch confidence indicator for this job type
+            updateConfidenceBadge(quote.job_type, 'confidenceBadge');
 
             const lineItemsContainer = document.getElementById('lineItems');
             lineItemsContainer.textContent = '';
@@ -5758,6 +5762,40 @@
                 if (quote.billing_info.quotes_used === 1) {
                     markCelebrationPending();
                 }
+            }
+        }
+
+        // DISC-035: Update confidence badge
+        async function updateConfidenceBadge(jobType, badgeElementId) {
+            const badge = document.getElementById(badgeElementId);
+            if (!badge || !jobType) {
+                // No badge element or no job type, hide badge
+                if (badge) badge.style.display = 'none';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/pricing-brain/${encodeURIComponent(jobType)}/confidence`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch confidence');
+                }
+
+                const confidenceInfo = await response.json();
+
+                // Update badge text and class
+                badge.textContent = confidenceInfo.confidence_label;
+                badge.className = 'confidence-badge confidence-' + confidenceInfo.confidence_level;
+                badge.style.display = 'inline-block';
+                badge.title = confidenceInfo.description;  // Tooltip for more detail
+            } catch (err) {
+                console.error('Failed to update confidence badge:', err);
+                // Fallback: show generic "Learning" badge
+                badge.textContent = 'Learning';
+                badge.className = 'confidence-badge confidence-medium';
+                badge.style.display = 'inline-block';
             }
         }
 
@@ -7729,10 +7767,8 @@
             document.getElementById('customerAddressDisplay').textContent = quote.customer_address || '—';
             document.getElementById('customerPhoneDisplay').textContent = quote.customer_phone || '—';
 
-            const confidence = quote.confidence || 'medium';
-            const confidenceBadge = document.getElementById('detailConfidenceBadge');
-            confidenceBadge.textContent = confidence.charAt(0).toUpperCase() + confidence.slice(1) + ' Confidence';
-            confidenceBadge.className = 'confidence-badge confidence-' + confidence;
+            // DISC-035: Update confidence badge based on category
+            updateConfidenceBadge(quote.job_type, 'detailConfidenceBadge');
 
             if (quote.notes) {
                 document.getElementById('detailQuoteNotes').style.display = 'block';

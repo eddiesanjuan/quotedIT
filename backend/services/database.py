@@ -239,6 +239,7 @@ class DatabaseService:
                         "learned_adjustments": [],
                         "samples": 0,
                         "confidence": 0.5,
+                        "correction_count": 0,  # DISC-035
                     }
 
                 cat_data = pricing_knowledge["categories"][category]
@@ -291,6 +292,9 @@ class DatabaseService:
                 # Update samples and confidence
                 cat_data["samples"] = cat_data.get("samples", 0) + 1
                 cat_data["confidence"] = min(0.95, cat_data.get("confidence", 0.5) + 0.02)
+
+                # DISC-035: Track correction count for trust indicators
+                cat_data["correction_count"] = cat_data.get("correction_count", 0) + 1
 
                 # Keep learned_adjustments manageable (max 20 per category)
                 if len(cat_data["learned_adjustments"]) > 20:
@@ -374,6 +378,7 @@ class DatabaseService:
                 "learned_adjustments": [],
                 "samples": 0,
                 "confidence": 0.5,
+                "correction_count": 0,  # DISC-035
             }
             print(f"[SYNC DEBUG] Adding category '{category}', total categories: {len(pricing_knowledge['categories'])}")
 
