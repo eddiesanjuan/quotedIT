@@ -806,6 +806,7 @@
         /* Quote Result */
         .quote-result {
             display: none;
+            scroll-margin-top: 140px; /* Account for fixed nav (120px) + extra padding */
         }
 
         .quote-result.active {
@@ -821,6 +822,7 @@
             gap: 16px;
             position: relative;
             z-index: 1;
+            scroll-margin-top: 140px; /* Account for fixed nav (120px) + extra padding */
         }
 
         .quote-header h2 {
@@ -5746,8 +5748,13 @@
             document.getElementById('quoteResult').classList.add('active');
             hideError();
 
-            // Scroll to top so confidence badge is visible
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            // Scroll to quote result, accounting for fixed nav
+            setTimeout(() => {
+                const quoteResult = document.getElementById('quoteResult');
+                if (quoteResult) {
+                    quoteResult.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }, 50);
 
             // DISC-018: Show grace quote modal if this was a grace quote
             if (quote.billing_info?.is_grace_quote) {
@@ -7725,8 +7732,14 @@
             document.getElementById('myQuotesSection').style.display = 'none';
             document.getElementById('quoteDetailView').style.display = 'block';
 
-            // Scroll to top so confidence badge is visible
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            // Scroll to quote detail view, accounting for fixed nav
+            // Use setTimeout to ensure DOM is updated before scrolling
+            setTimeout(() => {
+                const quoteDetailView = document.getElementById('quoteDetailView');
+                if (quoteDetailView) {
+                    quoteDetailView.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }, 50);
 
             let quote = quotesCache.find(q => q.id === quoteId);
             if (!quote) {
