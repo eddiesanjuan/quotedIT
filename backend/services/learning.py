@@ -41,6 +41,7 @@ class LearningService:
         contractor_id: Optional[str] = None,
         category: Optional[str] = None,
         user_id: Optional[str] = None,
+        existing_learnings: Optional[list] = None,
     ) -> dict:
         """
         Process a quote correction and extract learnings.
@@ -52,6 +53,7 @@ class LearningService:
             contractor_id: Contractor ID for analytics tracking
             category: Job category for analytics tracking
             user_id: User ID for analytics tracking
+            existing_learnings: Current learning statements for this category (for updating)
 
         Returns:
             dict with:
@@ -68,11 +70,13 @@ class LearningService:
                 "message": "No changes detected",
             }
 
-        # Use Claude to analyze the corrections and extract learnings
+        # Use Claude to analyze the corrections and return updated learnings
+        # Claude sees existing learnings and can update/merge/remove them
         prompt = get_quote_refinement_prompt(
             original_quote=original_quote,
             corrections=corrections,
             contractor_notes=contractor_notes,
+            existing_learnings=existing_learnings,
         )
 
         response = await self._call_claude(prompt)

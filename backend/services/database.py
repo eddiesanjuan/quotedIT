@@ -249,34 +249,28 @@ class DatabaseService:
                 if "learned_adjustments" not in cat_data:
                     cat_data["learned_adjustments"] = []
 
-                # NEW FORMAT: Use learning_statements directly from Claude
-                # These are already well-crafted, self-contained instructions
+                # NEW FORMAT: Claude returns the COMPLETE optimized list
+                # Claude has already seen existing learnings and returned updated list
+                # with merges, updates, and removals applied - just replace entirely
                 learning_statements = learnings.get("learning_statements", [])
 
-                for statement in learning_statements:
-                    if not statement or not isinstance(statement, str):
-                        continue
+                if learning_statements:
+                    # Filter and validate statements
+                    valid_statements = [
+                        stmt for stmt in learning_statements
+                        if stmt and isinstance(stmt, str) and len(stmt) >= 15
+                    ]
+                    # REPLACE the list (Claude has already optimized it)
+                    cat_data["learned_adjustments"] = valid_statements
 
-                    # Skip if too short (likely not useful)
-                    if len(statement) < 15:
-                        continue
+                    # Log what changed for debugging
+                    changes_made = learnings.get("changes_made", "")
+                    if changes_made:
+                        print(f"[LEARNING] Category '{category}': {changes_made}")
 
-                    # Add if not duplicate (fuzzy check - avoid similar statements)
-                    is_duplicate = False
-                    for existing in cat_data["learned_adjustments"]:
-                        # Check for substantial overlap
-                        if (statement.lower() in existing.lower() or
-                            existing.lower() in statement.lower() or
-                            self._statements_similar(statement, existing)):
-                            is_duplicate = True
-                            break
-
-                    if not is_duplicate:
-                        cat_data["learned_adjustments"].append(statement)
-
-                # LEGACY FORMAT: Fall back to old approach if no learning_statements
-                # This ensures backward compatibility during transition
-                if not learning_statements:
+                # LEGACY FORMAT: Fall back to append approach if no learning_statements
+                # This handles old format responses during transition
+                else:
                     for adjustment in learnings.get("pricing_adjustments", []):
                         learning = adjustment.get("learning", "")
                         if learning and learning not in cat_data["learned_adjustments"]:

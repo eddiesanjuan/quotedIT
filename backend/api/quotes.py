@@ -1159,7 +1159,15 @@ async def update_quote(
         corrections_for_category = sum(1 for q in category_quotes if q.was_edited)
         user_total_corrections = sum(1 for q in all_quotes if q.was_edited)
 
-        # Process the correction (DISC-012: Now includes analytics tracking)
+        # Fetch existing learnings for this category so Claude can update them
+        existing_learnings = []
+        pricing_model = await db.get_pricing_model(contractor.id)
+        if pricing_model and pricing_model.pricing_knowledge:
+            categories = pricing_model.pricing_knowledge.get("categories", {})
+            if quote.job_type and quote.job_type in categories:
+                existing_learnings = categories[quote.job_type].get("learned_adjustments", [])
+
+        # Process the correction - Claude sees existing learnings and returns updated list
         learning_result = await learning_service.process_correction(
             original_quote=original_quote,
             final_quote=final_quote,
@@ -1167,6 +1175,7 @@ async def update_quote(
             contractor_id=str(contractor.id),
             category=quote.job_type,
             user_id=str(current_user["id"]),
+            existing_learnings=existing_learnings,
         )
 
         # If there were learnings, apply them to the pricing model

@@ -196,20 +196,48 @@ def get_quote_refinement_prompt(
     original_quote: dict,
     corrections: dict,
     contractor_notes: Optional[str] = None,
+    existing_learnings: Optional[list] = None,
 ) -> str:
     """
     Generate a prompt to learn from quote corrections.
 
     When a contractor edits a generated quote, we use this to:
     1. Understand what was wrong
-    2. Extract learning STATEMENTS that will be injected into future prompts
+    2. Update the learning statements for this category
 
     CRITICAL: The learning_statements output will be directly injected into
     future quote generation prompts. Write them as instructions to yourself.
+
+    Args:
+        original_quote: The AI-generated quote
+        corrections: What the contractor changed
+        contractor_notes: Optional notes from the contractor
+        existing_learnings: Current learning statements for this category (to update/refine)
     """
     job_type = original_quote.get('job_type', 'unknown')
 
-    return f"""A contractor has corrected a quote you generated. Your job is to extract LEARNING STATEMENTS that will help you generate more accurate quotes in the future.
+    # Format existing learnings for the prompt
+    if existing_learnings and len(existing_learnings) > 0:
+        existing_str = "\n".join(f"  {i+1}. \"{stmt}\"" for i, stmt in enumerate(existing_learnings))
+        existing_section = f"""## Current Learning Statements for "{job_type}"
+
+You have {len(existing_learnings)} existing learning statement(s) for this category:
+
+{existing_str}
+
+Review these carefully. This new correction may:
+- **Reinforce** an existing statement (keep it as-is)
+- **Refine** an existing statement (update it with better information)
+- **Contradict** an existing statement (replace it with the corrected understanding)
+- **Add** a genuinely new learning (if this correction reveals something not yet captured)
+"""
+    else:
+        existing_section = f"""## Current Learning Statements for "{job_type}"
+
+No existing learning statements yet - this is the first correction for this category.
+"""
+
+    return f"""A contractor has corrected a quote you generated. Analyze the correction and return an UPDATED list of learning statements for this category.
 
 ## Original Quote Generated
 
@@ -227,25 +255,33 @@ Original Total: ${original_quote.get('subtotal', 0):.2f}
 
 {f"Contractor's Notes: {contractor_notes}" if contractor_notes else ""}
 
+{existing_section}
+
 ## Your Task
 
-Generate LEARNING STATEMENTS that will be injected into future quote prompts for "{job_type}" jobs. These statements should be:
+Return the COMPLETE, OPTIMIZED list of learning statements for "{job_type}" jobs. You should:
 
-1. **Self-contained**: Include all context needed to understand and apply the learning
-2. **Specific**: Reference actual dollar amounts, percentages, or conditions when possible
-3. **Actionable**: Written as instructions to yourself for future quotes
-4. **Contextual**: Include the WHY when you can infer it (job conditions, customer type, etc.)
+1. **Keep** statements that are still accurate and not affected by this correction
+2. **Update** statements if this correction provides better/more specific information
+3. **Remove** statements that this correction proves wrong
+4. **Merge** redundant statements into clearer single statements
+5. **Add** new statements only for genuinely new learnings
 
-### Good Learning Statement Examples:
+### Statement Quality Guidelines:
+- **Self-contained**: Include all context needed to apply the learning
+- **Specific**: Reference actual dollar amounts, percentages, or conditions
+- **Actionable**: Written as instructions for future quotes
+- **Non-redundant**: Don't repeat similar information across multiple statements
+
+### Good Examples:
 - "For demolition on deck projects, charge $1,200 minimum - the $1,000 estimate was consistently too low"
 - "When the job involves difficult access (steep yard, narrow gates), add 15% to labor costs"
-- "This contractor prices labor at $75/hour, not $65 - always use their rate, not industry average"
-- "Composite decking materials should be estimated at $14/sqft, not $12 - they use premium Trex"
+- "This contractor prices labor at $75/hour, not $65 - always use their rate"
 
-### Bad Learning Statement Examples:
-- "Increase demolition" (too vague - by how much? under what conditions?)
-- "Price higher" (not actionable - which items? by what percentage?)
-- "Labor was wrong" (no guidance on what the correct approach is)
+### Bad Examples:
+- "Increase demolition" (too vague)
+- "Price higher" (not actionable)
+- Having both "charge $1,200 for demo" AND "demo should be $1,500" (contradictory - pick the correct one)
 
 ## Output Format
 
@@ -253,16 +289,17 @@ Respond with valid JSON:
 
 {{
     "learning_statements": [
-        "First learning statement - specific, actionable instruction for future quotes",
-        "Second learning statement - include context and reasoning",
-        "Third learning statement (if applicable)"
+        "Complete list of learning statements for this category",
+        "Include kept, updated, and new statements",
+        "Exclude removed/merged statements"
     ],
+    "changes_made": "Brief description of what changed (e.g., 'Updated demo pricing from $1,200 to $1,500 based on this correction')",
     "pricing_direction": "higher" | "lower" | "mixed",
     "confidence": "high" | "medium" | "low",
     "summary": "One sentence summary of the key insight from this correction"
 }}
 
-Generate 1-3 learning statements (more is not better - only include distinct, valuable learnings):"""
+Keep the list concise (ideally 5-10 high-quality statements max). Quality over quantity:"""
 
 
 def _format_pricing_knowledge(pricing_knowledge: dict) -> str:
