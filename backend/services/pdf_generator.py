@@ -438,43 +438,80 @@ class PDFGeneratorService:
 
         elements = []
 
-        # Header with logo and business info
-        elements.extend(self._build_header(contractor, quote_data))
+        # DISC-066: Wrap each section with error handling for debugging
+        try:
+            # Header with logo and business info
+            elements.extend(self._build_header(contractor, quote_data))
+        except Exception as e:
+            print(f"PDF error in _build_header: {e}")
+            raise
 
         # Divider
         elements.append(HorizontalLine(self.page_width))
         elements.append(Spacer(1, 20))
 
-        # Title and date
-        elements.extend(self._build_title_section(quote_data))
+        try:
+            # Title and date
+            elements.extend(self._build_title_section(quote_data))
+        except Exception as e:
+            print(f"PDF error in _build_title_section: {e}")
+            raise
 
-        # Customer info (if available)
-        elements.extend(self._build_customer_section(quote_data))
+        try:
+            # Customer info (if available)
+            elements.extend(self._build_customer_section(quote_data))
+        except Exception as e:
+            print(f"PDF error in _build_customer_section: {e}")
+            raise
 
-        # Project description
-        elements.extend(self._build_description_section(quote_data))
+        try:
+            # Project description
+            elements.extend(self._build_description_section(quote_data))
+        except Exception as e:
+            print(f"PDF error in _build_description_section: {e}")
+            raise
 
-        # Line items
-        elements.extend(self._build_line_items_section(quote_data))
+        try:
+            # Line items
+            elements.extend(self._build_line_items_section(quote_data))
+        except Exception as e:
+            print(f"PDF error in _build_line_items_section: {e}")
+            raise
 
-        # Total
-        elements.extend(self._build_total_section(quote_data))
+        try:
+            # Total
+            elements.extend(self._build_total_section(quote_data))
+        except Exception as e:
+            print(f"PDF error in _build_total_section: {e}")
+            raise
 
         # Divider
         elements.append(HorizontalLine(self.page_width))
         elements.append(Spacer(1, 16))
 
-        # Timeline and Terms side by side
-        elements.extend(self._build_details_section(quote_data, terms))
+        try:
+            # Timeline and Terms side by side
+            elements.extend(self._build_details_section(quote_data, terms))
+        except Exception as e:
+            print(f"PDF error in _build_details_section: {e}")
+            raise
 
-        # Disclaimer and branding
-        elements.extend(self._build_footer_section())
+        try:
+            # Disclaimer and branding
+            elements.extend(self._build_footer_section())
+        except Exception as e:
+            print(f"PDF error in _build_footer_section: {e}")
+            raise
 
         # DISC-018: Add watermark callback for grace quotes
-        if watermark:
-            doc.build(elements, onFirstPage=self._add_watermark, onLaterPages=self._add_watermark)
-        else:
-            doc.build(elements)
+        try:
+            if watermark:
+                doc.build(elements, onFirstPage=self._add_watermark, onLaterPages=self._add_watermark)
+            else:
+                doc.build(elements)
+        except Exception as e:
+            print(f"PDF error in doc.build: {e}")
+            raise
 
         pdf_bytes = buffer.getvalue()
         buffer.close()
