@@ -42,9 +42,11 @@ class LearningService:
         category: Optional[str] = None,
         user_id: Optional[str] = None,
         existing_learnings: Optional[list] = None,
+        existing_tailored_prompt: Optional[str] = None,
+        existing_philosophy: Optional[str] = None,
     ) -> dict:
         """
-        Process a quote correction and extract learnings.
+        Process a quote correction and extract THREE-LAYER learnings.
 
         Args:
             original_quote: The AI-generated quote
@@ -53,12 +55,14 @@ class LearningService:
             contractor_id: Contractor ID for analytics tracking
             category: Job category for analytics tracking
             user_id: User ID for analytics tracking
-            existing_learnings: Current learning statements for this category (for updating)
+            existing_learnings: Current injection learnings for this category
+            existing_tailored_prompt: Current category-level tailored prompt
+            existing_philosophy: Current global pricing philosophy
 
         Returns:
             dict with:
             - corrections: What changed
-            - learnings: What to update in the pricing model
+            - learnings: Dict containing learning_statements, tailored_prompt_update, philosophy_update
             - confidence: How confident we are in the learnings
         """
         # Calculate what changed
@@ -70,13 +74,15 @@ class LearningService:
                 "message": "No changes detected",
             }
 
-        # Use Claude to analyze the corrections and return updated learnings
-        # Claude sees existing learnings and can update/merge/remove them
+        # Use Claude to analyze the corrections and return THREE-LAYER learnings
+        # Claude sees existing context at all layers and can update any of them
         prompt = get_quote_refinement_prompt(
             original_quote=original_quote,
             corrections=corrections,
             contractor_notes=contractor_notes,
             existing_learnings=existing_learnings,
+            existing_tailored_prompt=existing_tailored_prompt,
+            existing_philosophy=existing_philosophy,
         )
 
         response = await self._call_claude(prompt)
@@ -332,9 +338,16 @@ class LearningService:
 
     def _parse_learning_response(self, response: str) -> dict:
         """
-        Parse Claude's learning analysis response.
+        Parse Claude's THREE-LAYER learning analysis response.
 
-        Supports both new format (learning_statements) and legacy format (pricing_adjustments).
+        Returns:
+            dict with:
+            - learning_statements: List of injection learnings (Level 1)
+            - tailored_prompt_update: New category prompt or None (Level 2)
+            - philosophy_update: New global philosophy or None (Level 3)
+            - pricing_direction: higher/lower/mixed
+            - confidence: high/medium/low
+            - summary: Brief description
         """
         # Try to find JSON
         json_match = re.search(r'\{[\s\S]*\}', response)
@@ -342,12 +355,21 @@ class LearningService:
             try:
                 parsed = json.loads(json_match.group())
 
-                # If using new format, ensure learning_statements exists
-                if "learning_statements" in parsed:
-                    return parsed
+                # Ensure all three-layer fields exist
+                result = {
+                    "learning_statements": parsed.get("learning_statements", []),
+                    "tailored_prompt_update": parsed.get("tailored_prompt_update"),
+                    "tailored_prompt_reason": parsed.get("tailored_prompt_reason"),
+                    "philosophy_update": parsed.get("philosophy_update"),
+                    "philosophy_reason": parsed.get("philosophy_reason"),
+                    "pricing_direction": parsed.get("pricing_direction", "mixed"),
+                    "confidence": parsed.get("confidence", "medium"),
+                    "summary": parsed.get("summary", ""),
+                    "changes_made": parsed.get("changes_made", ""),
+                }
 
-                # Legacy format - convert to new format for consistency
-                if "pricing_adjustments" in parsed or "new_pricing_rules" in parsed:
+                # Legacy format support - convert to new format
+                if "pricing_adjustments" in parsed and not result["learning_statements"]:
                     statements = []
 
                     # Convert pricing adjustments to statements
@@ -364,26 +386,21 @@ class LearningService:
 
                     # Add tendency as a statement if present
                     tendency = parsed.get("overall_tendency", "")
-                    if tendency and len(tendency) > 10:  # Skip short/empty tendencies
+                    if tendency and len(tendency) > 10:
                         statements.append(tendency)
 
-                    return {
-                        "learning_statements": statements,
-                        "pricing_direction": "mixed",
-                        "confidence": "medium",
-                        "summary": parsed.get("summary", ""),
-                        # Keep legacy fields for backward compatibility
-                        **parsed
-                    }
+                    result["learning_statements"] = statements
 
-                return parsed
+                return result
 
             except json.JSONDecodeError:
                 pass
 
-        # Fallback - try to extract learnings from raw text
+        # Fallback - no learnings extracted
         return {
             "learning_statements": [],
+            "tailored_prompt_update": None,
+            "philosophy_update": None,
             "pricing_direction": "mixed",
             "confidence": "low",
             "summary": response[:500] if response else "Could not parse learning response",

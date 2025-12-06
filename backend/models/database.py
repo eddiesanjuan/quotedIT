@@ -794,6 +794,16 @@ async def run_migrations(engine):
             """,
             "alter_sql": "ALTER TABLE quotes ADD COLUMN duplicate_source_quote_id VARCHAR(36)"
         },
+        # Three-layer pricing architecture - global pricing philosophy
+        {
+            "table": "pricing_models",
+            "column": "pricing_philosophy",
+            "check_sql": """
+                SELECT column_name FROM information_schema.columns
+                WHERE table_name = 'pricing_models' AND column_name = 'pricing_philosophy'
+            """,
+            "alter_sql": "ALTER TABLE pricing_models ADD COLUMN pricing_philosophy TEXT"
+        },
     ]
 
     # Constraint changes (PostgreSQL only - SQLite doesn't support these)

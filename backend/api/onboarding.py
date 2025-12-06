@@ -278,6 +278,7 @@ async def complete_setup(
                 minimum_job_amount=pricing_model.get("minimum_job_amount"),
                 pricing_knowledge=pricing_model.get("pricing_knowledge", {}),
                 pricing_notes=pricing_model.get("pricing_notes"),
+                pricing_philosophy=pricing_model.get("pricing_philosophy"),  # Global pricing DNA
             )
         else:
             # Create new pricing model
@@ -289,6 +290,7 @@ async def complete_setup(
                 minimum_job_amount=pricing_model.get("minimum_job_amount"),
                 pricing_knowledge=pricing_model.get("pricing_knowledge", {}),
                 pricing_notes=pricing_model.get("pricing_notes"),
+                pricing_philosophy=pricing_model.get("pricing_philosophy"),  # Global pricing DNA
             )
 
         # Update user record with onboarding path (DISC-007)
@@ -383,6 +385,7 @@ async def quick_setup(
                 minimum_job_amount=pricing_model.get("minimum_job_amount"),
                 pricing_knowledge=pricing_model.get("pricing_knowledge", {}),
                 pricing_notes=pricing_model.get("pricing_notes"),
+                pricing_philosophy=pricing_model.get("pricing_philosophy"),  # Global pricing DNA
             )
         else:
             await db.create_pricing_model(
@@ -393,6 +396,7 @@ async def quick_setup(
                 minimum_job_amount=pricing_model.get("minimum_job_amount"),
                 pricing_knowledge=pricing_model.get("pricing_knowledge", {}),
                 pricing_notes=pricing_model.get("pricing_notes"),
+                pricing_philosophy=pricing_model.get("pricing_philosophy"),  # Global pricing DNA
             )
 
         # Update user record with onboarding path (DISC-007)

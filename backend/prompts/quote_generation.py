@@ -20,63 +20,95 @@ def get_quote_generation_prompt(
     """
     Generate the main quote generation prompt.
 
-    This prompt takes:
-    - The transcribed voice note from the contractor
-    - Their pricing model (learned rates, knowledge)
-    - Their terms and conditions
-    - The detected category for this quote
+    This prompt uses a THREE-LAYER ARCHITECTURE for pricing context:
 
-    And produces:
-    - Structured quote with line items
-    - Professional description
-    - Timeline estimate
+    1. GLOBAL PRICING PHILOSOPHY (pricing_philosophy)
+       The contractor's overall "pricing DNA" - their approach, rates, philosophy.
+       Applied to ALL quotes regardless of category.
+
+    2. CATEGORY-SPECIFIC TAILORED PROMPT (tailored_prompt)
+       Deep understanding of how they price THIS specific type of work.
+       Built from initial setup and refined through corrections.
+
+    3. CATEGORY-SPECIFIC INJECTIONS (learned_adjustments)
+       Specific learned corrections and rules for this category.
+       The most granular layer - individual lessons from corrections.
+
+    This layered approach allows the model to learn at multiple levels of abstraction.
     """
 
-    # Extract category-specific learnings (THE KEY LEARNING INJECTION)
-    # DISC-052: Hybrid format + priority selection for token efficiency
-    category_learnings_str = ""
     pricing_knowledge = pricing_model.get("pricing_knowledge", {})
+
+    # ============================================================
+    # LAYER 1: GLOBAL PRICING PHILOSOPHY
+    # ============================================================
+    pricing_philosophy = pricing_model.get("pricing_philosophy", "")
+    philosophy_str = ""
+    if pricing_philosophy:
+        philosophy_str = f"""
+## 🧠 Your Pricing Philosophy (Apply to ALL quotes)
+
+{pricing_philosophy}
+"""
+
+    # ============================================================
+    # LAYER 2 & 3: CATEGORY-SPECIFIC CONTEXT
+    # ============================================================
+    category_context_str = ""
 
     if detected_category and "categories" in pricing_knowledge:
         categories = pricing_knowledge.get("categories", {})
         if detected_category in categories:
             cat_data = categories[detected_category]
+            display_name = cat_data.get("display_name", detected_category.replace("_", " ").title())
+            tailored_prompt = cat_data.get("tailored_prompt")
             learned_adjustments = cat_data.get("learned_adjustments", [])
             cat_confidence = cat_data.get("confidence", 0.5)
-            cat_samples = cat_data.get("samples", 0)
             correction_count = cat_data.get("correction_count", 0)
 
-            if learned_adjustments:
-                # DISC-052: Priority selection - inject only top 7 most recent learnings
-                # Most recent corrections are most relevant (recency bias)
-                # Token budget: ~240 tokens for learnings (60% reduction from ~720)
-                top_learnings = learned_adjustments[-7:]  # Last 7 are most recent
+            # Layer 2: Category tailored prompt (deep understanding)
+            tailored_str = ""
+            if tailored_prompt:
+                tailored_str = f"""
+### Your Pricing Approach for {display_name}
 
-                # DISC-052: Hybrid format - structured data + natural language summary
+{tailored_prompt}
+"""
+
+            # Layer 3: Specific learned adjustments (injections)
+            adjustments_str = ""
+            if learned_adjustments:
+                # Priority selection - inject only top 7 most recent learnings
+                top_learnings = learned_adjustments[-7:]
+
                 # Calculate learning pattern summary
                 increase_pattern = sum(1 for adj in top_learnings if "increase" in adj.lower() or "higher" in adj.lower())
                 decrease_pattern = sum(1 for adj in top_learnings if "reduce" in adj.lower() or "lower" in adj.lower())
 
                 if increase_pattern > decrease_pattern:
-                    tendency = "Conservative pricing - you typically price HIGHER than industry averages"
+                    tendency = "Conservative - you typically price HIGHER"
                 elif decrease_pattern > increase_pattern:
-                    tendency = "Aggressive pricing - you typically price LOWER to win jobs"
+                    tendency = "Aggressive - you typically price LOWER"
                 else:
-                    tendency = "Balanced pricing - mixed adjustments based on job specifics"
+                    tendency = "Balanced - mixed adjustments"
 
-                # Format learnings in compact hybrid format
                 adjustments_compact = "\n".join(f"- {adj}" for adj in top_learnings)
 
-                category_learnings_str = f"""
-## ⚠️ CRITICAL: Your Learned Pricing Pattern for "{cat_data.get('display_name', detected_category)}"
+                adjustments_str = f"""
+### ⚠️ Learned Adjustments ({correction_count} corrections, {cat_confidence:.0%} confidence)
 
-**Pattern Summary** ({correction_count} corrections, {cat_confidence:.0%} confidence):
-{tendency}
+**Pattern**: {tendency}
 
-**Top Adjustments to Apply**:
+**Apply These Rules**:
 {adjustments_compact}
+"""
 
-IMPORTANT: Apply these learned adjustments to match your actual pricing style.
+            # Combine category layers if we have any content
+            if tailored_str or adjustments_str:
+                category_context_str = f"""
+## 🎯 Category-Specific Context: "{display_name}"
+{tailored_str}{adjustments_str}
+IMPORTANT: Apply these category-specific learnings to match your actual pricing.
 """
 
     # Format pricing knowledge for the prompt
@@ -146,9 +178,10 @@ IMPORTANT: This is a BUDGETARY quote - a ballpark estimate to help the customer 
 ## Voice Note Transcription
 
 "{transcription}"
-{category_learnings_str}
+{philosophy_str}
+{category_context_str}
 
-## Contractor's Pricing Information
+## Contractor's Base Pricing Information
 
 Labor Rate: ${labor_rate}/hour
 Helper Rate: ${helper_rate}/hour
@@ -179,14 +212,15 @@ Based on the voice note, use the generate_quote tool to create a structured budg
 
 ## Important Guidelines
 
-1. Use the contractor's actual pricing when available
-2. If pricing isn't clear, use reasonable industry estimates and set confidence to "low"
-3. Round all amounts to whole dollars
-4. Include demolition/removal only if mentioned
-5. Include permit costs only if mentioned
-6. Be conservative - it's better to estimate slightly high than low
-7. Always include at least 2-3 questions if you had to make assumptions
-8. Set confidence based on how much information you have:
+1. **Apply the layered pricing context above** - philosophy first, then category-specific rules
+2. Use the contractor's actual pricing when available
+3. If pricing isn't clear, use reasonable industry estimates and set confidence to "low"
+4. Round all amounts to whole dollars
+5. Include demolition/removal only if mentioned
+6. Include permit costs only if mentioned
+7. Be conservative - it's better to estimate slightly high than low
+8. Always include at least 2-3 questions if you had to make assumptions
+9. Set confidence based on how much information you have:
    - "high": Clear scope, contractor has pricing for this type of work
    - "medium": Some assumptions needed, but reasonable estimates possible
    - "low": Many unknowns, significant assumptions made
@@ -199,47 +233,79 @@ def get_quote_refinement_prompt(
     corrections: dict,
     contractor_notes: Optional[str] = None,
     existing_learnings: Optional[list] = None,
+    existing_tailored_prompt: Optional[str] = None,
+    existing_philosophy: Optional[str] = None,
 ) -> str:
     """
     Generate a prompt to learn from quote corrections.
 
-    When a contractor edits a generated quote, we use this to:
-    1. Understand what was wrong
-    2. Update the learning statements for this category
+    This implements THREE-LAYER LEARNING:
 
-    CRITICAL: The learning_statements output will be directly injected into
-    future quote generation prompts. Write them as instructions to yourself.
+    1. INJECTION LEARNINGS (learning_statements)
+       Specific rules like "Demo minimum $1,500" or "Add 15% for difficult access"
+       Updated on EVERY correction.
+
+    2. TAILORED PROMPT UPDATE (tailored_prompt_update)
+       Category-level understanding. Only update when correction reveals a
+       fundamental misunderstanding of HOW they price this category.
+       Updated RARELY - maybe 1 in 10 corrections.
+
+    3. PHILOSOPHY UPDATE (philosophy_update)
+       Global pricing DNA. Only update when correction reveals a fundamental
+       change to their overall approach (e.g., "I'm now pricing premium").
+       Updated VERY RARELY - maybe 1 in 50 corrections.
 
     Args:
         original_quote: The AI-generated quote
         corrections: What the contractor changed
         contractor_notes: Optional notes from the contractor
-        existing_learnings: Current learning statements for this category (to update/refine)
+        existing_learnings: Current learning statements for this category
+        existing_tailored_prompt: Current category-level tailored prompt
+        existing_philosophy: Current global pricing philosophy
     """
     job_type = original_quote.get('job_type', 'unknown')
 
     # Format existing learnings for the prompt
     if existing_learnings and len(existing_learnings) > 0:
         existing_str = "\n".join(f"  {i+1}. \"{stmt}\"" for i, stmt in enumerate(existing_learnings))
-        existing_section = f"""## Current Learning Statements for "{job_type}"
+        existing_section = f"""## Current Injection Learnings for "{job_type}"
 
-You have {len(existing_learnings)} existing learning statement(s) for this category:
+You have {len(existing_learnings)} existing learning statement(s):
 
 {existing_str}
-
-Review these carefully. This new correction may:
-- **Reinforce** an existing statement (keep it as-is)
-- **Refine** an existing statement (update it with better information)
-- **Contradict** an existing statement (replace it with the corrected understanding)
-- **Add** a genuinely new learning (if this correction reveals something not yet captured)
 """
     else:
-        existing_section = f"""## Current Learning Statements for "{job_type}"
+        existing_section = f"""## Current Injection Learnings for "{job_type}"
 
 No existing learning statements yet - this is the first correction for this category.
 """
 
-    return f"""A contractor has corrected a quote you generated. Analyze the correction and return an UPDATED list of learning statements for this category.
+    # Format existing tailored prompt
+    tailored_section = ""
+    if existing_tailored_prompt:
+        tailored_section = f"""## Current Category Tailored Prompt for "{job_type}"
+
+"{existing_tailored_prompt}"
+
+This describes the overall pricing approach for this category. Only suggest an update if this correction reveals a FUNDAMENTAL misunderstanding (not just a specific rule).
+"""
+    else:
+        tailored_section = f"""## Current Category Tailored Prompt for "{job_type}"
+
+None yet. If this correction reveals enough about how they price {job_type} jobs generally, you can suggest one.
+"""
+
+    # Format existing philosophy
+    philosophy_section = ""
+    if existing_philosophy:
+        philosophy_section = f"""## Current Global Pricing Philosophy
+
+"{existing_philosophy}"
+
+This is their overall pricing DNA. Only suggest an update if this correction reveals a FUNDAMENTAL change to their business approach (very rare).
+"""
+
+    return f"""A contractor has corrected a quote you generated. Analyze this correction and determine what should be learned at each level.
 
 ## Original Quote Generated
 
@@ -259,31 +325,40 @@ Original Total: ${original_quote.get('subtotal', 0):.2f}
 
 {existing_section}
 
-## Your Task
+{tailored_section}
 
-Return the COMPLETE, OPTIMIZED list of learning statements for "{job_type}" jobs. You should:
+{philosophy_section}
 
-1. **Keep** statements that are still accurate and not affected by this correction
-2. **Update** statements if this correction provides better/more specific information
-3. **Remove** statements that this correction proves wrong
-4. **Merge** redundant statements into clearer single statements
-5. **Add** new statements only for genuinely new learnings
+## THREE-LAYER LEARNING SYSTEM
 
-### Statement Quality Guidelines:
-- **Self-contained**: Include all context needed to apply the learning
-- **Specific**: Reference actual dollar amounts, percentages, or conditions
-- **Actionable**: Written as instructions for future quotes
-- **Non-redundant**: Don't repeat similar information across multiple statements
+Determine what should be learned at each level:
 
-### Good Examples:
-- "For demolition on deck projects, charge $1,200 minimum - the $1,000 estimate was consistently too low"
-- "When the job involves difficult access (steep yard, narrow gates), add 15% to labor costs"
-- "This contractor prices labor at $75/hour, not $65 - always use their rate"
+### Level 1: Injection Learnings (ALWAYS update)
+Specific rules to inject into future quotes. Examples:
+- "Demo minimum $1,500 for deck projects"
+- "Add 15% for difficult access"
+- "Railing is $40/LF, not $35"
 
-### Bad Examples:
-- "Increase demolition" (too vague)
-- "Price higher" (not actionable)
-- Having both "charge $1,200 for demo" AND "demo should be $1,500" (contradictory - pick the correct one)
+### Level 2: Tailored Prompt Update (SOMETIMES - ~10% of corrections)
+Only update if this correction reveals a fundamental misunderstanding of HOW they price this category. NOT for specific numbers.
+
+Signs you should update tailored_prompt:
+- Multiple line items were wrong in the same direction
+- The correction suggests a completely different pricing APPROACH
+- Contractor notes indicate "I always price [category] this way..."
+
+Signs you should NOT update:
+- Just one line item was off
+- The correction is about a specific number, not an approach
+- This is an edge case, not the norm
+
+### Level 3: Philosophy Update (RARELY - ~2% of corrections)
+Only suggest if correction reveals a fundamental change to their BUSINESS:
+- They've repositioned as premium/budget
+- They've changed their overall markup strategy
+- They explicitly say their general approach has changed
+
+Almost all corrections should be Level 1 only.
 
 ## Output Format
 
@@ -291,17 +366,26 @@ Respond with valid JSON:
 
 {{
     "learning_statements": [
-        "Complete list of learning statements for this category",
-        "Include kept, updated, and new statements",
-        "Exclude removed/merged statements"
+        "Updated list of specific injection learnings for this category",
+        "Keep existing ones that are still valid",
+        "Update/add based on this correction"
     ],
-    "changes_made": "Brief description of what changed (e.g., 'Updated demo pricing from $1,200 to $1,500 based on this correction')",
+    "changes_made": "Brief description of what changed in learning_statements",
+
+    "tailored_prompt_update": null | "New tailored prompt text if Level 2 update needed",
+    "tailored_prompt_reason": null | "Why you're suggesting this update (only if tailored_prompt_update is not null)",
+
+    "philosophy_update": null | "New philosophy text if Level 3 update needed",
+    "philosophy_reason": null | "Why you're suggesting this update (only if philosophy_update is not null)",
+
     "pricing_direction": "higher" | "lower" | "mixed",
     "confidence": "high" | "medium" | "low",
     "summary": "One sentence summary of the key insight from this correction"
 }}
 
-Keep the list concise (ideally 5-10 high-quality statements max). Quality over quantity:"""
+IMPORTANT: Most corrections should have tailored_prompt_update: null and philosophy_update: null. Only suggest updates when truly warranted.
+
+Keep learning_statements concise (5-10 max). Quality over quantity:"""
 
 
 def _format_pricing_knowledge(pricing_knowledge: dict) -> str:

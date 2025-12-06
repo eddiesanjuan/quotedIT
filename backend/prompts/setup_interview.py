@@ -333,6 +333,8 @@ Respond with valid JSON:
 {{
     "pricing_approach": "Description of their overall approach (hourly, project-based, value-based, hybrid, etc.)",
 
+    "pricing_philosophy": "A natural language paragraph describing their overall pricing DNA. This should read like: '[Business Name] is a [trade] contractor who [approach]. They [specific methods]. [Key principles]. This will be injected into every quote generation as foundational context. Be specific about their rates, methods, and philosophy.",
+
     "labor_rate_hourly": null,
     "labor_rate_daily": null,
     "minimum_job_amount": null,
@@ -342,12 +344,14 @@ Respond with valid JSON:
         "categories": {{
             "category_name_snake_case": {{
                 "display_name": "Their Name For This Service",
+                "tailored_prompt": "A natural language description of how they price THIS specific category. Example: 'For deck projects, you typically price composite at $55-65/sqft including materials, with railing at $35/LF. Demo adds $800 base plus $2/sqft.' This becomes the category-level context injected before any learned adjustments. Can be null if not enough info.",
                 "typical_price_range": [low, high],
                 "pricing_unit": "per_hour or per_project or per_unit or flat or custom",
                 "base_rate": 0,
                 "notes": "What's included, how they calculate it, any specifics they mentioned",
                 "pricing_formula": "If they described a formula, capture it here",
-                "learned_adjustments": []
+                "learned_adjustments": [],
+                "correction_count": 0
             }}
         }},
         "global_rules": [

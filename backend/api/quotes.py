@@ -30,6 +30,7 @@ from ..services import (
     get_learning_service,
     get_db_service,
     get_sanity_check_service,
+    get_onboarding_service,
 )
 from ..services.auth import get_current_user, get_db
 from ..services.billing import BillingService
@@ -316,6 +317,25 @@ async def generate_quote(
             "pricing_knowledge": pricing_model.pricing_knowledge or {},
             "pricing_notes": pricing_model.pricing_notes,
         }
+
+        # LAZY GENERATION: For existing users without pricing_philosophy (grandfathering)
+        # Generate one from their existing data and save it for future quotes
+        pricing_philosophy = pricing_model.pricing_philosophy
+        if not pricing_philosophy:
+            onboarding = get_onboarding_service()
+            pricing_philosophy = onboarding.generate_philosophy_from_existing_model(
+                contractor_name=contractor.business_name or contractor.owner_name or "Contractor",
+                primary_trade=contractor.primary_trade or "general_contractor",
+                pricing_model=pricing_dict,
+            )
+            # Save it so we don't regenerate every time
+            await db.update_pricing_model(
+                contractor.id,
+                pricing_philosophy=pricing_philosophy
+            )
+            print(f"[GRANDFATHER] Generated pricing_philosophy for existing user {contractor.id}")
+
+        pricing_dict["pricing_philosophy"] = pricing_philosophy
 
         terms_dict = None
         if terms:
@@ -631,6 +651,20 @@ async def generate_quote_with_clarifications(
             "pricing_notes": pricing_model.pricing_notes,
         }
 
+        # LAZY GENERATION: For existing users without pricing_philosophy (grandfathering)
+        pricing_philosophy = pricing_model.pricing_philosophy
+        if not pricing_philosophy:
+            onboarding = get_onboarding_service()
+            pricing_philosophy = onboarding.generate_philosophy_from_existing_model(
+                contractor_name=contractor.business_name or contractor.owner_name or "Contractor",
+                primary_trade=contractor.primary_trade or "general_contractor",
+                pricing_model=pricing_dict,
+            )
+            await db.update_pricing_model(contractor.id, pricing_philosophy=pricing_philosophy)
+            print(f"[GRANDFATHER] Generated pricing_philosophy for existing user {contractor.id}")
+
+        pricing_dict["pricing_philosophy"] = pricing_philosophy
+
         terms_dict = None
         if terms:
             terms_dict = {
@@ -821,6 +855,20 @@ async def generate_quote_from_audio(
                 "pricing_knowledge": pricing_model.pricing_knowledge or {},
                 "pricing_notes": pricing_model.pricing_notes,
             }
+
+            # LAZY GENERATION: For existing users without pricing_philosophy (grandfathering)
+            pricing_philosophy = pricing_model.pricing_philosophy
+            if not pricing_philosophy:
+                onboarding = get_onboarding_service()
+                pricing_philosophy = onboarding.generate_philosophy_from_existing_model(
+                    contractor_name=contractor.business_name or contractor.owner_name or "Contractor",
+                    primary_trade=contractor.primary_trade or "general_contractor",
+                    pricing_model=pricing_dict,
+                )
+                await db.update_pricing_model(contractor.id, pricing_philosophy=pricing_philosophy)
+                print(f"[GRANDFATHER] Generated pricing_philosophy for existing user {contractor.id}")
+
+            pricing_dict["pricing_philosophy"] = pricing_philosophy
 
             terms_dict = None
             if terms:
@@ -1159,15 +1207,25 @@ async def update_quote(
         corrections_for_category = sum(1 for q in category_quotes if q.was_edited)
         user_total_corrections = sum(1 for q in all_quotes if q.was_edited)
 
-        # Fetch existing learnings for this category so Claude can update them
+        # Fetch existing context for THREE-LAYER learning
         existing_learnings = []
-        pricing_model = await db.get_pricing_model(contractor.id)
-        if pricing_model and pricing_model.pricing_knowledge:
-            categories = pricing_model.pricing_knowledge.get("categories", {})
-            if quote.job_type and quote.job_type in categories:
-                existing_learnings = categories[quote.job_type].get("learned_adjustments", [])
+        existing_tailored_prompt = None
+        existing_philosophy = None
 
-        # Process the correction - Claude sees existing learnings and returns updated list
+        pricing_model = await db.get_pricing_model(contractor.id)
+        if pricing_model:
+            # Layer 1 & 2: Category-specific context
+            if pricing_model.pricing_knowledge:
+                categories = pricing_model.pricing_knowledge.get("categories", {})
+                if quote.job_type and quote.job_type in categories:
+                    cat_data = categories[quote.job_type]
+                    existing_learnings = cat_data.get("learned_adjustments", [])
+                    existing_tailored_prompt = cat_data.get("tailored_prompt")
+
+            # Layer 3: Global pricing philosophy
+            existing_philosophy = pricing_model.pricing_philosophy
+
+        # Process the correction - Claude sees THREE-LAYER context
         learning_result = await learning_service.process_correction(
             original_quote=original_quote,
             final_quote=final_quote,
@@ -1176,6 +1234,8 @@ async def update_quote(
             category=quote.job_type,
             user_id=str(current_user["id"]),
             existing_learnings=existing_learnings,
+            existing_tailored_prompt=existing_tailored_prompt,
+            existing_philosophy=existing_philosophy,
         )
 
         # If there were learnings, apply them to the pricing model

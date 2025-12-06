@@ -235,6 +235,7 @@ async def get_pricing_model(contractor_id: str):
         minimum_job_amount=pricing_model.minimum_job_amount,
         pricing_knowledge=pricing_model.pricing_knowledge or {},
         pricing_notes=pricing_model.pricing_notes,
+        pricing_philosophy=pricing_model.pricing_philosophy,  # Global pricing DNA
         correction_count=0,
         last_learning_at=pricing_model.updated_at.isoformat() if pricing_model.updated_at else None,
     )
@@ -257,6 +258,7 @@ async def update_pricing_model_endpoint(contractor_id: str, update: PricingModel
         material_markup_percent=update.material_markup_percent,
         minimum_job_amount=update.minimum_job_amount,
         pricing_notes=update.pricing_notes,
+        pricing_philosophy=update.pricing_philosophy,  # Global pricing DNA
     )
 
     return PricingModelResponse(
@@ -266,6 +268,7 @@ async def update_pricing_model_endpoint(contractor_id: str, update: PricingModel
         minimum_job_amount=updated.minimum_job_amount,
         pricing_knowledge=updated.pricing_knowledge or {},
         pricing_notes=updated.pricing_notes,
+        pricing_philosophy=updated.pricing_philosophy,  # Global pricing DNA
         correction_count=0,
         last_learning_at=updated.updated_at.isoformat() if updated.updated_at else None,
     )

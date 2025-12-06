@@ -332,6 +332,25 @@ class DatabaseService:
                     # Keep most recent 20
                     cat_data["learned_adjustments"] = cat_data["learned_adjustments"][-20:]
 
+                # LEVEL 2: Update tailored_prompt if Claude recommends it (~10% of corrections)
+                tailored_prompt_update = learnings.get("tailored_prompt_update")
+                if tailored_prompt_update:
+                    cat_data["tailored_prompt"] = tailored_prompt_update
+                    reason = learnings.get("tailored_prompt_reason", "")
+                    print(f"[LEARNING-L2] Category '{category}' tailored_prompt updated: {reason}")
+                    try:
+                        analytics_service.track_event(
+                            user_id=contractor_id,
+                            event_name="tailored_prompt_updated",
+                            properties={
+                                "category": category,
+                                "reason": reason,
+                                "correction_count": cat_data.get("correction_count", 0),
+                            }
+                        )
+                    except Exception as e:
+                        print(f"Warning: Failed to track tailored_prompt update: {e}")
+
                 pricing_knowledge["categories"][category] = cat_data
 
             else:
@@ -344,6 +363,25 @@ class DatabaseService:
                 tendency = learnings.get("overall_tendency", "")
                 if tendency and tendency not in pricing_knowledge["global_rules"]:
                     pricing_knowledge["global_rules"].append(tendency)
+
+            # LEVEL 3: Update pricing_philosophy if Claude recommends it (~2% of corrections)
+            # This is OUTSIDE the if/else because philosophy is global
+            philosophy_update = learnings.get("philosophy_update")
+            if philosophy_update:
+                pricing_model.pricing_philosophy = philosophy_update
+                reason = learnings.get("philosophy_reason", "")
+                print(f"[LEARNING-L3] Global pricing_philosophy updated: {reason}")
+                try:
+                    analytics_service.track_event(
+                        user_id=contractor_id,
+                        event_name="pricing_philosophy_updated",
+                        properties={
+                            "reason": reason,
+                            "category": category,
+                        }
+                    )
+                except Exception as e:
+                    print(f"Warning: Failed to track philosophy update: {e}")
 
             # Also update pricing_notes for backward compatibility
             tendency = learnings.get("overall_tendency", "")

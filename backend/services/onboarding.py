@@ -321,12 +321,28 @@ class OnboardingService:
             },
         }
 
+        # Generate pricing_philosophy - the global pricing DNA
+        # This is a natural language summary of their overall approach
+        pricing_philosophy = self._generate_pricing_philosophy(
+            contractor_name=contractor_name,
+            primary_trade=primary_trade,
+            labor_rate=normalized_labor_rate,
+            material_markup=material_markup,
+            minimum_job=minimum_job,
+            base_rate_per_sqft=base_rate_per_sqft,
+            base_rate_per_lf=base_rate_per_lf,
+            base_rate_per_square=base_rate_per_square,
+            base_rate_per_unit=base_rate_per_unit,
+            pricing_notes=pricing_notes,
+        )
+
         return {
             "labor_rate_hourly": normalized_labor_rate,
             "helper_rate_hourly": helper_rate or (normalized_labor_rate * 0.6),
             "material_markup_percent": material_markup,
             "minimum_job_amount": minimum_job,
             "pricing_knowledge": pricing_knowledge,
+            "pricing_philosophy": pricing_philosophy,  # Global pricing DNA
             "pricing_notes": pricing_notes or f"Quick setup for {primary_trade}. Will learn more from quote corrections.",
             "terms": {
                 "deposit_percent": 50.0,
@@ -336,6 +352,100 @@ class OnboardingService:
             "setup_type": "quick",
             "created_at": datetime.utcnow().isoformat(),
         }
+
+    def _generate_pricing_philosophy(
+        self,
+        contractor_name: str,
+        primary_trade: str,
+        labor_rate: Optional[float] = None,
+        material_markup: float = 20.0,
+        minimum_job: float = 500.0,
+        base_rate_per_sqft: Optional[float] = None,
+        base_rate_per_lf: Optional[float] = None,
+        base_rate_per_square: Optional[float] = None,
+        base_rate_per_unit: Optional[float] = None,
+        pricing_notes: Optional[str] = None,
+    ) -> str:
+        """
+        Generate a pricing philosophy statement - the contractor's "pricing DNA".
+
+        This is injected into every quote generation prompt as the foundation
+        layer before category-specific prompts and learnings.
+
+        For quick setup, we generate a template-based one. For interview
+        completions, Claude extracts a richer one from the conversation.
+        """
+        trade_display = primary_trade.replace("_", " ").title()
+
+        # Build the pricing approach description
+        approach_parts = []
+
+        # Primary pricing method
+        if base_rate_per_sqft:
+            approach_parts.append(f"prices primarily per square foot (${base_rate_per_sqft}/sqft baseline)")
+        elif base_rate_per_lf:
+            approach_parts.append(f"prices primarily per linear foot (${base_rate_per_lf}/LF baseline)")
+        elif base_rate_per_square:
+            approach_parts.append(f"prices primarily per roofing square (${base_rate_per_square}/square baseline)")
+        elif base_rate_per_unit:
+            approach_parts.append(f"prices primarily per unit (${base_rate_per_unit}/unit baseline)")
+        elif labor_rate:
+            approach_parts.append(f"prices work at ${labor_rate}/hour for labor")
+
+        # Material markup
+        if material_markup and material_markup != 20.0:
+            approach_parts.append(f"applies a {material_markup}% markup on materials")
+        elif material_markup:
+            approach_parts.append(f"applies standard {material_markup}% material markup")
+
+        # Minimum job
+        if minimum_job and minimum_job > 0:
+            approach_parts.append(f"has a ${minimum_job} minimum job size")
+
+        # Build the philosophy statement
+        philosophy = f"{contractor_name} is a {trade_display} contractor who "
+
+        if approach_parts:
+            philosophy += ", ".join(approach_parts) + ". "
+        else:
+            philosophy += "is setting up their pricing model. "
+
+        # Add any custom notes
+        if pricing_notes:
+            philosophy += f"Additional context: {pricing_notes}"
+        else:
+            philosophy += "This is initial setup - the model will learn and refine from quote corrections."
+
+        return philosophy
+
+    def generate_philosophy_from_existing_model(
+        self,
+        contractor_name: str,
+        primary_trade: str,
+        pricing_model: dict,
+    ) -> str:
+        """
+        Generate a pricing philosophy for an existing user (grandfathering).
+
+        Called lazily when a user without pricing_philosophy generates a quote.
+        Uses their existing pricing data to create a philosophy statement.
+
+        Args:
+            contractor_name: Business name
+            primary_trade: Their trade (deck_builder, etc.)
+            pricing_model: Their existing pricing model dict
+
+        Returns:
+            Generated philosophy statement
+        """
+        return self._generate_pricing_philosophy(
+            contractor_name=contractor_name,
+            primary_trade=primary_trade,
+            labor_rate=pricing_model.get("labor_rate_hourly"),
+            material_markup=pricing_model.get("material_markup_percent", 20.0),
+            minimum_job=pricing_model.get("minimum_job_amount", 500.0),
+            pricing_notes=pricing_model.get("pricing_notes"),
+        )
 
     def _seed_categories_from_trade(self, primary_trade: str, trade_defaults: dict) -> dict:
         """
@@ -366,9 +476,11 @@ class OnboardingService:
 
             categories[category_key] = {
                 "display_name": display_name,
-                "learned_adjustments": learned_adjustments,
+                "tailored_prompt": None,  # Category-specific pricing understanding (built from learning)
+                "learned_adjustments": learned_adjustments,  # Specific injection learnings
                 "samples": 0,
                 "confidence": 0.7,  # Higher initial confidence for trade defaults
+                "correction_count": 0,  # For dynamic learning rate
             }
 
         return categories
