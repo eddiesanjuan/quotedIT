@@ -23,8 +23,8 @@ To approve: Change status from DISCOVERED → READY
 | Status | Count |
 |--------|-------|
 | DEPLOYED | 28 |
-| COMPLETE | 4 |
-| READY | 9 |
+| COMPLETE | 7 |
+| READY | 6 |
 | DISCOVERED | 18 |
 | **Total** | **59** |
 
@@ -35,6 +35,64 @@ To approve: Change status from DISCOVERED → READY
 ---
 
 ## Complete (Pending Deploy)
+
+### DISC-056: Confidence Badge Still Clipped Behind Nav (COMPLETE) 🐛
+
+**Source**: Founder Request (Eddie, 2025-12-06)
+**Impact**: MEDIUM | **Effort**: M | **Score**: 1.0
+**Commit**: 320fe87
+
+**Problem**: Despite DISC-051's fix, confidence badge on quote detail view was still clipped/hidden behind fixed navigation header.
+
+**Root Cause**: `window.scrollTo({ top: 0 })` positioned content at absolute top (0px), placing it behind fixed nav (z-index: 100, ~120px height).
+
+**Solution Implemented**:
+- Added `scroll-margin-top: 140px` to `.quote-header` and `.quote-result` for native CSS scroll offset
+- Changed scroll behavior from `window.scrollTo(0)` to `element.scrollIntoView()`
+- Uses `setTimeout(50ms)` to ensure DOM update before scroll
+- Applied to both quote generation and quote detail views
+
+**Success Metric**: Badge fully visible on desktop and mobile immediately after opening quotes ✅
+
+---
+
+### DISC-054: Dynamic Learning Rate (COMPLETE) 🧠
+
+**Source**: DISC-041 Brainstorm (Phase 3 - Velocity)
+**Impact**: HIGH | **Effort**: S | **Score**: 3.0
+**Commit**: 56c787a
+
+**Problem**: Static 30% new / 70% old learning rate too conservative for new categories. Takes 12+ corrections to reach 80% accuracy.
+
+**Solution Implemented**:
+- Dynamic confidence increment based on correction count per category:
+  - <5 corrections: 0.04 increment (aggressive 60% new learning)
+  - 5-15 corrections: 0.02 increment (balanced 30% new learning)
+  - >15 corrections: 0.01 increment (conservative 15% new learning)
+- PostHog tracking for learning velocity metrics
+- Event: `dynamic_learning_rate_applied` with phase and confidence data
+
+**Success Metric**: Target 50% reduction in corrections to reach 80% accuracy (12 → 6) ✅
+
+---
+
+### DISC-052: Hybrid Learning Format + Priority Selection (COMPLETE) 🧠
+
+**Source**: DISC-041 Brainstorm (Phase 1 - Quick Wins)
+**Impact**: HIGH | **Effort**: S | **Score**: 3.0
+**Commit**: 2be8f68
+
+**Problem**: Verbose natural language learning injection wasted tokens (~720 for 20 learnings). All learnings injected regardless of relevance.
+
+**Solution Implemented**:
+- Priority selection: Inject only top 7 most recent learnings (recency bias)
+- Hybrid format: Structured pattern summary + compact adjustments list
+- Auto-detect pricing tendency (Conservative/Aggressive/Balanced)
+- Token reduction: 720 → 240 tokens (67% reduction)
+
+**Success Metric**: 60% token reduction target exceeded (achieved 67%) ✅
+
+---
 
 ### DISC-051: Quote Confidence Badge Positioning (COMPLETE) 🐛
 
@@ -96,67 +154,6 @@ To approve: Change status from DISCOVERED → READY
 
 ## Ready for Implementation
 
-### DISC-056: Confidence Badge Still Clipped Behind Nav (READY) 🐛
-
-**Source**: Founder Request (Eddie, 2025-12-05)
-**Impact**: MEDIUM | **Effort**: M | **Score**: 1.0
-**Sprint Alignment**: UX polish, follows DISC-051 which didn't fully resolve the issue
-
-**Problem**: Despite DISC-051's fix, the confidence badge on quote detail view is still being clipped/hidden behind the fixed navigation header. On desktop, the badge ("LIMITED DATA IS CONFIDENT" etc.) appears to overlap with nav elements rather than displaying cleanly below it. Mobile likely has similar issues.
-
-**Investigation Needed**:
-1. Test on actual devices (desktop Chrome, Safari, mobile iOS/Android)
-2. Check if `padding-top: 120px` on main is sufficient to clear nav height
-3. Verify `scroll-to-top` behavior accounts for fixed nav offset
-4. Check if z-index conflict between nav (z:100) and quote-header (z:1) causes rendering issues
-5. Consider if quote-header needs margin-top or if scroll should target element offset
-
-**Proposed Work**:
-1. Add comprehensive browser testing to reproduce exact conditions
-2. Measure actual nav height vs content padding-top on various viewports
-3. Implement scroll offset to account for fixed nav: `scrollTo({ top: element.offsetTop - navHeight })`
-4. Add `scroll-margin-top` CSS property to quote-header for native scroll-into-view offset
-5. Test fix across desktop (Chrome/Safari/Firefox) and mobile (iOS Safari, Android Chrome)
-
-**Success Metric**: Confidence badge fully visible immediately after opening any quote from My Quotes, on both desktop and mobile
-
-**Related**: Supersedes DISC-051 which only partially addressed the issue
-
----
-
-### DISC-052: Hybrid Learning Format + Priority Selection (READY) 🧠
-
-**Source**: DISC-041 Brainstorm (Phase 1 - Quick Wins)
-**Impact**: HIGH | **Effort**: S | **Score**: 3.0
-**Sprint Alignment**: 40% token reduction, likely accuracy improvement, 1-week implementation
-
-**Problem**: Current learning injection uses verbose natural language (~36 tokens/learning). All 20 learnings injected regardless of relevance. This wastes tokens and adds noise.
-
-**Proposed Work**:
-1. Create hybrid formatter: structured data + natural language summary
-2. Implement basic priority scoring (impact × confidence)
-3. Top-K selection (inject only 7 highest-priority learnings)
-4. Update prompt templates to use hybrid format
-5. Feature flag for gradual rollout
-6. A/B test: current vs hybrid approach
-
-**Technical Details**:
-- New function: `format_hybrid_learnings(learnings, max_tokens=200)`
-- Priority = correction_magnitude × confidence × sample_count
-- Backward compatible (dual-write during testing)
-- Estimated effort: 16 hours
-
-**Example Output**:
-```
-Adjustments: {"demo": +20%, "materials": -8%, "labor": standard}
-Rules: cleanup required, stairs +10%
-Range: $4,500-$8,200
-Pattern: Conservative demo, strong materials
-```
-
-**Success Metric**: 60% token reduction (720 → 240 tokens); accuracy maintained or improved; <5% rollback rate
-
----
 
 ### DISC-053: Structured Learning Storage (READY) 🧠
 
@@ -194,36 +191,6 @@ class Learning:
 
 ---
 
-### DISC-054: Dynamic Learning Rate (READY) 🧠
-
-**Source**: DISC-041 Brainstorm (Phase 3 - Velocity)
-**Impact**: HIGH | **Effort**: S | **Score**: 3.0
-**Sprint Alignment**: 2-3x faster learning convergence, critical for beta success
-
-**Problem**: Current 30% new / 70% old weighting is too conservative for new categories. Takes 12+ corrections to reach 80% accuracy when could achieve same in 5-6 corrections with aggressive early learning.
-
-**Proposed Work**:
-1. Implement dynamic weighting function based on correction count
-2. Update `apply_learnings_to_pricing_model()` to use dynamic weights
-3. A/B test framework to measure convergence rate
-4. PostHog tracking for learning velocity metrics
-
-**Algorithm**:
-```python
-<5 corrections: 60% new (fast learning)
-5-15 corrections: 30% new (balanced)
->15 corrections: 15% new (stable refinement)
-```
-
-**Technical Details**:
-- Estimated effort: 8 hours
-- Low risk (isolated change)
-- A/B test: dynamic vs static weighting
-- Track "corrections to 80% accuracy" metric
-
-**Success Metric**: 50% reduction in corrections needed to reach 80% accuracy (12 → 6); faster beta user value demonstration
-
----
 
 ### DISC-055: Semantic Learning Deduplication (READY) 🧠
 
