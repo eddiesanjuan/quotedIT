@@ -1,6 +1,6 @@
 # Discovery Backlog
 
-**Last Updated**: 2025-12-05
+**Last Updated**: 2025-12-06
 **Source**: `/quoted-discover` autonomous discovery cycles
 
 ---
@@ -23,10 +23,10 @@ To approve: Change status from DISCOVERED → READY
 | Status | Count |
 |--------|-------|
 | DEPLOYED | 28 |
-| COMPLETE | 8 |
+| COMPLETE | 10 |
 | READY | 3 |
 | DISCOVERED | 18 |
-| **Total** | **57** |
+| **Total** | **59** |
 
 **Prompt Optimization**: DISC-041 complete → DISC-052, DISC-054 (learning improvements via prompt injection)
 **Deprioritized**: DISC-053, DISC-055 (structured storage/embeddings - over-engineering; prompt injection approach preferred)
@@ -54,6 +54,42 @@ To approve: Change status from DISCOVERED → READY
 - Applied to both quote generation and quote detail views
 
 **Success Metric**: Badge fully visible on desktop and mobile immediately after opening quotes ✅
+
+---
+
+### DISC-065: Line Item Quantity Field (COMPLETE) 🐛
+
+**Source**: Founder Report (Eddie, 2025-12-06)
+**Impact**: MEDIUM | **Effort**: M | **Score**: 1.0
+**Commit**: 8fe97fa
+
+**Problem**: When users specify quantities in voice input (e.g., "two paintings"), the system created a single line item with the total price doubled, instead of showing Qty: 2 × unit price.
+
+**Solution Implemented**:
+- Updated Claude prompt to extract quantities and unit prices separately
+- PDF generator now displays "Qty: X × $Y = $Z" format when quantity > 1
+- Frontend quote display shows quantity breakdown in description
+- Supports optional unit field (e.g., "sqft", "hours")
+
+**Success Metric**: Voice inputs with quantities display as itemized lines with Qty × Price format ✅
+
+---
+
+### DISC-064: Quote Generation Success Feedback (COMPLETE) 🐛
+
+**Source**: Founder Report (Eddie, 2025-12-06)
+**Impact**: MEDIUM | **Effort**: S | **Score**: 2.0
+**Commit**: e2e5c3e
+
+**Problem**: After voice dictation completes and quote is generated, there was no clear success message at the top of the screen. Users may be uncertain whether generation succeeded.
+
+**Solution Implemented**:
+- Added success message banner at top: "✓ Quote generated successfully!"
+- Auto-dismisses after 4 seconds
+- Scrolls to top for visibility
+- Clears previous messages when generating new quote
+
+**Success Metric**: Users immediately understand their quote was generated via clear visual feedback at viewport top ✅
 
 ---
 
@@ -180,9 +216,6 @@ To approve: Change status from DISCOVERED → READY
 ---
 
 ## Ready for Implementation
-
-
----
 
 ### DISC-014: Buildxact Competitive Defense (DEPLOYED) ⚠️ Strategic
 
