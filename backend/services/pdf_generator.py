@@ -542,6 +542,7 @@ class PDFGeneratorService:
 
         # Create logo - use custom logo if available, otherwise placeholder
         logo_data = contractor.get('logo_data')
+        logo = None
         if logo_data:
             # Custom logo from base64 data URI
             try:
@@ -555,16 +556,28 @@ class PDFGeneratorService:
                 # Decode base64 to binary
                 logo_binary = base64.b64decode(base64_str)
 
-                # Create BytesIO object for ReportLab
-                logo_buffer = io.BytesIO(logo_binary)
+                # DISC-066: Validate image before using (if PIL available)
+                try:
+                    from PIL import Image as PILImage
+                    pil_img = PILImage.open(io.BytesIO(logo_binary))
+                    pil_img.verify()  # Verify it's a valid image
+                except ImportError:
+                    pass  # PIL not installed, skip validation
+                except Exception as pil_e:
+                    print(f"Warning: Logo image validation failed: {pil_e}")
+                    logo = LogoPlaceholder(initial, size=48)
 
-                # Create Image object with fixed height, preserve aspect ratio
-                logo = Image(logo_buffer, width=48, height=48)
+                if logo is None:
+                    # Create BytesIO object for ReportLab
+                    logo_buffer = io.BytesIO(logo_binary)
+                    # Create Image object with fixed height, preserve aspect ratio
+                    logo = Image(logo_buffer, width=48, height=48)
             except Exception as e:
                 # If logo fails to load, fall back to placeholder
                 print(f"Warning: Failed to load custom logo: {e}")
                 logo = LogoPlaceholder(initial, size=48)
-        else:
+
+        if logo is None:
             # Use placeholder logo
             logo = LogoPlaceholder(initial, size=48)
 
