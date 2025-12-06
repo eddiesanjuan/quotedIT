@@ -20,6 +20,7 @@ from ..models.database import (
     Quote, JobType, SetupConversation, UserIssue, QuoteFeedback, Learning
 )
 from .analytics import analytics_service
+from .embeddings import get_embedding_service
 
 
 # Create async engine and session factory
@@ -382,6 +383,7 @@ class DatabaseService:
     ):
         """
         DISC-053: Create structured Learning records (dual-write mode).
+        DISC-055: Generate embeddings and check for semantic duplicates.
 
         This is called during apply_learnings_to_pricing_model to maintain
         both text-based and structured formats during the transition period.
@@ -389,6 +391,9 @@ class DatabaseService:
         # Get category metadata
         confidence = cat_data.get("confidence", 0.5)
         correction_count = cat_data.get("correction_count", 1)
+
+        # Get embedding service for semantic similarity
+        embedding_service = get_embedding_service()
 
         # Process pricing adjustments
         for adjustment in learnings.get("pricing_adjustments", []):
@@ -417,32 +422,54 @@ class DatabaseService:
             # Calculate priority score
             priority_score = 0.8 * 0.3 + confidence * 0.5 + min(1.0, impact_dollars / 1000) * 0.2
 
-            # Check if similar learning already exists
+            # DISC-055: Generate embedding for new learning
+            embedding = await embedding_service.generate_embedding(statement)
+
+            # Check if similar learning already exists (semantic similarity)
             existing_result = await session.execute(
                 select(Learning).where(
                     Learning.contractor_id == contractor_id,
                     Learning.category == category,
                     Learning.target == item_type,
-                    Learning.adjustment.like(f"%{item_type}%")
-                ).order_by(Learning.created_at.desc()).limit(5)
+                ).order_by(Learning.created_at.desc()).limit(20)
             )
             existing_learnings = existing_result.scalars().all()
 
-            # Simple deduplication: if exact same statement exists in last 5, update it
-            found_match = False
-            for existing in existing_learnings:
-                if statement.lower() in existing.adjustment.lower() or existing.adjustment.lower() in statement.lower():
-                    # Update existing learning
-                    existing.sample_count += 1
-                    existing.total_impact_dollars += impact_dollars
-                    existing.last_seen_at = datetime.utcnow()
-                    existing.confidence = min(0.95, existing.confidence + 0.02)
-                    existing.priority_score = priority_score
-                    found_match = True
-                    break
+            # DISC-055: Use semantic similarity to find duplicates (0.90+ threshold)
+            found_match = None
+            if existing_learnings:
+                # Convert to dicts for embedding service
+                existing_dicts = []
+                for el in existing_learnings:
+                    existing_dicts.append({
+                        "id": el.id,
+                        "adjustment": el.adjustment,
+                        "embedding": el.embedding,
+                        "object": el  # Keep reference to ORM object
+                    })
 
-            if not found_match:
-                # Create new Learning record
+                # Find semantically similar learnings
+                similar = await embedding_service.find_similar_learnings(
+                    statement,
+                    existing_dicts,
+                    similarity_threshold=0.90
+                )
+
+                if similar:
+                    # Use the most similar one
+                    found_match = similar[0][0]["object"]
+
+            if found_match:
+                # Update existing learning
+                found_match.sample_count += 1
+                found_match.total_impact_dollars += impact_dollars
+                found_match.last_seen_at = datetime.utcnow()
+                found_match.confidence = min(0.95, found_match.confidence + 0.02)
+                found_match.priority_score = priority_score
+                # Update embedding to latest version
+                found_match.embedding = embedding
+            else:
+                # Create new Learning record with embedding
                 learning = Learning(
                     contractor_id=contractor_id,
                     category=category,
@@ -454,6 +481,7 @@ class DatabaseService:
                     sample_count=1,
                     total_impact_dollars=impact_dollars,
                     priority_score=priority_score,
+                    embedding=embedding,  # DISC-055: Store embedding
                     created_at=datetime.utcnow(),
                     last_seen_at=datetime.utcnow(),
                     examples=[{
@@ -473,6 +501,9 @@ class DatabaseService:
                 # Calculate priority (rules are generally important)
                 priority_score = 0.7 * 0.3 + confidence * 0.5 + 0.3 * 0.2
 
+                # DISC-055: Generate embedding
+                embedding = await embedding_service.generate_embedding(rule_text)
+
                 learning = Learning(
                     contractor_id=contractor_id,
                     category=category,
@@ -484,6 +515,7 @@ class DatabaseService:
                     sample_count=1,
                     total_impact_dollars=0.0,
                     priority_score=priority_score,
+                    embedding=embedding,  # DISC-055: Store embedding
                     created_at=datetime.utcnow(),
                     last_seen_at=datetime.utcnow(),
                 )
@@ -493,6 +525,9 @@ class DatabaseService:
         tendency = learnings.get("overall_tendency", "")
         if tendency:
             priority_score = 0.6 * 0.3 + confidence * 0.5 + 0.2 * 0.2
+
+            # DISC-055: Generate embedding
+            embedding = await embedding_service.generate_embedding(tendency)
 
             learning = Learning(
                 contractor_id=contractor_id,
@@ -505,6 +540,7 @@ class DatabaseService:
                 sample_count=correction_count,
                 total_impact_dollars=0.0,
                 priority_score=priority_score,
+                embedding=embedding,  # DISC-055: Store embedding
                 created_at=datetime.utcnow(),
                 last_seen_at=datetime.utcnow(),
             )
