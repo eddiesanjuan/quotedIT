@@ -5702,10 +5702,20 @@
 
             const descDiv = document.createElement('div');
             descDiv.className = 'line-item-desc';
-            descDiv.textContent = item.description || '';
+
+            // Build description with quantity info if available
+            let descText = item.description || '';
+            if (item.quantity && item.quantity > 1) {
+                const unitPrice = item.amount / item.quantity;
+                const qtyText = `Qty: ${item.quantity}${item.unit ? ' ' + item.unit : ''} × $${unitPrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} = $${item.amount.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                descText = descText ? `${descText}\n${qtyText}` : qtyText;
+            }
+            descDiv.textContent = descText;
 
             infoDiv.appendChild(nameDiv);
-            infoDiv.appendChild(descDiv);
+            if (descText) {
+                infoDiv.appendChild(descDiv);
+            }
 
             const amountDiv = document.createElement('div');
             amountDiv.className = 'line-item-amount';

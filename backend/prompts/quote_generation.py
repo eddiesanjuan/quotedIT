@@ -172,6 +172,8 @@ Based on the voice note, use the generate_quote tool to create a structured budg
 1. **Customer Info** (if mentioned): name, address, contact
 2. **Job Description**: Clear, professional summary of the work
 3. **Line Items**: Break down the quote into logical components
+   - When quantities are mentioned (e.g., "two paintings", "three rooms"), extract them separately
+   - Set quantity and unit price, not just total (e.g., Qty: 2 × $500 = $1,000)
 4. **Timeline**: Estimated days and crew size
 5. **Total**: Sum of all line items
 

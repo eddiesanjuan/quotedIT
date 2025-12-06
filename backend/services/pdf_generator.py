@@ -644,10 +644,25 @@ class PDFGeneratorService:
             name = item.get('name', '')
             desc = item.get('description', '')
             amount = item.get('amount', 0)
+            quantity = item.get('quantity')
+            unit = item.get('unit', '')
 
-            # Combine name and description
-            if desc:
+            # Build quantity display if quantity exists and is > 1
+            qty_display = ""
+            if quantity and quantity > 1:
+                unit_price = amount / quantity
+                qty_display = f"<br/><font size='9' color='#666666'>Qty: {quantity:g}"
+                if unit:
+                    qty_display += f" {unit}"
+                qty_display += f" × ${unit_price:,.2f} = ${amount:,.2f}</font>"
+
+            # Combine name, description, and quantity
+            if desc and qty_display:
+                item_text = f"<b>{name}</b><br/><font size='9' color='#666666'>{desc}</font>{qty_display}"
+            elif desc:
                 item_text = f"<b>{name}</b><br/><font size='9' color='#666666'>{desc}</font>"
+            elif qty_display:
+                item_text = f"<b>{name}</b>{qty_display}"
             else:
                 item_text = f"<b>{name}</b>"
 
