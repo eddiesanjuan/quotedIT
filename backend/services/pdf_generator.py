@@ -643,16 +643,24 @@ class PDFGeneratorService:
         for item in line_items:
             name = item.get('name', '')
             desc = item.get('description', '')
-            amount = item.get('amount', 0)
-            quantity = item.get('quantity')
-            unit = item.get('unit', '')
+            # DISC-066: Force numeric types to prevent format string errors
+            try:
+                amount = float(item.get('amount', 0) or 0)
+            except (ValueError, TypeError):
+                amount = 0.0
+            try:
+                qty = float(item.get('quantity') or 1)
+            except (ValueError, TypeError):
+                qty = 1.0
+            if qty <= 0:
+                qty = 1.0
+            unit = item.get('unit', '') or ''
 
             # Build quantity display when qty > 1 OR unit is specified
             qty_display = ""
-            qty = quantity if quantity else 1
             has_unit = bool(unit and unit.strip())
             if qty > 1 or has_unit:
-                unit_price = amount / qty if qty > 0 else amount
+                unit_price = amount / qty
                 qty_display = f"<br/><font size='9' color='#666666'>Qty: {qty:g}"
                 if has_unit:
                     qty_display += f" {unit}"
