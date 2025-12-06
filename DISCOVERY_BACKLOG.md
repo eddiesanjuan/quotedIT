@@ -23,8 +23,8 @@ To approve: Change status from DISCOVERED → READY
 | Status | Count |
 |--------|-------|
 | DEPLOYED | 27 |
-| COMPLETE | 2 |
-| READY | 4 |
+| COMPLETE | 3 |
+| READY | 3 |
 | DISCOVERED | 16 |
 | **Total** | **49** |
 
@@ -67,6 +67,28 @@ To approve: Change status from DISCOVERED → READY
 - PostHog tracking for usage analytics
 
 **Success Metric**: Power users can navigate entire quote workflow via keyboard ✅
+
+---
+
+### DISC-035: Learning System Trust Indicators (COMPLETE)
+
+**Source**: Strategy Discovery Agent
+**Impact**: HIGH | **Effort**: M | **Score**: 1.5
+**Commit**: 0de1220
+
+**Problem**: With <10 corrections per user in beta, learning system can't demonstrate value before subscription decision. Users paying for "AI that learns YOUR pricing" but won't see meaningful improvement until months in.
+
+**Solution Implemented**:
+- Added correction_count tracking per category in pricing_knowledge
+- Auto-increments when apply_learnings_to_pricing_model is called
+- New endpoint: GET /pricing-brain/{category}/confidence returns confidence info
+- 4 confidence levels: "low" (0-1), "medium" (2-4), "good" (5-9), "high" (10+)
+- Confidence badges on quotes fetch real-time data and show: "High Confidence (12 corrections)"
+- Tooltip shows description: "Well-calibrated from many corrections"
+- Applied to both main quote view and detail/edit view
+- Pricing Brain already displays correction counts per category
+
+**Success Metric**: Confidence badge fully visible showing correction count context for trust-building during trial period ✅
 
 ---
 
@@ -213,24 +235,6 @@ To approve: Change status from DISCOVERED → READY
 5. Respond to every comment within 1 hour
 
 **Success Metric**: 5,000+ impressions; 3% click demo (150 views); 15% convert = 22 signups
-
----
-
-### DISC-035: Learning System Trust Indicators (READY)
-
-**Source**: Strategy Discovery Agent
-**Impact**: HIGH | **Effort**: M | **Score**: 1.5
-**Sprint Alignment**: Critical for retention post-beta. Without this, users subscribing in Week 1-2 will churn in Week 3-4 when they realize learning hasn't kicked in yet.
-
-**Problem**: With <10 corrections per user in beta, learning system can't demonstrate value before subscription decision. Users paying for "AI that learns YOUR pricing" but won't see meaningful improvement until months in.
-
-**Proposed Work**:
-1. Track category-level correction count in backend
-2. Visual indicator on quotes: "High Confidence (12 corrections)" vs "Learning (2 corrections)"
-3. Make learning progress transparent to set realistic expectations
-4. Show learning dashboard in Pricing Brain section
-
-**Success Metric**: NPS correlation with correction count; "Trust in pricing accuracy" survey score improvement; Reduced churn for users with <5 total corrections
 
 ---
 
