@@ -455,25 +455,6 @@ class Learning:
 
 ---
 
-### DISC-033: Reddit Contractor Launch Post 🚀 FOUNDER ACTION (READY)
-
-**Source**: Growth Discovery Agent
-**Impact**: HIGH | **Effort**: M | **Score**: 1.5
-**Sprint Alignment**: 410K+ contractors on Reddit, single post could deliver 20%+ of beta goal
-
-**Problem**: 410K+ contractors on Reddit, zero awareness of Quoted. Warm audience that complains daily about quoting friction. Demo ready but not distributed.
-
-**Proposed Work**:
-1. Craft founder-story Reddit post for r/contractors, r/Construction, r/smallbusiness
-2. Format: "I built a voice-to-quote tool because I was tired of 30-minute spreadsheets - would love beta feedback"
-3. Include demo link, emphasize learning system
-4. Post during peak hours (Tuesday-Thursday 9am-11am EST)
-5. Respond to every comment within 1 hour
-
-**Success Metric**: 5,000+ impressions; 3% click demo (150 views); 15% convert = 22 signups
-
----
-
 ### DISC-037: Demo-to-Referral Incentive Bridge (DISCOVERED)
 
 **Source**: Growth Discovery Agent
