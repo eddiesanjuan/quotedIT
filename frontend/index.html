@@ -5968,6 +5968,9 @@
                 }
             }, 50);
 
+            // DISC-068: Show category review banner if confidence is low or new category suggested
+            updateCategoryReviewBanner(quote.category_info);
+
             // DISC-018: Show grace quote modal if this was a grace quote
             if (quote.billing_info?.is_grace_quote) {
                 showGraceQuoteModal(quote.billing_info.grace_remaining);
