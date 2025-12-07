@@ -7571,6 +7571,15 @@
             document.getElementById('successMessage').classList.remove('active');
         }
 
+        // Generic toast wrapper for compatibility
+        function showToast(message, type = 'success') {
+            if (type === 'error') {
+                showError(message);
+            } else {
+                showSuccess(message);
+            }
+        }
+
         // Issue Reporter
         function openIssueModal() {
             document.getElementById('issueModal').classList.add('active');
