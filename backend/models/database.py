@@ -213,6 +213,10 @@ class ContractorTerms(Base):
     # Custom terms (free-form, appended to quote)
     custom_terms = Column(Text)
 
+    # DISC-067: Default timeline and terms text for quotes
+    default_timeline_text = Column(Text)  # Default timeline description for quotes
+    default_terms_text = Column(Text)  # Default terms/conditions text for quotes
+
     # Relationship
     contractor = relationship("Contractor", back_populates="terms")
 
@@ -304,6 +308,10 @@ class Quote(Base):
     # Timeline
     estimated_days = Column(Integer)
     estimated_crew_size = Column(Integer)
+
+    # DISC-067: Per-quote timeline and terms text (overrides contractor defaults)
+    timeline_text = Column(Text)  # Free-form timeline description for this quote
+    terms_text = Column(Text)  # Free-form terms/conditions for this quote
 
     # Status
     status = Column(String(50), default="draft")  # draft, sent, won, lost, expired
@@ -803,6 +811,43 @@ async def run_migrations(engine):
                 WHERE table_name = 'pricing_models' AND column_name = 'pricing_philosophy'
             """,
             "alter_sql": "ALTER TABLE pricing_models ADD COLUMN pricing_philosophy TEXT"
+        },
+        # DISC-067: Timeline and terms text fields
+        {
+            "table": "quotes",
+            "column": "timeline_text",
+            "check_sql": """
+                SELECT column_name FROM information_schema.columns
+                WHERE table_name = 'quotes' AND column_name = 'timeline_text'
+            """,
+            "alter_sql": "ALTER TABLE quotes ADD COLUMN timeline_text TEXT"
+        },
+        {
+            "table": "quotes",
+            "column": "terms_text",
+            "check_sql": """
+                SELECT column_name FROM information_schema.columns
+                WHERE table_name = 'quotes' AND column_name = 'terms_text'
+            """,
+            "alter_sql": "ALTER TABLE quotes ADD COLUMN terms_text TEXT"
+        },
+        {
+            "table": "contractor_terms",
+            "column": "default_timeline_text",
+            "check_sql": """
+                SELECT column_name FROM information_schema.columns
+                WHERE table_name = 'contractor_terms' AND column_name = 'default_timeline_text'
+            """,
+            "alter_sql": "ALTER TABLE contractor_terms ADD COLUMN default_timeline_text TEXT"
+        },
+        {
+            "table": "contractor_terms",
+            "column": "default_terms_text",
+            "check_sql": """
+                SELECT column_name FROM information_schema.columns
+                WHERE table_name = 'contractor_terms' AND column_name = 'default_terms_text'
+            """,
+            "alter_sql": "ALTER TABLE contractor_terms ADD COLUMN default_terms_text TEXT"
         },
     ]
 

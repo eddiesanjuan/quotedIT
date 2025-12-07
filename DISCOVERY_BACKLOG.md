@@ -24,9 +24,9 @@ To approve: Change status from DISCOVERED → READY
 |--------|-------|
 | DEPLOYED | 29 |
 | COMPLETE | 10 |
-| READY | 3 |
+| READY | 5 |
 | DISCOVERED | 18 |
-| **Total** | **60** |
+| **Total** | **62** |
 
 **Prompt Optimization**: DISC-041 complete → DISC-052, DISC-054 (learning improvements via prompt injection)
 **Deprioritized**: DISC-053, DISC-055 (structured storage/embeddings - over-engineering; prompt injection approach preferred)
@@ -280,6 +280,59 @@ To approve: Change status from DISCOVERED → READY
 5. Respond to every comment within 1 hour
 
 **Success Metric**: 5,000+ impressions; 3% click demo (150 views); 15% convert = 22 signups
+
+---
+
+### DISC-067: Free-Form Timeline & Terms Fields (READY)
+
+**Source**: Founder Request (Eddie, 2025-12-06)
+**Impact**: MEDIUM | **Effort**: M | **Score**: 1.0
+**Sprint Alignment**: User-requested feature for quote customization
+
+**Problem**: Users need to customize timeline and terms sections on quotes. Current system uses contractor defaults from onboarding, but users want to dictate or type custom timeline/terms per-quote and set defaults in account settings.
+
+**Proposed Work**:
+1. Add free-form text fields (text areas) for Timeline and Terms sections on quote detail view
+2. Add default Timeline/Terms text fields in Account Settings (Quote Defaults tab)
+3. Create database migration to add `timeline_text` and `terms_text` columns to quotes table
+4. Store contractor default timeline/terms in ContractorTerms table (already exists)
+5. Per-quote text overrides contractor defaults when set
+6. Update PDF generation to render custom timeline/terms text
+7. Update AI prompt to extract timeline/terms from voice dictation when mentioned
+
+**Success Metric**: Users can dictate or type custom timeline/terms per-quote, with account-level defaults
+
+---
+
+### DISC-068: Auto-Detect New Categories & Notify User 🧠 LEARNING (READY)
+
+**Source**: Founder Request (Eddie, 2025-12-06)
+**Impact**: HIGH | **Effort**: M | **Score**: 1.5
+**Sprint Alignment**: Core learning system integrity - categories must be accurate for learning to work
+
+**Problem**: When a user describes work that doesn't match their existing categories, the system correctly falls back to hourly-rate pricing but fails to create a new category. Example: User with "Custom Painting" category quotes pottery work - system used hourly rate (good) but labeled it "Custom Painting" (wrong). This breaks the learning system because:
+1. Pottery corrections get applied to painting pricing (cross-contamination)
+2. User can't build category-specific pricing intelligence for pottery
+3. User isn't aware that assumptions are being made about new work types
+
+**Proposed Work**:
+1. Add category confidence scoring during quote generation - detect when job description doesn't semantically match existing categories
+2. When confidence is low (<70%), flag as potential new category instead of forcing into existing category
+3. Create new category automatically OR present user with choice: "This looks like pottery, not painting. Create new category?"
+4. Show notification/badge on quote: "New category detected - customize pricing?" with link to adjust
+5. Update learning system to track corrections per actual category (not assumed category)
+6. Add PostHog event: `new_category_detected` with details for monitoring
+
+**Technical Considerations**:
+- Claude prompt already knows categories - add instruction to flag mismatches
+- Return `category_confidence` and `suggested_new_category` in quote response
+- UI notification could be inline on quote detail view
+- Consider auto-creating category with defaults from closest match
+
+**Success Metric**:
+- 95%+ of quotes land in semantically correct categories
+- Users notified when new category detected (not silently assumed)
+- Learning corrections apply to correct categories
 
 ---
 
