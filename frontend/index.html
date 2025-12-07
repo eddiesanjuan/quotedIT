@@ -551,6 +551,17 @@
             border-color: var(--border-hover);
         }
 
+        .btn-danger {
+            background: var(--error);
+            color: white;
+            border: 1px solid var(--error);
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+            border-color: #c0392b;
+        }
+
         .btn-ghost {
             background: transparent;
             color: var(--text-secondary);
@@ -4107,6 +4118,7 @@
                     <button class="btn btn-primary" onclick="openShareModal()">📤 Share</button>
                     <button class="btn btn-secondary" onclick="duplicateQuote()">📋 Duplicate</button>
                     <button class="btn btn-secondary" onclick="backToQuoteList()">Back to My Quotes</button>
+                    <button class="btn btn-danger" onclick="confirmDeleteQuote()">🗑️ Delete</button>
                 </div>
             </div>
 
@@ -8516,6 +8528,58 @@
             } catch (err) {
                 console.error('Duplication error:', err);
                 showToast('Failed to duplicate quote: ' + err.message, 'error');
+            }
+        }
+
+        // Confirm and delete quote
+        function confirmDeleteQuote() {
+            if (!currentDetailQuote) return;
+
+            const customerName = currentDetailQuote.customer_name || 'Unnamed Customer';
+            const total = currentDetailQuote.total ? '$' + currentDetailQuote.total.toLocaleString() : '';
+
+            const confirmed = confirm(
+                `Are you sure you want to delete this quote?\n\n` +
+                `Customer: ${customerName}\n` +
+                `Total: ${total}\n\n` +
+                `This action cannot be undone.`
+            );
+
+            if (confirmed) {
+                deleteQuote();
+            }
+        }
+
+        // Delete quote
+        async function deleteQuote() {
+            if (!currentDetailQuote) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/quotes/${currentDetailQuote.id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Failed to delete quote');
+                }
+
+                // Track deletion
+                if (typeof posthog !== 'undefined') {
+                    posthog.capture('quote_deleted', {
+                        quote_id: currentDetailQuote.id
+                    });
+                }
+
+                // Show success and go back to list
+                showToast('Quote deleted successfully', 'success');
+                await loadQuotes();
+                showQuoteList();
+
+            } catch (err) {
+                console.error('Delete error:', err);
+                showToast('Failed to delete quote: ' + err.message, 'error');
             }
         }
 

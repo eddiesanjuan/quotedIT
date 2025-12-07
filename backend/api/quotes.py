@@ -1107,6 +1107,27 @@ async def get_quote(quote_id: str, current_user: dict = Depends(get_current_user
     return quote_to_response(quote)
 
 
+@router.delete("/{quote_id}")
+async def delete_quote(quote_id: str, current_user: dict = Depends(get_current_user)):
+    """Delete a quote by ID."""
+    db = get_db_service()
+    quote = await db.get_quote(quote_id)
+
+    if not quote:
+        raise HTTPException(status_code=404, detail="Quote not found")
+
+    # Verify ownership
+    contractor = await db.get_contractor_by_user_id(current_user["id"])
+    if not contractor or quote.contractor_id != contractor.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    success = await db.delete_quote(quote_id)
+    if not success:
+        raise HTTPException(status_code=500, detail="Failed to delete quote")
+
+    return {"message": "Quote deleted successfully", "quote_id": quote_id}
+
+
 class CustomerUpdateRequest(BaseModel):
     """Request to update customer information on a quote."""
     customer_name: Optional[str] = None

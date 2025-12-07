@@ -627,6 +627,25 @@ class DatabaseService:
             await session.refresh(quote)
             return quote
 
+    async def delete_quote(self, quote_id: str) -> bool:
+        """Delete a quote by ID."""
+        async with async_session_factory() as session:
+            result = await session.execute(
+                select(Quote).where(Quote.id == quote_id)
+            )
+            quote = result.scalar_one_or_none()
+            if not quote:
+                return False
+
+            # Also delete any associated feedback
+            await session.execute(
+                delete(QuoteFeedback).where(QuoteFeedback.quote_id == quote_id)
+            )
+
+            await session.delete(quote)
+            await session.commit()
+            return True
+
     async def get_quotes_by_contractor(
         self,
         contractor_id: str,
