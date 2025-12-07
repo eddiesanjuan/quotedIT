@@ -85,6 +85,9 @@ class QuoteResponse(BaseModel):
     was_edited: bool = False
     created_at: Optional[str] = None
     updated_at: Optional[str] = None
+    # DISC-067: Free-form timeline and terms fields
+    timeline_text: Optional[str] = None
+    terms_text: Optional[str] = None
 
 
 class QuoteUpdateRequest(BaseModel):
@@ -99,6 +102,9 @@ class QuoteUpdateRequest(BaseModel):
     estimated_crew_size: Optional[int] = None
     notes: Optional[str] = None
     correction_notes: Optional[str] = None  # Why the user made changes
+    # DISC-067: Free-form timeline and terms fields
+    timeline_text: Optional[str] = None
+    terms_text: Optional[str] = None
 
 
 # Enhancement 5: Active Learning Models
@@ -235,6 +241,9 @@ def quote_to_response(quote) -> QuoteResponse:
         was_edited=quote.was_edited or False,
         created_at=quote.created_at.isoformat() if quote.created_at else None,
         updated_at=quote.updated_at.isoformat() if quote.updated_at else None,
+        # DISC-067: Free-form timeline and terms fields
+        timeline_text=getattr(quote, 'timeline_text', None),
+        terms_text=getattr(quote, 'terms_text', None),
     )
 
 
@@ -348,10 +357,14 @@ async def generate_quote(
 
         # PASS 1: Detect category from transcription (fast, cheap call)
         # Uses user's existing categories for fuzzy matching, or creates new ones
-        detected_job_type = await quote_service.detect_job_type(
+        # DISC-068: Now returns full category info including confidence
+        category_detection = await quote_service.detect_or_create_category(
             quote_request.transcription,
             pricing_knowledge=pricing_dict.get("pricing_knowledge")
         )
+        detected_job_type = category_detection["category"]
+        category_confidence = category_detection.get("category_confidence", 100)
+        suggested_new_category = category_detection.get("suggested_new_category")
 
         # PASS 2: Fetch type-specific correction examples for few-shot learning
         # First try to get examples for this specific job type
@@ -511,6 +524,14 @@ async def generate_quote(
             "is_grace_quote": billing_check.get("is_grace_quote", False),
             "quotes_remaining": billing_check.get("quotes_remaining", 0),
             "grace_remaining": billing_check.get("grace_remaining", 0),
+        }
+
+        # DISC-068: Add category confidence info for frontend notification
+        response_dict["category_info"] = {
+            "category": detected_job_type,
+            "confidence": category_confidence,
+            "suggested_new_category": suggested_new_category,
+            "needs_review": category_confidence < 70 or suggested_new_category is not None,
         }
 
         return response_dict
@@ -888,10 +909,14 @@ async def generate_quote_from_audio(
 
             # STEP 2: Detect category from transcription (fast, cheap call)
             # Uses user's existing categories for fuzzy matching, or creates new ones
-            detected_job_type = await quote_service.detect_job_type(
+            # DISC-068: Now returns full category info including confidence
+            category_detection = await quote_service.detect_or_create_category(
                 transcription_text,
                 pricing_knowledge=pricing_dict.get("pricing_knowledge")
             )
+            detected_job_type = category_detection["category"]
+            category_confidence = category_detection.get("category_confidence", 100)
+            suggested_new_category = category_detection.get("suggested_new_category")
 
             # STEP 3: Fetch type-specific correction examples for few-shot learning
             correction_examples = await db.get_correction_examples(
@@ -1044,6 +1069,14 @@ async def generate_quote_from_audio(
                 "grace_remaining": billing_check.get("grace_remaining", 0),
             }
 
+            # DISC-068: Add category confidence info for frontend notification
+            response_dict["category_info"] = {
+                "category": detected_job_type,
+                "confidence": category_confidence,
+                "suggested_new_category": suggested_new_category,
+                "needs_review": category_confidence < 70 or suggested_new_category is not None,
+            }
+
             return response_dict
 
         finally:
@@ -1180,6 +1213,11 @@ async def update_quote(
     if update.notes is not None:
         # Store notes as part of job_description for now
         pass
+    # DISC-067: Free-form timeline and terms fields
+    if update.timeline_text is not None:
+        update_data["timeline_text"] = update.timeline_text
+    if update.terms_text is not None:
+        update_data["terms_text"] = update.terms_text
 
     # Mark as edited
     update_data["was_edited"] = True

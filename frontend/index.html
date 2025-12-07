@@ -866,6 +866,43 @@
             border: 1px solid rgba(248, 113, 113, 0.3);
         }
 
+        /* DISC-068: Category Review Banner */
+        .category-review-banner {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px 20px;
+            background: rgba(251, 191, 36, 0.1);
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            border-radius: 12px;
+            margin-bottom: 24px;
+        }
+
+        .category-review-icon {
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .category-review-content {
+            flex: 1;
+        }
+
+        .category-review-title {
+            font-weight: 600;
+            color: var(--warning);
+            margin-bottom: 4px;
+        }
+
+        .category-review-message {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .category-review-message strong {
+            color: var(--text-primary);
+        }
+
         .job-description {
             padding: 24px;
             background: var(--bg-secondary);
@@ -1025,6 +1062,64 @@
         .quote-notes p {
             color: var(--text-secondary);
             line-height: 1.7;
+        }
+
+        /* DISC-067: Timeline and Terms Section */
+        .timeline-terms-section {
+            margin-top: 32px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .timeline-section,
+        .terms-section {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .timeline-terms-section .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .timeline-terms-section h4 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .timeline-terms-section .hint-text {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .timeline-terms-textarea {
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+            font-size: 0.875rem;
+            line-height: 1.6;
+            resize: vertical;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .timeline-terms-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+        }
+
+        .timeline-terms-textarea::placeholder {
+            color: var(--text-muted);
         }
 
         /* Transcription */
@@ -3770,6 +3865,16 @@
                     <span class="confidence-badge" id="confidenceBadge">High Confidence</span>
                 </div>
 
+                <!-- DISC-068: Category Confidence Notification -->
+                <div class="category-review-banner" id="categoryReviewBanner" style="display: none;">
+                    <div class="category-review-icon">⚠️</div>
+                    <div class="category-review-content">
+                        <div class="category-review-title">New category detected</div>
+                        <div class="category-review-message" id="categoryReviewMessage"></div>
+                    </div>
+                    <button class="btn btn-sm btn-secondary" onclick="dismissCategoryBanner()">Dismiss</button>
+                </div>
+
                 <div class="job-description" id="jobDescriptionDisplay"></div>
 
                 <div class="line-items" id="lineItems"></div>
@@ -3950,6 +4055,36 @@
                 <div class="quote-notes" id="detailQuoteNotes" style="display: none;">
                     <h4>Notes</h4>
                     <p id="detailNotesContent"></p>
+                </div>
+
+                <!-- DISC-067: Timeline and Terms Sections -->
+                <div class="timeline-terms-section">
+                    <div class="timeline-section">
+                        <div class="section-header">
+                            <h4>Timeline</h4>
+                            <span class="hint-text">Estimated project timeline</span>
+                        </div>
+                        <textarea
+                            id="detailTimelineText"
+                            class="timeline-terms-textarea"
+                            placeholder="e.g., Work to begin within 2 weeks of signed agreement. Estimated completion: 3-5 business days, weather permitting."
+                            rows="3"
+                            oninput="onTimelineTermsChange()"
+                        ></textarea>
+                    </div>
+                    <div class="terms-section">
+                        <div class="section-header">
+                            <h4>Terms & Conditions</h4>
+                            <span class="hint-text">Payment terms, warranties, exclusions</span>
+                        </div>
+                        <textarea
+                            id="detailTermsText"
+                            class="timeline-terms-textarea"
+                            placeholder="e.g., 50% deposit required. Balance due upon completion. 1-year labor warranty included. Price valid for 30 days."
+                            rows="4"
+                            oninput="onTimelineTermsChange()"
+                        ></textarea>
+                    </div>
                 </div>
 
                 <!-- Save Changes Section -->
@@ -5847,6 +5982,60 @@
                     markCelebrationPending();
                 }
             }
+
+            // DISC-068: Show category review banner if confidence is low or new category suggested
+            updateCategoryReviewBanner(quote.category_info);
+        }
+
+        // DISC-068: Handle category review banner (uses safe DOM methods)
+        function updateCategoryReviewBanner(categoryInfo) {
+            const banner = document.getElementById('categoryReviewBanner');
+            const messageContainer = document.getElementById('categoryReviewMessage');
+
+            if (!banner || !categoryInfo) {
+                if (banner) banner.style.display = 'none';
+                return;
+            }
+
+            if (categoryInfo.needs_review) {
+                // Clear previous message
+                messageContainer.textContent = '';
+
+                if (categoryInfo.suggested_new_category) {
+                    // Low confidence with a suggested new category
+                    const suggestedName = categoryInfo.suggested_new_category.replace(/_/g, ' ');
+                    const currentName = categoryInfo.category.replace(/_/g, ' ');
+
+                    // Build message with safe DOM methods
+                    messageContainer.appendChild(document.createTextNode('This job was categorized as '));
+                    const currentStrong = document.createElement('strong');
+                    currentStrong.textContent = '"' + currentName + '"';
+                    messageContainer.appendChild(currentStrong);
+                    messageContainer.appendChild(document.createTextNode(' but might be better as '));
+                    const suggestedStrong = document.createElement('strong');
+                    suggestedStrong.textContent = '"' + suggestedName + '"';
+                    messageContainer.appendChild(suggestedStrong);
+                    messageContainer.appendChild(document.createTextNode('. If this is a new type of work for you, the system will learn your pricing for it over time.'));
+                } else if (categoryInfo.confidence < 70) {
+                    // Low confidence but no alternative suggested
+                    const currentName = categoryInfo.category.replace(/_/g, ' ');
+
+                    messageContainer.appendChild(document.createTextNode('This job was categorized as '));
+                    const currentStrong = document.createElement('strong');
+                    currentStrong.textContent = '"' + currentName + '"';
+                    messageContainer.appendChild(currentStrong);
+                    messageContainer.appendChild(document.createTextNode(' with ' + categoryInfo.confidence + '% confidence. If this doesn\'t match the type of work, your edits will help the system learn.'));
+                }
+
+                banner.style.display = 'flex';
+            } else {
+                banner.style.display = 'none';
+            }
+        }
+
+        function dismissCategoryBanner() {
+            const banner = document.getElementById('categoryReviewBanner');
+            if (banner) banner.style.display = 'none';
         }
 
         // DISC-035: Update confidence badge
@@ -7868,7 +8057,10 @@
                 estimated_crew_size: quote.estimated_crew_size,
                 deposit_percent: quote.deposit_percent,
                 quote_valid_days: quote.quote_valid_days,
-                warranty_years: quote.warranty_years
+                warranty_years: quote.warranty_years,
+                // DISC-067: Track timeline/terms changes
+                timeline_text: quote.timeline_text || '',
+                terms_text: quote.terms_text || ''
             };
             editedLineItems = JSON.parse(JSON.stringify(quote.line_items || []));
             hasUnsavedChanges = false;
@@ -7891,6 +8083,10 @@
             } else {
                 document.getElementById('detailQuoteNotes').style.display = 'none';
             }
+
+            // DISC-067: Populate timeline and terms textareas
+            document.getElementById('detailTimelineText').value = quote.timeline_text || '';
+            document.getElementById('detailTermsText').value = quote.terms_text || '';
 
             renderEditableLineItems(editedLineItems);
 
@@ -8035,6 +8231,16 @@
                 }
             }
 
+            // DISC-067: Check for timeline/terms changes
+            const currentTimeline = document.getElementById('detailTimelineText').value;
+            const currentTerms = document.getElementById('detailTermsText').value;
+            if (currentTimeline !== original.timeline_text) {
+                changes.push('Timeline updated');
+            }
+            if (currentTerms !== original.terms_text) {
+                changes.push('Terms updated');
+            }
+
             hasUnsavedChanges = changes.length > 0;
 
             const editBanner = document.getElementById('editModeBanner');
@@ -8060,6 +8266,11 @@
             }
         }
 
+        // DISC-067: Handle timeline/terms textarea changes
+        function onTimelineTermsChange() {
+            checkForChanges();
+        }
+
         async function saveQuoteChanges() {
             if (!currentDetailQuote || !hasUnsavedChanges) return;
 
@@ -8078,7 +8289,10 @@
                     },
                     body: JSON.stringify({
                         line_items: editedLineItems,
-                        correction_notes: correctionNotes || null
+                        correction_notes: correctionNotes || null,
+                        // DISC-067: Include timeline/terms in update
+                        timeline_text: document.getElementById('detailTimelineText').value || null,
+                        terms_text: document.getElementById('detailTermsText').value || null
                     })
                 });
 
@@ -8100,7 +8314,10 @@
                     job_description: updatedQuote.job_description,
                     total: updatedQuote.total || updatedQuote.subtotal || 0,
                     estimated_days: updatedQuote.estimated_days,
-                    estimated_crew_size: updatedQuote.estimated_crew_size
+                    estimated_crew_size: updatedQuote.estimated_crew_size,
+                    // DISC-067: Track timeline/terms after save
+                    timeline_text: updatedQuote.timeline_text || '',
+                    terms_text: updatedQuote.terms_text || ''
                 };
                 hasUnsavedChanges = false;
 

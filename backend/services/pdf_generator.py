@@ -848,10 +848,18 @@ class PDFGeneratorService:
         estimated_crew = quote_data.get('estimated_crew_size')
         notes = quote_data.get('notes')
 
+        # DISC-067: Check for custom timeline/terms text
+        custom_timeline = quote_data.get('timeline_text')
+        custom_terms = quote_data.get('terms_text')
+
         # Build left column (Timeline + Notes)
         left_content = []
 
-        if estimated_days or estimated_crew:
+        # DISC-067: Use custom timeline text if provided, otherwise use generated
+        if custom_timeline:
+            left_content.append(Paragraph("TIMELINE", self.styles['SectionHeader']))
+            left_content.append(Paragraph(custom_timeline, self.styles['QuoteBodyLight']))
+        elif estimated_days or estimated_crew:
             left_content.append(Paragraph("TIMELINE", self.styles['SectionHeader']))
             if estimated_days:
                 left_content.append(Paragraph(
@@ -873,24 +881,28 @@ class PDFGeneratorService:
         right_content = []
         right_content.append(Paragraph("TERMS", self.styles['SectionHeader']))
 
-        valid_days = terms.get('quote_valid_days', 30)
-        right_content.append(Paragraph(
-            f"Valid for {valid_days} days",
-            self.styles['QuoteBodyLight']
-        ))
-
-        deposit = terms.get('deposit_percent', 50)
-        right_content.append(Paragraph(
-            f"{deposit}% deposit to schedule",
-            self.styles['QuoteBodyLight']
-        ))
-
-        warranty = terms.get('labor_warranty_years')
-        if warranty:
+        # DISC-067: Use custom terms text if provided, otherwise use generated
+        if custom_terms:
+            right_content.append(Paragraph(custom_terms, self.styles['QuoteBodyLight']))
+        else:
+            valid_days = terms.get('quote_valid_days', 30)
             right_content.append(Paragraph(
-                f"{warranty} year warranty on labor",
+                f"Valid for {valid_days} days",
                 self.styles['QuoteBodyLight']
             ))
+
+            deposit = terms.get('deposit_percent', 50)
+            right_content.append(Paragraph(
+                f"{deposit}% deposit to schedule",
+                self.styles['QuoteBodyLight']
+            ))
+
+            warranty = terms.get('labor_warranty_years')
+            if warranty:
+                right_content.append(Paragraph(
+                    f"{warranty} year warranty on labor",
+                    self.styles['QuoteBodyLight']
+                ))
 
         # Create two-column table if we have content for both
         if left_content and right_content:

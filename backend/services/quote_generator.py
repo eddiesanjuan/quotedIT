@@ -324,6 +324,9 @@ class QuoteGenerationService:
         Dynamically detect or create a category from the transcription.
         Uses AI to match against existing user categories or create new ones.
 
+        DISC-068: Now returns confidence score to detect when a new category
+        should be created vs. forcing into an existing (wrong) category.
+
         Args:
             transcription: The transcribed voice note
             pricing_knowledge: User's pricing_knowledge dict with categories
@@ -333,38 +336,65 @@ class QuoteGenerationService:
             - category: The category name (snake_case)
             - is_new: Whether this is a newly created category
             - display_name: Human-readable name (for new categories)
+            - category_confidence: 0-100 confidence score for the match
+            - suggested_new_category: If confidence < 70, suggested new category name
         """
         # Get existing categories from user's pricing model
         existing_categories = []
+        category_display_names = {}
         if pricing_knowledge and "categories" in pricing_knowledge:
             existing_categories = list(pricing_knowledge["categories"].keys())
+            # Also get display names for context
+            for cat_key, cat_data in pricing_knowledge["categories"].items():
+                if isinstance(cat_data, dict):
+                    category_display_names[cat_key] = cat_data.get("display_name", cat_key.replace("_", " ").title())
 
-        # Build the detection prompt
+        # Build the detection prompt with confidence scoring
         if existing_categories:
-            categories_list = "\n".join(f"- {cat}" for cat in existing_categories)
-            detection_prompt = f"""Categorize this work description using an EXISTING category if possible.
+            categories_list = "\n".join(f"- {cat} ({category_display_names.get(cat, cat)})" for cat in existing_categories)
+            detection_prompt = f"""Categorize this work description. Rate your confidence in the match.
 
 Description: "{transcription}"
 
 Existing categories for this business:
 {categories_list}
 
-IMPORTANT: STRONGLY prefer existing categories over creating new ones.
+IMPORTANT: Be HONEST about confidence. If this work doesn't clearly fit an existing category, say so.
 
-Matching rules:
-- Same general type of work = match existing (artwork, art piece, painting, commission → all match "artwork")
-- Slight wording differences = match existing (16x20 canvas, 24x36 portrait → both match existing art category)
-- Similar materials/methods = match existing (oil painting, acrylic painting → both match painting category)
-- Size/price variations = match existing (small job, large job of same type → match existing)
+Confidence scoring guide:
+- 90-100: Perfect match (same type of work, clear fit)
+- 70-89: Good match (related work, reasonable fit)
+- 50-69: Weak match (some similarity but different enough to warrant a new category)
+- 0-49: Poor match (should definitely be a new category)
 
-ONLY create a new category if the work is fundamentally different from ALL existing categories.
-Example: "electrical work" would NOT match "artwork" - that's truly different.
+If confidence is BELOW 70, also suggest what new category this should be.
 
 Return JSON only:
-{{"category": "existing_category_name_from_list", "is_new": false, "display_name": "Human Readable Name"}}
+{{
+  "category": "category_name",
+  "is_new": false,
+  "display_name": "Human Readable Name",
+  "category_confidence": 85,
+  "suggested_new_category": null
+}}
 
-If absolutely no existing category applies (truly different industry/trade):
-{{"category": "new_snake_case_name", "is_new": true, "display_name": "Human Readable Name"}}"""
+OR if it doesn't fit well:
+{{
+  "category": "closest_existing_category",
+  "is_new": false,
+  "display_name": "Closest Match",
+  "category_confidence": 45,
+  "suggested_new_category": "new_category_name"
+}}
+
+OR if no existing categories are close at all:
+{{
+  "category": "new_snake_case_name",
+  "is_new": true,
+  "display_name": "Human Readable Name",
+  "category_confidence": 95,
+  "suggested_new_category": null
+}}"""
         else:
             # No existing categories - create the first one
             detection_prompt = f"""Analyze this work description and create a category for it.
@@ -376,40 +406,56 @@ Create a short snake_case category name for this type of work:
 - 2-3 words max
 
 Return JSON only:
-{{"category": "category_name", "is_new": true, "display_name": "Human Readable Name"}}"""
+{{
+  "category": "category_name",
+  "is_new": true,
+  "display_name": "Human Readable Name",
+  "category_confidence": 95,
+  "suggested_new_category": null
+}}"""
 
         try:
             # Use haiku for speed and cost - this is just classification
             message = self.client.messages.create(
                 model="claude-3-haiku-20240307",
-                max_tokens=100,
+                max_tokens=200,
                 messages=[{"role": "user", "content": detection_prompt}],
             )
             response_text = message.content[0].text.strip()
 
-            # Parse JSON response
+            # Parse JSON response - handle multi-line JSON
             import json
-            # Find JSON in response
-            json_match = re.search(r'\{[^}]+\}', response_text)
+            # Find JSON in response (including multi-line)
+            json_match = re.search(r'\{[^{}]*\}', response_text, re.DOTALL)
             if json_match:
                 result = json.loads(json_match.group())
                 # Ensure snake_case and lowercase
                 result["category"] = result["category"].lower().replace(" ", "_").replace("-", "_")
+                # Ensure confidence is present
+                if "category_confidence" not in result:
+                    result["category_confidence"] = 70 if not result.get("is_new") else 95
+                if "suggested_new_category" not in result:
+                    result["suggested_new_category"] = None
                 return result
 
             # Fallback if JSON parsing fails
             return {
                 "category": "general",
                 "is_new": True,
-                "display_name": "General"
+                "display_name": "General",
+                "category_confidence": 50,
+                "suggested_new_category": None
             }
 
         except Exception as e:
             # On error, return general - don't block quote generation
+            print(f"[CATEGORY DETECTION ERROR] {e}")
             return {
                 "category": "general",
                 "is_new": True,
-                "display_name": "General"
+                "display_name": "General",
+                "category_confidence": 50,
+                "suggested_new_category": None
             }
 
     async def detect_job_type(
