@@ -201,8 +201,8 @@ if frontend_path.exists():
 
     @app.get("/demo")
     async def serve_demo():
-        """Serve the demo animation page."""
-        return FileResponse(frontend_path / "demo.html")
+        """Serve the functional demo page - generate real quotes without signup."""
+        return FileResponse(frontend_path / "try.html")
 
     @app.get("/try")
     async def serve_try():
