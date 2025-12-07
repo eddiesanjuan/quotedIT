@@ -8573,13 +8573,13 @@
                 }
 
                 // Show success and go back to list
-                showToast('Quote deleted successfully', 'success');
+                showLearningToast('Quote deleted successfully', '🗑️');
                 await loadQuotes();
                 showQuoteList();
 
             } catch (err) {
                 console.error('Delete error:', err);
-                showToast('Failed to delete quote: ' + err.message, 'error');
+                showError('Failed to delete quote: ' + err.message);
             }
         }
 
