@@ -283,22 +283,29 @@ To approve: Change status from DISCOVERED → READY
 
 ---
 
-### DISC-067: Free-Form Timeline & Terms Fields (READY)
+### DISC-067: Free-Form Timeline & Terms Fields (READY) - PARTIAL
 
 **Source**: Founder Request (Eddie, 2025-12-06)
 **Impact**: MEDIUM | **Effort**: M | **Score**: 1.0
 **Sprint Alignment**: User-requested feature for quote customization
+**Commit**: b58e828 (partial - backend only)
 
 **Problem**: Users need to customize timeline and terms sections on quotes. Current system uses contractor defaults from onboarding, but users want to dictate or type custom timeline/terms per-quote and set defaults in account settings.
 
-**Proposed Work**:
-1. Add free-form text fields (text areas) for Timeline and Terms sections on quote detail view
-2. Add default Timeline/Terms text fields in Account Settings (Quote Defaults tab)
-3. Create database migration to add `timeline_text` and `terms_text` columns to quotes table
-4. Store contractor default timeline/terms in ContractorTerms table (already exists)
-5. Per-quote text overrides contractor defaults when set
-6. Update PDF generation to render custom timeline/terms text
-7. Update AI prompt to extract timeline/terms from voice dictation when mentioned
+**Completed** ✅:
+1. ✅ Database schema: Added `timeline_text` and `terms_text` to quotes table
+2. ✅ Database schema: Added `default_timeline_text` and `default_terms_text` to contractor_terms table
+3. ✅ Migrations: Added migrations for all four columns
+
+**Remaining** ❌:
+1. ❌ Quote detail view: Add textarea fields for timeline/terms editing (frontend/index.html line ~3909)
+2. ❌ Account settings: Add Quote Defaults tab with default timeline/terms fields
+3. ❌ Update `quote_to_response()` in backend/api/quotes.py to include new fields
+4. ❌ Update `QuoteResponse` Pydantic model to include timeline_text, terms_text
+5. ❌ Update PDF generation (backend/services/pdf_service.py) to use custom timeline/terms
+6. ❌ Update AI prompt (backend/services/claude_service.py) to extract timeline/terms from voice
+
+**Blocker**: Frontend file index.html is 10,368 lines - requires careful navigation for quote detail and account settings modifications
 
 **Success Metric**: Users can dictate or type custom timeline/terms per-quote, with account-level defaults
 
