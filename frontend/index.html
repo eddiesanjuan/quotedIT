@@ -8584,7 +8584,7 @@
                 // Show success and go back to list
                 showLearningToast('Quote deleted successfully', '🗑️');
                 await loadQuotes();
-                showQuoteList();
+                backToQuoteList();
 
             } catch (err) {
                 console.error('Delete error:', err);
