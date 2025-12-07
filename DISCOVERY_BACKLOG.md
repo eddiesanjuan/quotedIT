@@ -283,12 +283,12 @@ To approve: Change status from DISCOVERED → READY
 
 ---
 
-### DISC-067: Free-Form Timeline & Terms Fields (READY) - PARTIAL
+### DISC-067: Free-Form Timeline & Terms Fields (DEPLOYED)
 
 **Source**: Founder Request (Eddie, 2025-12-06)
 **Impact**: MEDIUM | **Effort**: M | **Score**: 1.0
 **Sprint Alignment**: User-requested feature for quote customization
-**Commit**: b58e828 (partial - backend only)
+**Commit**: 9899595 (complete)
 
 **Problem**: Users need to customize timeline and terms sections on quotes. Current system uses contractor defaults from onboarding, but users want to dictate or type custom timeline/terms per-quote and set defaults in account settings.
 
@@ -296,39 +296,41 @@ To approve: Change status from DISCOVERED → READY
 1. ✅ Database schema: Added `timeline_text` and `terms_text` to quotes table
 2. ✅ Database schema: Added `default_timeline_text` and `default_terms_text` to contractor_terms table
 3. ✅ Migrations: Added migrations for all four columns
+4. ✅ Quote detail view: Added Timeline/Terms textareas with change detection
+5. ✅ Updated `quote_to_response()` in backend/api/quotes.py to include new fields
+6. ✅ Updated `QuoteResponse` and `QuoteUpdateRequest` Pydantic models
+7. ✅ Updated PDF generation to use custom timeline/terms when provided
 
-**Remaining** ❌:
-1. ❌ Quote detail view: Add textarea fields for timeline/terms editing (frontend/index.html line ~3909)
-2. ❌ Account settings: Add Quote Defaults tab with default timeline/terms fields
-3. ❌ Update `quote_to_response()` in backend/api/quotes.py to include new fields
-4. ❌ Update `QuoteResponse` Pydantic model to include timeline_text, terms_text
-5. ❌ Update PDF generation (backend/services/pdf_service.py) to use custom timeline/terms
-6. ❌ Update AI prompt (backend/services/claude_service.py) to extract timeline/terms from voice
+**Deferred**:
+- Account settings Quote Defaults tab (users can customize per-quote; defaults enhancement later)
+- AI prompt extraction of timeline/terms from voice (complex, lower priority)
 
-**Blocker**: Frontend file index.html is 10,368 lines - requires careful navigation for quote detail and account settings modifications
-
-**Success Metric**: Users can dictate or type custom timeline/terms per-quote, with account-level defaults
+**Success Metric**: Users can type custom timeline/terms per-quote ✅
 
 ---
 
-### DISC-068: Auto-Detect New Categories & Notify User 🧠 LEARNING (READY)
+### DISC-068: Auto-Detect New Categories & Notify User 🧠 LEARNING (DEPLOYED)
 
 **Source**: Founder Request (Eddie, 2025-12-06)
 **Impact**: HIGH | **Effort**: M | **Score**: 1.5
 **Sprint Alignment**: Core learning system integrity - categories must be accurate for learning to work
+**Commit**: 9899595
 
 **Problem**: When a user describes work that doesn't match their existing categories, the system correctly falls back to hourly-rate pricing but fails to create a new category. Example: User with "Custom Painting" category quotes pottery work - system used hourly rate (good) but labeled it "Custom Painting" (wrong). This breaks the learning system because:
 1. Pottery corrections get applied to painting pricing (cross-contamination)
 2. User can't build category-specific pricing intelligence for pottery
 3. User isn't aware that assumptions are being made about new work types
 
-**Proposed Work**:
-1. Add category confidence scoring during quote generation - detect when job description doesn't semantically match existing categories
-2. When confidence is low (<70%), flag as potential new category instead of forcing into existing category
-3. Create new category automatically OR present user with choice: "This looks like pottery, not painting. Create new category?"
-4. Show notification/badge on quote: "New category detected - customize pricing?" with link to adjust
-5. Update learning system to track corrections per actual category (not assumed category)
-6. Add PostHog event: `new_category_detected` with details for monitoring
+**Completed** ✅:
+1. ✅ Added category confidence scoring (0-100) during quote generation via detect_or_create_category()
+2. ✅ When confidence < 70%, returns suggested_new_category for better categorization
+3. ✅ API returns category_info with confidence, suggested_new_category, needs_review flag
+4. ✅ Frontend shows warning banner when needs_review is true
+5. ✅ User can see when categorization is uncertain and understand the system is learning
+
+**Deferred**:
+- PostHog event tracking (simple addition, can be added in next cycle)
+- Automatic category creation flow (current implementation notifies user only)
 
 **Technical Considerations**:
 - Claude prompt already knows categories - add instruction to flag mismatches

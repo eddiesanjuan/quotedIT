@@ -4,10 +4,25 @@
 
 ---
 
-## Today (2025-12-06)
+## Today (2025-12-07)
 
 | Time | Agent | Action | Type | Result |
 |------|-------|--------|------|--------|
+| Session | CEO | Quoted Run: DISC-067 complete (frontend + PDF), DISC-068 complete | Type 2 | Commit 9899595 |
+| Session | CEO | DISC-068: Added category confidence scoring + frontend notification | Type 2 | Learning system integrity |
+| Session | CEO | DISC-067: Added Timeline/Terms textareas to Quote Detail | Type 2 | Per-quote customization |
+| Session | CEO | Executive Council: 4/4 HIGH on DISC-068, 4/4 MEDIUM on DISC-067 | Type 1 | 2 CODING tasks selected |
+| Session | CEO | DISC-033 blocker: Reddit launch requires founder presence | Type 1 | Reported |
+
+---
+
+## Yesterday (2025-12-06)
+
+| Time | Agent | Action | Type | Result |
+|------|-------|--------|------|--------|
+| Session | Orchestrator | Quoted Run: DISC-067 partial (backend schema), DISC-068 not started | Type 2 | Commits b58e828, 089735a |
+| Session | Orchestrator | DISC-067 blocked: Frontend 10k-line file requires careful navigation | Type 1 | Backend schema complete |
+| Session | Orchestrator | DISC-033 blocker: Reddit post requires founder presence | Type 1 | Skipped |
 | Session | Orchestrator | Quoted Run Cycle 1: 5 tasks completed | Type 2 | 6 commits pushed |
 | Session | Orchestrator | DISC-056 Fix: Confidence badge clipping resolved | Type 2 | Commit 320fe87 |
 | Session | Orchestrator | DISC-054 Impl: Dynamic learning rate (60%/30%/15% weighting) | Type 2 | Commit 56c787a |
