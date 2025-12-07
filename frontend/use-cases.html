@@ -1,0 +1,2106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Use Cases - How Every Industry Uses Quoted</title>
+    <meta name="description" content="See how contractors, photographers, consultants, event planners, and dozens of other professionals use Quoted to generate quotes in seconds instead of hours.">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230a0a0a'/%3E%3Ctext x='16' y='23' font-family='serif' font-size='20' font-weight='600' fill='white' text-anchor='middle'%3EQ%3C/text%3E%3C/svg%3E">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #141414;
+            --bg-card: #1a1a1a;
+            --bg-card-hover: #222222;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --text-muted: #666666;
+            --border: rgba(255, 255, 255, 0.1);
+            --border-hover: rgba(255, 255, 255, 0.2);
+            --accent: #6366f1;
+            --accent-light: rgba(99, 102, 241, 0.1);
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --font-serif: 'Playfair Display', Georgia, serif;
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            font-size: 16px;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            padding: 24px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo {
+            font-family: var(--font-serif);
+            font-size: 1.5rem;
+            font-weight: 500;
+            letter-spacing: -0.02em;
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+
+        .logo span {
+            font-style: italic;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 32px;
+        }
+
+        .nav-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: var(--text-primary);
+        }
+
+        .nav-cta {
+            padding: 12px 24px;
+            background: var(--text-primary);
+            color: var(--bg-primary);
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .nav-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
+        }
+
+        /* Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 160px 24px 100px;
+            text-align: center;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--accent-light);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            color: #a5b4fc;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 32px;
+        }
+
+        .hero h1 {
+            font-family: var(--font-serif);
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            font-weight: 400;
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+            margin-bottom: 24px;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            max-width: 700px;
+            margin: 0 auto 48px;
+            line-height: 1.7;
+        }
+
+        .hero-ctas {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .cta-primary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px 32px;
+            background: var(--text-primary);
+            color: var(--bg-primary);
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .cta-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(255, 255, 255, 0.15);
+        }
+
+        .cta-secondary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px 32px;
+            background: transparent;
+            border: 1px solid var(--border-hover);
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .cta-secondary:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--text-primary);
+        }
+
+        /* Problem Section */
+        .problem-section {
+            padding: 100px 24px;
+            background: var(--bg-secondary);
+        }
+
+        .problem-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 80px;
+            align-items: center;
+        }
+
+        .problem-content h2 {
+            font-family: var(--font-serif);
+            font-size: clamp(2rem, 4vw, 2.75rem);
+            font-weight: 400;
+            line-height: 1.2;
+            margin-bottom: 24px;
+        }
+
+        .problem-content p {
+            color: var(--text-secondary);
+            font-size: 1.125rem;
+            line-height: 1.8;
+            margin-bottom: 20px;
+        }
+
+        .template-problems {
+            list-style: none;
+            margin-top: 32px;
+        }
+
+        .template-problems li {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .template-problems li:last-child {
+            border-bottom: none;
+        }
+
+        .problem-icon {
+            width: 24px;
+            height: 24px;
+            flex-shrink: 0;
+            color: var(--danger);
+        }
+
+        .problem-text strong {
+            display: block;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .problem-text span {
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+        }
+
+        /* Template Mockup */
+        .template-mockup {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 32px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .template-mockup::before {
+            content: "THE OLD WAY";
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            font-size: 0.625rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            color: var(--danger);
+            background: rgba(239, 68, 68, 0.1);
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .template-header {
+            font-family: monospace;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px dashed var(--border);
+        }
+
+        .template-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.875rem;
+        }
+
+        .template-label {
+            color: var(--text-muted);
+        }
+
+        .template-value {
+            color: var(--text-secondary);
+            font-family: monospace;
+        }
+
+        .template-value.empty {
+            color: var(--danger);
+            opacity: 0.5;
+        }
+
+        .template-struggle {
+            margin-top: 24px;
+            padding: 16px;
+            background: rgba(239, 68, 68, 0.05);
+            border: 1px dashed rgba(239, 68, 68, 0.3);
+            border-radius: 8px;
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+
+        /* Industry Categories */
+        .categories-section {
+            padding: 100px 24px;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 64px;
+        }
+
+        .section-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--accent);
+            margin-bottom: 16px;
+        }
+
+        .section-title {
+            font-family: var(--font-serif);
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 400;
+            line-height: 1.2;
+            margin-bottom: 16px;
+        }
+
+        .section-subtitle {
+            color: var(--text-secondary);
+            font-size: 1.125rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .category-tabs {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 48px;
+        }
+
+        .category-tab {
+            padding: 12px 24px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 100px;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .category-tab:hover {
+            border-color: var(--accent);
+            color: var(--text-primary);
+        }
+
+        .category-tab.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+
+        /* Use Case Cards */
+        .use-cases-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 24px;
+        }
+
+        .use-case-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .use-case-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .use-case-card.expanded {
+            grid-column: 1 / -1;
+        }
+
+        .use-case-header {
+            padding: 32px;
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+        }
+
+        .use-case-icon {
+            width: 56px;
+            height: 56px;
+            background: var(--accent-light);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            flex-shrink: 0;
+        }
+
+        .use-case-info {
+            flex: 1;
+        }
+
+        .use-case-title {
+            font-family: var(--font-serif);
+            font-size: 1.375rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .use-case-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+            line-height: 1.6;
+        }
+
+        .expand-icon {
+            color: var(--text-muted);
+            transition: transform 0.3s ease;
+        }
+
+        .use-case-card.expanded .expand-icon {
+            transform: rotate(180deg);
+        }
+
+        /* Expanded Content */
+        .use-case-detail {
+            display: none;
+            border-top: 1px solid var(--border);
+        }
+
+        .use-case-card.expanded .use-case-detail {
+            display: block;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+        }
+
+        .detail-column {
+            padding: 32px;
+        }
+
+        .detail-column:first-child {
+            border-right: 1px solid var(--border);
+        }
+
+        .detail-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.6875rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 20px;
+        }
+
+        .detail-label.old-way {
+            color: var(--danger);
+        }
+
+        .detail-label.quoted-way {
+            color: var(--success);
+        }
+
+        .old-way-content {
+            background: rgba(239, 68, 68, 0.05);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 12px;
+            padding: 24px;
+        }
+
+        .old-way-step {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px dashed rgba(239, 68, 68, 0.2);
+        }
+
+        .old-way-step:last-child {
+            border-bottom: none;
+        }
+
+        .step-number {
+            width: 24px;
+            height: 24px;
+            background: rgba(239, 68, 68, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--danger);
+            flex-shrink: 0;
+        }
+
+        .step-text {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .old-way-time {
+            margin-top: 20px;
+            padding: 16px;
+            background: rgba(239, 68, 68, 0.1);
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .time-label {
+            font-size: 0.6875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--danger);
+            margin-bottom: 4px;
+        }
+
+        .time-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--danger);
+        }
+
+        /* Quoted Way */
+        .quoted-way-content {
+            background: rgba(16, 185, 129, 0.05);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 12px;
+            padding: 24px;
+        }
+
+        .voice-input-preview {
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .voice-input-preview::before {
+            content: "VOICE INPUT";
+            position: absolute;
+            top: -8px;
+            left: 12px;
+            font-size: 0.5625rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            color: var(--accent);
+            background: var(--bg-card);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .voice-wave {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .mic-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.875rem;
+        }
+
+        .wave-bars {
+            display: flex;
+            gap: 3px;
+            align-items: center;
+            height: 24px;
+        }
+
+        .wave-bar {
+            width: 4px;
+            background: var(--accent);
+            border-radius: 2px;
+            animation: wave 0.5s ease-in-out infinite alternate;
+        }
+
+        @keyframes wave {
+            from { height: 8px; }
+            to { height: 20px; }
+        }
+
+        .wave-bar:nth-child(1) { animation-delay: 0s; }
+        .wave-bar:nth-child(2) { animation-delay: 0.1s; }
+        .wave-bar:nth-child(3) { animation-delay: 0.2s; }
+        .wave-bar:nth-child(4) { animation-delay: 0.1s; }
+        .wave-bar:nth-child(5) { animation-delay: 0s; }
+
+        .voice-transcript {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-style: italic;
+            line-height: 1.6;
+        }
+
+        .quote-preview {
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 16px;
+            position: relative;
+        }
+
+        .quote-preview::before {
+            content: "GENERATED QUOTE";
+            position: absolute;
+            top: -8px;
+            left: 12px;
+            font-size: 0.5625rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            color: var(--success);
+            background: var(--bg-card);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .quote-preview-header {
+            font-weight: 600;
+            font-size: 0.9375rem;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .quote-preview-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            font-size: 0.8125rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .quote-preview-item:last-of-type {
+            border-bottom: none;
+        }
+
+        .quote-preview-name {
+            color: var(--text-secondary);
+        }
+
+        .quote-preview-amount {
+            font-weight: 600;
+        }
+
+        .quote-preview-total {
+            display: flex;
+            justify-content: space-between;
+            padding: 16px 0 0;
+            margin-top: 12px;
+            border-top: 2px solid var(--border);
+            font-weight: 700;
+            font-size: 1.125rem;
+        }
+
+        .quoted-way-time {
+            margin-top: 20px;
+            padding: 16px;
+            background: rgba(16, 185, 129, 0.1);
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .quoted-way-time .time-label {
+            color: var(--success);
+        }
+
+        .quoted-way-time .time-value {
+            color: var(--success);
+        }
+
+        /* Key Benefits */
+        .benefits-strip {
+            display: flex;
+            gap: 32px;
+            justify-content: center;
+            padding: 24px 32px;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border);
+        }
+
+        .benefit-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+        }
+
+        .benefit-icon {
+            color: var(--success);
+        }
+
+        /* More Industries */
+        .more-industries {
+            padding: 100px 24px;
+            background: var(--bg-secondary);
+        }
+
+        .industries-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 48px;
+        }
+
+        .industry-chip {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 20px 24px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            font-size: 0.9375rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .industry-chip:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        .industry-chip span:first-child {
+            font-size: 1.25rem;
+        }
+
+        /* Comparison Section */
+        .comparison-section {
+            padding: 100px 24px;
+        }
+
+        .comparison-table {
+            max-width: 900px;
+            margin: 48px auto 0;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .comparison-header {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .comparison-header-cell {
+            padding: 24px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .comparison-header-cell:first-child {
+            text-align: left;
+        }
+
+        .comparison-header-cell.template {
+            color: var(--danger);
+            background: rgba(239, 68, 68, 0.05);
+        }
+
+        .comparison-header-cell.quoted {
+            color: var(--success);
+            background: rgba(16, 185, 129, 0.05);
+        }
+
+        .comparison-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .comparison-row:last-child {
+            border-bottom: none;
+        }
+
+        .comparison-cell {
+            padding: 20px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .comparison-cell:first-child {
+            justify-content: flex-start;
+            color: var(--text-secondary);
+        }
+
+        .comparison-cell.template {
+            background: rgba(239, 68, 68, 0.02);
+        }
+
+        .comparison-cell.quoted {
+            background: rgba(16, 185, 129, 0.02);
+        }
+
+        .check-icon {
+            color: var(--success);
+            font-size: 1.25rem;
+        }
+
+        .x-icon {
+            color: var(--danger);
+            font-size: 1.25rem;
+        }
+
+        /* Final CTA */
+        .final-cta {
+            padding: 120px 24px;
+            text-align: center;
+            background: linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+        }
+
+        .final-cta h2 {
+            font-family: var(--font-serif);
+            font-size: clamp(2rem, 5vw, 3rem);
+            font-weight: 400;
+            margin-bottom: 24px;
+        }
+
+        .final-cta p {
+            color: var(--text-secondary);
+            font-size: 1.125rem;
+            max-width: 600px;
+            margin: 0 auto 48px;
+        }
+
+        .cta-note {
+            margin-top: 16px;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        /* Footer */
+        footer {
+            padding: 40px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer-logo {
+            font-family: var(--font-serif);
+            font-size: 1.25rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+
+        .footer-logo span {
+            font-style: italic;
+        }
+
+        .footer-text {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 24px;
+        }
+
+        .footer-link {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.875rem;
+            transition: color 0.3s ease;
+        }
+
+        .footer-link:hover {
+            color: var(--text-primary);
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            nav {
+                padding: 16px 24px;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .problem-grid {
+                grid-template-columns: 1fr;
+                gap: 48px;
+            }
+
+            .detail-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .detail-column:first-child {
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+            }
+
+            .benefits-strip {
+                flex-direction: column;
+                gap: 16px;
+                align-items: center;
+            }
+
+            .comparison-header,
+            .comparison-row {
+                grid-template-columns: 1.5fr 1fr 1fr;
+            }
+
+            .comparison-cell {
+                padding: 16px;
+                font-size: 0.875rem;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .hero {
+                padding: 120px 16px 80px;
+            }
+
+            .use-cases-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .industries-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .comparison-header-cell,
+            .comparison-cell {
+                padding: 12px;
+                font-size: 0.75rem;
+            }
+
+            footer {
+                flex-direction: column;
+                gap: 16px;
+                text-align: center;
+            }
+
+            .footer-links {
+                flex-direction: column;
+                gap: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <a href="/" class="logo">quoted<span>.it</span></a>
+        <div class="nav-links">
+            <a href="/#how-it-works" class="nav-link">How It Works</a>
+            <a href="/use-cases" class="nav-link" style="color: var(--text-primary);">Use Cases</a>
+            <a href="/help" class="nav-link">Help</a>
+        </div>
+        <a href="/demo" class="nav-cta">Try It Free</a>
+    </nav>
+
+    <!-- Hero -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-badge">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                    <path d="M2 17l10 5 10-5"/>
+                    <path d="M2 12l10 5 10-5"/>
+                </svg>
+                Works for Any Industry
+            </div>
+            <h1>Stop Fighting With Templates.<br>Start Talking.</h1>
+            <p>Whether you're a plumber, photographer, consultant, or caterer - if you price work, Quoted turns your voice into professional quotes in seconds. See exactly how it works for your industry.</p>
+            <div class="hero-ctas">
+                <a href="/demo" class="cta-primary">Try It Now - No Signup</a>
+                <a href="#use-cases" class="cta-secondary">See Your Industry</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- The Problem with Templates -->
+    <section class="problem-section">
+        <div class="container">
+            <div class="problem-grid">
+                <div class="problem-content">
+                    <h2>Templates Were Built for Computers, Not People</h2>
+                    <p>You know the drill. Open the spreadsheet. Scroll to find the right line items. Remember what you charged last time. Calculate the markup. Format it nicely. Hope you didn't forget anything.</p>
+                    <p>By the time you're done, the customer has gotten three other quotes.</p>
+
+                    <ul class="template-problems">
+                        <li>
+                            <svg class="problem-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <path d="M15 9l-6 6"/>
+                                <path d="M9 9l6 6"/>
+                            </svg>
+                            <div class="problem-text">
+                                <strong>One-size-fits-none</strong>
+                                <span>Generic templates don't match how YOU price work. Every job needs manual adjustments.</span>
+                            </div>
+                        </li>
+                        <li>
+                            <svg class="problem-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <path d="M15 9l-6 6"/>
+                                <path d="M9 9l6 6"/>
+                            </svg>
+                            <div class="problem-text">
+                                <strong>Mental math overhead</strong>
+                                <span>Remembering labor rates, material markups, and regional pricing is exhausting.</span>
+                            </div>
+                        </li>
+                        <li>
+                            <svg class="problem-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <path d="M15 9l-6 6"/>
+                                <path d="M9 9l6 6"/>
+                            </svg>
+                            <div class="problem-text">
+                                <strong>They never learn</strong>
+                                <span>Quote the same type of job 100 times? Template still starts from scratch.</span>
+                            </div>
+                        </li>
+                        <li>
+                            <svg class="problem-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <path d="M15 9l-6 6"/>
+                                <path d="M9 9l6 6"/>
+                            </svg>
+                            <div class="problem-text">
+                                <strong>Speed kills deals</strong>
+                                <span>The contractor who quotes first usually wins. Templates make you slow.</span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="template-mockup">
+                    <div class="template-header">QUOTE_TEMPLATE_V3_FINAL_REVISED.xlsx</div>
+                    <div class="template-row">
+                        <span class="template-label">Customer Name:</span>
+                        <span class="template-value empty">_____________</span>
+                    </div>
+                    <div class="template-row">
+                        <span class="template-label">Job Type:</span>
+                        <span class="template-value empty">_____________</span>
+                    </div>
+                    <div class="template-row">
+                        <span class="template-label">Materials (lookup):</span>
+                        <span class="template-value">???</span>
+                    </div>
+                    <div class="template-row">
+                        <span class="template-label">Labor Hours:</span>
+                        <span class="template-value empty">_____________</span>
+                    </div>
+                    <div class="template-row">
+                        <span class="template-label">Hourly Rate:</span>
+                        <span class="template-value">$85? $95? $110?</span>
+                    </div>
+                    <div class="template-row">
+                        <span class="template-label">Markup %:</span>
+                        <span class="template-value">15%? 20%? 25%?</span>
+                    </div>
+                    <div class="template-row">
+                        <span class="template-label">Total:</span>
+                        <span class="template-value">=SUM(B12:B47)*1.15</span>
+                    </div>
+                    <div class="template-struggle">
+                        "Wait, what did I charge the Johnsons for the same job last month?"
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Industry Use Cases -->
+    <section class="categories-section" id="use-cases">
+        <div class="container">
+            <div class="section-header">
+                <p class="section-label">Real-World Examples</p>
+                <h2 class="section-title">See How It Works In Your Industry</h2>
+                <p class="section-subtitle">Click any card to see the old way vs. the Quoted way, with real examples of what the AI generates.</p>
+            </div>
+
+            <div class="category-tabs">
+                <button class="category-tab active" data-category="all">All Industries</button>
+                <button class="category-tab" data-category="trades">Trades</button>
+                <button class="category-tab" data-category="creative">Creative</button>
+                <button class="category-tab" data-category="services">Services</button>
+                <button class="category-tab" data-category="events">Events</button>
+            </div>
+
+            <div class="use-cases-grid" id="useCasesGrid">
+
+                <!-- Plumber -->
+                <div class="use-case-card" data-category="trades" id="plumber">
+                    <div class="use-case-header">
+                        <div class="use-case-icon">🔧</div>
+                        <div class="use-case-info">
+                            <h3 class="use-case-title">Plumber</h3>
+                            <p class="use-case-subtitle">Quote bathroom renovations, water heater installs, and emergency repairs on the spot.</p>
+                        </div>
+                        <svg class="expand-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                    </div>
+                    <div class="use-case-detail">
+                        <div class="detail-grid">
+                            <div class="detail-column">
+                                <div class="detail-label old-way">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="10"/>
+                                        <path d="M15 9l-6 6"/>
+                                        <path d="M9 9l6 6"/>
+                                    </svg>
+                                    The Template Way
+                                </div>
+                                <div class="old-way-content">
+                                    <div class="old-way-step">
+                                        <span class="step-number">1</span>
+                                        <span class="step-text">Drive home after site visit to access your laptop</span>
+                                    </div>
+                                    <div class="old-way-step">
+                                        <span class="step-number">2</span>
+                                        <span class="step-text">Open spreadsheet, find right template</span>
+                                    </div>
+                                    <div class="old-way-step">
+                                        <span class="step-number">3</span>
+                                        <span class="step-text">Look up current prices for fixtures and parts</span>
+                                    </div>
+                                    <div class="old-way-step">
+                                        <span class="step-number">4</span>
+                                        <span class="step-text">Calculate labor based on job complexity</span>
+                                    </div>
+                                    <div class="old-way-step">
+                                        <span class="step-number">5</span>
+                                        <span class="step-text">Format and email to customer</span>
+                                    </div>
+                                    <div class="old-way-time">
+                                        <div class="time-label">Total Time</div>
+                                        <div class="time-value">45-60 min</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="detail-column">
+                                <div class="detail-label quoted-way">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                        <polyline points="22 4 12 14.01 9 11.01"/>
+                                    </svg>
+                                    The Quoted Way
+                                </div>
+                                <div class="quoted-way-content">
+                                    <div class="voice-input-preview">
+                                        <div class="voice-wave">
+                                            <div class="mic-icon">🎤</div>
+                                            <div class="wave-bars">
+                                                <div class="wave-bar"></div>
+                                                <div class="wave-bar"></div>
+                                                <div class="wave-bar"></div>
+                                                <div class="wave-bar"></div>
+                                                <div class="wave-bar"></div>
+                                            </div>
+                                        </div>
+                                        <p class="voice-transcript">"Bathroom reno for the Mitchells on Oak Street. Replace toilet, install new vanity with faucet, and repipe the sink drain. Standard fixtures, nothing fancy."</p>
+                                    </div>
+                                    <div class="quote-preview">
+                                        <div class="quote-preview-header">Bathroom Renovation - Mitchell</div>
+                                        <div class="quote-preview-item">
+                                            <span class="quote-preview-name">Toilet replacement (standard)</span>
+                                            <span class="quote-preview-amount">$450</span>
+                                        </div>
+                                        <div class="quote-preview-item">
+                                            <span class="quote-preview-name">Vanity + faucet install</span>
+                                            <span class="quote-preview-amount">$680</span>
+                                        </div>
+                                        <div class="quote-preview-item">
+                                            <span class="quote-preview-name">Sink drain repipe</span>
+                                            <span class="quote-preview-amount">$320</span>
+                                        </div>
+                                        <div class="quote-preview-item">
+                                            <span class="quote-preview-name">Labor (4 hours)</span>
+                                            <span class="quote-preview-amount">$380</span>
+                                        </div>
+                                        <div class="quote-preview-total">
+                                            <span>Estimated Total</span>
+                                            <span>$1,830</span>
+                                        </div>
+                                    </div>
+                                    <div class="quoted-way-time">
+                                        <div class="time-label">Total Time</div>
+                                        <div class="time-value">30 seconds</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="benefits-strip">
+                            <div class="benefit-item">
+                                <svg class="benefit-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="20 6 9 17 4 12"/>
+                                </svg>
+                                Quote on-site before you leave
+                            </div>
+                            <div class="benefit-item">
+                                <svg class="benefit-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="20 6 9 17 4 12"/>
+                                </svg>
+                                Learns your markup preferences
+                            </div>
+                            <div class="benefit-item">
+                                <svg class="benefit-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="20 6 9 17 4 12"/>
+                                </svg>
+                                PDF ready to share instantly
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Wedding Photographer -->
+                <div class="use-case-card" data-category="creative" id="photographer">
+                    <div class="use-case-header">
+                        <div class="use-case-icon">📸</div>
+                        <div class="use-case-info">
+                            <h3 class="use-case-title">Wedding Photographer</h3>
+                            <p class="use-case-subtitle">Build custom packages with coverage hours, second shooters, albums, and prints.</p>
+                        </div>
+                        <svg class="expand-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                    </div>
+                    <div class="use-case-detail">
+                        <div class="detail-grid">
+                            <div class="detail-column">
+                                <div class="detail-label old-way">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="10"/>
+                                        <path d="M15 9l-6 6"/>
+                                        <path d="M9 9l6 6"/>
+                                    </svg>
+                                    The Template Way
+                                </div>
+                                <div class="old-way-content">
+                                    <div class="old-way-step">
+                                        <span class="step-number">1</span>
+                                        <span class="step-text">Consult call to understand vision and needs</span>
+                                    </div>
+                                    <div class="old-way-step">
+                                        <span class="step-number">2</span>
+                                        <span class="step-text">Open Canva/Word, find package template</span>
+                                    </div>
+                                    <div class="old-way-step">
+                                        <span class="step-number">3</span>
+                                        <span class="step-text">Customize for their specific requests</span>
+                                    </div>
+                                    <div class="old-way-step">
+                                        <span class="step-number">4</span>
+                                        <span class="step-text">Calculate total with all add-ons</span>
+                                    </div>
+                                    <div class="old-way-step">
+                                        <span class="step-number">5</span>
+                                        <span class="step-text">Export PDF, follow up via email</span>
+                                    </div>
+                                    <div class="old-way-time">
+                                        <div class="time-label">Total Time</div>
+                                        <div class="time-value">2-3 hours</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="detail-column">
+                                <div class="detail-label quoted-way">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                        <polyline points="22 4 12 14.01 9 11.01"/>
+                                    </svg>
+                                    The Quoted Way
+                                </div>
+                                <div class="quoted-way-content">
+                                    <div class="voice-input-preview">
+                                        <div class="voice-wave">
+                                            <div class="mic-icon">🎤</div>
+                                            <div class="wave-bars">
+                                                <div class="wave-bar"></div>
+                                                <div class="wave-bar"></div>
+                                                <div class="wave-bar"></div>
+                                                <div class="wave-bar"></div>
+                                                <div class="wave-bar"></div>
+                                            </div>
+                                        </div>
+                                        <p class="voice-transcript">"Wedding for Emily and Jake, September 20th. They want 10 hours, second shooter, engagement session, and a premium album. Ceremony at St. Mary's, reception at Lakeside Vineyard."</p>
+                                    </div>
+                                    <div class="quote-preview">
+                                        <div class="quote-preview-header">Wedding Photography - Emily & Jake</div>
+                                        <div class="quote-preview-item">
+                                            <span class="quote-preview-name">10-hour wedding coverage</span>
+                                            <span class="quote-preview-amount">$4,500</span>
+                                        </div>
+                                        <div class="quote-preview-item">
+                                            <span class="quote-preview-name">Second photographer</span>
+                                            <span class="quote-preview-amount">$800</span>
+                                        </div>
+                                        <div class="quote-preview-item">
+                                            <span class="quote-preview-name">Engagement session (1.5 hrs)</span>
+                                            <span class="quote-preview-amount">$450</span>
+                                        </div>
+                                        <div class="quote-preview-item">
+                                            <span class="quote-preview-name">Premium 12x12 album</span>
+                                            <span class="quote-preview-amount">$650</span>
+                                        </div>
+                                        <div class="quote-preview-total">
+                                            <span>Estimated Total</span>
+                                            <span>$6,400</span>
+                                        </div>
+                                    </div>
+                                    <div class="quoted-way-time">
+                                        <div class="time-label">Total Time</div>
+                                        <div class="time-value">45 seconds</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="benefits-strip">
+                            <div class="benefit-item">
+                                <svg class="benefit-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="20 6 9 17 4 12"/>
+                                </svg>
+                                Send quote during the consult call
+                            </div>
+                            <div class="benefit-item">
+                                <svg class="benefit-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="20 6 9 17 4 12"/>
+                                </svg>
+                                Never forget an add-on
+                            </div>
+                            <div class="benefit-item">
+                                <svg class="benefit-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="20 6 9 17 4 12"/>
+                                </svg>
+                                Close while they're excited
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Business Consultant -->
+                <div class="use-case-card" data-category="services" id="consultant">
+                    <div class="use-case-header">
+                        <div class="use-case-icon">💼</div>
+                        <div class="use-case-info">
+                            <h3 class="use-case-title">Business Consultant</h3>
+                            <p class="use-case-subtitle">Scope strategy engagements, workshops, and ongoing advisory retainers.</p>
+                        </div>
+                        <svg class="expand-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                    </div>
+                    <div class="use-case-detail">
+                        <div class="detail-grid">
+                            <div class="detail-column">
+                                <div class="detail-label old-way">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="10"/>
+                                        <path d="M15 9l-6 6"/>
+                                        <path d="M9 9l6 6"/>
+                                    </svg>
+                                    The Template Way
+                                </div>
+                                <div class="old-way-content">
+                                    <div class="old-way-step">
+                                        <span class="step-number">1</span>
+                                        <span class="step-text">Discovery call with detailed notes</span>
+                                    </div>
+                                    <div class="old-way-step">
+                                        <span class="step-number">2</span>
+                                        <span class="step-text">Draft proposal in Word/Google Docs</span>
+                                    </div>
+                                    <div class="old-way-step">
+                                        <span class="step-number">3</span>
+                                        <span class="step-text">Research comparable engagements for pricing</span>
+                                    </div>
+                                    <div class="old-way-step">
+                                        <span class="step-number">4</span>
+                                        <span class="step-text">Multiple revisions and formatting</span>
+                                    </div>
+                                    <div class="old-way-step">
+                                        <span class="step-number">5</span>
+                                        <span class="step-text">Send 2-3 days later, hope they remember you</span>
+                                    </div>
+                                    <div class="old-way-time">
+                                        <div class="time-label">Total Time</div>
+                                        <div class="time-value">4-6 hours</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="detail-column">
+                                <div class="detail-label quoted-way">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                        <polyline points="22 4 12 14.01 9 11.01"/>
+                                    </svg>
+                                    The Quoted Way
+                                </div>
+                                <div class="quoted-way-content">
+                                    <div class="voice-input-preview">
+                                        <div class="voice-wave">
+                                            <div class="mic-icon">🎤</div>
+                                            <div class="wave-bars">
+                                                <div class="wave-bar"></div>
+                                                <div class="wave-bar"></div>
+                                                <div class="wave-bar"></div>
+                                                <div class="wave-bar"></div>
+                                                <div class="wave-bar"></div>
+                                            </div>
+                                        </div>
+                                        <p class="voice-transcript">"Growth strategy for TechVentures Inc. 6-week engagement, market analysis, competitive positioning, 3 stakeholder workshops, and weekly check-ins. They're a Series A startup in fintech."</p>
+                                    </div>
+                                    <div class="quote-preview">
+                                        <div class="quote-preview-header">Growth Strategy - TechVentures</div>
+                                        <div class="quote-preview-item">
+                                            <span class="quote-preview-name">Market analysis & research</span>
+                                            <span class="quote-preview-amount">$8,500</span>
+                                        </div>
+                                        <div class="quote-preview-item">
+                                            <span class="quote-preview-name">Competitive positioning</span>
+                                            <span class="quote-preview-amount">$6,000</span>
+                                        </div>
+                                        <div class="quote-preview-item">
+                                            <span class="quote-preview-name">Stakeholder workshops (3x)</span>
+                                            <span class="quote-preview-amount">$4,500</span>
+                                        </div>
+                                        <div class="quote-preview-item">
+                                            <span class="quote-preview-name">Weekly advisory (6 weeks)</span>
+                                            <span class="quote-preview-amount">$3,000</span>
+                                        </div>
+                                        <div class="quote-preview-total">
+                                            <span>Estimated Total</span>
+                                            <span>$22,000</span>
+                                        </div>
+                                    </div>
+                                    <div class="quoted-way-time">
+                                        <div class="time-label">Total Time</div>
+                                        <div class="time-value">1 minute</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="benefits-strip">
+                            <div class="benefit-item">
+                                <svg class="benefit-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="20 6 9 17 4 12"/>
+                                </svg>
+                                Ballpark during discovery call
+                            </div>
+                            <div class="benefit-item">
+                                <svg class="benefit-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="20 6 9 17 4 12"/>
+                                </svg>
+                                Learns your engagement types
+                            </div>
+                            <div class="benefit-item">
+                                <svg class="benefit-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="20 6 9 17 4 12"/>
+                                </svg>
+                                Look professional, move fast
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Event Planner -->
+                <div class="use-case-card" data-category="events" id="eventplanner">
+                    <div class="use-case-header">
+                        <div class="use-case-icon">🎉</div>
+                        <div class="use-case-info">
+                            <h3 class="use-case-title">Event Planner</h3>
+                            <p class="use-case-subtitle">Coordinate vendors, venues, catering, and entertainment into one cohesive quote.</p>
+                        </div>
+                        <svg class="expand-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                    </div>
+                    <div class="use-case-detail">
+                        <div class="detail-grid">
+                            <div class="detail-column">
+                                <div class="detail-label old-way">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="10"/>
+                                        <path d="M15 9l-6 6"/>
+                                        <path d="M9 9l6 6"/>
+                                    </svg>
+                                    The Template Way
+                                </div>
+                                <div class="old-way-content">
+                                    <div class="old-way-step">
+                                        <span class="step-number">1</span>
+                                        <span class="step-text">Client meeting to discuss vision</span>
+                                    </div>
+                                    <div class="old-way-step">
+                                        <span class="step-number">2</span>
+                                        <span class="step-text">Call 5-10 vendors for quotes</span>
+                                    </div>
+                                    <div class="old-way-step">
+                                        <span class="step-number">3</span>
+                                        <span class="step-text">Wait days for vendor responses</span>
+                                    </div>
+                                    <div class="old-way-step">
+                                        <span class="step-number">4</span>
+                                        <span class="step-text">Compile into master spreadsheet</span>
+                                    </div>
+                                    <div class="old-way-step">
+                                        <span class="step-number">5</span>
+                                        <span class="step-text">Add your margin, create proposal</span>
+                                    </div>
+                                    <div class="old-way-time">
+                                        <div class="time-label">Total Time</div>
+                                        <div class="time-value">3-5 days</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="detail-column">
+                                <div class="detail-label quoted-way">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                        <polyline points="22 4 12 14.01 9 11.01"/>
+                                    </svg>
+                                    The Quoted Way
+                                </div>
+                                <div class="quoted-way-content">
+                                    <div class="voice-input-preview">
+                                        <div class="voice-wave">
+                                            <div class="mic-icon">🎤</div>
+                                            <div class="wave-bars">
+                                                <div class="wave-bar"></div>
+                                                <div class="wave-bar"></div>
+                                                <div class="wave-bar"></div>
+                                                <div class="wave-bar"></div>
+                                                <div class="wave-bar"></div>
+                                            </div>
+                                        </div>
+                                        <p class="voice-transcript">"Corporate holiday party for Acme Corp. 200 guests, upscale venue downtown, plated dinner with open bar, DJ and photo booth, December 15th."</p>
+                                    </div>
+                                    <div class="quote-preview">
+                                        <div class="quote-preview-header">Holiday Party - Acme Corp</div>
+                                        <div class="quote-preview-item">
+                                            <span class="quote-preview-name">Venue rental (200 guests)</span>
+                                            <span class="quote-preview-amount">$8,000</span>
+                                        </div>
+                                        <div class="quote-preview-item">
+                                            <span class="quote-preview-name">Plated dinner + open bar</span>
+                                            <span class="quote-preview-amount">$18,000</span>
+                                        </div>
+                                        <div class="quote-preview-item">
+                                            <span class="quote-preview-name">DJ (5 hours)</span>
+                                            <span class="quote-preview-amount">$1,500</span>
+                                        </div>
+                                        <div class="quote-preview-item">
+                                            <span class="quote-preview-name">Photo booth rental</span>
+                                            <span class="quote-preview-amount">$800</span>
+                                        </div>
+                                        <div class="quote-preview-item">
+                                            <span class="quote-preview-name">Planning & coordination</span>
+                                            <span class="quote-preview-amount">$3,500</span>
+                                        </div>
+                                        <div class="quote-preview-total">
+                                            <span>Estimated Total</span>
+                                            <span>$31,800</span>
+                                        </div>
+                                    </div>
+                                    <div class="quoted-way-time">
+                                        <div class="time-label">Total Time</div>
+                                        <div class="time-value">1 minute</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="benefits-strip">
+                            <div class="benefit-item">
+                                <svg class="benefit-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="20 6 9 17 4 12"/>
+                                </svg>
+                                Ballpark before vendor calls
+                            </div>
+                            <div class="benefit-item">
+                                <svg class="benefit-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="20 6 9 17 4 12"/>
+                                </svg>
+                                Qualify budgets immediately
+                            </div>
+                            <div class="benefit-item">
+                                <svg class="benefit-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="20 6 9 17 4 12"/>
+                                </svg>
+                                Refine with actual quotes later
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Landscaper -->
+                <div class="use-case-card" data-category="trades" id="landscaper">
+                    <div class="use-case-header">
+                        <div class="use-case-icon">🌳</div>
+                        <div class="use-case-info">
+                            <h3 class="use-case-title">Landscaper</h3>
+                            <p class="use-case-subtitle">Quote lawn care, hardscaping, irrigation systems, and seasonal maintenance.</p>
+                        </div>
+                        <svg class="expand-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                    </div>
+                    <div class="use-case-detail">
+                        <div class="detail-grid">
+                            <div class="detail-column">
+                                <div class="detail-label old-way">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="10"/>
+                                        <path d="M15 9l-6 6"/>
+                                        <path d="M9 9l6 6"/>
+                                    </svg>
+                                    The Template Way
+                                </div>
+                                <div class="old-way-content">
+                                    <div class="old-way-step">
+                                        <span class="step-number">1</span>
+                                        <span class="step-text">On-site visit to measure and assess</span>
+                                    </div>
+                                    <div class="old-way-step">
+                                        <span class="step-number">2</span>
+                                        <span class="step-text">Drive back, calculate square footage</span>
+                                    </div>
+                                    <div class="old-way-step">
+                                        <span class="step-number">3</span>
+                                        <span class="step-text">Price materials from supplier catalogs</span>
+                                    </div>
+                                    <div class="old-way-step">
+                                        <span class="step-number">4</span>
+                                        <span class="step-text">Estimate labor for crew size/time</span>
+                                    </div>
+                                    <div class="old-way-step">
+                                        <span class="step-number">5</span>
+                                        <span class="step-text">Email quote next day</span>
+                                    </div>
+                                    <div class="old-way-time">
+                                        <div class="time-label">Total Time</div>
+                                        <div class="time-value">1-2 hours</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="detail-column">
+                                <div class="detail-label quoted-way">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                        <polyline points="22 4 12 14.01 9 11.01"/>
+                                    </svg>
+                                    The Quoted Way
+                                </div>
+                                <div class="quoted-way-content">
+                                    <div class="voice-input-preview">
+                                        <div class="voice-wave">
+                                            <div class="mic-icon">🎤</div>
+                                            <div class="wave-bars">
+                                                <div class="wave-bar"></div>
+                                                <div class="wave-bar"></div>
+                                                <div class="wave-bar"></div>
+                                                <div class="wave-bar"></div>
+                                                <div class="wave-bar"></div>
+                                            </div>
+                                        </div>
+                                        <p class="voice-transcript">"Front yard makeover for the Hendersons. About 1500 square feet, new sod, drip irrigation, 8 shrubs along the walkway, and mulch beds around the trees."</p>
+                                    </div>
+                                    <div class="quote-preview">
+                                        <div class="quote-preview-header">Front Yard Renovation - Henderson</div>
+                                        <div class="quote-preview-item">
+                                            <span class="quote-preview-name">Sod installation (1500 sqft)</span>
+                                            <span class="quote-preview-amount">$1,875</span>
+                                        </div>
+                                        <div class="quote-preview-item">
+                                            <span class="quote-preview-name">Drip irrigation system</span>
+                                            <span class="quote-preview-amount">$1,200</span>
+                                        </div>
+                                        <div class="quote-preview-item">
+                                            <span class="quote-preview-name">Shrubs + installation (8)</span>
+                                            <span class="quote-preview-amount">$640</span>
+                                        </div>
+                                        <div class="quote-preview-item">
+                                            <span class="quote-preview-name">Mulch beds (4 yards)</span>
+                                            <span class="quote-preview-amount">$320</span>
+                                        </div>
+                                        <div class="quote-preview-total">
+                                            <span>Estimated Total</span>
+                                            <span>$4,035</span>
+                                        </div>
+                                    </div>
+                                    <div class="quoted-way-time">
+                                        <div class="time-label">Total Time</div>
+                                        <div class="time-value">30 seconds</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="benefits-strip">
+                            <div class="benefit-item">
+                                <svg class="benefit-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="20 6 9 17 4 12"/>
+                                </svg>
+                                Quote in the customer's driveway
+                            </div>
+                            <div class="benefit-item">
+                                <svg class="benefit-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="20 6 9 17 4 12"/>
+                                </svg>
+                                Knows your material costs
+                            </div>
+                            <div class="benefit-item">
+                                <svg class="benefit-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="20 6 9 17 4 12"/>
+                                </svg>
+                                Beat competitors to the close
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Web Designer -->
+                <div class="use-case-card" data-category="creative" id="webdesigner">
+                    <div class="use-case-header">
+                        <div class="use-case-icon">💻</div>
+                        <div class="use-case-info">
+                            <h3 class="use-case-title">Web Designer</h3>
+                            <p class="use-case-subtitle">Scope websites, e-commerce builds, redesigns, and ongoing maintenance.</p>
+                        </div>
+                        <svg class="expand-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                    </div>
+                    <div class="use-case-detail">
+                        <div class="detail-grid">
+                            <div class="detail-column">
+                                <div class="detail-label old-way">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="10"/>
+                                        <path d="M15 9l-6 6"/>
+                                        <path d="M9 9l6 6"/>
+                                    </svg>
+                                    The Template Way
+                                </div>
+                                <div class="old-way-content">
+                                    <div class="old-way-step">
+                                        <span class="step-number">1</span>
+                                        <span class="step-text">Discovery call, take extensive notes</span>
+                                    </div>
+                                    <div class="old-way-step">
+                                        <span class="step-number">2</span>
+                                        <span class="step-text">Review their current site, competitors</span>
+                                    </div>
+                                    <div class="old-way-step">
+                                        <span class="step-number">3</span>
+                                        <span class="step-text">Draft detailed proposal with phases</span>
+                                    </div>
+                                    <div class="old-way-step">
+                                        <span class="step-number">4</span>
+                                        <span class="step-text">Price each feature, calculate hours</span>
+                                    </div>
+                                    <div class="old-way-step">
+                                        <span class="step-number">5</span>
+                                        <span class="step-text">Format, export, send days later</span>
+                                    </div>
+                                    <div class="old-way-time">
+                                        <div class="time-label">Total Time</div>
+                                        <div class="time-value">3-4 hours</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="detail-column">
+                                <div class="detail-label quoted-way">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                        <polyline points="22 4 12 14.01 9 11.01"/>
+                                    </svg>
+                                    The Quoted Way
+                                </div>
+                                <div class="quoted-way-content">
+                                    <div class="voice-input-preview">
+                                        <div class="voice-wave">
+                                            <div class="mic-icon">🎤</div>
+                                            <div class="wave-bars">
+                                                <div class="wave-bar"></div>
+                                                <div class="wave-bar"></div>
+                                                <div class="wave-bar"></div>
+                                                <div class="wave-bar"></div>
+                                                <div class="wave-bar"></div>
+                                            </div>
+                                        </div>
+                                        <p class="voice-transcript">"E-commerce site for Bella's Boutique. Shopify, about 50 products, custom theme, payment integration, and basic SEO setup. She wants mobile-first design."</p>
+                                    </div>
+                                    <div class="quote-preview">
+                                        <div class="quote-preview-header">E-Commerce Website - Bella's Boutique</div>
+                                        <div class="quote-preview-item">
+                                            <span class="quote-preview-name">Custom Shopify theme</span>
+                                            <span class="quote-preview-amount">$3,500</span>
+                                        </div>
+                                        <div class="quote-preview-item">
+                                            <span class="quote-preview-name">Product upload (50)</span>
+                                            <span class="quote-preview-amount">$500</span>
+                                        </div>
+                                        <div class="quote-preview-item">
+                                            <span class="quote-preview-name">Payment integration</span>
+                                            <span class="quote-preview-amount">$400</span>
+                                        </div>
+                                        <div class="quote-preview-item">
+                                            <span class="quote-preview-name">Basic SEO setup</span>
+                                            <span class="quote-preview-amount">$600</span>
+                                        </div>
+                                        <div class="quote-preview-total">
+                                            <span>Estimated Total</span>
+                                            <span>$5,000</span>
+                                        </div>
+                                    </div>
+                                    <div class="quoted-way-time">
+                                        <div class="time-label">Total Time</div>
+                                        <div class="time-value">45 seconds</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="benefits-strip">
+                            <div class="benefit-item">
+                                <svg class="benefit-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="20 6 9 17 4 12"/>
+                                </svg>
+                                Scope during discovery call
+                            </div>
+                            <div class="benefit-item">
+                                <svg class="benefit-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="20 6 9 17 4 12"/>
+                                </svg>
+                                Learns your hourly rate
+                            </div>
+                            <div class="benefit-item">
+                                <svg class="benefit-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="20 6 9 17 4 12"/>
+                                </svg>
+                                Filter out budget mismatches fast
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- More Industries -->
+    <section class="more-industries">
+        <div class="container">
+            <div class="section-header">
+                <p class="section-label">And Many More</p>
+                <h2 class="section-title">If You Price Work, Quoted Works For You</h2>
+                <p class="section-subtitle">The AI adapts to any industry. Here are just a few examples.</p>
+            </div>
+
+            <div class="industries-grid">
+                <div class="industry-chip"><span>🔌</span> Electrician</div>
+                <div class="industry-chip"><span>🏠</span> House Cleaner</div>
+                <div class="industry-chip"><span>📦</span> Moving Company</div>
+                <div class="industry-chip"><span>🎨</span> Interior Designer</div>
+                <div class="industry-chip"><span>🏋️</span> Personal Trainer</div>
+                <div class="industry-chip"><span>🎵</span> DJ / Musician</div>
+                <div class="industry-chip"><span>✍️</span> Copywriter</div>
+                <div class="industry-chip"><span>🔧</span> Auto Mechanic</div>
+                <div class="industry-chip"><span>🌸</span> Florist</div>
+                <div class="industry-chip"><span>📚</span> Tutor</div>
+                <div class="industry-chip"><span>🐕</span> Dog Walker</div>
+                <div class="industry-chip"><span>🍰</span> Baker / Caterer</div>
+                <div class="industry-chip"><span>🎬</span> Videographer</div>
+                <div class="industry-chip"><span>🛠️</span> Handyman</div>
+                <div class="industry-chip"><span>🖼️</span> Painter</div>
+                <div class="industry-chip"><span>❄️</span> HVAC Tech</div>
+                <div class="industry-chip"><span>🏗️</span> General Contractor</div>
+                <div class="industry-chip"><span>👶</span> Nanny / Childcare</div>
+                <div class="industry-chip"><span>🧹</span> Pressure Washer</div>
+                <div class="industry-chip"><span>🚗</span> Detailer</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Comparison Table -->
+    <section class="comparison-section">
+        <div class="container">
+            <div class="section-header">
+                <p class="section-label">Side by Side</p>
+                <h2 class="section-title">Templates vs. Quoted</h2>
+                <p class="section-subtitle">See why professionals are switching from spreadsheets to voice.</p>
+            </div>
+
+            <div class="comparison-table">
+                <div class="comparison-header">
+                    <div class="comparison-header-cell">Feature</div>
+                    <div class="comparison-header-cell template">Templates</div>
+                    <div class="comparison-header-cell quoted">Quoted</div>
+                </div>
+                <div class="comparison-row">
+                    <div class="comparison-cell">Time to quote</div>
+                    <div class="comparison-cell template">30-60 min</div>
+                    <div class="comparison-cell quoted">30 seconds</div>
+                </div>
+                <div class="comparison-row">
+                    <div class="comparison-cell">Works on mobile</div>
+                    <div class="comparison-cell template"><span class="x-icon">✕</span></div>
+                    <div class="comparison-cell quoted"><span class="check-icon">✓</span></div>
+                </div>
+                <div class="comparison-row">
+                    <div class="comparison-cell">Learns your pricing</div>
+                    <div class="comparison-cell template"><span class="x-icon">✕</span></div>
+                    <div class="comparison-cell quoted"><span class="check-icon">✓</span></div>
+                </div>
+                <div class="comparison-row">
+                    <div class="comparison-cell">Adapts to any job type</div>
+                    <div class="comparison-cell template"><span class="x-icon">✕</span></div>
+                    <div class="comparison-cell quoted"><span class="check-icon">✓</span></div>
+                </div>
+                <div class="comparison-row">
+                    <div class="comparison-cell">Professional PDF output</div>
+                    <div class="comparison-cell template">Manual formatting</div>
+                    <div class="comparison-cell quoted"><span class="check-icon">✓</span></div>
+                </div>
+                <div class="comparison-row">
+                    <div class="comparison-cell">Quote from job site</div>
+                    <div class="comparison-cell template"><span class="x-icon">✕</span></div>
+                    <div class="comparison-cell quoted"><span class="check-icon">✓</span></div>
+                </div>
+                <div class="comparison-row">
+                    <div class="comparison-cell">Gets smarter over time</div>
+                    <div class="comparison-cell template"><span class="x-icon">✕</span></div>
+                    <div class="comparison-cell quoted"><span class="check-icon">✓</span></div>
+                </div>
+                <div class="comparison-row">
+                    <div class="comparison-cell">Requires training</div>
+                    <div class="comparison-cell template">Hours of setup</div>
+                    <div class="comparison-cell quoted">5-minute interview</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Final CTA -->
+    <section class="final-cta">
+        <div class="container">
+            <h2>Ready to Quote in Seconds?</h2>
+            <p>Try it now with your own project. No signup required. See exactly how Quoted handles your industry.</p>
+            <div class="hero-ctas">
+                <a href="/demo" class="cta-primary">Try It Now - No Signup</a>
+                <a href="/app" class="cta-secondary">Start Free Trial</a>
+            </div>
+            <p class="cta-note">Free trial includes 75 quotes. No credit card required.</p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <a href="/" class="footer-logo">quoted<span>.it</span></a>
+        <span class="footer-text">© 2025 Quoted, Inc. All rights reserved.</span>
+        <div class="footer-links">
+            <a href="/help" class="footer-link">Help</a>
+            <a href="/privacy" class="footer-link">Privacy</a>
+            <a href="/terms" class="footer-link">Terms</a>
+        </div>
+    </footer>
+
+    <script>
+        // Category filtering
+        document.querySelectorAll('.category-tab').forEach(function(tab) {
+            tab.addEventListener('click', function() {
+                // Update active tab
+                document.querySelectorAll('.category-tab').forEach(function(t) {
+                    t.classList.remove('active');
+                });
+                this.classList.add('active');
+
+                var category = this.dataset.category;
+
+                // Filter cards
+                document.querySelectorAll('.use-case-card').forEach(function(card) {
+                    if (category === 'all' || card.dataset.category === category) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                    // Collapse all when filtering
+                    card.classList.remove('expanded');
+                });
+            });
+        });
+
+        // Expand/collapse cards
+        document.querySelectorAll('.use-case-card').forEach(function(card) {
+            card.addEventListener('click', function(e) {
+                // Don't toggle if clicking on a link
+                if (e.target.tagName === 'A') return;
+
+                var wasExpanded = this.classList.contains('expanded');
+
+                // Collapse all cards first
+                document.querySelectorAll('.use-case-card').forEach(function(c) {
+                    c.classList.remove('expanded');
+                });
+
+                // Toggle current card
+                if (!wasExpanded) {
+                    this.classList.add('expanded');
+                    // Scroll card into view
+                    setTimeout(function() {
+                        card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 100);
+                }
+            });
+        });
+
+        // Industry chips - link to demo with industry suggestion
+        document.querySelectorAll('.industry-chip').forEach(function(chip) {
+            chip.addEventListener('click', function() {
+                window.location.href = '/demo';
+            });
+        });
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(function(anchor) {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                var target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

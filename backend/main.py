@@ -229,6 +229,11 @@ if frontend_path.exists():
         """Serve the Privacy Policy page."""
         return FileResponse(frontend_path / "privacy.html")
 
+    @app.get("/use-cases")
+    async def serve_use_cases():
+        """Serve the Use Cases page - industry examples and demos."""
+        return FileResponse(frontend_path / "use-cases.html")
+
     @app.get("/help", response_class=HTMLResponse)
     async def serve_help(request: Request):
         """Serve the Help & FAQ page with injected config."""
