@@ -1,0 +1,1278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Try Quoted Free - Generate a Real Quote</title>
+    <meta name="description" content="Try Quoted without signing up. Generate a real quote using AI - works for contractors, designers, consultants, and any service business.">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230a0a0a'/%3E%3Ctext x='16' y='23' font-family='serif' font-size='20' font-weight='600' fill='white' text-anchor='middle'%3EQ%3C/text%3E%3C/svg%3E">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #141414;
+            --bg-card: #1a1a1a;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --text-muted: #666666;
+            --border: rgba(255, 255, 255, 0.1);
+            --border-hover: rgba(255, 255, 255, 0.2);
+            --success: #4ade80;
+            --warning: #fbbf24;
+            --accent: #6366f1;
+            --demo-badge: #f59e0b;
+            --font-serif: 'Playfair Display', Georgia, serif;
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            font-size: 16px;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            min-height: 100vh;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            padding: 24px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-primary);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo {
+            font-family: var(--font-serif);
+            font-size: 1.5rem;
+            font-weight: 500;
+            letter-spacing: -0.02em;
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+
+        .logo span {
+            font-style: italic;
+        }
+
+        .nav-cta {
+            padding: 12px 24px;
+            min-height: 44px;
+            background: var(--text-primary);
+            color: var(--bg-primary);
+            font-family: var(--font-sans);
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .nav-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
+        }
+
+        /* Container */
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 120px 24px 80px;
+        }
+
+        /* Demo Badge */
+        .demo-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            color: var(--demo-badge);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 24px;
+        }
+
+        .demo-badge svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        /* Header */
+        .page-header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        .page-header h1 {
+            font-family: var(--font-serif);
+            font-size: clamp(2rem, 5vw, 3rem);
+            font-weight: 500;
+            letter-spacing: -0.02em;
+            margin-bottom: 16px;
+        }
+
+        .page-header p {
+            color: var(--text-secondary);
+            font-size: 1.125rem;
+            max-width: 600px;
+            margin: 0 auto 24px;
+        }
+
+        /* Learning Disclaimer */
+        .learning-disclaimer {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin-bottom: 32px;
+        }
+
+        .learning-disclaimer h3 {
+            color: #a5b4fc;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .learning-disclaimer p {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Input Section */
+        .input-section {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 32px;
+        }
+
+        .input-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+
+        .input-tab {
+            padding: 12px 24px;
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            font-family: var(--font-sans);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .input-tab:hover {
+            border-color: var(--text-secondary);
+        }
+
+        .input-tab.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+
+        .input-content {
+            display: none;
+        }
+
+        .input-content.active {
+            display: block;
+        }
+
+        /* Voice Recording */
+        .voice-input {
+            text-align: center;
+        }
+
+        .record-btn {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: var(--accent);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            transition: all 0.3s ease;
+        }
+
+        .record-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 32px rgba(99, 102, 241, 0.4);
+        }
+
+        .record-btn.recording {
+            background: #ef4444;
+            animation: pulse-record 1s infinite;
+        }
+
+        @keyframes pulse-record {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+            50% { box-shadow: 0 0 0 30px rgba(239, 68, 68, 0); }
+        }
+
+        .record-btn svg {
+            width: 48px;
+            height: 48px;
+            fill: white;
+        }
+
+        .record-status {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-bottom: 16px;
+        }
+
+        .waveform {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            height: 50px;
+            margin-bottom: 20px;
+        }
+
+        .waveform.visible {
+            display: flex;
+        }
+
+        .waveform-bar {
+            width: 6px;
+            background: var(--accent);
+            border-radius: 3px;
+            animation: wave 0.5s ease-in-out infinite alternate;
+        }
+
+        @keyframes wave {
+            from { height: 15px; }
+            to { height: 40px; }
+        }
+
+        .waveform-bar:nth-child(1) { animation-delay: 0s; }
+        .waveform-bar:nth-child(2) { animation-delay: 0.1s; }
+        .waveform-bar:nth-child(3) { animation-delay: 0.2s; }
+        .waveform-bar:nth-child(4) { animation-delay: 0.3s; }
+        .waveform-bar:nth-child(5) { animation-delay: 0.4s; }
+        .waveform-bar:nth-child(6) { animation-delay: 0.3s; }
+        .waveform-bar:nth-child(7) { animation-delay: 0.2s; }
+        .waveform-bar:nth-child(8) { animation-delay: 0.1s; }
+
+        /* Text Input */
+        .text-input textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+            font-size: 1rem;
+            resize: vertical;
+            margin-bottom: 16px;
+        }
+
+        .text-input textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .text-input textarea::placeholder {
+            color: var(--text-muted);
+        }
+
+        .example-prompts {
+            margin-bottom: 20px;
+        }
+
+        .example-prompts p {
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .example-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .example-chip {
+            padding: 8px 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            color: var(--text-secondary);
+            font-size: 0.8125rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .example-chip:hover {
+            border-color: var(--accent);
+            color: var(--text-primary);
+        }
+
+        .generate-btn {
+            width: 100%;
+            padding: 16px 32px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-family: var(--font-sans);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .generate-btn:hover:not(:disabled) {
+            background: #5558e3;
+            transform: translateY(-2px);
+        }
+
+        .generate-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .generate-btn .spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid white;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        .generate-btn.loading .spinner {
+            display: block;
+        }
+
+        .generate-btn.loading span {
+            display: none;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Results Section */
+        .results-section {
+            display: none;
+        }
+
+        .results-section.visible {
+            display: block;
+        }
+
+        .result-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+
+        .result-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .result-header h2 {
+            font-family: var(--font-serif);
+            font-size: 1.25rem;
+            font-weight: 500;
+        }
+
+        .confidence-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .confidence-badge.high {
+            background: rgba(74, 222, 128, 0.1);
+            color: var(--success);
+        }
+
+        .confidence-badge.medium {
+            background: rgba(251, 191, 36, 0.1);
+            color: var(--warning);
+        }
+
+        .confidence-badge.low {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+
+        .result-body {
+            padding: 24px;
+        }
+
+        .job-description {
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+            margin-bottom: 24px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .line-items {
+            margin-bottom: 24px;
+        }
+
+        .line-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .line-item:last-child {
+            border-bottom: none;
+        }
+
+        .line-item-info {
+            flex: 1;
+        }
+
+        .line-item-name {
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .line-item-desc {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .line-item-amount {
+            font-weight: 600;
+            font-size: 1.125rem;
+            padding-left: 24px;
+        }
+
+        .quote-total {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 24px;
+            background: var(--bg-card);
+            border-radius: 12px;
+            margin-bottom: 24px;
+        }
+
+        .quote-total-label {
+            font-size: 1.125rem;
+            font-weight: 500;
+        }
+
+        .quote-total-amount {
+            font-family: var(--font-serif);
+            font-size: 2rem;
+            font-weight: 600;
+        }
+
+        /* Quote Notes */
+        .quote-notes {
+            background: rgba(99, 102, 241, 0.05);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .quote-notes h4 {
+            color: #a5b4fc;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .quote-notes p {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            white-space: pre-wrap;
+        }
+
+        /* Questions */
+        .quote-questions {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .quote-questions h4 {
+            color: var(--warning);
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .question-list {
+            list-style: none;
+        }
+
+        .question-list li {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            padding: 8px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .question-list li::before {
+            content: "?";
+            position: absolute;
+            left: 0;
+            color: var(--warning);
+            font-weight: 600;
+        }
+
+        /* Action Buttons */
+        .result-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            flex: 1;
+            min-width: 200px;
+            padding: 14px 24px;
+            border-radius: 10px;
+            font-family: var(--font-sans);
+            font-size: 0.9375rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .action-btn.primary {
+            background: var(--text-primary);
+            color: var(--bg-primary);
+            border: none;
+        }
+
+        .action-btn.primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(255, 255, 255, 0.2);
+        }
+
+        .action-btn.secondary {
+            background: transparent;
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .action-btn.secondary:hover {
+            border-color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .action-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.05));
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 16px;
+            padding: 40px;
+            text-align: center;
+            margin-top: 48px;
+        }
+
+        .cta-section h2 {
+            font-family: var(--font-serif);
+            font-size: 1.75rem;
+            font-weight: 500;
+            margin-bottom: 12px;
+        }
+
+        .cta-section p {
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cta-benefits {
+            display: flex;
+            justify-content: center;
+            gap: 32px;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+        }
+
+        .cta-benefit {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--success);
+            font-size: 0.875rem;
+        }
+
+        .cta-benefit svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .cta-btn {
+            display: inline-block;
+            padding: 16px 48px;
+            background: var(--text-primary);
+            color: var(--bg-primary);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .cta-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(255, 255, 255, 0.2);
+        }
+
+        /* Error Message */
+        .error-message {
+            display: none;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 24px;
+            color: #fca5a5;
+        }
+
+        .error-message.visible {
+            display: block;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            nav {
+                padding: 16px 20px;
+            }
+
+            .container {
+                padding: 100px 16px 48px;
+            }
+
+            .input-section {
+                padding: 24px 16px;
+            }
+
+            .result-actions {
+                flex-direction: column;
+            }
+
+            .action-btn {
+                min-width: 100%;
+            }
+
+            .cta-benefits {
+                flex-direction: column;
+                gap: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <a href="/" class="logo">quoted<span>.it</span></a>
+        <a href="/app" class="nav-cta">Sign Up Free</a>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Header -->
+        <div class="page-header">
+            <div class="demo-badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                    <path d="M2 17l10 5 10-5"/>
+                    <path d="M2 12l10 5 10-5"/>
+                </svg>
+                Demo Mode - Try Without Signup
+            </div>
+            <h1>Generate a Real Quote</h1>
+            <p>Describe any job or project. Works for contractors, designers, consultants, event planners - any service business.</p>
+        </div>
+
+        <!-- Learning Disclaimer -->
+        <div class="learning-disclaimer">
+            <h3>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M12 16v-4"/>
+                    <path d="M12 8h.01"/>
+                </svg>
+                Demo Uses Industry-Standard Pricing
+            </h3>
+            <p>This demo generates estimates using general industry knowledge. When you sign up, Quoted learns YOUR specific pricing from every quote you create and correct. The more you use it, the more accurate it becomes - eventually matching exactly how you price jobs.</p>
+        </div>
+
+        <!-- Input Section -->
+        <div class="input-section">
+            <div class="input-tabs">
+                <button class="input-tab active" data-tab="voice" id="voiceTab">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 6px;">
+                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                        <line x1="12" y1="19" x2="12" y2="23"/>
+                        <line x1="8" y1="23" x2="16" y2="23"/>
+                    </svg>
+                    Voice
+                </button>
+                <button class="input-tab" data-tab="text" id="textTab">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 6px;">
+                        <line x1="17" y1="10" x2="3" y2="10"/>
+                        <line x1="21" y1="6" x2="3" y2="6"/>
+                        <line x1="21" y1="14" x2="3" y2="14"/>
+                        <line x1="17" y1="18" x2="3" y2="18"/>
+                    </svg>
+                    Text
+                </button>
+            </div>
+
+            <!-- Voice Input -->
+            <div class="input-content active" id="voiceContent">
+                <div class="voice-input">
+                    <button class="record-btn" id="recordBtn" aria-label="Record voice">
+                        <svg id="micIcon" viewBox="0 0 24 24">
+                            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2" fill="none" stroke="white" stroke-width="2"/>
+                            <line x1="12" y1="19" x2="12" y2="23" stroke="white" stroke-width="2"/>
+                            <line x1="8" y1="23" x2="16" y2="23" stroke="white" stroke-width="2"/>
+                        </svg>
+                    </button>
+                    <div class="waveform" id="waveform">
+                        <div class="waveform-bar"></div>
+                        <div class="waveform-bar"></div>
+                        <div class="waveform-bar"></div>
+                        <div class="waveform-bar"></div>
+                        <div class="waveform-bar"></div>
+                        <div class="waveform-bar"></div>
+                        <div class="waveform-bar"></div>
+                        <div class="waveform-bar"></div>
+                    </div>
+                    <p class="record-status" id="recordStatus">Tap to start recording</p>
+                </div>
+            </div>
+
+            <!-- Text Input -->
+            <div class="input-content" id="textContent">
+                <div class="text-input">
+                    <textarea id="descriptionInput" placeholder="Describe the job in detail. Include scope, materials, customer info if known...&#10;&#10;Example: Kitchen remodel for the Johnson family at 123 Oak Street. New cabinets, countertops, backsplash tile. About 150 square feet of countertop space."></textarea>
+
+                    <div class="example-prompts">
+                        <p>Try an example:</p>
+                        <div class="example-chips">
+                            <button class="example-chip" data-example="Bathroom remodel - new tile floor, vanity replacement, and paint. About 80 square feet. Customer is Sarah Miller.">Bathroom Remodel</button>
+                            <button class="example-chip" data-example="Wedding photography for Jennifer and Mark on June 15th. 8 hours coverage, second shooter, engagement session included. 400+ edited photos.">Wedding Photography</button>
+                            <button class="example-chip" data-example="Website redesign for a local restaurant. 5-6 pages, online menu, reservation system integration, mobile responsive.">Website Design</button>
+                            <button class="example-chip" data-example="Move a 3-bedroom house across town. Packing service needed. Estimated 20 boxes, couch, dining set, 2 beds.">Moving Service</button>
+                        </div>
+                    </div>
+
+                    <button class="generate-btn" id="generateBtn">
+                        <div class="spinner"></div>
+                        <span>Generate Quote</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Error Message -->
+        <div class="error-message" id="errorMessage"></div>
+
+        <!-- Results Section -->
+        <div class="results-section" id="resultsSection">
+            <div class="result-card">
+                <div class="result-header">
+                    <h2 id="jobType">Quote</h2>
+                    <span class="confidence-badge medium" id="confidenceBadge">Medium Confidence</span>
+                </div>
+                <div class="result-body">
+                    <p class="job-description" id="jobDescription"></p>
+
+                    <div class="line-items" id="lineItems">
+                        <!-- Line items will be inserted here -->
+                    </div>
+
+                    <div class="quote-total">
+                        <span class="quote-total-label">Estimated Total</span>
+                        <span class="quote-total-amount" id="quoteTotal">$0</span>
+                    </div>
+
+                    <div class="quote-notes" id="notesSection">
+                        <h4>Notes</h4>
+                        <p id="quoteNotes"></p>
+                    </div>
+
+                    <div class="quote-questions" id="questionsSection">
+                        <h4>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                                <path d="M12 17h.01"/>
+                            </svg>
+                            Clarifying Questions
+                        </h4>
+                        <ul class="question-list" id="questionList">
+                            <!-- Questions will be inserted here -->
+                        </ul>
+                    </div>
+
+                    <div class="result-actions">
+                        <button class="action-btn primary" id="downloadPdfBtn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="7 10 12 15 17 10"/>
+                                <line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                            Download PDF
+                        </button>
+                        <button class="action-btn secondary" id="tryAgainBtn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M1 4v6h6"/>
+                                <path d="M23 20v-6h-6"/>
+                                <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/>
+                            </svg>
+                            Try Another Quote
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CTA Section -->
+            <div class="cta-section">
+                <h2>Imagine This With YOUR Pricing</h2>
+                <p>This demo used industry-standard estimates. With Quoted, the AI learns exactly how YOU price jobs - your rates, your materials markup, your crew costs.</p>
+
+                <div class="cta-benefits">
+                    <span class="cta-benefit">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                        Learns your pricing patterns
+                    </span>
+                    <span class="cta-benefit">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                        Gets smarter with every quote
+                    </span>
+                    <span class="cta-benefit">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                        Your logo on every PDF
+                    </span>
+                </div>
+
+                <a href="/app" class="cta-btn">Start Free - 75 Quotes Included</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State
+        var mediaRecorder = null;
+        var audioChunks = [];
+        var isRecording = false;
+        var currentQuoteData = null;
+
+        // DOM Elements
+        var voiceTab = document.getElementById('voiceTab');
+        var textTab = document.getElementById('textTab');
+        var voiceContent = document.getElementById('voiceContent');
+        var textContent = document.getElementById('textContent');
+        var recordBtn = document.getElementById('recordBtn');
+        var recordStatus = document.getElementById('recordStatus');
+        var waveform = document.getElementById('waveform');
+        var descriptionInput = document.getElementById('descriptionInput');
+        var generateBtn = document.getElementById('generateBtn');
+        var errorMessage = document.getElementById('errorMessage');
+        var resultsSection = document.getElementById('resultsSection');
+
+        // Tab switching
+        voiceTab.addEventListener('click', function() {
+            voiceTab.classList.add('active');
+            textTab.classList.remove('active');
+            voiceContent.classList.add('active');
+            textContent.classList.remove('active');
+        });
+
+        textTab.addEventListener('click', function() {
+            textTab.classList.add('active');
+            voiceTab.classList.remove('active');
+            textContent.classList.add('active');
+            voiceContent.classList.remove('active');
+        });
+
+        // Example chips
+        document.querySelectorAll('.example-chip').forEach(function(chip) {
+            chip.addEventListener('click', function() {
+                descriptionInput.value = chip.dataset.example;
+                descriptionInput.focus();
+            });
+        });
+
+        // Voice recording
+        recordBtn.addEventListener('click', async function() {
+            if (isRecording) {
+                stopRecording();
+            } else {
+                await startRecording();
+            }
+        });
+
+        async function startRecording() {
+            try {
+                var stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = function(e) {
+                    audioChunks.push(e.data);
+                };
+
+                mediaRecorder.onstop = async function() {
+                    var audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    await generateQuoteFromAudio(audioBlob);
+                };
+
+                mediaRecorder.start();
+                isRecording = true;
+                recordBtn.classList.add('recording');
+                waveform.classList.add('visible');
+                recordStatus.textContent = 'Recording... Tap to stop';
+            } catch (err) {
+                console.error('Microphone error:', err);
+                showError('Could not access microphone. Please allow microphone access or use text input instead.');
+            }
+        }
+
+        function stopRecording() {
+            if (mediaRecorder && isRecording) {
+                mediaRecorder.stop();
+                mediaRecorder.stream.getTracks().forEach(function(track) {
+                    track.stop();
+                });
+                isRecording = false;
+                recordBtn.classList.remove('recording');
+                waveform.classList.remove('visible');
+                recordStatus.textContent = 'Processing your recording...';
+            }
+        }
+
+        // Generate quote from audio
+        async function generateQuoteFromAudio(audioBlob) {
+            showLoading(true);
+            hideError();
+
+            var formData = new FormData();
+            formData.append('audio', audioBlob, 'recording.webm');
+
+            try {
+                var response = await fetch('/api/demo/quote', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    var data = await response.json();
+                    throw new Error(data.detail || 'Failed to generate quote');
+                }
+
+                var data = await response.json();
+                currentQuoteData = data;
+                displayResults(data);
+                recordStatus.textContent = 'Tap to start recording';
+            } catch (err) {
+                showError(err.message);
+                recordStatus.textContent = 'Tap to start recording';
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Generate quote from text
+        generateBtn.addEventListener('click', async function() {
+            var description = descriptionInput.value.trim();
+            if (!description) {
+                showError('Please enter a job description');
+                return;
+            }
+
+            showLoading(true);
+            hideError();
+
+            var formData = new FormData();
+            formData.append('description', description);
+
+            try {
+                var response = await fetch('/api/demo/quote', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    var errData = await response.json();
+                    throw new Error(errData.detail || 'Failed to generate quote');
+                }
+
+                var data = await response.json();
+                currentQuoteData = data;
+                displayResults(data);
+            } catch (err) {
+                showError(err.message);
+            } finally {
+                showLoading(false);
+            }
+        });
+
+        // Helper to clear all children from an element
+        function clearChildren(element) {
+            while (element.firstChild) {
+                element.removeChild(element.firstChild);
+            }
+        }
+
+        // Display results using safe DOM manipulation
+        function displayResults(data) {
+            // Job type
+            var jobTypeEl = document.getElementById('jobType');
+            jobTypeEl.textContent = formatJobType(data.job_type || 'Quote');
+
+            // Confidence badge
+            var confidenceBadge = document.getElementById('confidenceBadge');
+            var confidence = (data.confidence || 'medium').toLowerCase();
+            confidenceBadge.className = 'confidence-badge ' + confidence;
+            confidenceBadge.textContent = confidence.charAt(0).toUpperCase() + confidence.slice(1) + ' Confidence';
+
+            // Job description
+            var jobDescEl = document.getElementById('jobDescription');
+            jobDescEl.textContent = data.job_description || 'No description provided';
+
+            // Line items - using safe DOM manipulation
+            var lineItemsContainer = document.getElementById('lineItems');
+            clearChildren(lineItemsContainer);
+
+            if (data.line_items && data.line_items.length > 0) {
+                data.line_items.forEach(function(item) {
+                    var itemEl = document.createElement('div');
+                    itemEl.className = 'line-item';
+
+                    var infoEl = document.createElement('div');
+                    infoEl.className = 'line-item-info';
+
+                    var nameEl = document.createElement('div');
+                    nameEl.className = 'line-item-name';
+                    nameEl.textContent = item.name || 'Item';
+                    infoEl.appendChild(nameEl);
+
+                    if (item.description) {
+                        var descEl = document.createElement('div');
+                        descEl.className = 'line-item-desc';
+                        descEl.textContent = item.description;
+                        infoEl.appendChild(descEl);
+                    }
+
+                    var amountEl = document.createElement('div');
+                    amountEl.className = 'line-item-amount';
+                    amountEl.textContent = '$' + (item.amount || 0).toLocaleString();
+
+                    itemEl.appendChild(infoEl);
+                    itemEl.appendChild(amountEl);
+                    lineItemsContainer.appendChild(itemEl);
+                });
+            }
+
+            // Total
+            var totalEl = document.getElementById('quoteTotal');
+            totalEl.textContent = '$' + (data.subtotal || data.total || 0).toLocaleString();
+
+            // Notes
+            var notesSection = document.getElementById('notesSection');
+            var notesEl = document.getElementById('quoteNotes');
+            if (data.notes) {
+                notesEl.textContent = data.notes;
+                notesSection.style.display = 'block';
+            } else {
+                notesSection.style.display = 'none';
+            }
+
+            // Questions - using safe DOM manipulation
+            var questionsSection = document.getElementById('questionsSection');
+            var questionList = document.getElementById('questionList');
+            clearChildren(questionList);
+
+            if (data.questions && data.questions.length > 0) {
+                data.questions.forEach(function(question) {
+                    var li = document.createElement('li');
+                    li.textContent = question;
+                    questionList.appendChild(li);
+                });
+                questionsSection.style.display = 'block';
+            } else {
+                questionsSection.style.display = 'none';
+            }
+
+            // Show results section
+            resultsSection.classList.add('visible');
+            resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function formatJobType(jobType) {
+            if (!jobType) return 'Quote';
+            return jobType
+                .replace(/_/g, ' ')
+                .replace(/\b\w/g, function(l) { return l.toUpperCase(); });
+        }
+
+        // Download PDF
+        document.getElementById('downloadPdfBtn').addEventListener('click', async function() {
+            if (!currentQuoteData) return;
+
+            var btn = this;
+            btn.disabled = true;
+            var originalText = btn.textContent;
+            btn.textContent = 'Generating PDF...';
+
+            try {
+                var response = await fetch('/api/demo/pdf', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        quote_data: currentQuoteData
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to generate PDF');
+                }
+
+                var data = await response.json();
+
+                // Convert base64 to blob and download
+                var byteCharacters = atob(data.pdf_base64);
+                var byteNumbers = new Array(byteCharacters.length);
+                for (var i = 0; i < byteCharacters.length; i++) {
+                    byteNumbers[i] = byteCharacters.charCodeAt(i);
+                }
+                var byteArray = new Uint8Array(byteNumbers);
+                var blob = new Blob([byteArray], { type: 'application/pdf' });
+
+                var url = URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = data.filename || 'demo-quote.pdf';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            } catch (err) {
+                showError('Failed to generate PDF. Please try again.');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        });
+
+        // Try again button
+        document.getElementById('tryAgainBtn').addEventListener('click', function() {
+            resultsSection.classList.remove('visible');
+            descriptionInput.value = '';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // Helper functions
+        function showLoading(show) {
+            generateBtn.classList.toggle('loading', show);
+            generateBtn.disabled = show;
+        }
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.classList.add('visible');
+        }
+
+        function hideError() {
+            errorMessage.classList.remove('visible');
+        }
+    </script>
+</body>
+</html>

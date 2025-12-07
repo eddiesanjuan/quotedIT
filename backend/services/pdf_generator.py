@@ -398,6 +398,7 @@ class PDFGeneratorService:
         terms: Optional[dict] = None,
         output_path: Optional[str] = None,
         watermark: bool = False,
+        watermark_text: Optional[str] = None,
         template: str = "modern",
         accent_color: Optional[str] = None,
     ) -> bytes:
@@ -409,13 +410,16 @@ class PDFGeneratorService:
             contractor: Contractor information
             terms: Terms and conditions
             output_path: Optional file path to save PDF
-            watermark: If True, add "TRIAL EXPIRED" watermark (DISC-018)
+            watermark: If True, add watermark to PDF
+            watermark_text: Custom watermark text (default: "TRIAL EXPIRED" for grace period, "DEMO" for demo)
             template: Template style key (DISC-028)
             accent_color: Optional accent color override (hex or preset name) (DISC-028)
 
         Returns:
             PDF as bytes
         """
+        # Store watermark text for use in callback
+        self._watermark_text = watermark_text or "TRIAL EXPIRED"
         # DISC-028: Apply template styles before generating PDF
         self._setup_custom_styles(template_key=template, accent_color=accent_color)
 
@@ -518,15 +522,24 @@ class PDFGeneratorService:
 
     def _add_watermark(self, canvas, doc):
         """
-        Add "TRIAL EXPIRED" watermark to PDF page.
+        Add watermark to PDF page.
 
         DISC-018: For grace period quotes, add semi-transparent diagonal watermark.
+        For demo quotes, shows "DEMO" watermark.
         """
         canvas.saveState()
 
-        # Semi-transparent red-ish color
-        canvas.setFillColorRGB(0.9, 0.3, 0.3, alpha=0.15)
-        canvas.setStrokeColorRGB(0.9, 0.3, 0.3, alpha=0.3)
+        # Get watermark text (set in generate_quote_pdf)
+        watermark_text = getattr(self, '_watermark_text', 'TRIAL EXPIRED')
+        is_demo = watermark_text.upper() == "DEMO"
+
+        # Semi-transparent color (blue for demo, red for trial)
+        if is_demo:
+            canvas.setFillColorRGB(0.3, 0.4, 0.9, alpha=0.12)
+            canvas.setStrokeColorRGB(0.3, 0.4, 0.9, alpha=0.25)
+        else:
+            canvas.setFillColorRGB(0.9, 0.3, 0.3, alpha=0.15)
+            canvas.setStrokeColorRGB(0.9, 0.3, 0.3, alpha=0.3)
         canvas.setLineWidth(2)
 
         # Center of page
@@ -539,15 +552,14 @@ class PDFGeneratorService:
 
         # Large text
         canvas.setFont('Helvetica-Bold', 72)
-        text = "TRIAL EXPIRED"
-        text_width = canvas.stringWidth(text, 'Helvetica-Bold', 72)
+        text_width = canvas.stringWidth(watermark_text, 'Helvetica-Bold', 72)
 
         # Draw text centered
-        canvas.drawString(-text_width / 2, -36, text)
+        canvas.drawString(-text_width / 2, -36, watermark_text)
 
         # Add smaller subtitle
         canvas.setFont('Helvetica', 24)
-        subtitle = "Upgrade to remove watermark"
+        subtitle = "Sign up for your own pricing" if is_demo else "Upgrade to remove watermark"
         subtitle_width = canvas.stringWidth(subtitle, 'Helvetica', 24)
         canvas.drawString(-subtitle_width / 2, -70, subtitle)
 
