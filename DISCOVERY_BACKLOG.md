@@ -22,8 +22,8 @@ To approve: Change status from DISCOVERED → READY
 
 | Status | Count |
 |--------|-------|
-| DEPLOYED | 38 |
-| COMPLETE | 3 |
+| DEPLOYED | 40 |
+| COMPLETE | 1 |
 | READY | 7 |
 | DISCOVERED | 16 |
 | **Total** | **64** |
@@ -571,7 +571,7 @@ To approve: Change status from DISCOVERED → READY
 
 ---
 
-### DISC-029: Demo Quote Screenshot Sharing ⚡ QUICK WIN (COMPLETE)
+### DISC-029: Demo Quote Screenshot Sharing ⚡ QUICK WIN (DEPLOYED)
 
 **Source**: Growth Discovery Agent
 **Impact**: HIGH | **Effort**: S | **Score**: 3.0
@@ -590,7 +590,7 @@ To approve: Change status from DISCOVERED → READY
 
 ---
 
-### DISC-030: Email Signature Viral Acceleration ⚡ QUICK WIN (COMPLETE)
+### DISC-030: Email Signature Viral Acceleration ⚡ QUICK WIN (DEPLOYED)
 
 **Source**: Growth Discovery Agent
 **Impact**: HIGH | **Effort**: S | **Score**: 3.0
