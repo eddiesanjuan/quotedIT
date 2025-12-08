@@ -23,10 +23,10 @@ To approve: Change status from DISCOVERED → READY
 | Status | Count |
 |--------|-------|
 | DEPLOYED | 38 |
-| COMPLETE | 1 |
-| READY | 6 |
-| DISCOVERED | 18 |
-| **Total** | **63** |
+| COMPLETE | 3 |
+| READY | 7 |
+| DISCOVERED | 16 |
+| **Total** | **64** |
 
 **Prompt Optimization**: DISC-041 complete → DISC-052, DISC-054 (learning improvements via prompt injection)
 **Deprioritized**: DISC-053, DISC-055 (structured storage/embeddings - over-engineering; prompt injection approach preferred)
@@ -345,6 +345,60 @@ To approve: Change status from DISCOVERED → READY
 
 ---
 
+### DISC-070: Voice-Driven PDF Template Customization 🎨 PRO/TEAM (READY)
+
+**Source**: Founder Request (Eddie, 2025-12-07)
+**Impact**: HIGH | **Effort**: XL | **Score**: 0.75
+**Sprint Alignment**: Phase II+ feature - premium tier differentiator and competitive moat
+**Tier Gate**: Pro/Team only (not Starter)
+
+**Problem**: Contractors want professional, personalized quotes but aren't designers. Current PDF templates offer style presets (DISC-028) but no way to make granular tweaks. Users can't say "make my logo bigger" or "add more padding around line items" - they're stuck with what we give them. This limits personal brand expression and reduces premium tier differentiation.
+
+**Vision**: Voice/chat-driven template design where Pro/Team users view their PDF template, speak or type design tweaks, and watch changes happen in real-time. Lower the barrier from "know CSS" to "talk about what you want."
+
+**Example Commands**:
+- Layout: "Move my logo to the center", "Put my phone number at the top"
+- Typography: "Make the header font bigger", "Use a more modern font"
+- Spacing: "Add more padding around line items", "Make the terms section smaller"
+- Color: "Change the accent color to match my truck (blue)"
+- Style: "Make it look more professional", "This feels too cluttered"
+- Sections: "Remove the notes section", "Add a payment terms block"
+
+**Technical Architecture**:
+1. **Template Parameter System**: Expose layout/style variables (logo position, font sizes, spacing, colors, section visibility)
+2. **Natural Language → Template Mapping**: AI interprets "make it less cluttered" → increase padding, reduce font sizes, hide optional sections
+3. **Real-Time Preview**: Regenerate PDF preview after each change (< 2s latency target)
+4. **Version Management**: Save as default, revert to previous, per-quote overrides
+5. **Template Schema**: JSON representation of all editable parameters with validation
+
+**Proposed Work**:
+1. Define editable template parameters (audit current ReportLab templates)
+2. Build template configuration schema (JSON with defaults per template style)
+3. Create AI prompt for design command interpretation
+4. Implement real-time PDF preview generation (optimize for speed)
+5. Build UI: split view (template preview | voice/chat input)
+6. Add version management (save, revert, "use as default")
+7. Tier-gate to Pro/Team only
+
+**Relationship to Phase II**:
+- Phase II (DISC-042-049) = voice control of quote **content** (line items, pricing, scope)
+- This ticket = voice control of quote **presentation** (layout, fonts, colors, spacing)
+- Can be developed in parallel or as Phase II.5
+- Shares Voice Command Interpreter (DISC-042) infrastructure
+
+**Success Metric**:
+- 40%+ Pro/Team users customize their template within first 30 days
+- Average 3+ template tweaks per user
+- Reduces support requests for "how do I change X" by 50%
+- Increases Pro/Team upgrade rate by measuring "template customization" as upgrade motivator
+
+**Executive Review Questions**:
+- Minimum viable parameter set? (Logo + fonts + colors = MVP, or more?)
+- Real-time preview feasibility? (ReportLab generation speed)
+- Should this share voice infrastructure with Phase II or be chat-only initially?
+
+---
+
 ### DISC-069: Go-to-Market Readiness Assessment 🚀 (DEPLOYED)
 
 **Source**: Founder Request (Eddie, 2025-12-07)
@@ -517,7 +571,7 @@ To approve: Change status from DISCOVERED → READY
 
 ---
 
-### DISC-029: Demo Quote Screenshot Sharing ⚡ QUICK WIN (DISCOVERED)
+### DISC-029: Demo Quote Screenshot Sharing ⚡ QUICK WIN (COMPLETE)
 
 **Source**: Growth Discovery Agent
 **Impact**: HIGH | **Effort**: S | **Score**: 3.0
@@ -536,7 +590,7 @@ To approve: Change status from DISCOVERED → READY
 
 ---
 
-### DISC-030: Email Signature Viral Acceleration ⚡ QUICK WIN (DISCOVERED)
+### DISC-030: Email Signature Viral Acceleration ⚡ QUICK WIN (COMPLETE)
 
 **Source**: Growth Discovery Agent
 **Impact**: HIGH | **Effort**: S | **Score**: 3.0

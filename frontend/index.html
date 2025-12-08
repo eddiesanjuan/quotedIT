@@ -4760,6 +4760,29 @@
                 </div>
             </div>
 
+            <!-- Email Signature Section (DISC-030) -->
+            <div class="celebration-signature-section" style="background: linear-gradient(135deg, rgba(74, 222, 128, 0.1), rgba(74, 222, 128, 0.05)); border: 1px solid rgba(74, 222, 128, 0.3); border-radius: 12px; padding: 20px; margin: 16px 0;">
+                <h3 style="margin: 0 0 8px 0; font-size: 1rem; color: var(--text-primary); font-family: var(--font-serif);">
+                    ✉️ Boost Referrals 10x
+                </h3>
+                <p style="color: var(--text-secondary); margin: 0 0 12px 0; font-size: 0.875rem;">
+                    Add this to your email signature. You send <strong style="color: var(--text-primary);">20-50 emails/week</strong> — turn each one into a referral opportunity.
+                </p>
+
+                <!-- Signature Preview -->
+                <div style="background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 12px; font-size: 0.875rem; color: var(--text-secondary); line-height: 1.5;">
+                    <span id="celebrationSignaturePreview">PS: I use Quoted for instant voice quotes - Try it free: Loading...</span>
+                </div>
+
+                <!-- Copy Button -->
+                <button onclick="copyCelebrationSignature()" id="copyCelebrationSignatureBtn" style="width: 100%; background: var(--success); color: #0a0a0a; border: none; border-radius: 8px; padding: 12px 20px; cursor: pointer; font-size: 0.875rem; font-weight: 600; transition: all 0.2s ease;">
+                    Copy Signature to Clipboard
+                </button>
+                <p style="color: var(--text-muted); font-size: 0.75rem; margin: 8px 0 0 0; text-align: center;">
+                    Works with Gmail, Outlook, Apple Mail & more
+                </p>
+            </div>
+
             <!-- Tertiary Actions -->
             <div class="celebration-actions">
                 <button class="btn btn-secondary" onclick="viewQuoteDetails()">View Quote</button>
@@ -6411,6 +6434,12 @@
                     // Extract code from shareable_link (format: https://quoted.com/?ref=CODE)
                     const referralCode = data.shareable_link ? data.shareable_link.split('=')[1] : 'ERROR';
                     document.getElementById('celebrationReferralCode').textContent = referralCode;
+
+                    // Update email signature preview (DISC-030)
+                    const signaturePreview = document.getElementById('celebrationSignaturePreview');
+                    if (signaturePreview && data.shareable_link) {
+                        signaturePreview.textContent = 'PS: I use Quoted for instant voice quotes - Try it free: ' + data.shareable_link;
+                    }
                 } else {
                     document.getElementById('celebrationReferralCode').textContent = 'ERROR';
                 }
@@ -6480,6 +6509,39 @@
                 });
             }
             {% endif %}
+        }
+
+        // Copy email signature from celebration modal (DISC-030)
+        function copyCelebrationSignature() {
+            const signaturePreview = document.getElementById('celebrationSignaturePreview');
+            if (!signaturePreview) return;
+
+            const signatureText = signaturePreview.textContent;
+            navigator.clipboard.writeText(signatureText).then(function() {
+                var btn = document.getElementById('copyCelebrationSignatureBtn');
+                var originalText = btn.textContent;
+                btn.textContent = 'Copied! Add to your email settings';
+                btn.style.background = 'var(--accent)';
+
+                setTimeout(function() {
+                    btn.textContent = originalText;
+                    btn.style.background = 'var(--success)';
+                }, 3000);
+
+                showLearningToast('Signature copied! Paste in Gmail, Outlook, or your email app.', '✅');
+
+                // Track analytics
+                {% if posthog_api_key %}
+                if (window.posthog) {
+                    posthog.capture('celebration_signature_copied', {
+                        source: 'celebration_modal'
+                    });
+                }
+                {% endif %}
+            }).catch(function(err) {
+                console.error('Failed to copy signature:', err);
+                showError('Failed to copy signature');
+            });
         }
 
         async function loadShareModalReferralCode() {

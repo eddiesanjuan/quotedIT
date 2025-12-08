@@ -905,6 +905,16 @@
                             </svg>
                             Download PDF
                         </button>
+                        <button class="action-btn secondary" id="shareQuoteBtn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="18" cy="5" r="3"/>
+                                <circle cx="6" cy="12" r="3"/>
+                                <circle cx="18" cy="19" r="3"/>
+                                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+                                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                            </svg>
+                            Share This Quote
+                        </button>
                         <button class="action-btn secondary" id="tryAgainBtn">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M1 4v6h6"/>
@@ -1262,6 +1272,105 @@
             descriptionInput.value = '';
             window.scrollTo({ top: 0, behavior: 'smooth' });
         });
+
+        // Share quote button
+        document.getElementById('shareQuoteBtn').addEventListener('click', async function() {
+            if (!currentQuoteData) return;
+
+            var total = currentQuoteData.total || 0;
+            var jobType = formatJobType(currentQuoteData.job_type);
+            var shareText = 'Just generated a $' + total.toLocaleString() + ' ' + jobType + ' quote in 30 seconds with Quoted - voice to quote is wild!';
+            var shareUrl = 'https://quoted.it.com/try?utm_source=demo_share&utm_medium=social';
+
+            // Track share attempt
+            if (typeof posthog !== 'undefined') {
+                posthog.capture('demo_quote_share_clicked', {
+                    quote_total: total,
+                    job_type: currentQuoteData.job_type
+                });
+            }
+
+            // Try Web Share API first (mobile/modern browsers)
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: 'Quoted - Voice to Quote',
+                        text: shareText,
+                        url: shareUrl
+                    });
+                    if (typeof posthog !== 'undefined') {
+                        posthog.capture('demo_quote_shared', {
+                            quote_total: total,
+                            job_type: currentQuoteData.job_type,
+                            method: 'web_share_api'
+                        });
+                    }
+                    showShareSuccess('Shared successfully!');
+                } catch (err) {
+                    // User cancelled or error - fall back to clipboard
+                    if (err.name !== 'AbortError') {
+                        copyShareToClipboard(shareText, shareUrl, total);
+                    }
+                }
+            } else {
+                // Fallback: copy to clipboard
+                copyShareToClipboard(shareText, shareUrl, total);
+            }
+        });
+
+        function copyShareToClipboard(text, url, total) {
+            var fullText = text + '\n\n' + url;
+            navigator.clipboard.writeText(fullText).then(function() {
+                if (typeof posthog !== 'undefined') {
+                    posthog.capture('demo_quote_shared', {
+                        quote_total: total,
+                        job_type: currentQuoteData ? currentQuoteData.job_type : 'unknown',
+                        method: 'clipboard'
+                    });
+                }
+                showShareSuccess('Copied to clipboard! Paste anywhere to share.');
+            }).catch(function() {
+                showShareSuccess('Copy this text to share your quote!');
+            });
+        }
+
+        function showShareSuccess(message) {
+            var btn = document.getElementById('shareQuoteBtn');
+            // Store original content
+            var originalChildren = Array.from(btn.childNodes).map(function(node) {
+                return node.cloneNode(true);
+            });
+            var originalBg = btn.style.background;
+            var originalColor = btn.style.color;
+
+            // Clear and set success state
+            while (btn.firstChild) {
+                btn.removeChild(btn.firstChild);
+            }
+            var checkSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            checkSvg.setAttribute('viewBox', '0 0 24 24');
+            checkSvg.setAttribute('fill', 'none');
+            checkSvg.setAttribute('stroke', 'currentColor');
+            checkSvg.setAttribute('stroke-width', '2');
+            var polyline = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+            polyline.setAttribute('points', '20 6 9 17 4 12');
+            checkSvg.appendChild(polyline);
+            btn.appendChild(checkSvg);
+            btn.appendChild(document.createTextNode(' ' + message));
+            btn.style.background = 'var(--accent)';
+            btn.style.color = 'white';
+
+            setTimeout(function() {
+                while (btn.firstChild) {
+                    btn.removeChild(btn.firstChild);
+                }
+                originalChildren.forEach(function(child) {
+                    btn.appendChild(child);
+                });
+                btn.style.background = originalBg;
+                btn.style.color = originalColor;
+            }, 3000);
+        }
 
         // Helper functions
         function showLoading(show) {
