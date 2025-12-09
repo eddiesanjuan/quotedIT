@@ -180,6 +180,8 @@ class DatabaseService:
         **kwargs
     ) -> Optional[PricingModel]:
         """Update a pricing model."""
+        from sqlalchemy.orm import attributes
+
         async with async_session_factory() as session:
             result = await session.execute(
                 select(PricingModel).where(PricingModel.contractor_id == contractor_id)
@@ -191,6 +193,9 @@ class DatabaseService:
             for key, value in kwargs.items():
                 if hasattr(pricing_model, key) and value is not None:
                     setattr(pricing_model, key, value)
+                    # JSON columns need flag_modified for SQLAlchemy to detect changes
+                    if key == 'pricing_knowledge':
+                        attributes.flag_modified(pricing_model, 'pricing_knowledge')
 
             pricing_model.updated_at = datetime.utcnow()
             await session.commit()
