@@ -6216,7 +6216,9 @@
             }
 
             document.getElementById('inputSection').style.display = 'none';
-            document.getElementById('quoteResult').classList.add('active');
+            const quoteResultEl = document.getElementById('quoteResult');
+            quoteResultEl.classList.add('active');
+            quoteResultEl.style.display = 'block';  // Override any inline style from showAppSection
             hideError();
 
             // Scroll to quote result, accounting for fixed nav
