@@ -1,6 +1,6 @@
 # Discovery Backlog
 
-**Last Updated**: 2025-12-07
+**Last Updated**: 2025-12-08
 **Source**: `/quoted-discover` autonomous discovery cycles
 
 ---
@@ -23,15 +23,16 @@ To approve: Change status from DISCOVERED → READY
 | Status | Count |
 |--------|-------|
 | DEPLOYED | 40 |
-| COMPLETE | 1 |
-| READY | 7 |
-| DISCOVERED | 16 |
-| **Total** | **64** |
+| COMPLETE | 2 |
+| READY | 10 |
+| DISCOVERED | 19 |
+| **Total** | **71** |
 
 **Prompt Optimization**: DISC-041 complete → DISC-052, DISC-054 (learning improvements via prompt injection)
 **Deprioritized**: DISC-053, DISC-055 (structured storage/embeddings - over-engineering; prompt injection approach preferred)
 **Competitive Defense**: DISC-014 complete → DISC-060 through DISC-062 (RAG, category ownership, messaging)
 **Phase II Voice Control**: 8 tickets (DISC-042 through DISC-049) awaiting executive review
+**Staging Environment**: DISC-073 complete → DISC-077, DISC-078, DISC-079 (Railway preview + feature flags + runbook)
 
 ---
 
@@ -399,6 +400,162 @@ To approve: Change status from DISCOVERED → READY
 
 ---
 
+### DISC-071: Quote-to-Invoice Conversion 💰 (READY)
+
+**Source**: Founder Request (Eddie, 2025-12-08)
+**Impact**: HIGH | **Effort**: L | **Score**: 1.5
+**Sprint Alignment**: Revenue enablement - completes the quote lifecycle
+
+**Problem**: Contractors generate quotes with Quoted, but after the job is done, they need to create invoices separately in another tool. This breaks the workflow and loses the data connection between quote and invoice. Users can't track which quotes became jobs, what the final actuals were, or easily bill customers based on the work done.
+
+**Proposed Work**:
+1. Add "Create Invoice" button on quote detail view
+2. Pre-populate invoice from quote data (customer, line items, totals)
+3. Allow editing for actuals (adjust quantities, add/remove items, change prices)
+4. Generate professional PDF invoice (reuse PDF template system)
+5. Add "Send Invoice" functionality (email to customer with PDF attached)
+6. Mark quote status as "Invoiced" with link to invoice
+7. Add invoice list view and basic invoice management
+8. Track invoice status (Draft, Sent, Paid)
+
+**Technical Considerations**:
+- New `Invoice` model linked to `Quote` (one-to-many: quote can have multiple invoices for progress billing)
+- Reuse `PDFGeneratorService` with invoice-specific template
+- Email integration via existing Resend service
+- Invoice numbering system (auto-increment per contractor)
+- Payment tracking (manual mark as paid initially; Stripe integration later)
+
+**Success Metric**:
+- 30%+ of generated quotes convert to invoices
+- Reduces "time to invoice" for contractors
+- Increases perceived value (quote + invoice = complete solution)
+- Potential premium tier feature (invoice = Pro/Team only?)
+
+---
+
+### DISC-072: PDF Template Polish & Robustness 📄 (READY)
+
+**Source**: Founder Request (Eddie, 2025-12-08)
+**Impact**: HIGH | **Effort**: M | **Score**: 2.0
+**Sprint Alignment**: Core value prop enhancement - PDFs are the primary deliverable
+
+**Problem**: Current PDF templates work but lack polish for edge cases. When quotes have many line items, the total can awkwardly push to a second page. Templates need to handle variable content gracefully and look intentional regardless of quote length. This is a stepping stone before DISC-070 (voice-driven customization) - get the foundation right first with clean, professional templates and better layout handling.
+
+**Proposed Work**:
+1. Audit current templates for edge cases (long quotes, many line items, long descriptions)
+2. Improve page break logic - keep totals with summary, smart section breaks
+3. Add 3-5 new clean, professional template variants (minimal, corporate, detailed, compact, etc.)
+4. Add basic template options users can select (without voice/chat customization)
+5. Fix any spacing/padding issues that look unpolished
+6. Test with real-world quote lengths (5 items, 15 items, 30 items)
+7. Ensure templates look intentional at any length
+
+**Relationship to DISC-070**:
+- This ticket = foundation (better templates, proper layouts, edge case handling)
+- DISC-070 = advanced (voice-driven customization of those solid templates)
+- Do this first, DISC-070 becomes easier and more valuable
+
+**Success Metric**:
+- All quotes render cleanly regardless of length (no awkward page breaks)
+- Users can choose from 5+ professional template styles
+- Reduces "my PDF looks weird" support requests
+- Sets foundation for DISC-070 voice customization
+
+---
+
+### DISC-073: Staging Environment & Safe Deployment Pipeline 🏗️ BRAINSTORM (COMPLETE)
+
+**Source**: Founder Request (Eddie, 2025-12-08)
+**Impact**: HIGH | **Effort**: M | **Score**: 2.0
+**Sprint Alignment**: Infrastructure maturity - protects active users from deployment risks
+**Completed**: 2025-12-08
+
+**Problem**: With active users now on the platform, pushing directly to production is risky. A bad deploy could corrupt user data or break the app for paying customers.
+
+**Brainstorm Completed**: Executive Council (CTO, CFO, CPO, CGO) evaluated three options. Design document created at `/docs/STAGING_ENVIRONMENT_DESIGN.md`.
+
+**Decision**: **Hybrid A+C** - Railway Preview Environments + PostHog Feature Flags
+- Option A: Railway Preview Environments (pre-merge testing) - 2 hours, $0/month
+- Option C: Feature Flags (gradual rollout, instant rollback) - 1 hour, $0/month
+- Option B: Separate Staging (DEFERRED until 50+ paying users)
+
+**Implementation Tickets Created**:
+- DISC-077: Enable Railway Preview Environments (DISCOVERED)
+- DISC-078: Add Feature Flag Foundation (DISCOVERED)
+- DISC-079: Create Emergency Runbook (DISCOVERED)
+
+**Success Metric**:
+- Zero user-impacting incidents from deployments
+- Clear workflow: develop → test in preview → merge → feature flag rollout
+- Instant rollback capability via feature flags
+
+---
+
+### DISC-074: Alternative User Acquisition Channels 📢 BRAINSTORM (READY)
+
+**Source**: Founder Request (Eddie, 2025-12-08)
+**Impact**: HIGH | **Effort**: M | **Score**: 2.0
+**Sprint Alignment**: Critical path - current organic channels (Reddit, Facebook groups) have anti-advertising rules
+
+**Problem**: The organic community distribution strategy (Reddit posts, Facebook groups) has hit a wall - most contractor communities explicitly prohibit promotional posts or self-promotion. Need alternative acquisition channels that can deliver beta testers who will actually use the product and provide feedback.
+
+**Context from Founder**:
+- Reddit/Facebook groups have strict anti-advertising rules
+- Goal is users who test, use, and give feedback (not just signups)
+- Open to: simple paid ads, creator partnerships, other low-cost channels
+- Budget-conscious (pre-revenue startup)
+
+**Proposed Investigation** (Executive Committee to evaluate):
+
+1. **Paid Ads (Low-Budget Testing)**
+   - Facebook/Instagram Ads: Highly targetable to contractors, tradespeople
+   - Google Ads: "quote software for contractors" intent-based
+   - YouTube pre-roll: Contractor content viewers
+   - Budget: $5-10/day test campaigns to validate CAC
+   - Pro: Immediate, measurable, scalable
+   - Con: Costs money, may attract tire-kickers vs. genuine users
+
+2. **Creator/Influencer Partnerships**
+   - Contractor YouTubers (tool reviews, day-in-life content)
+   - Trade-focused TikTokers showing job sites
+   - Offer: Free Pro tier + affiliate commission per referral
+   - Pro: Authentic endorsement, built-in audience trust
+   - Con: Slower to establish, variable quality
+
+3. **Direct Outreach (High-Touch)**
+   - LinkedIn DMs to solo contractors
+   - Local contractor association outreach
+   - Trade school partnerships (students becoming contractors)
+   - Pro: Highly targeted, relationship-based
+   - Con: Time-intensive, doesn't scale
+
+4. **Guerrilla/Creative Channels**
+   - Contractor supply store partnerships (Home Depot Pro, local suppliers)
+   - Truck wrap/job site signage contests
+   - "Quote of the Week" showcase (permission-based user content)
+   - Pro: Low/no cost, authentic
+   - Con: Unpredictable results
+
+5. **Content Marketing (Longer-Term)**
+   - SEO: "How to quote a [job type]" blog posts
+   - YouTube: Demo videos, contractor success stories
+   - Pro: Compounds over time, builds authority
+   - Con: 3-6 month horizon to see results
+
+**Executive Committee Questions**:
+- What's acceptable CAC for beta testers? ($5? $10? $20?)
+- Do we prioritize speed (paid ads) or authenticity (creators)?
+- Is Eddie willing to do direct outreach (LinkedIn DMs)?
+- Budget available for paid acquisition testing?
+- Which contractor YouTubers/TikTokers are worth approaching?
+
+**Success Metric**:
+- Identify 2-3 viable channels worth testing
+- Define test budget and success criteria for each
+- First batch of users from non-organic source within 2 weeks
+
+---
+
 ### DISC-069: Go-to-Market Readiness Assessment 🚀 (DEPLOYED)
 
 **Source**: Founder Request (Eddie, 2025-12-07)
@@ -444,6 +601,93 @@ To approve: Change status from DISCOVERED → READY
 
 
 ## Discovered (Awaiting Review)
+
+### DISC-077: Enable Railway Preview Environments 🏗️ INFRA (DISCOVERED)
+
+**Source**: DISC-073 Staging Brainstorm
+**Impact**: HIGH | **Effort**: S | **Score**: 3.0
+**Sprint Alignment**: Implement BEFORE DISC-071/072 for deployment safety
+**Depends On**: None
+
+**Problem**: Need pre-merge testing capability to catch bugs before they hit production.
+
+**Proposed Work**:
+1. Enable "Preview Deployments" in Railway project settings
+2. Configure preview domain pattern: `pr-{number}-quoted.up.railway.app`
+3. Update CORS in `backend/main.py` to allow Railway preview domains
+4. Test first preview deployment with minor PR
+5. Document workflow in CLAUDE.md
+
+**Implementation Details**:
+```python
+# Add to CORS middleware origins in backend/main.py
+if settings.environment != "production":
+    origins.append("https://*.up.railway.app")
+```
+
+**Success Metric**: 100% of PRs get preview environments; bugs caught before merge
+
+---
+
+### DISC-078: Add Feature Flag Foundation 🚩 INFRA (DISCOVERED)
+
+**Source**: DISC-073 Staging Brainstorm
+**Impact**: HIGH | **Effort**: S | **Score**: 3.0
+**Sprint Alignment**: Required for gradual rollout of DISC-071, DISC-072
+**Depends On**: None
+
+**Problem**: Need instant rollback capability and gradual rollout for new features.
+
+**Proposed Work**:
+1. Add `isFeatureEnabled()` helper to frontend JavaScript
+2. Create `backend/services/feature_flags.py` for backend checks
+3. Create standard flag naming convention: `{feature}_enabled`
+4. Document feature flag discipline in CLAUDE.md
+5. Test with first feature flag
+
+**Implementation Details**:
+```javascript
+// Frontend helper
+function isFeatureEnabled(flagKey, defaultValue = false) {
+    if (!window.posthog) return defaultValue;
+    return posthog.isFeatureEnabled(flagKey) ?? defaultValue;
+}
+```
+
+**Standard Flags**:
+| Flag Key | Feature | Default |
+|----------|---------|---------|
+| `invoicing_enabled` | DISC-071 | false |
+| `new_pdf_templates` | DISC-072 | false |
+
+**Success Metric**: New features ship behind flags; rollback time < 1 minute
+
+---
+
+### DISC-079: Create Emergency Runbook 📋 DOCS (DISCOVERED)
+
+**Source**: DISC-073 Staging Brainstorm
+**Impact**: MEDIUM | **Effort**: S | **Score**: 2.0
+**Sprint Alignment**: Complete before major feature deploys
+**Depends On**: DISC-077, DISC-078
+
+**Problem**: Need documented procedures for handling production incidents.
+
+**Proposed Work**:
+1. Create `docs/EMERGENCY_RUNBOOK.md`
+2. Document P1/P2/P3 incident classification
+3. Add rollback procedures (feature flag toggle, code revert)
+4. Include Railway backup restoration steps
+5. Add notification procedures
+
+**Content Outline**:
+- P1 (Production Down): Check Railway → Revert commit → Notify Eddie
+- P2 (Feature Broken): Disable feature flag → Investigate → Fix
+- P3 (Minor Issue): Create ticket → Fix in normal workflow
+
+**Success Metric**: Any incident can be handled by following runbook; MTTR < 10 minutes
+
+---
 
 ### DISC-060: RAG Learning System Implementation 🧠 COMPETITIVE DEFENSE (DISCOVERED)
 
