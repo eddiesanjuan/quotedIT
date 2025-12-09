@@ -88,6 +88,8 @@ class QuoteResponse(BaseModel):
     # DISC-067: Free-form timeline and terms fields
     timeline_text: Optional[str] = None
     terms_text: Optional[str] = None
+    # Track if quote has been converted to invoice
+    has_invoice: bool = False
 
 
 class QuoteUpdateRequest(BaseModel):
@@ -220,7 +222,7 @@ class QuoteFeedbackResponse(BaseModel):
     created_at: Optional[str] = None
 
 
-def quote_to_response(quote) -> QuoteResponse:
+def quote_to_response(quote, has_invoice: bool = False) -> QuoteResponse:
     """Convert a Quote model to response."""
     return QuoteResponse(
         id=quote.id,
@@ -244,6 +246,7 @@ def quote_to_response(quote) -> QuoteResponse:
         # DISC-067: Free-form timeline and terms fields
         timeline_text=getattr(quote, 'timeline_text', None),
         terms_text=getattr(quote, 'terms_text', None),
+        has_invoice=has_invoice,
     )
 
 
@@ -1454,6 +1457,8 @@ async def generate_pdf(request: Request, quote_id: str, current_user: dict = Dep
 @router.get("/")
 async def list_quotes(current_user: dict = Depends(get_current_user)):
     """List all quotes for the current user."""
+    from ..models.database import Invoice
+
     db = get_db_service()
 
     contractor = await db.get_contractor_by_user_id(current_user["id"])
@@ -1462,8 +1467,22 @@ async def list_quotes(current_user: dict = Depends(get_current_user)):
 
     quotes = await db.get_quotes_by_contractor(contractor.id)
 
+    # Get quote IDs that have invoices created from them
+    quote_ids = [q.id for q in quotes]
+    if quote_ids:
+        async with db.async_session_maker() as session:
+            result = await session.execute(
+                select(Invoice.quote_id).where(
+                    Invoice.quote_id.in_(quote_ids),
+                    Invoice.quote_id.isnot(None)
+                )
+            )
+            quotes_with_invoices = set(row[0] for row in result.fetchall())
+    else:
+        quotes_with_invoices = set()
+
     return {
-        "quotes": [quote_to_response(q) for q in quotes],
+        "quotes": [quote_to_response(q, has_invoice=(q.id in quotes_with_invoices)) for q in quotes],
         "count": len(quotes),
     }
 

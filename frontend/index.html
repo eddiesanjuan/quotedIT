@@ -4155,6 +4155,7 @@
 
                 <div class="quote-header">
                     <h2 id="detailQuoteTitle">Quote Details</h2>
+                    <span id="detailInvoiceBadge" class="invoice-badge" style="display: none; font-size: 0.75rem; padding: 4px 10px; background: linear-gradient(135deg, #10b981, #059669); color: white; border-radius: 6px; font-weight: 500;">Invoiced</span>
                     <span class="confidence-badge" id="detailConfidenceBadge">High Confidence</span>
                 </div>
 
@@ -8464,15 +8465,40 @@
                 const header = document.createElement('div');
                 header.className = 'quote-list-item-header';
 
+                const titleWrapper = document.createElement('div');
+                titleWrapper.style.display = 'flex';
+                titleWrapper.style.alignItems = 'center';
+                titleWrapper.style.gap = '8px';
+                titleWrapper.style.flex = '1';
+
                 const title = document.createElement('div');
                 title.className = 'quote-list-item-title';
                 title.textContent = customerName + wasEdited;
+                titleWrapper.appendChild(title);
+
+                // Show badge if invoice was created from this quote
+                if (quote.has_invoice) {
+                    const invoiceBadge = document.createElement('span');
+                    invoiceBadge.className = 'invoice-badge';
+                    invoiceBadge.textContent = 'Invoiced';
+                    invoiceBadge.title = 'An invoice has been created from this quote';
+                    invoiceBadge.style.cssText = `
+                        font-size: 0.7rem;
+                        padding: 2px 6px;
+                        background: linear-gradient(135deg, #10b981, #059669);
+                        color: white;
+                        border-radius: 4px;
+                        font-weight: 500;
+                        white-space: nowrap;
+                    `;
+                    titleWrapper.appendChild(invoiceBadge);
+                }
 
                 const amount = document.createElement('div');
                 amount.className = 'quote-list-item-amount';
                 amount.textContent = '$' + total.toLocaleString();
 
-                header.appendChild(title);
+                header.appendChild(titleWrapper);
                 header.appendChild(amount);
 
                 // Meta row
@@ -8576,6 +8602,9 @@
             document.getElementById('detailQuoteTitle').textContent = quote.customer_name || 'Quote Details';
             document.getElementById('detailJobDescription').textContent = quote.job_description || '';
             document.getElementById('detailTotalAmount').textContent = '$' + (quote.total || quote.subtotal || 0).toLocaleString();
+
+            // Show/hide invoice badge
+            document.getElementById('detailInvoiceBadge').style.display = quote.has_invoice ? 'inline-block' : 'none';
 
             // Update customer info display
             document.getElementById('customerNameDisplay').textContent = quote.customer_name || '—';
@@ -9976,6 +10005,18 @@
                 return;
             }
 
+            // Warn if quote already has an invoice
+            if (currentDetailQuote.has_invoice) {
+                const confirmed = confirm(
+                    'This quote already has an invoice created from it.\n\n' +
+                    'Creating another invoice will result in duplicate invoices for the same quote.\n\n' +
+                    'Are you sure you want to continue?'
+                );
+                if (!confirmed) {
+                    return;
+                }
+            }
+
             const createBtn = document.getElementById('createInvoiceBtn');
             const originalText = createBtn.textContent;
             createBtn.textContent = 'Creating...';
@@ -10004,6 +10045,13 @@
                         invoice_id: invoice.id,
                         total: invoice.total
                     });
+                }
+
+                // Update quote's has_invoice status
+                currentDetailQuote.has_invoice = true;
+                const cachedQuote = quotesCache.find(q => q.id === currentDetailQuote.id);
+                if (cachedQuote) {
+                    cachedQuote.has_invoice = true;
                 }
 
                 showLearningToast(`Invoice ${invoice.invoice_number} created!`, '✅');
