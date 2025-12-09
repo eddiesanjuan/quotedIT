@@ -5763,7 +5763,11 @@
 
                 if (response.ok) {
                     const pricing = await response.json();
-                    const hasPricing = pricing && pricing.pricing_knowledge && Object.keys(pricing.pricing_knowledge).length > 0;
+                    // Check if user has completed any pricing setup
+                    // Accept either pricing_knowledge OR basic rates being set
+                    const hasPricingKnowledge = pricing?.pricing_knowledge && Object.keys(pricing.pricing_knowledge).length > 0;
+                    const hasBasicRates = pricing?.labor_rate_hourly > 0 || pricing?.minimum_job_amount > 0;
+                    const hasPricing = hasPricingKnowledge || hasBasicRates;
 
                     if (!hasPricing) {
                         document.getElementById('onboardingNotice').style.display = 'block';
@@ -8253,7 +8257,10 @@
 
                 if (response.ok) {
                     const pricing = await response.json();
-                    const hasPricing = pricing && pricing.pricing_knowledge && Object.keys(pricing.pricing_knowledge).length > 0;
+                    // Accept either pricing_knowledge OR basic rates being set
+                    const hasPricingKnowledge = pricing?.pricing_knowledge && Object.keys(pricing.pricing_knowledge).length > 0;
+                    const hasBasicRates = pricing?.labor_rate_hourly > 0 || pricing?.minimum_job_amount > 0;
+                    const hasPricing = hasPricingKnowledge || hasBasicRates;
                     document.getElementById('onboardingNotice').style.display = hasPricing ? 'none' : 'block';
                     document.getElementById('inputSection').style.display = hasPricing ? 'block' : 'none';
                 } else {
