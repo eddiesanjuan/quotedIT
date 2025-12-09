@@ -378,24 +378,24 @@ class PDFGeneratorService:
             leading=12,
         ))
 
-        # Body text
+        # Body text (leading increased from 16 to 18 for better paragraph readability)
         self.styles.add(ParagraphStyle(
             name='QuoteBody',
             parent=self.styles['Normal'],
             fontName=template["body_font"],
             fontSize=11 + font_adj,
-            leading=int(16 * space_mult) if space_mult != 0.6 else 14,
+            leading=int(18 * space_mult) if space_mult != 0.6 else 15,
             spaceAfter=int(8 * space_mult),
             textColor=self.template_colors["header"],
         ))
 
-        # Body text - light color
+        # Body text - light color (leading increased from 16 to 18 for better paragraph readability)
         self.styles.add(ParagraphStyle(
             name='QuoteBodyLight',
             parent=self.styles['Normal'],
             fontName=template["body_font"],
             fontSize=11 + font_adj,
-            leading=int(16 * space_mult) if space_mult != 0.6 else 14,
+            leading=int(18 * space_mult) if space_mult != 0.6 else 15,
             spaceAfter=int(4 * space_mult),
             textColor=BRAND_GRAY,
         ))

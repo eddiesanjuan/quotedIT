@@ -9753,6 +9753,7 @@
                 const btn = document.createElement('button');
                 btn.type = 'button';
                 btn.className = 'accent-color-btn' + (currentAccentColor === color ? ' selected' : '');
+                btn.dataset.color = color; // Store color for reliable comparison (browser normalizes style.backgroundColor to RGB)
                 btn.style.cssText = `
                     width: 100%;
                     height: 40px;
@@ -9770,10 +9771,11 @@
 
         function selectAccentColor(color) {
             currentAccentColor = color;
-            // Update UI to show selection
+            // Update UI to show selection using data attribute (browser normalizes style.backgroundColor to RGB which breaks comparison)
             document.querySelectorAll('#accentColorGrid button').forEach(btn => {
-                btn.style.borderColor = btn.style.backgroundColor === color ? 'var(--accent)' : 'var(--border)';
-                btn.classList.toggle('selected', btn.style.backgroundColor === color);
+                const isSelected = btn.dataset.color === color;
+                btn.style.borderColor = isSelected ? 'var(--accent)' : 'var(--border)';
+                btn.classList.toggle('selected', isSelected);
             });
         }
 
