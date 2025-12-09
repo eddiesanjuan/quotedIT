@@ -1801,10 +1801,13 @@ async def get_pdf_templates(
     user = result.scalar_one_or_none()
     user_tier = user.plan_tier if user else contractor.plan or "starter"
 
-    # Filter templates by tier
+    # Trial users get access to ALL templates to experience full product
+    is_trial = user_tier == "trial"
+
+    # Filter templates by tier (trial users see all)
     available_templates = []
     for key, template in PDF_TEMPLATES.items():
-        if user_tier in template["available_to"]:
+        if is_trial or user_tier in template["available_to"]:
             available_templates.append(
                 TemplateInfo(
                     key=key,
