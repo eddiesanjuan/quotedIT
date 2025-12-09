@@ -9669,6 +9669,26 @@
             }
         }
 
+        // Map PDF fonts to web-safe font families
+        function getWebFont(pdfFont) {
+            const fontMap = {
+                'Times-Roman': 'Georgia, "Times New Roman", serif',
+                'Times-Bold': 'Georgia, "Times New Roman", serif',
+                'Helvetica': '"Helvetica Neue", Helvetica, Arial, sans-serif',
+                'Helvetica-Bold': '"Helvetica Neue", Helvetica, Arial, sans-serif',
+                'Courier': '"Courier New", Courier, monospace'
+            };
+            return fontMap[pdfFont] || 'sans-serif';
+        }
+
+        // Get font style label for display
+        function getFontStyleLabel(pdfFont) {
+            if (!pdfFont) return '';
+            if (pdfFont.includes('Times')) return 'Serif';
+            if (pdfFont.includes('Courier')) return 'Mono';
+            return 'Sans';
+        }
+
         function renderTemplateGrid() {
             const grid = document.getElementById('pdfTemplateGrid');
             grid.innerHTML = '';
@@ -9683,11 +9703,15 @@
                 const accentColor = template.accent_color || '#667eea';
                 const headerColor = template.header_color || '#18181b';
 
+                // Get font info
+                const titleFont = getWebFont(template.title_font);
+                const fontStyleLabel = getFontStyleLabel(template.title_font);
+
                 card.innerHTML = `
                     <div class="template-mini-preview">
-                        <div class="template-mini-header" style="background: ${headerColor}; color: ${headerColor};">
-                            <div class="template-mini-logo"></div>
-                            <div class="template-mini-title"></div>
+                        <div class="template-mini-header" style="background: ${headerColor};">
+                            <span class="template-font-sample" style="font-family: ${titleFont}; color: white; font-size: 14px; font-weight: 600;">Aa</span>
+                            <span class="template-font-label" style="color: rgba(255,255,255,0.7); font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px;">${fontStyleLabel}</span>
                         </div>
                         <div class="template-mini-body">
                             <div class="template-mini-line"></div>

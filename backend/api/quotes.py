@@ -1784,6 +1784,8 @@ class TemplateInfo(BaseModel):
     available_to: List[str]
     accent_color: Optional[str] = None  # For visual preview
     header_color: Optional[str] = None  # For visual preview
+    title_font: Optional[str] = None  # For font preview (Times-Roman, Helvetica, Courier)
+    body_font: Optional[str] = None  # For font preview
 
 
 class TemplatesResponse(BaseModel):
@@ -1836,7 +1838,9 @@ async def get_pdf_templates(
                     description=template["description"],
                     available_to=template["available_to"],
                     accent_color=template.get("accent_color"),
-                    header_color=template.get("header_color")
+                    header_color=template.get("header_color"),
+                    title_font=template.get("title_font"),
+                    body_font=template.get("body_font")
                 )
             )
 
