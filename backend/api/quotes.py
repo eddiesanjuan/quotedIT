@@ -1763,6 +1763,8 @@ class TemplateInfo(BaseModel):
     name: str
     description: str
     available_to: List[str]
+    accent_color: Optional[str] = None  # For visual preview
+    header_color: Optional[str] = None  # For visual preview
 
 
 class TemplatesResponse(BaseModel):
@@ -1813,7 +1815,9 @@ async def get_pdf_templates(
                     key=key,
                     name=template["name"],
                     description=template["description"],
-                    available_to=template["available_to"]
+                    available_to=template["available_to"],
+                    accent_color=template.get("accent_color"),
+                    header_color=template.get("header_color")
                 )
             )
 

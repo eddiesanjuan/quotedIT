@@ -3421,6 +3421,125 @@
             border-radius: 3px;
         }
 
+        /* PDF Template Preview Cards (DISC-xxx) */
+        .template-preview-card {
+            background: var(--bg-elevated);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .template-preview-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .template-preview-card.selected {
+            border-color: var(--accent);
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));
+        }
+
+        .template-preview-card.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 20px;
+            height: 20px;
+            background: var(--accent);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .template-preview-card {
+            position: relative;
+        }
+
+        .template-mini-preview {
+            background: white;
+            border-radius: 6px;
+            height: 80px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .template-mini-header {
+            height: 24px;
+            padding: 6px 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .template-mini-logo {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+            background: white;
+            opacity: 0.8;
+        }
+
+        .template-mini-title {
+            flex: 1;
+            height: 8px;
+            background: currentColor;
+            opacity: 0.3;
+            border-radius: 2px;
+        }
+
+        .template-mini-body {
+            padding: 6px 8px;
+        }
+
+        .template-mini-line {
+            height: 4px;
+            background: #e5e7eb;
+            border-radius: 2px;
+            margin-bottom: 4px;
+        }
+
+        .template-mini-line:nth-child(1) { width: 80%; }
+        .template-mini-line:nth-child(2) { width: 60%; }
+        .template-mini-line:nth-child(3) { width: 70%; }
+
+        .template-mini-accent {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            width: 30px;
+            height: 10px;
+            border-radius: 3px;
+        }
+
+        .template-info {
+            text-align: center;
+        }
+
+        .template-name {
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: var(--text-primary);
+            margin-bottom: 2px;
+        }
+
+        .template-description {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            line-height: 1.3;
+        }
+
         @media (max-width: 640px) {
             .pricing-grid {
                 grid-template-columns: 1fr;
@@ -4542,11 +4661,15 @@
 
                             <div id="pdfTemplateSection" style="margin-top: 24px;">
                                 <div class="form-group">
-                                    <label for="pdfTemplateSelect" style="display: block; margin-bottom: 8px; font-weight: 500;">Template Style</label>
-                                    <select id="pdfTemplateSelect" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-elevated); color: var(--text-primary); font-size: 1rem;">
-                                        <option value="">Loading templates...</option>
+                                    <label style="display: block; margin-bottom: 12px; font-weight: 500;">Template Style</label>
+                                    <div id="pdfTemplateGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px;">
+                                        <!-- Template previews populated via JavaScript -->
+                                        <div class="template-loading" style="grid-column: 1 / -1; text-align: center; padding: 24px; color: var(--text-secondary);">Loading templates...</div>
+                                    </div>
+                                    <!-- Hidden select for form submission compatibility -->
+                                    <select id="pdfTemplateSelect" style="display: none;">
+                                        <option value="">Loading...</option>
                                     </select>
-                                    <p id="templateDescription" style="margin-top: 8px; font-size: 0.875rem; color: var(--text-secondary);"></p>
                                 </div>
 
                                 <div id="accentColorSection" style="display: none; margin-top: 16px;">
@@ -9496,41 +9619,74 @@
                 currentTemplateKey = data.current_template || 'modern';
                 currentAccentColor = data.current_accent_color;
 
-                // Populate template dropdown
+                // Render template preview grid
+                renderTemplateGrid();
+
+                // Update hidden select for compatibility
                 const select = document.getElementById('pdfTemplateSelect');
                 select.innerHTML = availableTemplates.map(t =>
                     `<option value="${t.key}" ${t.key === currentTemplateKey ? 'selected' : ''}>${t.name}</option>`
                 ).join('');
-
-                // Update description
-                updateTemplateDescription();
 
                 // Setup accent colors for Pro+ users
                 if (Object.keys(availableAccentColors).length > 0) {
                     populateAccentColors();
                 }
 
-                // Add change listener
-                select.addEventListener('change', updateTemplateDescription);
-
             } catch (error) {
                 console.error('Error loading PDF templates:', error);
-                const select = document.getElementById('pdfTemplateSelect');
-                select.innerHTML = '<option value="modern">Modern (Default)</option>';
+                const grid = document.getElementById('pdfTemplateGrid');
+                grid.innerHTML = '<div class="template-loading" style="grid-column: 1 / -1; text-align: center; padding: 24px; color: var(--text-secondary);">Failed to load templates</div>';
             }
         }
 
-        function updateTemplateDescription() {
-            const select = document.getElementById('pdfTemplateSelect');
-            const selectedKey = select.value;
-            const template = availableTemplates.find(t => t.key === selectedKey);
-            const descEl = document.getElementById('templateDescription');
+        function renderTemplateGrid() {
+            const grid = document.getElementById('pdfTemplateGrid');
+            grid.innerHTML = '';
 
-            if (template) {
-                descEl.textContent = template.description;
-            } else {
-                descEl.textContent = '';
-            }
+            availableTemplates.forEach(template => {
+                const card = document.createElement('div');
+                card.className = 'template-preview-card' + (template.key === currentTemplateKey ? ' selected' : '');
+                card.dataset.key = template.key;
+                card.onclick = () => selectTemplate(template.key);
+
+                // Get colors with fallbacks
+                const accentColor = template.accent_color || '#667eea';
+                const headerColor = template.header_color || '#18181b';
+
+                card.innerHTML = `
+                    <div class="template-mini-preview">
+                        <div class="template-mini-header" style="background: ${headerColor}; color: ${headerColor};">
+                            <div class="template-mini-logo"></div>
+                            <div class="template-mini-title"></div>
+                        </div>
+                        <div class="template-mini-body">
+                            <div class="template-mini-line"></div>
+                            <div class="template-mini-line"></div>
+                            <div class="template-mini-line"></div>
+                        </div>
+                        <div class="template-mini-accent" style="background: ${accentColor};"></div>
+                    </div>
+                    <div class="template-info">
+                        <div class="template-name">${template.name}</div>
+                        <div class="template-description">${template.description}</div>
+                    </div>
+                `;
+
+                grid.appendChild(card);
+            });
+        }
+
+        function selectTemplate(key) {
+            currentTemplateKey = key;
+
+            // Update UI
+            document.querySelectorAll('.template-preview-card').forEach(card => {
+                card.classList.toggle('selected', card.dataset.key === key);
+            });
+
+            // Update hidden select
+            document.getElementById('pdfTemplateSelect').value = key;
         }
 
         function populateAccentColors() {
