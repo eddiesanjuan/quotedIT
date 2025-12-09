@@ -41,6 +41,7 @@ class DatabaseService:
 
     def __init__(self):
         self.engine = engine
+        self.async_session_maker = async_session_factory
 
     async def _get_session(self) -> AsyncSession:
         """Create a new session."""
