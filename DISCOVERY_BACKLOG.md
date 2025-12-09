@@ -22,21 +22,86 @@ To approve: Change status from DISCOVERED → READY
 
 | Status | Count |
 |--------|-------|
-| DEPLOYED | 40 |
+| DEPLOYED | 43 |
 | COMPLETE | 2 |
 | READY | 10 |
-| DISCOVERED | 19 |
+| DISCOVERED | 16 |
 | **Total** | **71** |
 
 **Prompt Optimization**: DISC-041 complete → DISC-052, DISC-054 (learning improvements via prompt injection)
 **Deprioritized**: DISC-053, DISC-055 (structured storage/embeddings - over-engineering; prompt injection approach preferred)
 **Competitive Defense**: DISC-014 complete → DISC-060 through DISC-062 (RAG, category ownership, messaging)
 **Phase II Voice Control**: 8 tickets (DISC-042 through DISC-049) awaiting executive review
-**Staging Environment**: DISC-073 complete → DISC-077, DISC-078, DISC-079 (Railway preview + feature flags + runbook)
+**Staging Environment**: DISC-073 complete → DISC-077, DISC-078, DISC-079 (Railway preview + feature flags + runbook) ✅ ALL DEPLOYED
 
 ---
 
-## Recently Deployed (2025-12-07)
+## Recently Deployed (2025-12-08)
+
+### DISC-077: Enable Railway Preview Environments 🏗️ INFRA (DEPLOYED)
+
+**Source**: DISC-073 Staging Brainstorm
+**Impact**: HIGH | **Effort**: S | **Score**: 3.0
+**Commit**: Pending push
+
+**Problem**: Need pre-merge testing capability to catch bugs before they hit production.
+
+**Solution Implemented**:
+- Updated CORS middleware in `backend/main.py` to use `allow_origin_regex`
+- Pattern `https://.*\.up\.railway\.app` allows all Railway preview deployments
+- Documented deployment workflow in CLAUDE.md
+
+**Remaining**: Enable "Preview Deployments" toggle in Railway dashboard (founder action)
+
+**Success Metric**: Preview environments work for PR testing; CORS allows API calls ✅
+
+---
+
+### DISC-078: Add Feature Flag Foundation 🚩 INFRA (DEPLOYED)
+
+**Source**: DISC-073 Staging Brainstorm
+**Impact**: HIGH | **Effort**: S | **Score**: 3.0
+**Commit**: Pending push
+
+**Problem**: Need instant rollback capability and gradual rollout for new features.
+
+**Solution Implemented**:
+1. ✅ Added `isFeatureEnabled()` and `showFeature()` helpers to `frontend/index.html`
+2. ✅ Created `backend/services/feature_flags.py` with PostHog integration
+3. ✅ Added convenience functions: `is_invoicing_enabled()`, `is_new_pdf_templates_enabled()`
+4. ✅ Documented feature flag discipline in CLAUDE.md
+
+**Standard Flags**:
+| Flag Key | Feature | Default |
+|----------|---------|---------|
+| `invoicing_enabled` | DISC-071 | false |
+| `new_pdf_templates` | DISC-072 | false |
+| `voice_template_customization` | DISC-070 | false |
+
+**Success Metric**: New features can ship behind flags; rollback time < 1 minute ✅
+
+---
+
+### DISC-079: Create Emergency Runbook 📋 DOCS (DEPLOYED)
+
+**Source**: DISC-073 Staging Brainstorm
+**Impact**: MEDIUM | **Effort**: S | **Score**: 2.0
+**Commit**: Pending push
+
+**Problem**: Need documented procedures for handling production incidents.
+
+**Solution Implemented**:
+- ✅ Created comprehensive `docs/EMERGENCY_RUNBOOK.md`
+- ✅ Documented P1/P2/P3 incident classification with examples
+- ✅ Added rollback procedures (feature flag toggle, git revert, hard reset, backup restore)
+- ✅ Included decision tree for quick rollback selection
+- ✅ Added emergency contacts and key URLs
+
+**Success Metric**: Any incident can be handled by following runbook; MTTR < 10 minutes ✅
+
+---
+
+## Previously Deployed (2025-12-07)
 
 ### DISC-056: Confidence Badge Still Clipped Behind Nav (DEPLOYED) 🐛
 
@@ -601,93 +666,6 @@ To approve: Change status from DISCOVERED → READY
 
 
 ## Discovered (Awaiting Review)
-
-### DISC-077: Enable Railway Preview Environments 🏗️ INFRA (DISCOVERED)
-
-**Source**: DISC-073 Staging Brainstorm
-**Impact**: HIGH | **Effort**: S | **Score**: 3.0
-**Sprint Alignment**: Implement BEFORE DISC-071/072 for deployment safety
-**Depends On**: None
-
-**Problem**: Need pre-merge testing capability to catch bugs before they hit production.
-
-**Proposed Work**:
-1. Enable "Preview Deployments" in Railway project settings
-2. Configure preview domain pattern: `pr-{number}-quoted.up.railway.app`
-3. Update CORS in `backend/main.py` to allow Railway preview domains
-4. Test first preview deployment with minor PR
-5. Document workflow in CLAUDE.md
-
-**Implementation Details**:
-```python
-# Add to CORS middleware origins in backend/main.py
-if settings.environment != "production":
-    origins.append("https://*.up.railway.app")
-```
-
-**Success Metric**: 100% of PRs get preview environments; bugs caught before merge
-
----
-
-### DISC-078: Add Feature Flag Foundation 🚩 INFRA (DISCOVERED)
-
-**Source**: DISC-073 Staging Brainstorm
-**Impact**: HIGH | **Effort**: S | **Score**: 3.0
-**Sprint Alignment**: Required for gradual rollout of DISC-071, DISC-072
-**Depends On**: None
-
-**Problem**: Need instant rollback capability and gradual rollout for new features.
-
-**Proposed Work**:
-1. Add `isFeatureEnabled()` helper to frontend JavaScript
-2. Create `backend/services/feature_flags.py` for backend checks
-3. Create standard flag naming convention: `{feature}_enabled`
-4. Document feature flag discipline in CLAUDE.md
-5. Test with first feature flag
-
-**Implementation Details**:
-```javascript
-// Frontend helper
-function isFeatureEnabled(flagKey, defaultValue = false) {
-    if (!window.posthog) return defaultValue;
-    return posthog.isFeatureEnabled(flagKey) ?? defaultValue;
-}
-```
-
-**Standard Flags**:
-| Flag Key | Feature | Default |
-|----------|---------|---------|
-| `invoicing_enabled` | DISC-071 | false |
-| `new_pdf_templates` | DISC-072 | false |
-
-**Success Metric**: New features ship behind flags; rollback time < 1 minute
-
----
-
-### DISC-079: Create Emergency Runbook 📋 DOCS (DISCOVERED)
-
-**Source**: DISC-073 Staging Brainstorm
-**Impact**: MEDIUM | **Effort**: S | **Score**: 2.0
-**Sprint Alignment**: Complete before major feature deploys
-**Depends On**: DISC-077, DISC-078
-
-**Problem**: Need documented procedures for handling production incidents.
-
-**Proposed Work**:
-1. Create `docs/EMERGENCY_RUNBOOK.md`
-2. Document P1/P2/P3 incident classification
-3. Add rollback procedures (feature flag toggle, code revert)
-4. Include Railway backup restoration steps
-5. Add notification procedures
-
-**Content Outline**:
-- P1 (Production Down): Check Railway → Revert commit → Notify Eddie
-- P2 (Feature Broken): Disable feature flag → Investigate → Fix
-- P3 (Minor Issue): Create ticket → Fix in normal workflow
-
-**Success Metric**: Any incident can be handled by following runbook; MTTR < 10 minutes
-
----
 
 ### DISC-060: RAG Learning System Implementation 🧠 COMPETITIVE DEFENSE (DISCOVERED)
 

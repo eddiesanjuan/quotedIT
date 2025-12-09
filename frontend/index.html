@@ -4952,6 +4952,40 @@
             ? 'http://localhost:8000/api'
             : window.location.origin + '/api';
 
+        // ========== FEATURE FLAGS (DISC-078) ==========
+        // Wrapper for PostHog feature flags with graceful fallback
+
+        /**
+         * Check if a feature flag is enabled for the current user
+         * @param {string} flagKey - The feature flag key (e.g., 'invoicing_enabled')
+         * @param {boolean} defaultValue - Value to return if PostHog unavailable (default: false)
+         * @returns {boolean} Whether the feature is enabled
+         */
+        function isFeatureEnabled(flagKey, defaultValue = false) {
+            if (!window.posthog) return defaultValue;
+            try {
+                const result = posthog.isFeatureEnabled(flagKey);
+                return result ?? defaultValue;
+            } catch (e) {
+                console.warn('Feature flag check failed:', e);
+                return defaultValue;
+            }
+        }
+
+        /**
+         * Conditionally execute code based on feature flag
+         * @param {string} flagKey - The feature flag key
+         * @param {Function} showCallback - Function to call if feature is enabled
+         * @param {Function} hideCallback - Function to call if feature is disabled (optional)
+         */
+        function showFeature(flagKey, showCallback, hideCallback = () => {}) {
+            if (isFeatureEnabled(flagKey)) {
+                showCallback();
+            } else {
+                hideCallback();
+            }
+        }
+
         // State
         let authToken = localStorage.getItem('quoted_token');
         let currentUser = JSON.parse(localStorage.getItem('quoted_user') || 'null');

@@ -131,6 +131,76 @@ Run `/run-qa smoke` before pushing to main. For major changes, run `/run-qa full
 
 See `.claude/commands/run-qa.md` for full QA protocol.
 
+## Feature Flags (DISC-078)
+
+New features ship behind PostHog feature flags for gradual rollout and instant rollback.
+
+### Flag Discipline
+
+1. **New features ship behind flags** (default: false)
+2. **Enable for Eddie first** (48 hours validation)
+3. **Enable for all users** after validation
+4. **Remove flag** after 2 weeks stable in production
+5. **Never ship broken code** "behind a flag" - code must work
+
+### Flag Naming
+
+Convention: `{feature}_enabled`
+
+| Flag Key | Feature | Default |
+|----------|---------|---------|
+| `invoicing_enabled` | DISC-071 Quote-to-Invoice | false |
+| `new_pdf_templates` | DISC-072 PDF Template Polish | false |
+| `voice_template_customization` | DISC-070 Voice PDF Customization | false |
+
+### Frontend Usage
+
+```javascript
+// Check if feature is enabled
+if (isFeatureEnabled('invoicing_enabled')) {
+    showInvoiceButton();
+}
+
+// Callback-based approach
+showFeature('new_pdf_templates',
+    () => { /* show new templates */ },
+    () => { /* show old templates */ }
+);
+```
+
+### Backend Usage
+
+```python
+from backend.services.feature_flags import is_feature_enabled
+
+# Generic check
+if is_feature_enabled("invoicing_enabled", user_id=contractor.id):
+    return {"invoicing_available": True}
+
+# Convenience functions
+from backend.services.feature_flags import is_invoicing_enabled
+if is_invoicing_enabled(contractor.id):
+    # ...
+```
+
+### Rollback
+
+1. Go to [PostHog Dashboard](https://app.posthog.com)
+2. Feature Flags → Find flag → Disable
+3. Takes effect in ~30 seconds
+
+See `docs/EMERGENCY_RUNBOOK.md` for full rollback procedures.
+
+## Deployment Workflow
+
+1. Create feature branch
+2. Push → PR → Railway auto-deploys preview
+3. Test on preview URL (10 min smoke test)
+4. Merge to main → auto-deploy to production
+5. Monitor PostHog/Sentry for 5 min
+
+For incidents, see `docs/EMERGENCY_RUNBOOK.md`.
+
 ## MCP Profiles
 
 For browser testing, switch to browser profile:
