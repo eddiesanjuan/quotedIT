@@ -79,6 +79,9 @@ class TermsResponse(BaseModel):
     quote_valid_days: int = 30
     labor_warranty_years: int = 2
     custom_terms: Optional[str] = None
+    # DISC-080: Default timeline and terms text for quotes
+    default_timeline_text: Optional[str] = None
+    default_terms_text: Optional[str] = None
 
 
 class TermsUpdate(BaseModel):
@@ -91,6 +94,9 @@ class TermsUpdate(BaseModel):
     quote_valid_days: Optional[int] = None
     labor_warranty_years: Optional[int] = None
     custom_terms: Optional[str] = None
+    # DISC-080: Default timeline and terms text for quotes
+    default_timeline_text: Optional[str] = None
+    default_terms_text: Optional[str] = None
 
 
 class SetIndustryRequest(BaseModel):
@@ -317,6 +323,9 @@ async def get_my_terms(contractor: Contractor = Depends(get_current_contractor))
         labor_warranty_years=terms.labor_warranty_years,
         accepted_payment_methods=terms.accepted_payment_methods,
         custom_terms=terms.custom_terms,
+        # DISC-080: Default timeline and terms text
+        default_timeline_text=terms.default_timeline_text,
+        default_terms_text=terms.default_terms_text,
     )
 
 
@@ -339,6 +348,11 @@ async def update_my_terms(update: TermsUpdate, contractor: Contractor = Depends(
         update_data["accepted_payment_methods"] = update.accepted_payment_methods
     if update.custom_terms is not None:
         update_data["custom_terms"] = update.custom_terms
+    # DISC-080: Default timeline and terms text
+    if update.default_timeline_text is not None:
+        update_data["default_timeline_text"] = update.default_timeline_text
+    if update.default_terms_text is not None:
+        update_data["default_terms_text"] = update.default_terms_text
 
     terms = await db.update_terms(contractor.id, **update_data)
 
@@ -352,6 +366,9 @@ async def update_my_terms(update: TermsUpdate, contractor: Contractor = Depends(
         labor_warranty_years=terms.labor_warranty_years,
         accepted_payment_methods=terms.accepted_payment_methods,
         custom_terms=terms.custom_terms,
+        # DISC-080: Default timeline and terms text
+        default_timeline_text=terms.default_timeline_text,
+        default_terms_text=terms.default_terms_text,
     )
 
 

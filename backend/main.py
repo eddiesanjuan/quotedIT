@@ -21,7 +21,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 from .config import settings
 from .models.database import init_db
-from .api import quotes, contractors, onboarding, auth, billing, pricing_brain, demo, referral, share, beta, testimonials, learning
+from .api import quotes, contractors, onboarding, auth, billing, pricing_brain, demo, referral, share, beta, testimonials, learning, invoices
 
 # Configure logger
 logger = logging.getLogger(__name__)
@@ -157,6 +157,7 @@ app.include_router(share.router, prefix="/api/quotes", tags=["Share Quote"])
 app.include_router(beta.router, prefix="/api/beta", tags=["Beta"])
 app.include_router(testimonials.router, prefix="/api/testimonials", tags=["Testimonials"])
 app.include_router(learning.router, prefix="/api/learning", tags=["Learning"])
+app.include_router(invoices.router, prefix="/api/invoices", tags=["Invoices"])  # DISC-071
 
 
 @app.get("/api/info")

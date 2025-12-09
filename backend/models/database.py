@@ -104,6 +104,7 @@ class Contractor(Base):
     terms = relationship("ContractorTerms", back_populates="contractor", uselist=False)
     job_types = relationship("JobType", back_populates="contractor")
     quotes = relationship("Quote", back_populates="contractor")
+    invoices = relationship("Invoice", back_populates="contractor")  # DISC-071
 
 
 class PricingModel(Base):
@@ -351,6 +352,7 @@ class Quote(Base):
     # Relationship
     contractor = relationship("Contractor", back_populates="quotes")
     feedback = relationship("QuoteFeedback", back_populates="quote", uselist=False)
+    invoices = relationship("Invoice", back_populates="quote")  # DISC-071: One quote can have multiple invoices
 
 
 class QuoteFeedback(Base):
@@ -420,6 +422,83 @@ class QuoteFeedback(Base):
 
     # Relationship
     quote = relationship("Quote", back_populates="feedback")
+
+
+# DISC-071: Invoice model for quote-to-invoice conversion
+class Invoice(Base):
+    """
+    Invoice generated from a quote.
+    Supports the quote-to-invoice workflow where contractors can convert
+    accepted quotes into invoices for billing.
+
+    One quote can have multiple invoices (for progress billing).
+    """
+    __tablename__ = "invoices"
+
+    id = Column(String, primary_key=True, default=generate_uuid)
+    contractor_id = Column(String, ForeignKey("contractors.id"), nullable=False)
+    quote_id = Column(String, ForeignKey("quotes.id"), nullable=True)  # Can create standalone invoices
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Invoice number (auto-generated per contractor)
+    invoice_number = Column(String(50), nullable=False, index=True)
+
+    # Customer info (copied from quote or entered manually)
+    customer_name = Column(String(255))
+    customer_email = Column(String(255))
+    customer_phone = Column(String(50))
+    customer_address = Column(Text)
+
+    # Invoice details
+    description = Column(Text)  # Job/project description
+    line_items = Column(JSON)  # Same format as Quote line items
+    """
+    Example:
+    [
+        {"name": "Demolition", "description": "Remove existing deck", "amount": 1100},
+        {"name": "Framing", "description": "PT frame and joists", "amount": 2800},
+        ...
+    ]
+    """
+    subtotal = Column(Float)
+    tax_percent = Column(Float, default=0)  # Optional tax
+    tax_amount = Column(Float, default=0)
+    total = Column(Float)
+
+    # Dates
+    invoice_date = Column(DateTime, default=datetime.utcnow)
+    due_date = Column(DateTime)  # When payment is due
+
+    # Payment terms
+    terms_text = Column(Text)  # Payment terms
+    notes = Column(Text)  # Additional notes
+
+    # Status tracking
+    status = Column(String(50), default="draft")
+    """
+    Status flow:
+    - draft: Just created, not sent
+    - sent: Emailed to customer
+    - viewed: Customer opened the link
+    - paid: Marked as paid
+    - overdue: Past due date, not paid
+    - cancelled: Cancelled/voided
+    """
+    sent_at = Column(DateTime)
+    paid_at = Column(DateTime)
+    payment_method = Column(String(50))  # check, credit_card, cash, zelle, etc.
+    payment_reference = Column(String(255))  # Check number, transaction ID, etc.
+
+    # PDF storage
+    pdf_url = Column(String(500))
+
+    # Sharing
+    share_token = Column(String(32), unique=True, nullable=True, index=True)
+
+    # Relationships
+    contractor = relationship("Contractor", back_populates="invoices")
+    quote = relationship("Quote", back_populates="invoices")
 
 
 class SetupConversation(Base):

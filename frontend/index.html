@@ -562,6 +562,18 @@
             border-color: #c0392b;
         }
 
+        /* DISC-071: Success button for invoice creation */
+        .btn-success {
+            background: var(--success);
+            color: #0a0a0a;
+            border: 1px solid var(--success);
+        }
+
+        .btn-success:hover {
+            background: #22c55e;
+            border-color: #22c55e;
+        }
+
         .btn-ghost {
             background: transparent;
             color: var(--text-secondary);
@@ -3545,6 +3557,7 @@
             <div class="app-nav" id="appNav" style="display: none;">
                 <button class="app-nav-btn active" id="newQuoteNavBtn" onclick="showAppSection('newQuote')">New Quote</button>
                 <button class="app-nav-btn" id="myQuotesNavBtn" onclick="showAppSection('myQuotes')">My Quotes</button>
+                <button class="app-nav-btn" id="invoicesNavBtn" onclick="showAppSection('invoices')">Invoices</button>
                 <button class="app-nav-btn" id="accountNavBtn" onclick="showAppSection('account')">Account</button>
                 <a href="/help" class="app-nav-btn" style="text-decoration: none;">Help</a>
             </div>
@@ -4116,9 +4129,142 @@
                 <div class="quote-actions" id="detailQuoteActions">
                     <button class="btn btn-primary" onclick="downloadDetailPdf()">Download PDF</button>
                     <button class="btn btn-primary" onclick="openShareModal()">📤 Share</button>
+                    <button class="btn btn-success" id="createInvoiceBtn" onclick="createInvoiceFromQuote()">📄 Create Invoice</button>
                     <button class="btn btn-secondary" onclick="duplicateQuote()">📋 Duplicate</button>
                     <button class="btn btn-secondary" onclick="backToQuoteList()">Back to My Quotes</button>
                     <button class="btn btn-danger" onclick="confirmDeleteQuote()">🗑️ Delete</button>
+                </div>
+            </div>
+
+            <!-- DISC-071: Invoices Section -->
+            <div class="card" id="invoicesSection" style="display: none;">
+                <div class="quote-history-header">
+                    <h2>Invoices</h2>
+                    <span class="quote-history-count" id="invoiceCount">0 invoices</span>
+                </div>
+
+                <div class="invoice-filters" style="margin-bottom: 20px;">
+                    <select id="invoiceStatusFilter" onchange="loadInvoices()" style="padding: 10px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-elevated); color: var(--text-primary); font-size: 0.875rem;">
+                        <option value="">All Statuses</option>
+                        <option value="draft">Draft</option>
+                        <option value="sent">Sent</option>
+                        <option value="paid">Paid</option>
+                        <option value="overdue">Overdue</option>
+                    </select>
+                </div>
+
+                <div class="quote-list" id="invoiceList">
+                    <!-- Invoice list items will be populated via JavaScript -->
+                </div>
+
+                <div class="empty-state" id="invoiceEmpty" style="display: none;">
+                    <div class="empty-icon">📄</div>
+                    <h3>No invoices yet</h3>
+                    <p>Convert a quote to an invoice to get paid faster.</p>
+                    <button class="cta-button" onclick="showAppSection('myQuotes')">View My Quotes</button>
+                </div>
+
+                <div id="invoiceLoadingState" style="display: none; text-align: center; padding: 40px;">
+                    <div class="spinner" style="display: inline-block;"></div>
+                    <p style="margin-top: 16px; color: var(--text-secondary);">Loading your invoices...</p>
+                </div>
+            </div>
+
+            <!-- Invoice Detail View -->
+            <div class="card quote-result" id="invoiceDetailView" style="display: none;">
+                <div class="quote-header">
+                    <h2 id="invoiceDetailTitle">Invoice Details</h2>
+                    <span class="confidence-badge" id="invoiceStatusBadge">Draft</span>
+                </div>
+
+                <div class="customer-info-section">
+                    <div class="customer-info-header">
+                        <h3>Customer Information</h3>
+                    </div>
+                    <div class="customer-info-grid">
+                        <div class="customer-info-item">
+                            <div class="customer-info-label">Name</div>
+                            <div class="customer-info-value" id="invoiceCustomerName">—</div>
+                        </div>
+                        <div class="customer-info-item">
+                            <div class="customer-info-label">Email</div>
+                            <div class="customer-info-value" id="invoiceCustomerEmail">—</div>
+                        </div>
+                        <div class="customer-info-item">
+                            <div class="customer-info-label">Phone</div>
+                            <div class="customer-info-value" id="invoiceCustomerPhone">—</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="job-description" id="invoiceDescription"></div>
+
+                <div class="line-items" id="invoiceLineItems">
+                    <!-- Line items will be populated via JavaScript -->
+                </div>
+
+                <div class="quote-total">
+                    <span class="total-label">Total Due</span>
+                    <span class="total-amount" id="invoiceTotalAmount">$0</span>
+                </div>
+
+                <div class="invoice-dates" style="margin-top: 20px; padding: 16px; background: var(--bg-elevated); border-radius: 8px;">
+                    <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+                        <div>
+                            <span style="color: var(--text-secondary); font-size: 0.875rem;">Invoice Date</span>
+                            <div id="invoiceDateDisplay" style="font-weight: 500;">—</div>
+                        </div>
+                        <div>
+                            <span style="color: var(--text-secondary); font-size: 0.875rem;">Due Date</span>
+                            <div id="invoiceDueDateDisplay" style="font-weight: 500;">—</div>
+                        </div>
+                        <div id="invoicePaidInfo" style="display: none;">
+                            <span style="color: var(--text-secondary); font-size: 0.875rem;">Paid On</span>
+                            <div id="invoicePaidDateDisplay" style="font-weight: 500; color: var(--success);">—</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="quote-actions" id="invoiceDetailActions" style="margin-top: 24px;">
+                    <button class="btn btn-primary" onclick="downloadInvoicePdf()">Download PDF</button>
+                    <button class="btn btn-success" id="markPaidBtn" onclick="openMarkPaidModal()">💰 Mark as Paid</button>
+                    <button class="btn btn-secondary" onclick="backToInvoiceList()">Back to Invoices</button>
+                    <button class="btn btn-danger" id="deleteInvoiceBtn" onclick="confirmDeleteInvoice()">🗑️ Delete</button>
+                </div>
+            </div>
+
+            <!-- Mark Paid Modal -->
+            <div class="modal" id="markPaidModal" style="display: none;">
+                <div class="modal-content" style="max-width: 400px;">
+                    <div class="modal-header">
+                        <h3>Mark Invoice as Paid</h3>
+                        <button class="modal-close" onclick="closeMarkPaidModal()">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label>Payment Method (optional)</label>
+                            <select id="paymentMethod" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-elevated); color: var(--text-primary);">
+                                <option value="">Select method...</option>
+                                <option value="cash">Cash</option>
+                                <option value="check">Check</option>
+                                <option value="credit_card">Credit Card</option>
+                                <option value="debit_card">Debit Card</option>
+                                <option value="bank_transfer">Bank Transfer</option>
+                                <option value="zelle">Zelle</option>
+                                <option value="venmo">Venmo</option>
+                                <option value="paypal">PayPal</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Reference # (optional)</label>
+                            <input type="text" id="paymentReference" placeholder="Check #, Transaction ID, etc.">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="closeMarkPaidModal()">Cancel</button>
+                        <button class="btn btn-success" onclick="markInvoicePaid()">Mark as Paid</button>
+                    </div>
                 </div>
             </div>
 
@@ -4131,6 +4277,7 @@
                     <button class="account-tab-btn active" id="billingTabBtn" onclick="showAccountTab('billing')">Billing</button>
                     <button class="account-tab-btn" id="referralTabBtn" onclick="showAccountTab('referral')">Referral</button>
                     <button class="account-tab-btn" id="logoTabBtn" onclick="showAccountTab('logo')">Business Logo</button>
+                    <button class="account-tab-btn" id="quoteDefaultsTabBtn" onclick="showAccountTab('quoteDefaults')">Quote Defaults</button>
                     <button class="account-tab-btn" id="pricingBrainTabBtn" onclick="showAccountTab('pricingBrain')">Pricing Brain™</button>
                 </div>
 
@@ -4317,6 +4464,49 @@
                         </div>
                     </div>
                 </div> <!-- End Logo Tab Content -->
+
+                <!-- Quote Defaults Tab Content (DISC-080) -->
+                <div id="quoteDefaultsTabContent" class="account-tab-content">
+                    <div class="pricing-brain-section">
+                        <h3 class="section-title">Default Timeline & Terms</h3>
+                        <p class="section-subtitle">Set default text that will automatically appear on new quotes. You can customize these for each quote.</p>
+
+                        <form id="quoteDefaultsForm" onsubmit="saveQuoteDefaults(event)" style="margin-top: 24px;">
+                            <!-- Default Timeline -->
+                            <div class="form-group" style="margin-bottom: 24px;">
+                                <label for="defaultTimelineText" style="display: block; margin-bottom: 8px; font-weight: 500;">Default Timeline</label>
+                                <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 8px;">Describe your typical project timeline (e.g., "Work begins within 2 weeks of deposit. Project typically completed in 3-5 business days.")</p>
+                                <textarea
+                                    id="defaultTimelineText"
+                                    rows="4"
+                                    placeholder="Enter your default timeline description..."
+                                    style="width: 100%; background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); padding: 12px; border-radius: 8px; font-family: var(--font-sans); font-size: 1rem; resize: vertical;"
+                                ></textarea>
+                            </div>
+
+                            <!-- Default Terms -->
+                            <div class="form-group" style="margin-bottom: 24px;">
+                                <label for="defaultTermsText" style="display: block; margin-bottom: 8px; font-weight: 500;">Default Terms & Conditions</label>
+                                <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 8px;">Your standard terms that apply to all quotes (e.g., payment terms, warranty info, cancellation policy)</p>
+                                <textarea
+                                    id="defaultTermsText"
+                                    rows="6"
+                                    placeholder="Enter your default terms and conditions..."
+                                    style="width: 100%; background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); padding: 12px; border-radius: 8px; font-family: var(--font-sans); font-size: 1rem; resize: vertical;"
+                                ></textarea>
+                            </div>
+
+                            <!-- Save Button -->
+                            <div style="display: flex; gap: 12px;">
+                                <button type="submit" class="btn btn-primary" id="saveQuoteDefaultsBtn" style="flex: 1;">Save Defaults</button>
+                            </div>
+                        </form>
+
+                        <p style="margin-top: 16px; font-size: 0.875rem; color: var(--text-secondary);">
+                            These defaults will be pre-filled when you create a new quote. You can always edit them on individual quotes.
+                        </p>
+                    </div>
+                </div>
 
                 <!-- Pricing Brain Tab Content -->
                 <div id="pricingBrainTabContent" class="account-tab-content">
@@ -7940,6 +8130,7 @@
             // Update desktop nav buttons
             document.getElementById('newQuoteNavBtn').classList.toggle('active', section === 'newQuote');
             document.getElementById('myQuotesNavBtn').classList.toggle('active', section === 'myQuotes');
+            document.getElementById('invoicesNavBtn').classList.toggle('active', section === 'invoices');
             document.getElementById('accountNavBtn').classList.toggle('active', section === 'account');
 
             // Update mobile nav buttons
@@ -7952,6 +8143,8 @@
             document.getElementById('quoteResult').style.display = 'none';
             document.getElementById('myQuotesSection').style.display = 'none';
             document.getElementById('quoteDetailView').style.display = 'none';
+            document.getElementById('invoicesSection').style.display = 'none';
+            document.getElementById('invoiceDetailView').style.display = 'none';
             document.getElementById('onboardingNotice').style.display = 'none';
             document.getElementById('loadingSection').style.display = 'none';
             document.getElementById('accountSection').style.display = 'none';
@@ -7973,6 +8166,11 @@
                 // Check if first quote celebration should show
                 checkAndShowCelebration();
                 // Stop autosave when leaving New Quote section (DISC-032)
+                stopAutosave();
+            } else if (section === 'invoices') {
+                // DISC-071: Invoices section
+                document.getElementById('invoicesSection').style.display = 'block';
+                loadInvoices();
                 stopAutosave();
             } else if (section === 'account') {
                 document.getElementById('accountSection').style.display = 'block';
@@ -9159,6 +9357,416 @@
             }
         }
 
+        // DISC-080: Quote Defaults Management
+        async function loadQuoteDefaults() {
+            try {
+                const response = await fetch(`${API_BASE}/contractors/me/terms`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('defaultTimelineText').value = data.default_timeline_text || '';
+                    document.getElementById('defaultTermsText').value = data.default_terms_text || '';
+                }
+            } catch (error) {
+                console.error('Error loading quote defaults:', error);
+            }
+        }
+
+        async function saveQuoteDefaults(event) {
+            event.preventDefault();
+            const saveBtn = document.getElementById('saveQuoteDefaultsBtn');
+            const originalText = saveBtn.textContent;
+            saveBtn.textContent = 'Saving...';
+            saveBtn.disabled = true;
+
+            try {
+                const response = await fetch(`${API_BASE}/contractors/me/terms`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        default_timeline_text: document.getElementById('defaultTimelineText').value || null,
+                        default_terms_text: document.getElementById('defaultTermsText').value || null
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to save defaults');
+                }
+
+                showLearningToast('Quote defaults saved!', '✅');
+            } catch (error) {
+                console.error('Error saving quote defaults:', error);
+                showError('Failed to save quote defaults. Please try again.');
+            } finally {
+                saveBtn.textContent = originalText;
+                saveBtn.disabled = false;
+            }
+        }
+
+        // ================================================================
+        // DISC-071: Invoice Management
+        // ================================================================
+
+        let currentInvoice = null;
+
+        async function loadInvoices() {
+            const invoiceList = document.getElementById('invoiceList');
+            const invoiceEmpty = document.getElementById('invoiceEmpty');
+            const invoiceLoading = document.getElementById('invoiceLoadingState');
+            const invoiceCount = document.getElementById('invoiceCount');
+
+            invoiceList.textContent = '';
+            invoiceEmpty.style.display = 'none';
+            invoiceLoading.style.display = 'block';
+
+            try {
+                const statusFilter = document.getElementById('invoiceStatusFilter').value;
+                let url = `${API_BASE}/invoices`;
+                if (statusFilter) {
+                    url += `?status=${statusFilter}`;
+                }
+
+                const response = await fetch(url, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load invoices');
+                }
+
+                const invoices = await response.json();
+                invoiceLoading.style.display = 'none';
+
+                if (invoices.length === 0) {
+                    invoiceEmpty.style.display = 'block';
+                    invoiceCount.textContent = '0 invoices';
+                    return;
+                }
+
+                invoiceCount.textContent = `${invoices.length} invoice${invoices.length !== 1 ? 's' : ''}`;
+
+                invoices.forEach(invoice => {
+                    const item = document.createElement('div');
+                    item.className = 'quote-list-item';
+                    item.onclick = () => showInvoiceDetail(invoice.id);
+
+                    const header = document.createElement('div');
+                    header.className = 'quote-list-item-header';
+
+                    const title = document.createElement('div');
+                    title.className = 'quote-list-item-title';
+                    title.textContent = `${invoice.invoice_number} - ${invoice.customer_name || 'No customer'}`;
+
+                    const amount = document.createElement('div');
+                    amount.className = 'quote-list-item-amount';
+                    amount.textContent = `$${(invoice.total || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+
+                    header.appendChild(title);
+                    header.appendChild(amount);
+
+                    const meta = document.createElement('div');
+                    meta.className = 'quote-list-item-meta';
+
+                    // Status badge
+                    const statusBadge = document.createElement('span');
+                    statusBadge.style.padding = '4px 8px';
+                    statusBadge.style.borderRadius = '4px';
+                    statusBadge.style.fontSize = '0.75rem';
+                    statusBadge.style.fontWeight = '500';
+
+                    const statusColors = {
+                        draft: { bg: '#374151', color: '#fff' },
+                        sent: { bg: '#3b82f6', color: '#fff' },
+                        viewed: { bg: '#8b5cf6', color: '#fff' },
+                        paid: { bg: '#22c55e', color: '#fff' },
+                        overdue: { bg: '#ef4444', color: '#fff' },
+                        cancelled: { bg: '#6b7280', color: '#fff' }
+                    };
+
+                    const colors = statusColors[invoice.status] || statusColors.draft;
+                    statusBadge.style.backgroundColor = colors.bg;
+                    statusBadge.style.color = colors.color;
+                    statusBadge.textContent = invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1);
+
+                    meta.appendChild(statusBadge);
+
+                    if (invoice.due_date) {
+                        const dueDate = document.createElement('span');
+                        dueDate.textContent = `Due: ${new Date(invoice.due_date).toLocaleDateString()}`;
+                        meta.appendChild(dueDate);
+                    }
+
+                    item.appendChild(header);
+                    item.appendChild(meta);
+                    invoiceList.appendChild(item);
+                });
+
+            } catch (error) {
+                console.error('Error loading invoices:', error);
+                invoiceLoading.style.display = 'none';
+                invoiceEmpty.style.display = 'block';
+            }
+        }
+
+        async function showInvoiceDetail(invoiceId) {
+            try {
+                const response = await fetch(`${API_BASE}/invoices/${invoiceId}`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load invoice');
+                }
+
+                currentInvoice = await response.json();
+
+                // Hide invoices list, show detail view
+                document.getElementById('invoicesSection').style.display = 'none';
+                document.getElementById('invoiceDetailView').style.display = 'block';
+
+                // Populate detail view
+                document.getElementById('invoiceDetailTitle').textContent = `Invoice ${currentInvoice.invoice_number}`;
+                document.getElementById('invoiceStatusBadge').textContent = currentInvoice.status.charAt(0).toUpperCase() + currentInvoice.status.slice(1);
+                document.getElementById('invoiceCustomerName').textContent = currentInvoice.customer_name || '—';
+                document.getElementById('invoiceCustomerEmail').textContent = currentInvoice.customer_email || '—';
+                document.getElementById('invoiceCustomerPhone').textContent = currentInvoice.customer_phone || '—';
+                document.getElementById('invoiceDescription').textContent = currentInvoice.description || '';
+                document.getElementById('invoiceTotalAmount').textContent = `$${(currentInvoice.total || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+
+                // Dates
+                document.getElementById('invoiceDateDisplay').textContent = currentInvoice.invoice_date
+                    ? new Date(currentInvoice.invoice_date).toLocaleDateString()
+                    : '—';
+                document.getElementById('invoiceDueDateDisplay').textContent = currentInvoice.due_date
+                    ? new Date(currentInvoice.due_date).toLocaleDateString()
+                    : '—';
+
+                // Paid info
+                const paidInfo = document.getElementById('invoicePaidInfo');
+                if (currentInvoice.status === 'paid' && currentInvoice.paid_at) {
+                    paidInfo.style.display = 'block';
+                    document.getElementById('invoicePaidDateDisplay').textContent = new Date(currentInvoice.paid_at).toLocaleDateString();
+                } else {
+                    paidInfo.style.display = 'none';
+                }
+
+                // Update buttons based on status
+                const markPaidBtn = document.getElementById('markPaidBtn');
+                const deleteBtn = document.getElementById('deleteInvoiceBtn');
+                if (currentInvoice.status === 'paid') {
+                    markPaidBtn.style.display = 'none';
+                    deleteBtn.style.display = 'none';
+                } else {
+                    markPaidBtn.style.display = 'inline-flex';
+                    deleteBtn.style.display = 'inline-flex';
+                }
+
+                // Line items - using safe DOM methods
+                const lineItemsContainer = document.getElementById('invoiceLineItems');
+                lineItemsContainer.textContent = '';
+
+                if (currentInvoice.line_items && currentInvoice.line_items.length > 0) {
+                    currentInvoice.line_items.forEach(item => {
+                        const itemDiv = document.createElement('div');
+                        itemDiv.className = 'line-item';
+
+                        const contentDiv = document.createElement('div');
+                        contentDiv.className = 'line-item-content';
+
+                        const headerDiv = document.createElement('div');
+                        headerDiv.className = 'line-item-header';
+
+                        const nameSpan = document.createElement('span');
+                        nameSpan.className = 'item-name';
+                        nameSpan.textContent = item.name || 'Item';
+
+                        const amountSpan = document.createElement('span');
+                        amountSpan.className = 'item-amount';
+                        amountSpan.textContent = `$${(item.amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+
+                        headerDiv.appendChild(nameSpan);
+                        headerDiv.appendChild(amountSpan);
+                        contentDiv.appendChild(headerDiv);
+
+                        if (item.description) {
+                            const descDiv = document.createElement('div');
+                            descDiv.className = 'item-description';
+                            descDiv.textContent = item.description;
+                            contentDiv.appendChild(descDiv);
+                        }
+
+                        itemDiv.appendChild(contentDiv);
+                        lineItemsContainer.appendChild(itemDiv);
+                    });
+                }
+
+            } catch (error) {
+                console.error('Error loading invoice:', error);
+                showError('Failed to load invoice details');
+            }
+        }
+
+        function backToInvoiceList() {
+            document.getElementById('invoiceDetailView').style.display = 'none';
+            document.getElementById('invoicesSection').style.display = 'block';
+            currentInvoice = null;
+        }
+
+        async function createInvoiceFromQuote() {
+            if (!currentDetailQuote) {
+                showError('No quote selected');
+                return;
+            }
+
+            const createBtn = document.getElementById('createInvoiceBtn');
+            const originalText = createBtn.textContent;
+            createBtn.textContent = 'Creating...';
+            createBtn.disabled = true;
+
+            try {
+                const response = await fetch(`${API_BASE}/invoices/from-quote/${currentDetailQuote.id}`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Failed to create invoice');
+                }
+
+                const invoice = await response.json();
+
+                // Track analytics
+                if (window.posthog) {
+                    posthog.capture('invoice_created_from_quote', {
+                        quote_id: currentDetailQuote.id,
+                        invoice_id: invoice.id,
+                        total: invoice.total
+                    });
+                }
+
+                showLearningToast(`Invoice ${invoice.invoice_number} created!`, '✅');
+
+                // Navigate to invoice detail
+                showAppSection('invoices');
+                setTimeout(() => showInvoiceDetail(invoice.id), 100);
+
+            } catch (error) {
+                console.error('Error creating invoice:', error);
+                showError(error.message || 'Failed to create invoice');
+            } finally {
+                createBtn.textContent = originalText;
+                createBtn.disabled = false;
+            }
+        }
+
+        async function downloadInvoicePdf() {
+            if (!currentInvoice) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/invoices/${currentInvoice.id}/pdf`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to download invoice PDF');
+                }
+
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `invoice_${currentInvoice.invoice_number}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+            } catch (error) {
+                console.error('Error downloading invoice PDF:', error);
+                showError('Failed to download invoice PDF');
+            }
+        }
+
+        function openMarkPaidModal() {
+            document.getElementById('markPaidModal').style.display = 'flex';
+            document.getElementById('paymentMethod').value = '';
+            document.getElementById('paymentReference').value = '';
+        }
+
+        function closeMarkPaidModal() {
+            document.getElementById('markPaidModal').style.display = 'none';
+        }
+
+        async function markInvoicePaid() {
+            if (!currentInvoice) return;
+
+            try {
+                const paymentMethod = document.getElementById('paymentMethod').value;
+                const paymentReference = document.getElementById('paymentReference').value;
+
+                const response = await fetch(`${API_BASE}/invoices/${currentInvoice.id}/mark-paid`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        payment_method: paymentMethod || null,
+                        payment_reference: paymentReference || null
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to mark invoice as paid');
+                }
+
+                closeMarkPaidModal();
+                showLearningToast('Invoice marked as paid!', '💰');
+
+                // Refresh invoice detail
+                showInvoiceDetail(currentInvoice.id);
+
+            } catch (error) {
+                console.error('Error marking invoice paid:', error);
+                showError('Failed to mark invoice as paid');
+            }
+        }
+
+        async function confirmDeleteInvoice() {
+            if (!currentInvoice) return;
+
+            if (!confirm(`Are you sure you want to delete invoice ${currentInvoice.invoice_number}? This cannot be undone.`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/invoices/${currentInvoice.id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to delete invoice');
+                }
+
+                showLearningToast('Invoice deleted', '🗑️');
+                backToInvoiceList();
+                loadInvoices();
+
+            } catch (error) {
+                console.error('Error deleting invoice:', error);
+                showError('Failed to delete invoice');
+            }
+        }
+
         async function handleLogoFileSelect(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -9766,12 +10374,14 @@
             document.getElementById('billingTabBtn').classList.toggle('active', tab === 'billing');
             document.getElementById('referralTabBtn').classList.toggle('active', tab === 'referral');
             document.getElementById('logoTabBtn').classList.toggle('active', tab === 'logo');
+            document.getElementById('quoteDefaultsTabBtn').classList.toggle('active', tab === 'quoteDefaults');
             document.getElementById('pricingBrainTabBtn').classList.toggle('active', tab === 'pricingBrain');
 
             // Update tab content
             document.getElementById('billingTabContent').classList.toggle('active', tab === 'billing');
             document.getElementById('referralTabContent').classList.toggle('active', tab === 'referral');
             document.getElementById('logoTabContent').classList.toggle('active', tab === 'logo');
+            document.getElementById('quoteDefaultsTabContent').classList.toggle('active', tab === 'quoteDefaults');
             document.getElementById('pricingBrainTabContent').classList.toggle('active', tab === 'pricingBrain');
 
             // Load data when switching tabs
@@ -9781,6 +10391,8 @@
                 loadBillingStatus();
             } else if (tab === 'logo') {
                 loadCurrentLogo();
+            } else if (tab === 'quoteDefaults') {
+                loadQuoteDefaults();
             } else if (tab === 'referral') {
                 loadReferralStats();
                 // Track referral signature section view (DISC-021)

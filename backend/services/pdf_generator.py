@@ -15,7 +15,8 @@ from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 from reportlab.platypus import (
-    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image, Flowable
+    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image, Flowable,
+    KeepTogether, PageBreak
 )
 from reportlab.lib.enums import TA_CENTER, TA_RIGHT, TA_LEFT
 from reportlab.pdfbase import pdfmetrics
@@ -118,6 +119,39 @@ PDF_TEMPLATES = {
         "accent_color": "#1e40af",  # Dark blue
         "bg_alt_color": "#eff6ff",
         "available_to": ["team"]  # Team only
+    },
+    # DISC-072: New compact and detailed templates
+    "compact": {
+        "name": "Compact",
+        "description": "Tight spacing for longer quotes",
+        "title_font": "Helvetica",
+        "body_font": "Helvetica",
+        "header_color": "#18181b",
+        "accent_color": "#475569",  # Slate
+        "bg_alt_color": "#f8fafc",
+        "available_to": ["starter", "pro", "team"],
+        "spacing": "compact"  # Flag for reduced spacing
+    },
+    "detailed": {
+        "name": "Detailed",
+        "description": "Extra room for descriptions",
+        "title_font": "Times-Roman",
+        "body_font": "Helvetica",
+        "header_color": "#1e293b",
+        "accent_color": "#3b82f6",  # Blue
+        "bg_alt_color": "#f1f5f9",
+        "available_to": ["pro", "team"],
+        "spacing": "detailed"  # Flag for increased spacing
+    },
+    "minimal": {
+        "name": "Minimal",
+        "description": "Ultra-clean, no distractions",
+        "title_font": "Helvetica",
+        "body_font": "Helvetica",
+        "header_color": "#000000",
+        "accent_color": "#000000",  # Black only
+        "bg_alt_color": "#ffffff",
+        "available_to": ["starter", "pro", "team"]
     }
 }
 
@@ -235,6 +269,7 @@ class PDFGeneratorService:
         Set up custom paragraph styles based on selected template.
 
         DISC-028: Template system - styles adapt to template selection.
+        DISC-072: Added spacing support for compact/detailed templates.
 
         Args:
             template_key: Template identifier (e.g., "modern", "classic")
@@ -242,6 +277,9 @@ class PDFGeneratorService:
         """
         # Get template config or fall back to modern
         template = PDF_TEMPLATES.get(template_key, PDF_TEMPLATES["modern"])
+
+        # DISC-072: Get spacing mode (normal, compact, detailed)
+        self.spacing_mode = template.get("spacing", "normal")
 
         # Apply accent color override if provided (Pro feature)
         if accent_color:
@@ -262,14 +300,25 @@ class PDFGeneratorService:
         # StyleSheet1 doesn't support item deletion, so we recreate it
         self.styles = getSampleStyleSheet()
 
+        # DISC-072: Spacing multipliers for different modes
+        if self.spacing_mode == "compact":
+            space_mult = 0.6  # 60% of normal spacing
+            font_adj = -1  # Slightly smaller fonts
+        elif self.spacing_mode == "detailed":
+            space_mult = 1.3  # 130% of normal spacing
+            font_adj = 0
+        else:
+            space_mult = 1.0
+            font_adj = 0
+
         # Main title - uses template title font
         self.styles.add(ParagraphStyle(
             name='QuoteTitle',
             parent=self.styles['Heading1'],
             fontName=template["title_font"],
-            fontSize=32,
+            fontSize=32 + font_adj,
             alignment=TA_LEFT,
-            spaceAfter=8,
+            spaceAfter=int(8 * space_mult),
             spaceBefore=0,
             textColor=self.template_colors["header"],
             leading=38,
@@ -313,9 +362,9 @@ class PDFGeneratorService:
             name='SectionHeader',
             parent=self.styles['Heading2'],
             fontName=get_bold_font(template["body_font"]),
-            fontSize=10,
-            spaceBefore=24,
-            spaceAfter=12,
+            fontSize=10 + font_adj,
+            spaceBefore=int(24 * space_mult),
+            spaceAfter=int(12 * space_mult),
             textColor=self.template_colors["accent"],
             leading=12,
         ))
@@ -325,9 +374,9 @@ class PDFGeneratorService:
             name='QuoteBody',
             parent=self.styles['Normal'],
             fontName=template["body_font"],
-            fontSize=11,
-            leading=16,
-            spaceAfter=8,
+            fontSize=11 + font_adj,
+            leading=int(16 * space_mult) if space_mult != 0.6 else 14,
+            spaceAfter=int(8 * space_mult),
             textColor=self.template_colors["header"],
         ))
 
@@ -336,9 +385,9 @@ class PDFGeneratorService:
             name='QuoteBodyLight',
             parent=self.styles['Normal'],
             fontName=template["body_font"],
-            fontSize=11,
-            leading=16,
-            spaceAfter=4,
+            fontSize=11 + font_adj,
+            leading=int(16 * space_mult) if space_mult != 0.6 else 14,
+            spaceAfter=int(4 * space_mult),
             textColor=BRAND_GRAY,
         ))
 
@@ -401,9 +450,10 @@ class PDFGeneratorService:
         watermark_text: Optional[str] = None,
         template: str = "modern",
         accent_color: Optional[str] = None,
+        is_invoice: bool = False,
     ) -> bytes:
         """
-        Generate a professional PDF quote document.
+        Generate a professional PDF quote or invoice document.
 
         Args:
             quote_data: The structured quote data
@@ -414,10 +464,13 @@ class PDFGeneratorService:
             watermark_text: Custom watermark text (default: "TRIAL EXPIRED" for grace period, "DEMO" for demo)
             template: Template style key (DISC-028)
             accent_color: Optional accent color override (hex or preset name) (DISC-028)
+            is_invoice: If True, generate as invoice instead of estimate (DISC-071)
 
         Returns:
             PDF as bytes
         """
+        # DISC-071: Store invoice mode for use in section builders
+        self._is_invoice = is_invoice
         # Store watermark text for use in callback
         self._watermark_text = watermark_text or "TRIAL EXPIRED"
         # DISC-028: Apply template styles before generating PDF
@@ -477,28 +530,19 @@ class PDFGeneratorService:
             raise
 
         try:
-            # Total
-            elements.extend(self._build_total_section(quote_data))
-        except Exception as e:
-            print(f"PDF error in _build_total_section: {e}")
-            raise
+            # DISC-072: Keep total, details and footer together to prevent awkward page breaks
+            # Build these sections but wrap them in KeepTogether
+            total_elements = self._build_total_section(quote_data)
+            divider_elements = [HorizontalLine(self.page_width), Spacer(1, 16)]
+            details_elements = self._build_details_section(quote_data, terms)
+            footer_elements = self._build_footer_section()
 
-        # Divider
-        elements.append(HorizontalLine(self.page_width))
-        elements.append(Spacer(1, 16))
-
-        try:
-            # Timeline and Terms side by side
-            elements.extend(self._build_details_section(quote_data, terms))
+            # Combine total + divider + details + footer and keep together
+            # This prevents the total from being separated from the summary
+            summary_block = total_elements + divider_elements + details_elements + footer_elements
+            elements.append(KeepTogether(summary_block))
         except Exception as e:
-            print(f"PDF error in _build_details_section: {e}")
-            raise
-
-        try:
-            # Disclaimer and branding
-            elements.extend(self._build_footer_section())
-        except Exception as e:
-            print(f"PDF error in _build_footer_section: {e}")
+            print(f"PDF error in summary section: {e}")
             raise
 
         # DISC-018: Add watermark callback for grace quotes
@@ -658,17 +702,26 @@ class PDFGeneratorService:
         """Build the title and date section."""
         elements = []
 
-        # Main title
-        elements.append(Paragraph("Estimate", self.styles['QuoteTitle']))
+        # DISC-071: Use "Invoice" title for invoices, "Estimate" for quotes
+        is_invoice = getattr(self, '_is_invoice', False)
+        title = "Invoice" if is_invoice else "Estimate"
+        elements.append(Paragraph(title, self.styles['QuoteTitle']))
 
-        # Date and quote number
-        quote_date = datetime.now().strftime("%B %d, %Y")
-        quote_num = quote_data.get('quote_number', datetime.now().strftime("%Y%m%d%H%M"))
+        # Date and quote/invoice number
+        if is_invoice:
+            # For invoices, use invoice_date and invoice_number from data
+            doc_date = quote_data.get('invoice_date', datetime.now().strftime("%B %d, %Y"))
+            doc_num = quote_data.get('invoice_number', datetime.now().strftime("INV-%Y%m%d"))
+            due_date = quote_data.get('due_date')
+            subtitle = f"#{doc_num}  ·  {doc_date}"
+            if due_date:
+                subtitle += f"  ·  Due: {due_date}"
+        else:
+            doc_date = datetime.now().strftime("%B %d, %Y")
+            doc_num = quote_data.get('quote_number', datetime.now().strftime("%Y%m%d%H%M"))
+            subtitle = f"#{doc_num}  ·  {doc_date}"
 
-        elements.append(Paragraph(
-            f"#{quote_num}  ·  {quote_date}",
-            self.styles['QuoteSubtitle']
-        ))
+        elements.append(Paragraph(subtitle, self.styles['QuoteSubtitle']))
 
         return elements
 
@@ -817,14 +870,52 @@ class PDFGeneratorService:
         elements = []
 
         subtotal = quote_data.get('subtotal', 0)
+        is_invoice = getattr(self, '_is_invoice', False)
 
-        # Total in a right-aligned table
-        total_data = [
-            [
-                Paragraph("Estimated Total", self.styles['TotalLabel']),
-                Paragraph(f"${subtotal:,.2f}", self.styles['TotalAmount']),
-            ],
-        ]
+        # DISC-071: For invoices, include tax breakdown if present
+        if is_invoice and quote_data.get('tax_percent'):
+            tax_percent = quote_data.get('tax_percent', 0)
+            tax_amount = quote_data.get('tax_amount', 0)
+            total = quote_data.get('total', subtotal + tax_amount)
+
+            # Show subtotal, tax, and total
+            total_data = [
+                [
+                    Paragraph("Subtotal", self.styles['TotalLabel']),
+                    Paragraph(f"${subtotal:,.2f}", ParagraphStyle(
+                        name='SubtotalAmount',
+                        parent=self.styles['Normal'],
+                        fontName='Helvetica',
+                        fontSize=12,
+                        alignment=TA_RIGHT,
+                        textColor=BRAND_GRAY,
+                    )),
+                ],
+                [
+                    Paragraph(f"Tax ({tax_percent:.1f}%)", self.styles['TotalLabel']),
+                    Paragraph(f"${tax_amount:,.2f}", ParagraphStyle(
+                        name='TaxAmount',
+                        parent=self.styles['Normal'],
+                        fontName='Helvetica',
+                        fontSize=12,
+                        alignment=TA_RIGHT,
+                        textColor=BRAND_GRAY,
+                    )),
+                ],
+                [
+                    Paragraph("Total Due", self.styles['TotalLabel']),
+                    Paragraph(f"${total:,.2f}", self.styles['TotalAmount']),
+                ],
+            ]
+        else:
+            # Quote mode or invoice without tax - simple total
+            label = "Total Due" if is_invoice else "Estimated Total"
+            total_data = [
+                [
+                    Paragraph(label, self.styles['TotalLabel']),
+                    Paragraph(f"${subtotal:,.2f}", self.styles['TotalAmount']),
+                ],
+            ]
 
         total_table = Table(
             total_data,
@@ -834,8 +925,8 @@ class PDFGeneratorService:
         total_table.setStyle(TableStyle([
             ('ALIGN', (0, 0), (-1, -1), 'RIGHT'),
             ('VALIGN', (0, 0), (-1, -1), 'BOTTOM'),
-            ('TOPPADDING', (0, 0), (-1, -1), 16),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 16),
+            ('TOPPADDING', (0, 0), (-1, -1), 8),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
             ('LEFTPADDING', (0, 0), (-1, -1), 0),
             ('RIGHTPADDING', (0, 0), (-1, -1), 0),
         ]))
@@ -946,24 +1037,41 @@ class PDFGeneratorService:
         return elements
 
     def _build_footer_section(self) -> list:
-        """Build the footer with disclaimer and branding."""
+        """
+        Build the footer with disclaimer and branding.
+
+        DISC-072: Improved footer spacing to prevent cramped look.
+        DISC-071: Different disclaimer text for invoices vs estimates.
+        """
         elements = []
 
-        # Disclaimer
-        disclaimer_text = (
-            "This is a preliminary budgetary estimate for planning purposes only. "
-            "Final pricing may vary based on site conditions, material selections, "
-            "and scope changes. This is not a binding contract."
-        )
+        # DISC-072: Add more top spacing before footer for breathing room
+        elements.append(Spacer(1, 24))
+
+        # DISC-071: Different disclaimer for invoices
+        is_invoice = getattr(self, '_is_invoice', False)
+        if is_invoice:
+            disclaimer_text = (
+                "Payment is due by the date shown above. "
+                "Please reference the invoice number when making payment. "
+                "Thank you for your business."
+            )
+        else:
+            disclaimer_text = (
+                "This is a preliminary budgetary estimate for planning purposes only. "
+                "Final pricing may vary based on site conditions, material selections, "
+                "and scope changes. This is not a binding contract."
+            )
 
         elements.append(Paragraph(disclaimer_text, self.styles['FinePrint']))
-        elements.append(Spacer(1, 16))
+        elements.append(Spacer(1, 20))  # Increased from 16
 
-        # Branding
+        # Branding - with more bottom padding
         elements.append(Paragraph(
             "Generated with quoted.it",
             self.styles['FooterBrand']
         ))
+        elements.append(Spacer(1, 8))  # Bottom padding
 
         return elements
 

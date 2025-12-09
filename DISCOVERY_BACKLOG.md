@@ -24,9 +24,9 @@ To approve: Change status from DISCOVERED → READY
 |--------|-------|
 | DEPLOYED | 43 |
 | COMPLETE | 2 |
-| READY | 10 |
+| READY | 11 |
 | DISCOVERED | 16 |
-| **Total** | **71** |
+| **Total** | **72** |
 
 **Prompt Optimization**: DISC-041 complete → DISC-052, DISC-054 (learning improvements via prompt injection)
 **Deprioritized**: DISC-053, DISC-055 (structured storage/embeddings - over-engineering; prompt injection approach preferred)
@@ -618,6 +618,47 @@ To approve: Change status from DISCOVERED → READY
 - Identify 2-3 viable channels worth testing
 - Define test budget and success criteria for each
 - First batch of users from non-organic source within 2 weeks
+
+---
+
+### DISC-080: Account Default Timeline & Terms Settings ⚙️ (READY)
+
+**Source**: Founder Request (Eddie, 2025-12-08)
+**Impact**: MEDIUM | **Effort**: S | **Score**: 2.0
+**Sprint Alignment**: User experience - reduces repetitive data entry for power users
+
+**Problem**: Users who generate multiple quotes often use the same timeline and terms (e.g., "Net 30", "50% deposit required", "Work to begin within 2 weeks"). Currently they must manually enter or edit these for every quote. Need account-level defaults that pre-populate new quotes.
+
+**Current State**:
+- ✅ Database columns exist: `default_timeline_text` and `default_terms_text` in `contractor_terms` table (added in DISC-067)
+- ✅ Per-quote editing works: Users can customize timeline/terms on individual quotes
+- ❌ No settings UI: No way for users to set their account defaults
+- ❌ No pre-population: New quotes don't inherit defaults
+
+**Proposed Work**:
+1. **Add "Quote Defaults" tab to Account Settings**
+   - New tab in account view (alongside Billing, Referral, Logo, Pricing Brain™)
+   - Two textarea fields: Default Timeline, Default Terms
+   - Example placeholders showing common values
+   - Save button with success feedback
+
+2. **API endpoint for saving defaults**
+   - `PUT /api/contractors/defaults` or extend existing profile endpoint
+   - Save to `contractor_terms.default_timeline_text` and `default_terms_text`
+
+3. **Pre-populate new quotes with defaults**
+   - When creating a quote, fetch contractor's defaults
+   - Pre-fill timeline_text and terms_text fields
+   - User can still override per-quote
+
+4. **Consider: Quick-set templates** (stretch goal)
+   - "Net 30" / "Net 15" / "Due on Receipt" dropdown
+   - "Standard Terms" / "Rush Job Terms" presets
+
+**Success Metric**:
+- Users can set default timeline/terms in account settings
+- New quotes pre-populate with those defaults
+- Reduces per-quote editing for repeat users
 
 ---
 
