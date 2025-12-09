@@ -352,42 +352,43 @@ class QuoteGenerationService:
         # Build the detection prompt with confidence scoring
         if existing_categories:
             categories_list = "\n".join(f"- {cat} ({category_display_names.get(cat, cat)})" for cat in existing_categories)
-            detection_prompt = f"""Categorize this work description. Rate your confidence in the match.
+            detection_prompt = f"""Categorize this work description into ONE of the existing categories.
 
 Description: "{transcription}"
 
 Existing categories for this business:
 {categories_list}
 
-IMPORTANT: Be HONEST about confidence. If this work doesn't clearly fit an existing category, say so.
+CRITICAL: STRONGLY prefer using an existing category. Only create a new category if the work is TRULY different.
 
-Confidence scoring guide:
-- 90-100: Perfect match (same type of work, clear fit)
-- 70-89: Good match (related work, reasonable fit)
-- 50-69: Weak match (some similarity but different enough to warrant a new category)
-- 0-49: Poor match (should definitely be a new category)
+Examples of when to use existing category:
+- "deck_repair" exists → use it for deck repairs, deck fixes, deck restoration, deck refinishing
+- "brand_strategy" exists → use it for branding, brand identity, brand design, brand development
+- "fence_installation" exists → use it for fence building, fence construction, new fence
 
-If confidence is BELOW 70, also suggest what new category this should be.
+Examples of when to create new category:
+- "deck_repair" exists but this is about ROOF repair → create "roof_repair"
+- "brand_strategy" exists but this is about WEB development → create "web_development"
+
+Confidence scoring:
+- 90-100: Exact match (same type of work)
+- 70-89: Close match (similar work, same trade/skill)
+- 50-69: Distant match (related industry but different specialty)
+- 0-49: No match (completely different type of work)
+
+If confidence >= 70, you MUST use the existing category (is_new: false).
+Only create a new category if confidence < 50 AND the work is genuinely different.
 
 Return JSON only:
 {{
-  "category": "category_name",
+  "category": "existing_category_key",
   "is_new": false,
-  "display_name": "Human Readable Name",
+  "display_name": "Existing Display Name",
   "category_confidence": 85,
   "suggested_new_category": null
 }}
 
-OR if it doesn't fit well:
-{{
-  "category": "closest_existing_category",
-  "is_new": false,
-  "display_name": "Closest Match",
-  "category_confidence": 45,
-  "suggested_new_category": "new_category_name"
-}}
-
-OR if no existing categories are close at all:
+OR if truly different work (confidence < 50):
 {{
   "category": "new_snake_case_name",
   "is_new": true,

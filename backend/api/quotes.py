@@ -403,9 +403,10 @@ async def generate_quote(
                 detected_category=detected_job_type,  # For learned adjustments injection
             )
 
-        # Ensure detected job_type is used if AI didn't return one
-        if not quote_data.get("job_type"):
-            quote_data["job_type"] = detected_job_type
+        # ALWAYS use detected_job_type for consistency with category keys
+        # Claude's generated job_type might not match the normalized snake_case category key
+        # This ensures quote.job_type matches pricing_knowledge["categories"][key] for counting
+        quote_data["job_type"] = detected_job_type
 
         # DISC-034: Pricing sanity check to prevent catastrophic hallucinations
         sanity_check_service = get_sanity_check_service()
@@ -471,6 +472,9 @@ async def generate_quote(
         # Register the category so future quotes can match against it
         # This ensures the category list grows with usage, not just edits
         await db.ensure_category_exists(contractor.id, detected_job_type)
+
+        # Increment category-level quote count for Pricing Brain tracking
+        await db.increment_category_quote_count(contractor.id, detected_job_type)
 
         # Increment quote usage counter (DISC-018: Track grace quotes separately)
         await BillingService.increment_quote_usage(
@@ -946,9 +950,10 @@ async def generate_quote_from_audio(
             quote_data["audio_duration"] = transcription_result.get("duration", 0)
             quote_data["transcription_confidence"] = transcription_result.get("confidence")
 
-            # Ensure detected job_type is used if AI didn't return one
-            if not quote_data.get("job_type"):
-                quote_data["job_type"] = detected_job_type
+            # ALWAYS use detected_job_type for consistency with category keys
+            # Claude's generated job_type might not match the normalized snake_case category key
+            # This ensures quote.job_type matches pricing_knowledge["categories"][key] for counting
+            quote_data["job_type"] = detected_job_type
 
             # DISC-034: Pricing sanity check to prevent catastrophic hallucinations
             sanity_check_service = get_sanity_check_service()
@@ -1014,6 +1019,9 @@ async def generate_quote_from_audio(
             # Register the category so future quotes can match against it
             # This ensures the category list grows with usage, not just edits
             await db.ensure_category_exists(contractor.id, detected_job_type)
+
+            # Increment category-level quote count for Pricing Brain tracking
+            await db.increment_category_quote_count(contractor.id, detected_job_type)
 
             # Increment quote usage counter (DISC-018: Track grace quotes separately)
             await BillingService.increment_quote_usage(

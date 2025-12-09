@@ -46,19 +46,25 @@ class PricingBrainService:
         """
         categories = pricing_knowledge.get("categories", {})
 
-        # Calculate stats from quotes
-        quote_counts_by_category = {}
+        # Calculate stats from quotes for backward compatibility / fallback
+        quote_counts_from_db = {}
         for quote in quotes:
             job_type = quote.job_type
             if job_type:
-                quote_counts_by_category[job_type] = quote_counts_by_category.get(job_type, 0) + 1
+                quote_counts_from_db[job_type] = quote_counts_from_db.get(job_type, 0) + 1
 
         result = []
         for category_key, category_data in categories.items():
+            # Use stored quote_count if available, otherwise fall back to dynamic count
+            stored_count = category_data.get("quote_count", 0)
+            db_count = quote_counts_from_db.get(category_key, 0)
+            # Use max of stored and calculated to handle migration
+            quotes_count = max(stored_count, db_count)
+
             result.append({
                 "category": category_key,
                 "display_name": category_data.get("display_name", category_key.replace("_", " ").title()),
-                "quotes_count": quote_counts_by_category.get(category_key, 0),
+                "quotes_count": quotes_count,
                 "confidence": category_data.get("confidence", 0.5),
                 "samples": category_data.get("samples", 0),
                 "learned_adjustments_count": len(category_data.get("learned_adjustments", [])),

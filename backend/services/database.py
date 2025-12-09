@@ -389,12 +389,9 @@ class DatabaseService:
                 except Exception as e:
                     print(f"Warning: Failed to track philosophy update: {e}")
 
-            # Also update pricing_notes for backward compatibility
-            tendency = learnings.get("overall_tendency", "")
-            if tendency:
-                current_notes = pricing_model.pricing_notes or ""
-                if tendency not in current_notes:
-                    pricing_model.pricing_notes = f"{current_notes}\n\nLearned: {tendency}".strip()
+            # NOTE: Removed legacy code that put overall_tendency into global pricing_notes
+            # All learnings now go to category-specific learned_adjustments via learning_statements
+            # The overall_tendency field is deprecated in favor of learning_statements
 
             # Update model - must flag_modified for SQLAlchemy to detect JSON mutation
             pricing_model.pricing_knowledge = pricing_knowledge
@@ -481,7 +478,8 @@ class DatabaseService:
                 "display_name": display_name or category.replace("_", " ").title(),
                 "tailored_prompt": None,  # Category-specific pricing understanding
                 "learned_adjustments": [],  # Specific injection learnings
-                "samples": 0,
+                "samples": 0,  # Incremented on corrections (legacy)
+                "quote_count": 0,  # Incremented when quotes are created
                 "confidence": 0.5,
                 "correction_count": 0,  # DISC-035
             }
@@ -494,6 +492,64 @@ class DatabaseService:
 
             await session.commit()
             print(f"[SYNC DEBUG] Committed category '{category}'")
+            return True
+
+    async def increment_category_quote_count(
+        self,
+        contractor_id: str,
+        category: str,
+    ) -> bool:
+        """
+        Increment the quote_count for a category when a quote is created.
+
+        This provides accurate per-category quote tracking that persists
+        in the pricing_knowledge structure.
+
+        Args:
+            contractor_id: The contractor's ID
+            category: The category name (snake_case)
+
+        Returns:
+            True if successful, False if category or pricing model not found
+        """
+        async with async_session_factory() as session:
+            result = await session.execute(
+                select(PricingModel).where(PricingModel.contractor_id == contractor_id)
+            )
+            pricing_model = result.scalar_one_or_none()
+            if not pricing_model:
+                return False
+
+            pricing_knowledge = dict(pricing_model.pricing_knowledge) if pricing_model.pricing_knowledge else {}
+
+            # Ensure categories structure exists
+            if "categories" not in pricing_knowledge:
+                pricing_knowledge["categories"] = {}
+
+            # If category doesn't exist, create it first
+            if category not in pricing_knowledge["categories"]:
+                pricing_knowledge["categories"][category] = {
+                    "display_name": category.replace("_", " ").title(),
+                    "tailored_prompt": None,
+                    "learned_adjustments": [],
+                    "samples": 0,
+                    "quote_count": 0,
+                    "confidence": 0.5,
+                    "correction_count": 0,
+                }
+
+            # Increment quote_count (ensure field exists for existing categories)
+            cat_data = pricing_knowledge["categories"][category]
+            if "quote_count" not in cat_data:
+                cat_data["quote_count"] = 0
+            cat_data["quote_count"] += 1
+
+            pricing_knowledge["categories"][category] = cat_data
+            pricing_model.pricing_knowledge = pricing_knowledge
+            pricing_model.updated_at = datetime.utcnow()
+            attributes.flag_modified(pricing_model, 'pricing_knowledge')
+
+            await session.commit()
             return True
 
     # ============== TERMS OPERATIONS ==============
