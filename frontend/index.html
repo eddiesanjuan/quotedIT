@@ -4226,7 +4226,8 @@
                 </div>
 
                 <div class="quote-actions" id="invoiceDetailActions" style="margin-top: 24px;">
-                    <button class="btn btn-primary" onclick="downloadInvoicePdf()">Download PDF</button>
+                    <button class="btn btn-primary" onclick="openSendInvoiceModal()">📤 Send Invoice</button>
+                    <button class="btn btn-secondary" onclick="downloadInvoicePdf()">Download PDF</button>
                     <button class="btn btn-success" id="markPaidBtn" onclick="openMarkPaidModal()">💰 Mark as Paid</button>
                     <button class="btn btn-secondary" onclick="backToInvoiceList()">Back to Invoices</button>
                     <button class="btn btn-danger" id="deleteInvoiceBtn" onclick="confirmDeleteInvoice()">🗑️ Delete</button>
@@ -4264,6 +4265,38 @@
                     <div class="modal-footer">
                         <button class="btn btn-secondary" onclick="closeMarkPaidModal()">Cancel</button>
                         <button class="btn btn-success" onclick="markInvoicePaid()">Mark as Paid</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Send Invoice Modal -->
+            <div class="modal" id="sendInvoiceModal" style="display: none;">
+                <div class="modal-content" style="max-width: 450px;">
+                    <div class="modal-header">
+                        <h3>Send Invoice</h3>
+                        <button class="modal-close" onclick="closeSendInvoiceModal()">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label>Recipient Email <span style="color: var(--accent);">*</span></label>
+                            <input type="email" id="sendInvoiceEmail" placeholder="customer@example.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Personal Message (optional)</label>
+                            <textarea id="sendInvoiceMessage" placeholder="Add a personal note to your customer..." rows="3" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-elevated); color: var(--text-primary); font-family: inherit; resize: vertical;"></textarea>
+                        </div>
+                        <div style="padding: 12px; background: var(--bg-secondary); border-radius: 8px; font-size: 0.875rem; color: var(--text-secondary);">
+                            <strong>What gets sent:</strong>
+                            <ul style="margin: 8px 0 0 16px; padding: 0;">
+                                <li>Invoice details with your branding</li>
+                                <li>PDF attachment</li>
+                                <li>Link to view online</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="closeSendInvoiceModal()">Cancel</button>
+                        <button class="btn btn-primary" id="sendInvoiceBtn" onclick="sendInvoiceEmail()">📤 Send Invoice</button>
                     </div>
                 </div>
             </div>
@@ -4501,6 +4534,31 @@
                                 <button type="submit" class="btn btn-primary" id="saveQuoteDefaultsBtn" style="flex: 1;">Save Defaults</button>
                             </div>
                         </form>
+
+                        <!-- PDF Template Selection -->
+                        <div style="margin-top: 40px; padding-top: 32px; border-top: 1px solid var(--border);">
+                            <h3 class="section-title">PDF Template</h3>
+                            <p class="section-subtitle">Choose how your quotes and invoices look when downloaded or sent to customers.</p>
+
+                            <div id="pdfTemplateSection" style="margin-top: 24px;">
+                                <div class="form-group">
+                                    <label for="pdfTemplateSelect" style="display: block; margin-bottom: 8px; font-weight: 500;">Template Style</label>
+                                    <select id="pdfTemplateSelect" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-elevated); color: var(--text-primary); font-size: 1rem;">
+                                        <option value="">Loading templates...</option>
+                                    </select>
+                                    <p id="templateDescription" style="margin-top: 8px; font-size: 0.875rem; color: var(--text-secondary);"></p>
+                                </div>
+
+                                <div id="accentColorSection" style="display: none; margin-top: 16px;">
+                                    <label style="display: block; margin-bottom: 8px; font-weight: 500;">Accent Color</label>
+                                    <div id="accentColorGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 8px;">
+                                        <!-- Color options will be populated via JavaScript -->
+                                    </div>
+                                </div>
+
+                                <button class="btn btn-primary" id="savePdfTemplateBtn" onclick="savePdfTemplateSettings()" style="margin-top: 16px; width: 100%;">Save Template</button>
+                            </div>
+                        </div>
 
                         <p style="margin-top: 16px; font-size: 0.875rem; color: var(--text-secondary);">
                             These defaults will be pre-filled when you create a new quote. You can always edit them on individual quotes.
@@ -9409,6 +9467,137 @@
             }
         }
 
+        // PDF Template Management
+        let availableTemplates = [];
+        let availableAccentColors = {};
+        let currentTemplateKey = 'modern';
+        let currentAccentColor = null;
+
+        async function loadPdfTemplates() {
+            try {
+                const response = await fetch(`${API_BASE}/quotes/pdf/templates`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load templates');
+                }
+
+                const data = await response.json();
+                availableTemplates = data.templates || [];
+                availableAccentColors = data.accent_colors || {};
+                currentTemplateKey = data.current_template || 'modern';
+                currentAccentColor = data.current_accent_color;
+
+                // Populate template dropdown
+                const select = document.getElementById('pdfTemplateSelect');
+                select.innerHTML = availableTemplates.map(t =>
+                    `<option value="${t.key}" ${t.key === currentTemplateKey ? 'selected' : ''}>${t.name}</option>`
+                ).join('');
+
+                // Update description
+                updateTemplateDescription();
+
+                // Setup accent colors for Pro+ users
+                if (Object.keys(availableAccentColors).length > 0) {
+                    populateAccentColors();
+                }
+
+                // Add change listener
+                select.addEventListener('change', updateTemplateDescription);
+
+            } catch (error) {
+                console.error('Error loading PDF templates:', error);
+                const select = document.getElementById('pdfTemplateSelect');
+                select.innerHTML = '<option value="modern">Modern (Default)</option>';
+            }
+        }
+
+        function updateTemplateDescription() {
+            const select = document.getElementById('pdfTemplateSelect');
+            const selectedKey = select.value;
+            const template = availableTemplates.find(t => t.key === selectedKey);
+            const descEl = document.getElementById('templateDescription');
+
+            if (template) {
+                descEl.textContent = template.description;
+            } else {
+                descEl.textContent = '';
+            }
+        }
+
+        function populateAccentColors() {
+            const grid = document.getElementById('accentColorGrid');
+            const section = document.getElementById('accentColorSection');
+
+            section.style.display = 'block';
+            grid.innerHTML = '';
+
+            Object.entries(availableAccentColors).forEach(([name, color]) => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'accent-color-btn' + (currentAccentColor === color ? ' selected' : '');
+                btn.style.cssText = `
+                    width: 100%;
+                    height: 40px;
+                    border: 2px solid ${currentAccentColor === color ? 'var(--accent)' : 'var(--border)'};
+                    border-radius: 8px;
+                    background: ${color};
+                    cursor: pointer;
+                    transition: border-color 0.2s, transform 0.2s;
+                `;
+                btn.title = name.charAt(0).toUpperCase() + name.slice(1);
+                btn.onclick = () => selectAccentColor(color);
+                grid.appendChild(btn);
+            });
+        }
+
+        function selectAccentColor(color) {
+            currentAccentColor = color;
+            // Update UI to show selection
+            document.querySelectorAll('#accentColorGrid button').forEach(btn => {
+                btn.style.borderColor = btn.style.backgroundColor === color ? 'var(--accent)' : 'var(--border)';
+                btn.classList.toggle('selected', btn.style.backgroundColor === color);
+            });
+        }
+
+        async function savePdfTemplateSettings() {
+            const saveBtn = document.getElementById('savePdfTemplateBtn');
+            const originalText = saveBtn.textContent;
+            saveBtn.textContent = 'Saving...';
+            saveBtn.disabled = true;
+
+            try {
+                const selectedTemplate = document.getElementById('pdfTemplateSelect').value;
+
+                const response = await fetch(`${API_BASE}/contractors/template-settings`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        pdf_template: selectedTemplate,
+                        pdf_accent_color: currentAccentColor
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to save template settings');
+                }
+
+                currentTemplateKey = selectedTemplate;
+                showLearningToast('PDF template saved!', '✅');
+
+            } catch (error) {
+                console.error('Error saving PDF template:', error);
+                showError('Failed to save PDF template. Please try again.');
+            } finally {
+                saveBtn.textContent = originalText;
+                saveBtn.disabled = false;
+            }
+        }
+
         // ================================================================
         // DISC-071: Invoice Management
         // ================================================================
@@ -9674,6 +9863,7 @@
 
             try {
                 const response = await fetch(`${API_BASE}/invoices/${currentInvoice.id}/pdf`, {
+                    method: 'POST',
                     headers: { 'Authorization': `Bearer ${authToken}` }
                 });
 
@@ -9705,6 +9895,73 @@
 
         function closeMarkPaidModal() {
             document.getElementById('markPaidModal').style.display = 'none';
+        }
+
+        function openSendInvoiceModal() {
+            document.getElementById('sendInvoiceModal').style.display = 'flex';
+            document.getElementById('sendInvoiceEmail').value = currentInvoice?.customer_email || '';
+            document.getElementById('sendInvoiceMessage').value = '';
+            // Focus email field
+            setTimeout(() => document.getElementById('sendInvoiceEmail').focus(), 100);
+        }
+
+        function closeSendInvoiceModal() {
+            document.getElementById('sendInvoiceModal').style.display = 'none';
+        }
+
+        async function sendInvoiceEmail() {
+            if (!currentInvoice) return;
+
+            const email = document.getElementById('sendInvoiceEmail').value.trim();
+            const message = document.getElementById('sendInvoiceMessage').value.trim();
+
+            if (!email) {
+                showError('Please enter a recipient email');
+                return;
+            }
+
+            // Basic email validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showError('Please enter a valid email address');
+                return;
+            }
+
+            const sendBtn = document.getElementById('sendInvoiceBtn');
+            sendBtn.disabled = true;
+            sendBtn.innerHTML = '📤 Sending...';
+
+            try {
+                const response = await fetch(`${API_BASE}/invoices/${currentInvoice.id}/send`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        recipient_email: email,
+                        message: message || null
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.detail || 'Failed to send invoice');
+                }
+
+                closeSendInvoiceModal();
+                showLearningToast('Invoice sent successfully!', '📤');
+
+                // Refresh invoice detail to show updated status
+                showInvoiceDetail(currentInvoice.id);
+
+            } catch (error) {
+                console.error('Error sending invoice:', error);
+                showError(error.message || 'Failed to send invoice');
+            } finally {
+                sendBtn.disabled = false;
+                sendBtn.innerHTML = '📤 Send Invoice';
+            }
         }
 
         async function markInvoicePaid() {
@@ -10395,6 +10652,7 @@
                 loadCurrentLogo();
             } else if (tab === 'quoteDefaults') {
                 loadQuoteDefaults();
+                loadPdfTemplates();
             } else if (tab === 'referral') {
                 loadReferralStats();
                 // Track referral signature section view (DISC-021)

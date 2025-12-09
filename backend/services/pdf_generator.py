@@ -264,7 +264,7 @@ class PDFGeneratorService:
         self.template_colors = {}
         self._setup_custom_styles()  # Uses default template initially
 
-    def _setup_custom_styles(self, template_key: str = "modern", accent_color: Optional[str] = None):
+    def _setup_custom_styles(self, template_key: str = "modern", accent_color: Optional[str] = None, prefer_one_page: bool = False):
         """
         Set up custom paragraph styles based on selected template.
 
@@ -274,6 +274,7 @@ class PDFGeneratorService:
         Args:
             template_key: Template identifier (e.g., "modern", "classic")
             accent_color: Optional hex color override for accent color
+            prefer_one_page: If True, use aggressive compact styling for single-page output
         """
         # Get template config or fall back to modern
         template = PDF_TEMPLATES.get(template_key, PDF_TEMPLATES["modern"])
@@ -301,7 +302,11 @@ class PDFGeneratorService:
         self.styles = getSampleStyleSheet()
 
         # DISC-072: Spacing multipliers for different modes
-        if self.spacing_mode == "compact":
+        # prefer_one_page forces the most aggressive compaction
+        if prefer_one_page:
+            space_mult = 0.4  # 40% of normal spacing - very tight
+            font_adj = -2  # Smaller fonts for one-page preference
+        elif self.spacing_mode == "compact":
             space_mult = 0.6  # 60% of normal spacing
             font_adj = -1  # Slightly smaller fonts
         elif self.spacing_mode == "detailed":
@@ -310,6 +315,10 @@ class PDFGeneratorService:
         else:
             space_mult = 1.0
             font_adj = 0
+
+        # Store for use in line items table
+        self._space_mult = space_mult
+        self._font_adj = font_adj
 
         # Main title - uses template title font
         self.styles.add(ParagraphStyle(
@@ -451,6 +460,7 @@ class PDFGeneratorService:
         template: str = "modern",
         accent_color: Optional[str] = None,
         is_invoice: bool = False,
+        prefer_one_page: bool = True,
     ) -> bytes:
         """
         Generate a professional PDF quote or invoice document.
@@ -465,29 +475,51 @@ class PDFGeneratorService:
             template: Template style key (DISC-028)
             accent_color: Optional accent color override (hex or preset name) (DISC-028)
             is_invoice: If True, generate as invoice instead of estimate (DISC-071)
+            prefer_one_page: If True, aggressively optimize for single-page output
 
         Returns:
             PDF as bytes
         """
         # DISC-071: Store invoice mode for use in section builders
         self._is_invoice = is_invoice
+        # Store one-page preference for use in section builders
+        self._prefer_one_page = prefer_one_page
         # Store watermark text for use in callback
         self._watermark_text = watermark_text or "TRIAL EXPIRED"
         # DISC-028: Apply template styles before generating PDF
-        self._setup_custom_styles(template_key=template, accent_color=accent_color)
+        self._setup_custom_styles(template_key=template, accent_color=accent_color, prefer_one_page=prefer_one_page)
 
         buffer = io.BytesIO()
+
+        # Tighter margins when preferring one page
+        if prefer_one_page:
+            margins = {
+                'rightMargin': 0.5 * inch,
+                'leftMargin': 0.5 * inch,
+                'topMargin': 0.4 * inch,
+                'bottomMargin': 0.4 * inch,
+            }
+            # Update page_width to account for tighter margins
+            self.page_width = letter[0] - 1.0 * inch
+        else:
+            margins = {
+                'rightMargin': 0.75 * inch,
+                'leftMargin': 0.75 * inch,
+                'topMargin': 0.6 * inch,
+                'bottomMargin': 0.6 * inch,
+            }
+            self.page_width = letter[0] - 1.5 * inch
 
         doc = SimpleDocTemplate(
             buffer,
             pagesize=letter,
-            rightMargin=0.75 * inch,
-            leftMargin=0.75 * inch,
-            topMargin=0.6 * inch,
-            bottomMargin=0.6 * inch,
+            **margins,
         )
 
         elements = []
+
+        # Get spacing multiplier for one-page optimization
+        space_mult = getattr(self, '_space_mult', 1.0)
 
         # DISC-066: Wrap each section with error handling for debugging
         try:
@@ -497,9 +529,9 @@ class PDFGeneratorService:
             print(f"PDF error in _build_header: {e}")
             raise
 
-        # Divider
+        # Divider - reduced spacing for one-page preference
         elements.append(HorizontalLine(self.page_width))
-        elements.append(Spacer(1, 20))
+        elements.append(Spacer(1, max(8, int(20 * space_mult))))
 
         try:
             # Title and date
@@ -533,7 +565,7 @@ class PDFGeneratorService:
             # DISC-072: Keep total, details and footer together to prevent awkward page breaks
             # Build these sections but wrap them in KeepTogether
             total_elements = self._build_total_section(quote_data)
-            divider_elements = [HorizontalLine(self.page_width), Spacer(1, 16)]
+            divider_elements = [HorizontalLine(self.page_width), Spacer(1, max(6, int(16 * space_mult)))]
             details_elements = self._build_details_section(quote_data, terms)
             footer_elements = self._build_footer_section()
 
@@ -694,7 +726,9 @@ class PDFGeneratorService:
         ]))
 
         elements.append(header_table)
-        elements.append(Spacer(1, 16))
+        # Reduced spacer for one-page preference
+        space_mult = getattr(self, '_space_mult', 1.0)
+        elements.append(Spacer(1, max(6, int(16 * space_mult))))
 
         return elements
 
@@ -842,15 +876,20 @@ class PDFGeneratorService:
         # Build row styles - alternating backgrounds
         # DISC-028: Use template accent color for borders
         border_color = self.template_colors.get("accent", BRAND_BORDER)
+
+        # Apply spacing multiplier to row padding for one-page optimization
+        space_mult = getattr(self, '_space_mult', 1.0)
+        row_padding = max(4, int(12 * space_mult))  # Min 4pt padding
+
         style_commands = [
             # Alignment
             ('ALIGN', (0, 0), (0, -1), 'LEFT'),
             ('ALIGN', (1, 0), (1, -1), 'RIGHT'),
             ('VALIGN', (0, 0), (-1, -1), 'TOP'),
 
-            # Padding
-            ('TOPPADDING', (0, 0), (-1, -1), 12),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 12),
+            # Padding - scaled by space multiplier
+            ('TOPPADDING', (0, 0), (-1, -1), row_padding),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), row_padding),
             ('LEFTPADDING', (0, 0), (0, -1), 0),
             ('RIGHTPADDING', (1, 0), (1, -1), 0),
 
@@ -1032,7 +1071,9 @@ class PDFGeneratorService:
             # Just timeline/notes
             elements.extend(left_content)
 
-        elements.append(Spacer(1, 24))
+        # Reduced spacer for one-page preference
+        space_mult = getattr(self, '_space_mult', 1.0)
+        elements.append(Spacer(1, max(8, int(24 * space_mult))))
 
         return elements
 
@@ -1045,8 +1086,11 @@ class PDFGeneratorService:
         """
         elements = []
 
-        # DISC-072: Add more top spacing before footer for breathing room
-        elements.append(Spacer(1, 24))
+        # Get spacing multiplier for one-page preference
+        space_mult = getattr(self, '_space_mult', 1.0)
+
+        # DISC-072: Add more top spacing before footer for breathing room (scaled)
+        elements.append(Spacer(1, max(8, int(24 * space_mult))))
 
         # DISC-071: Different disclaimer for invoices
         is_invoice = getattr(self, '_is_invoice', False)
@@ -1064,14 +1108,14 @@ class PDFGeneratorService:
             )
 
         elements.append(Paragraph(disclaimer_text, self.styles['FinePrint']))
-        elements.append(Spacer(1, 20))  # Increased from 16
+        elements.append(Spacer(1, max(6, int(20 * space_mult))))
 
         # Branding - with more bottom padding
         elements.append(Paragraph(
             "Generated with quoted.it",
             self.styles['FooterBrand']
         ))
-        elements.append(Spacer(1, 8))  # Bottom padding
+        elements.append(Spacer(1, max(4, int(8 * space_mult))))  # Bottom padding
 
         return elements
 

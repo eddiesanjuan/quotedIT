@@ -599,6 +599,106 @@ async def generate_invoice_pdf(
         raise HTTPException(status_code=500, detail=f"PDF error: {str(e)}")
 
 
+class SendInvoiceRequest(BaseModel):
+    """Request to send invoice via email."""
+    recipient_email: str
+    message: Optional[str] = None
+
+
+@router.post("/{invoice_id}/send", response_model=InvoiceResponse)
+async def send_invoice(
+    invoice_id: str,
+    send_request: SendInvoiceRequest,
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Send an invoice via email to the customer.
+
+    Updates invoice status to 'sent' and records sent_at timestamp.
+    """
+    from ..services.email_service import email_service
+
+    contractor = await get_contractor_for_user(current_user["id"])
+    if not contractor:
+        raise HTTPException(status_code=400, detail="Contractor not found")
+
+    result = await db.execute(
+        select(Invoice).where(Invoice.id == invoice_id)
+    )
+    invoice = result.scalar_one_or_none()
+
+    if not invoice:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+
+    if invoice.contractor_id != contractor.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    # Build share URL
+    base_url = "https://quoted.it.com"
+    share_url = f"{base_url}/invoice/{invoice.share_token}"
+
+    # Send email
+    try:
+        subject = f"Invoice {invoice.invoice_number} from {contractor.business_name}"
+
+        # Build email body
+        body_parts = []
+        if send_request.message:
+            body_parts.append(send_request.message)
+            body_parts.append("")
+
+        body_parts.append(f"You have received an invoice from {contractor.business_name}.")
+        body_parts.append("")
+        body_parts.append(f"Invoice #: {invoice.invoice_number}")
+        body_parts.append(f"Amount Due: ${invoice.total:,.2f}")
+        if invoice.due_date:
+            body_parts.append(f"Due Date: {invoice.due_date.strftime('%B %d, %Y')}")
+        body_parts.append("")
+        body_parts.append(f"View your invoice: {share_url}")
+        body_parts.append("")
+        body_parts.append("Thank you for your business!")
+        body_parts.append("")
+        body_parts.append(f"— {contractor.business_name}")
+
+        body = "\n".join(body_parts)
+
+        await email_service.send_email(
+            to_email=send_request.recipient_email,
+            subject=subject,
+            body=body,
+        )
+
+        # Update invoice status
+        invoice.status = "sent"
+        invoice.sent_at = datetime.utcnow()
+        invoice.customer_email = send_request.recipient_email  # Update if different
+        invoice.updated_at = datetime.utcnow()
+
+        await db.commit()
+        await db.refresh(invoice)
+
+        # Track analytics
+        try:
+            analytics_service.track_event(
+                user_id=str(current_user["id"]),
+                event_name="invoice_sent",
+                properties={
+                    "contractor_id": str(contractor.id),
+                    "invoice_id": str(invoice.id),
+                    "total": invoice.total,
+                }
+            )
+        except Exception as e:
+            print(f"Warning: Failed to track invoice send: {e}")
+
+        return invoice_to_response(invoice)
+
+    except Exception as e:
+        print(f"Error sending invoice email: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to send email: {str(e)}")
+
+
 # ============================================================================
 # Quote-to-Invoice Conversion (Convenience endpoint on quotes router)
 # ============================================================================
