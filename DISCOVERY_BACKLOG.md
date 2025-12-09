@@ -42,7 +42,7 @@ To approve: Change status from DISCOVERED → READY
 
 **Source**: DISC-073 Staging Brainstorm
 **Impact**: HIGH | **Effort**: S | **Score**: 3.0
-**Commit**: Pending push
+**Commit**: 6b0d8fc
 
 **Problem**: Need pre-merge testing capability to catch bugs before they hit production.
 
@@ -61,7 +61,7 @@ To approve: Change status from DISCOVERED → READY
 
 **Source**: DISC-073 Staging Brainstorm
 **Impact**: HIGH | **Effort**: S | **Score**: 3.0
-**Commit**: Pending push
+**Commit**: 6b0d8fc
 
 **Problem**: Need instant rollback capability and gradual rollout for new features.
 
@@ -86,7 +86,7 @@ To approve: Change status from DISCOVERED → READY
 
 **Source**: DISC-073 Staging Brainstorm
 **Impact**: MEDIUM | **Effort**: S | **Score**: 2.0
-**Commit**: Pending push
+**Commit**: 6b0d8fc
 
 **Problem**: Need documented procedures for handling production incidents.
 
