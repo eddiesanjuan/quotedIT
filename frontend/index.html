@@ -5924,8 +5924,28 @@
             }
 
             // Check if user has completed onboarding
-            // Uses onboarding_completed_at field instead of pricing defaults (which are auto-set)
-            const hasCompletedOnboarding = !!currentUser?.onboarding_completed_at;
+            // Primary check: onboarding_completed_at field (new users)
+            // Legacy fallback: check pricing_knowledge for users who onboarded before field existed
+            let hasCompletedOnboarding = !!currentUser?.onboarding_completed_at;
+
+            // Legacy user check: if no onboarding_completed_at, check if they have pricing_knowledge
+            if (!hasCompletedOnboarding && currentUser?.contractor_id) {
+                try {
+                    const pricingResponse = await fetch(`${API_BASE}/contractors/${currentUser.contractor_id}/pricing`, {
+                        headers: { 'Authorization': `Bearer ${authToken}` },
+                    });
+                    if (pricingResponse.ok) {
+                        const pricing = await pricingResponse.json();
+                        // Legacy users who completed onboarding have pricing_knowledge entries
+                        const hasPricingKnowledge = pricing?.pricing_knowledge && Object.keys(pricing.pricing_knowledge).length > 0;
+                        if (hasPricingKnowledge) {
+                            hasCompletedOnboarding = true;
+                        }
+                    }
+                } catch (err) {
+                    console.error('Error checking legacy pricing:', err);
+                }
+            }
 
             if (!hasCompletedOnboarding) {
                 // Show onboarding
@@ -8396,8 +8416,28 @@
         }
 
         async function checkAndShowInputSection() {
-            // Use onboarding_completed_at to determine if user has completed onboarding
-            const hasCompletedOnboarding = !!currentUser?.onboarding_completed_at;
+            // Primary check: onboarding_completed_at field (new users)
+            // Legacy fallback: check pricing_knowledge for users who onboarded before field existed
+            let hasCompletedOnboarding = !!currentUser?.onboarding_completed_at;
+
+            // Legacy user check
+            if (!hasCompletedOnboarding && currentUser?.contractor_id) {
+                try {
+                    const pricingResponse = await fetch(`${API_BASE}/contractors/${currentUser.contractor_id}/pricing`, {
+                        headers: { 'Authorization': `Bearer ${authToken}` },
+                    });
+                    if (pricingResponse.ok) {
+                        const pricing = await pricingResponse.json();
+                        const hasPricingKnowledge = pricing?.pricing_knowledge && Object.keys(pricing.pricing_knowledge).length > 0;
+                        if (hasPricingKnowledge) {
+                            hasCompletedOnboarding = true;
+                        }
+                    }
+                } catch (err) {
+                    console.error('Error checking legacy pricing:', err);
+                }
+            }
+
             document.getElementById('onboardingNotice').style.display = hasCompletedOnboarding ? 'none' : 'block';
             document.getElementById('inputSection').style.display = hasCompletedOnboarding ? 'block' : 'none';
         }
