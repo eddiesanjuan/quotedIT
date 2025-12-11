@@ -151,6 +151,12 @@ async def get_me(
     Get the current user's profile.
     Requires authentication.
     """
+    # Get full user model for onboarding_completed_at
+    user_result = await db.execute(
+        select(User).where(User.id == user["id"])
+    )
+    user_obj = user_result.scalar_one_or_none()
+
     # Get contractor profile
     result = await db.execute(
         select(Contractor).where(Contractor.user_id == user["id"])
@@ -164,6 +170,8 @@ async def get_me(
         is_verified=user["is_verified"],
         contractor_id=contractor.id if contractor else None,
         business_name=contractor.business_name if contractor else None,
+        primary_trade=contractor.primary_trade if contractor else None,
+        onboarding_completed_at=user_obj.onboarding_completed_at.isoformat() if user_obj and user_obj.onboarding_completed_at else None,
     )
 
 

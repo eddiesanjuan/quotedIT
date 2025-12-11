@@ -622,10 +622,29 @@ class DatabaseService:
         estimated_days: Optional[int] = None,
         notes: Optional[str] = None,
         ai_generated_total: Optional[float] = None,
+        timeline_text: Optional[str] = None,  # DISC-080
+        terms_text: Optional[str] = None,  # DISC-080
         **kwargs
     ) -> Quote:
-        """Create a new quote."""
+        """Create a new quote.
+
+        DISC-080: If timeline_text or terms_text not provided, automatically
+        populate from contractor's default settings (contractor_terms table).
+        """
         async with async_session_factory() as session:
+            # DISC-080: Fetch contractor's default timeline/terms if not explicitly provided
+            if timeline_text is None or terms_text is None:
+                from ..models.database import ContractorTerms
+                result = await session.execute(
+                    select(ContractorTerms).where(ContractorTerms.contractor_id == contractor_id)
+                )
+                contractor_terms = result.scalar_one_or_none()
+                if contractor_terms:
+                    if timeline_text is None:
+                        timeline_text = contractor_terms.default_timeline_text
+                    if terms_text is None:
+                        terms_text = contractor_terms.default_terms_text
+
             quote = Quote(
                 contractor_id=contractor_id,
                 transcription=transcription,
@@ -639,6 +658,8 @@ class DatabaseService:
                 customer_address=customer_address,
                 customer_phone=customer_phone,
                 estimated_days=estimated_days,
+                timeline_text=timeline_text,  # DISC-080
+                terms_text=terms_text,  # DISC-080
             )
             session.add(quote)
             await session.commit()

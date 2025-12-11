@@ -2018,6 +2018,54 @@
             letter-spacing: 0.5px;
         }
 
+        /* DISC-083: Unit cost + total pricing display */
+        .line-item-pricing-group {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 4px;
+        }
+
+        .line-item-unit-cost-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .line-item-unit-cost-input {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 10px 12px;
+            color: var(--text-primary);
+            font-family: var(--font-serif);
+            font-size: 1.25rem;
+            font-weight: 500;
+            width: 110px;
+            text-align: right;
+        }
+
+        .line-item-unit-cost-input:focus {
+            outline: none;
+            border-color: var(--text-primary);
+        }
+
+        .line-item-ea-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .line-item-total-display {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-family: var(--font-sans);
+        }
+
+        .line-item-total-display .total-value {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
         /* Edit Mode Indicator */
         .edit-mode-banner {
             display: none;
@@ -5875,54 +5923,26 @@
                 document.getElementById('businessNameDisplay').textContent = currentUser.business_name || currentUser.email;
             }
 
-            // Check pricing model
-            try {
-                if (!currentUser?.contractor_id) {
-                    throw new Error('No contractor ID');
-                }
+            // Check if user has completed onboarding
+            // Uses onboarding_completed_at field instead of pricing defaults (which are auto-set)
+            const hasCompletedOnboarding = !!currentUser?.onboarding_completed_at;
 
-                const response = await fetch(`${API_BASE}/contractors/${currentUser.contractor_id}/pricing`, {
-                    headers: { 'Authorization': `Bearer ${authToken}` },
-                });
-
-                if (response.ok) {
-                    const pricing = await response.json();
-                    // Check if user has completed any pricing setup
-                    // Accept either pricing_knowledge OR basic rates being set
-                    const hasPricingKnowledge = pricing?.pricing_knowledge && Object.keys(pricing.pricing_knowledge).length > 0;
-                    const hasBasicRates = pricing?.labor_rate_hourly > 0 || pricing?.minimum_job_amount > 0;
-                    const hasPricing = hasPricingKnowledge || hasBasicRates;
-
-                    if (!hasPricing) {
-                        document.getElementById('onboardingNotice').style.display = 'block';
-                        document.getElementById('inputSection').style.display = 'none';
-
-                        // Show industry selection if no trade selected yet
-                        if (!currentUser.primary_trade || currentUser.primary_trade === 'general') {
-                            showIndustrySelection();
-                        }
-                    } else {
-                        document.getElementById('onboardingNotice').style.display = 'none';
-                        document.getElementById('inputSection').style.display = 'block';
-                    }
-                } else {
-                    document.getElementById('onboardingNotice').style.display = 'block';
-                    document.getElementById('inputSection').style.display = 'none';
-
-                    // Show industry selection if no trade selected yet
-                    if (!currentUser.primary_trade || currentUser.primary_trade === 'general') {
-                        showIndustrySelection();
-                    }
-                }
-            } catch (err) {
-                console.error('Error checking pricing model:', err);
+            if (!hasCompletedOnboarding) {
+                // Show onboarding
                 document.getElementById('onboardingNotice').style.display = 'block';
                 document.getElementById('inputSection').style.display = 'none';
 
                 // Show industry selection if no trade selected yet
                 if (!currentUser.primary_trade || currentUser.primary_trade === 'general') {
                     showIndustrySelection();
+                } else {
+                    // Has trade but hasn't completed onboarding - show intro options
+                    showOnboardingIntro();
                 }
+            } else {
+                // User has completed onboarding - show main app
+                document.getElementById('onboardingNotice').style.display = 'none';
+                document.getElementById('inputSection').style.display = 'block';
             }
 
             // Check if we should show first quote activation modal
@@ -7569,8 +7589,13 @@
                 }
                 {% endif %}
 
+                // Refresh user info to get updated onboarding_completed_at
+                await fetchUserInfo();
+
                 // Hide onboarding
+                document.getElementById('onboardingNotice').style.display = 'none';
                 document.getElementById('onboardingIntro').style.display = 'none';
+                document.getElementById('inputSection').style.display = 'block';
 
                 // Show success message if showNotification exists, otherwise use alert
                 const successMessage = result.message || 'Ready to generate your first quote! You can customize pricing anytime from Settings.';
@@ -7857,6 +7882,8 @@
 
                 setTimeout(async () => {
                     await savePricingToContractor(pricingModel);
+                    // Refresh user info to get updated onboarding_completed_at
+                    await fetchUserInfo();
                     document.getElementById('onboardingNotice').style.display = 'none';
                     document.getElementById('inputSection').style.display = 'block';
                 }, 2000);
@@ -8369,31 +8396,10 @@
         }
 
         async function checkAndShowInputSection() {
-            try {
-                if (!currentUser?.contractor_id) {
-                    document.getElementById('onboardingNotice').style.display = 'block';
-                    return;
-                }
-
-                const response = await fetch(`${API_BASE}/contractors/${currentUser.contractor_id}/pricing`, {
-                    headers: { 'Authorization': `Bearer ${authToken}` },
-                });
-
-                if (response.ok) {
-                    const pricing = await response.json();
-                    // Accept either pricing_knowledge OR basic rates being set
-                    const hasPricingKnowledge = pricing?.pricing_knowledge && Object.keys(pricing.pricing_knowledge).length > 0;
-                    const hasBasicRates = pricing?.labor_rate_hourly > 0 || pricing?.minimum_job_amount > 0;
-                    const hasPricing = hasPricingKnowledge || hasBasicRates;
-                    document.getElementById('onboardingNotice').style.display = hasPricing ? 'none' : 'block';
-                    document.getElementById('inputSection').style.display = hasPricing ? 'block' : 'none';
-                } else {
-                    document.getElementById('onboardingNotice').style.display = 'block';
-                }
-            } catch (err) {
-                console.error('Error checking pricing:', err);
-                document.getElementById('onboardingNotice').style.display = 'block';
-            }
+            // Use onboarding_completed_at to determine if user has completed onboarding
+            const hasCompletedOnboarding = !!currentUser?.onboarding_completed_at;
+            document.getElementById('onboardingNotice').style.display = hasCompletedOnboarding ? 'none' : 'block';
+            document.getElementById('inputSection').style.display = hasCompletedOnboarding ? 'block' : 'none';
         }
 
         // Load quotes from backend
@@ -8692,36 +8698,112 @@
                 editGroup.appendChild(descInput);
                 editGroup.appendChild(qtyRow);
 
-                const amountInput = document.createElement('input');
-                amountInput.type = 'number';
-                amountInput.className = 'line-item-amount-input';
-                amountInput.value = item.amount || 0;
-                amountInput.min = '0';
-                amountInput.step = '1';
-                amountInput.oninput = function() { trackLineItemChange(index, 'amount', this.value); };
+                // DISC-083: Unit cost + total pricing display
+                // Calculate unit cost from amount / quantity
+                const qty = parseFloat(item.quantity) || 1;
+                const amount = parseFloat(item.amount) || 0;
+                const unitCost = qty > 0 ? amount / qty : amount;
+
+                // Store unit_cost in the item for tracking
+                item.unit_cost = unitCost;
+
+                const pricingGroup = document.createElement('div');
+                pricingGroup.className = 'line-item-pricing-group';
+
+                const unitCostRow = document.createElement('div');
+                unitCostRow.className = 'line-item-unit-cost-row';
+
+                const unitCostInput = document.createElement('input');
+                unitCostInput.type = 'number';
+                unitCostInput.className = 'line-item-unit-cost-input';
+                unitCostInput.value = Math.round(unitCost * 100) / 100; // Round to 2 decimals
+                unitCostInput.min = '0';
+                unitCostInput.step = '0.01';
+                unitCostInput.id = `unit-cost-${index}`;
+                unitCostInput.oninput = function() { trackLineItemChange(index, 'unit_cost', this.value); };
+
+                const eaLabel = document.createElement('span');
+                eaLabel.className = 'line-item-ea-label';
+                eaLabel.textContent = '/ea';
+
+                unitCostRow.appendChild(unitCostInput);
+                unitCostRow.appendChild(eaLabel);
+
+                const totalDisplay = document.createElement('div');
+                totalDisplay.className = 'line-item-total-display';
+                totalDisplay.id = `line-total-${index}`;
+                if (qty > 1) {
+                    // Use safe DOM methods instead of innerHTML
+                    totalDisplay.textContent = '= ';
+                    const totalValue = document.createElement('span');
+                    totalValue.className = 'total-value';
+                    totalValue.textContent = '$' + Math.round(amount).toLocaleString();
+                    totalDisplay.appendChild(totalValue);
+                    const totalLabel = document.createTextNode(' total');
+                    totalDisplay.appendChild(totalLabel);
+                }
+                // When qty is 1, leave totalDisplay empty (no multiplication needed)
+
+                pricingGroup.appendChild(unitCostRow);
+                pricingGroup.appendChild(totalDisplay);
 
                 lineItemEl.appendChild(editGroup);
-                lineItemEl.appendChild(amountInput);
+                lineItemEl.appendChild(pricingGroup);
                 container.appendChild(lineItemEl);
             });
         }
 
         // Track changes to line items
+        // DISC-083: Added unit_cost handling - recalculates amount when unit_cost or quantity changes
         function trackLineItemChange(index, field, value) {
+            const item = editedLineItems[index];
+
             if (field === 'amount') {
-                editedLineItems[index].amount = parseFloat(value) || 0;
+                // Direct amount edit (kept for backward compatibility, though UI now uses unit_cost)
+                item.amount = parseFloat(value) || 0;
+                updateTotalFromLineItems();
+            } else if (field === 'unit_cost') {
+                // DISC-083: New field - user edits unit cost, we recalculate amount
+                const unitCost = parseFloat(value) || 0;
+                const qty = parseFloat(item.quantity) || 1;
+                item.unit_cost = unitCost;
+                item.amount = unitCost * qty;
+                updateLineItemTotalDisplay(index, qty, item.amount);
                 updateTotalFromLineItems();
             } else if (field === 'name') {
-                editedLineItems[index].name = value;
-                editedLineItems[index].description = value;
+                item.name = value;
+                item.description = value;
             } else if (field === 'details') {
-                editedLineItems[index].details = value;
+                item.details = value;
             } else if (field === 'quantity') {
-                editedLineItems[index].quantity = parseFloat(value) || 1;
+                // DISC-083: When quantity changes, recalculate amount from unit_cost
+                const qty = parseFloat(value) || 1;
+                item.quantity = qty;
+                const unitCost = parseFloat(item.unit_cost) || (parseFloat(item.amount) || 0);
+                item.amount = unitCost * qty;
+                updateLineItemTotalDisplay(index, qty, item.amount);
+                updateTotalFromLineItems();
             } else if (field === 'unit') {
-                editedLineItems[index].unit = value || null;
+                item.unit = value || null;
             }
             checkForChanges();
+        }
+
+        // DISC-083: Update the line item total display when qty/unit_cost changes
+        function updateLineItemTotalDisplay(index, qty, amount) {
+            const totalDisplay = document.getElementById(`line-total-${index}`);
+            if (totalDisplay) {
+                totalDisplay.textContent = ''; // Clear existing content
+                if (qty > 1) {
+                    totalDisplay.textContent = '= ';
+                    const totalValue = document.createElement('span');
+                    totalValue.className = 'total-value';
+                    totalValue.textContent = '$' + Math.round(amount).toLocaleString();
+                    totalDisplay.appendChild(totalValue);
+                    const totalLabel = document.createTextNode(' total');
+                    totalDisplay.appendChild(totalLabel);
+                }
+            }
         }
 
         function updateTotalFromLineItems() {
