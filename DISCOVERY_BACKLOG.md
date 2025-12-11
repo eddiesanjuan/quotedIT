@@ -1,6 +1,6 @@
 # Discovery Backlog
 
-**Last Updated**: 2025-12-08
+**Last Updated**: 2025-12-11
 **Source**: `/quoted-discover` autonomous discovery cycles
 
 ---
@@ -22,11 +22,11 @@ To approve: Change status from DISCOVERED → READY
 
 | Status | Count |
 |--------|-------|
-| DEPLOYED | 43 |
+| DEPLOYED | 46 |
 | COMPLETE | 2 |
 | READY | 11 |
 | DISCOVERED | 16 |
-| **Total** | **72** |
+| **Total** | **75** |
 
 **Prompt Optimization**: DISC-041 complete → DISC-052, DISC-054 (learning improvements via prompt injection)
 **Deprioritized**: DISC-053, DISC-055 (structured storage/embeddings - over-engineering; prompt injection approach preferred)
@@ -621,44 +621,145 @@ To approve: Change status from DISCOVERED → READY
 
 ---
 
-### DISC-080: Account Default Timeline & Terms Settings ⚙️ (READY)
+### DISC-080: Account Default Timeline & Terms Settings ⚙️ (DEPLOYED)
 
 **Source**: Founder Request (Eddie, 2025-12-08)
 **Impact**: MEDIUM | **Effort**: S | **Score**: 2.0
-**Sprint Alignment**: User experience - reduces repetitive data entry for power users
+**Commit**: d641e45 (+ ad757bf)
 
-**Problem**: Users who generate multiple quotes often use the same timeline and terms (e.g., "Net 30", "50% deposit required", "Work to begin within 2 weeks"). Currently they must manually enter or edit these for every quote. Need account-level defaults that pre-populate new quotes.
+**Problem**: Users who generate multiple quotes often use the same timeline and terms. Need account-level defaults that pre-populate new quotes.
 
-**Current State**:
-- ✅ Database columns exist: `default_timeline_text` and `default_terms_text` in `contractor_terms` table (added in DISC-067)
-- ✅ Per-quote editing works: Users can customize timeline/terms on individual quotes
-- ❌ No settings UI: No way for users to set their account defaults
-- ❌ No pre-population: New quotes don't inherit defaults
+**Solution Implemented**:
+- ✅ UI and API already existed from DISC-067 (Settings → Quote Defaults tab)
+- ✅ Updated `create_quote()` in `backend/services/database.py` to fetch contractor's default timeline/terms
+- ✅ New quotes now automatically inherit account defaults
+- ✅ Users can still override per-quote
 
-**Proposed Work**:
-1. **Add "Quote Defaults" tab to Account Settings**
-   - New tab in account view (alongside Billing, Referral, Logo, Pricing Brain™)
-   - Two textarea fields: Default Timeline, Default Terms
-   - Example placeholders showing common values
-   - Save button with success feedback
+**Success Metric**: New quotes pre-populate with account defaults ✅
 
-2. **API endpoint for saving defaults**
-   - `PUT /api/contractors/defaults` or extend existing profile endpoint
-   - Save to `contractor_terms.default_timeline_text` and `default_terms_text`
+---
 
-3. **Pre-populate new quotes with defaults**
-   - When creating a quote, fetch contractor's defaults
-   - Pre-fill timeline_text and terms_text fields
-   - User can still override per-quote
+### DISC-081: QuickBooks Integration Exploration 📊 BRAINSTORM (READY)
 
-4. **Consider: Quick-set templates** (stretch goal)
-   - "Net 30" / "Net 15" / "Due on Receipt" dropdown
-   - "Standard Terms" / "Rush Job Terms" presets
+**Source**: Founder Request (Eddie, 2025-12-08)
+**Impact**: HIGH | **Effort**: L-XL | **Score**: Strategic
+**Sprint Alignment**: Future roadmap - connects Quoted to contractor's financial workflow
+
+**Problem**: Contractors using QuickBooks for accounting have to manually re-enter quote data when a job is accepted. A QuickBooks integration would close the quote→invoice→accounting loop.
+
+**What Integration Could Enable**:
+
+1. **Quote → Invoice Sync**
+   - When quote is accepted, auto-create QuickBooks invoice
+   - Map Quoted line items → QB line items
+   - Sync customer info (avoid duplicate entry)
+
+2. **Customer Sync**
+   - Import QB customers into Quoted (autocomplete)
+   - Push new customers from Quoted → QB
+   - Keep contact info synchronized
+
+3. **Item/Service Sync**
+   - Import QB products/services as Quoted line items
+   - Sync pricing between systems
+   - Map Quoted categories → QB items
+
+4. **Payment Status**
+   - Show invoice payment status in Quoted
+   - "This quote was invoiced and paid" badge
+
+**Technical Requirements**:
+
+| Component | Complexity | Notes |
+|-----------|------------|-------|
+| **QuickBooks OAuth2** | M | Intuit Developer account, OAuth flow |
+| **API Integration** | L | REST API, rate limits, error handling |
+| **Data Mapping** | M | Quoted schema ↔ QB schema |
+| **Webhook Handling** | M | Real-time sync vs. polling |
+| **UI for Connection** | S | Settings tab, connect/disconnect |
+| **Error Recovery** | M | Sync failures, retries, notifications |
+
+**QuickBooks API Details**:
+- **Platform**: QuickBooks Online (QBO) - not Desktop
+- **Auth**: OAuth 2.0 with refresh tokens
+- **Sandbox**: Free developer sandbox for testing
+- **Pricing**: $0 to build, users need QBO subscription ($30-200/mo)
+- **Approval**: App review required for production
+
+**Phased Approach**:
+
+**Phase A: Read-Only (M effort)**
+- Connect QuickBooks account
+- Import customers for autocomplete
+- Show "connected" status
+
+**Phase B: Quote → Invoice Push (L effort)**
+- One-click "Send to QuickBooks" on accepted quotes
+- Create invoice in QB with line items mapped
+- Handle customer matching/creation
+
+**Phase C: Two-Way Sync (XL effort)**
+- Bidirectional customer sync
+- Item/service catalog sync
+- Payment status webhooks
+
+**Competitive Angle**:
+- Jobber, Housecall Pro have QB integrations
+- Differentiator: Voice-created quotes that flow directly to accounting
+- "Say it, quote it, invoice it, get paid"
+
+**Questions to Answer**:
+- What % of target contractors use QuickBooks Online vs. Desktop vs. other?
+- Is Phase A alone valuable enough to ship?
+- Should invoicing (DISC-071) come first, then QB sync?
+- Alternative: Zapier integration as bridge?
 
 **Success Metric**:
-- Users can set default timeline/terms in account settings
-- New quotes pre-populate with those defaults
-- Reduces per-quote editing for repeat users
+- Clear go/no-go decision on QB integration
+- If go: Phased implementation plan with effort estimates
+- User research: Do beta users want this?
+
+---
+
+### DISC-082: Referral Links Lead to 404 🐛 CRITICAL (DEPLOYED)
+
+**Source**: Founder Report (Eddie, 2025-12-08)
+**Impact**: CRITICAL | **Effort**: S | **Score**: ∞ (Blocking)
+**Commit**: 2620866
+
+**Problem**: Referral links generated as `/signup?ref=CODE` led to 404 - no `/signup` route exists.
+
+**Solution Implemented** (Option A):
+- Changed referral link URL from `/signup?ref=` to `/?ref=`
+- Landing page already handles `?ref=` parameter (stores in localStorage)
+- Updated `backend/services/referral.py:219`
+- All existing shared links now work retroactively
+
+**Success Metric**: Referral links load landing page with ref code preserved ✅
+
+---
+
+### DISC-083: Line Item Quantity/Cost UX Fix 🐛 (DEPLOYED)
+
+**Source**: Founder Request (Eddie, 2025-12-08)
+**Impact**: MEDIUM | **Effort**: S | **Score**: 2.0
+**Commit**: 2a5ba8b
+
+**Problem**: Cost field showed total amount but users expected unit cost. Confusing when qty > 1.
+
+**Solution Implemented**:
+- Changed cost input to show **unit cost** with `/ea` label
+- Added calculated **total display** (read-only) when qty > 1
+- Updated `trackLineItemChange` to handle `unit_cost` field
+- Added `updateLineItemTotalDisplay()` for real-time recalculation
+- Used safe DOM methods (createElement) instead of innerHTML
+
+**UI Result**:
+```
+Qty: [3]    $[100] /ea  = $300
+```
+
+**Success Metric**: Users edit unit cost, total auto-calculates ✅
 
 ---
 
