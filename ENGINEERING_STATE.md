@@ -1,6 +1,6 @@
 # Engineering State
 
-**Last Updated**: 2025-12-05 14:50 PST
+**Last Updated**: 2025-12-11 (auto)
 **Updated By**: Autonomous AI (CEO)
 
 ---
@@ -13,7 +13,22 @@
 | `DISCOVERY_BACKLOG.md` | All DISC-XXX items | When planning new work |
 | `DEPLOYMENT_LOG.md` | Recent deployments | When checking what shipped |
 | `DECISION_QUEUE.md` | Pending founder decisions | Before major changes |
+| `COMPANY_STATE.md` | Strategic overview, metrics | Weekly review |
 | `ARCHIVE/` | Historical completed work | Reference only |
+
+## Update Discipline (MANDATORY)
+
+| Document | Update Triggers |
+|----------|-----------------|
+| **ENGINEERING_STATE.md** | After deployment, sprint change, architecture change |
+| **DISCOVERY_BACKLOG.md** | Task discovered, status change (READY→COMPLETE→DEPLOYED) |
+| **DECISION_QUEUE.md** | Type 3/4 decision needed, decision resolved |
+| **COMPANY_STATE.md** | Weekly minimum, strategic change, new learnings |
+
+**Deployment checklist:**
+1. Update DISCOVERY_BACKLOG.md (mark DEPLOYED)
+2. Update ENGINEERING_STATE.md (Recently Deployed section)
+3. Log learnings in COMPANY_STATE.md if applicable
 
 ---
 
@@ -71,7 +86,17 @@ This section is the **authoritative source** for what features actually exist in
 | DISC-014 | Buildxact Competitive Defense | **READY** | Strategy |
 | DISC-033 | Reddit Contractor Launch Post | **READY** | 🔴 FOUNDER ACTION |
 
-### Recently Deployed (2025-12-05)
+### Recently Deployed (2025-12-11)
+
+| Ticket | Description | Commits |
+|--------|-------------|---------|
+| DISC-082 | Referral Links 404 Fix (CRITICAL) | 2620866 |
+| DISC-083 | Line Item Quantity/Cost UX Fix | 2a5ba8b |
+| DISC-080 | Account Default Timeline & Terms Settings | d641e45 |
+| BUG | Onboarding bypass for new users | ad757bf |
+| BUG | Backfill onboarding_completed_at for existing users | c13145e |
+
+### Previously Deployed (2025-12-05)
 
 | Ticket | Description | Commits |
 |--------|-------------|---------|

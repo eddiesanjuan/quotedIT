@@ -1,6 +1,6 @@
 # Quoted Company State
 
-**Last Updated**: 2025-12-02 14:30 PST
+**Last Updated**: 2025-12-11 (auto)
 **Updated By**: CEO (AI)
 
 ---
@@ -21,12 +21,13 @@
 
 ## Current Stage
 
-**PAYMENT SYSTEM LIVE - READY FOR BETA**
+**BETA ACTIVE - SPRINT 2 (100 Users Target)**
 
-Full payment stack deployed: Stripe billing, Resend emails, billing UI. Quoted can now accept payments.
+Full product operational: Voice-to-quote, Stripe billing, referral system, PDF templates, feature flags. Actively acquiring beta users.
 
 **Live URL**: https://quoted.it.com (SSL active)
 **Railway Direct**: https://web-production-0550.up.railway.app
+**Current Sprint**: Sprint 2 - 100 active beta testers by December 16
 
 ---
 
@@ -143,6 +144,9 @@ Full payment stack deployed: Stripe billing, Resend emails, billing UI. Quoted c
 | 2025-12-02 | SQLAlchemy create_all doesn't add columns to existing tables - need explicit migrations | Engineering |
 | 2025-12-02 | Railway Postgres + auto-migrations = robust production database | Engineering |
 | 2025-12-02 | Categories must be registered on quote generation, not just edits - enables matching | Engineering |
+| 2025-12-11 | Onboarding check: use explicit timestamp (onboarding_completed_at) not derived state (pricing defaults) | Engineering |
+| 2025-12-11 | Data migrations can backfill existing users when adding new required fields | Engineering |
+| 2025-12-11 | Feature flags (PostHog) enable safe rollout and instant rollback for new features | Engineering |
 
 ---
 
