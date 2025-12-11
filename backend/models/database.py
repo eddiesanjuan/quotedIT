@@ -973,6 +973,36 @@ async def run_migrations(engine):
                 else:
                     print(f"Migration warning: {e}")
 
+        # Data migrations (backfill existing records)
+        data_migrations = [
+            {
+                "description": "Backfill onboarding_completed_at for existing users",
+                "check_sql": """
+                    SELECT COUNT(*) FROM users
+                    WHERE onboarding_completed_at IS NULL AND created_at IS NOT NULL
+                """,
+                "update_sql": """
+                    UPDATE users
+                    SET onboarding_completed_at = COALESCE(created_at, CURRENT_TIMESTAMP)
+                    WHERE onboarding_completed_at IS NULL
+                """
+            },
+        ]
+
+        for migration in data_migrations:
+            try:
+                result = await conn.execute(text(migration["check_sql"]))
+                row = result.fetchone()
+                count = row[0] if row else 0
+
+                if count > 0:
+                    print(f"Data migration: {migration['description']} ({count} records)")
+                    await conn.execute(text(migration["update_sql"]))
+                    await conn.commit()
+                    print(f"Data migration: Successfully updated {count} records")
+            except Exception as e:
+                print(f"Data migration warning: {e}")
+
         # Run constraint changes (PostgreSQL only)
         for migration in constraint_migrations:
             try:
