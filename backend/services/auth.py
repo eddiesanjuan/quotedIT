@@ -54,6 +54,8 @@ class UserResponse(BaseModel):
     is_verified: bool
     contractor_id: Optional[str] = None
     business_name: Optional[str] = None
+    primary_trade: Optional[str] = None  # For onboarding industry check
+    onboarding_completed_at: Optional[str] = None  # ISO datetime string for onboarding check
 
 
 # Database session

@@ -5923,54 +5923,26 @@
                 document.getElementById('businessNameDisplay').textContent = currentUser.business_name || currentUser.email;
             }
 
-            // Check pricing model
-            try {
-                if (!currentUser?.contractor_id) {
-                    throw new Error('No contractor ID');
-                }
+            // Check if user has completed onboarding
+            // Uses onboarding_completed_at field instead of pricing defaults (which are auto-set)
+            const hasCompletedOnboarding = !!currentUser?.onboarding_completed_at;
 
-                const response = await fetch(`${API_BASE}/contractors/${currentUser.contractor_id}/pricing`, {
-                    headers: { 'Authorization': `Bearer ${authToken}` },
-                });
-
-                if (response.ok) {
-                    const pricing = await response.json();
-                    // Check if user has completed any pricing setup
-                    // Accept either pricing_knowledge OR basic rates being set
-                    const hasPricingKnowledge = pricing?.pricing_knowledge && Object.keys(pricing.pricing_knowledge).length > 0;
-                    const hasBasicRates = pricing?.labor_rate_hourly > 0 || pricing?.minimum_job_amount > 0;
-                    const hasPricing = hasPricingKnowledge || hasBasicRates;
-
-                    if (!hasPricing) {
-                        document.getElementById('onboardingNotice').style.display = 'block';
-                        document.getElementById('inputSection').style.display = 'none';
-
-                        // Show industry selection if no trade selected yet
-                        if (!currentUser.primary_trade || currentUser.primary_trade === 'general') {
-                            showIndustrySelection();
-                        }
-                    } else {
-                        document.getElementById('onboardingNotice').style.display = 'none';
-                        document.getElementById('inputSection').style.display = 'block';
-                    }
-                } else {
-                    document.getElementById('onboardingNotice').style.display = 'block';
-                    document.getElementById('inputSection').style.display = 'none';
-
-                    // Show industry selection if no trade selected yet
-                    if (!currentUser.primary_trade || currentUser.primary_trade === 'general') {
-                        showIndustrySelection();
-                    }
-                }
-            } catch (err) {
-                console.error('Error checking pricing model:', err);
+            if (!hasCompletedOnboarding) {
+                // Show onboarding
                 document.getElementById('onboardingNotice').style.display = 'block';
                 document.getElementById('inputSection').style.display = 'none';
 
                 // Show industry selection if no trade selected yet
                 if (!currentUser.primary_trade || currentUser.primary_trade === 'general') {
                     showIndustrySelection();
+                } else {
+                    // Has trade but hasn't completed onboarding - show intro options
+                    showOnboardingIntro();
                 }
+            } else {
+                // User has completed onboarding - show main app
+                document.getElementById('onboardingNotice').style.display = 'none';
+                document.getElementById('inputSection').style.display = 'block';
             }
 
             // Check if we should show first quote activation modal
@@ -7617,8 +7589,13 @@
                 }
                 {% endif %}
 
+                // Refresh user info to get updated onboarding_completed_at
+                await fetchUserInfo();
+
                 // Hide onboarding
+                document.getElementById('onboardingNotice').style.display = 'none';
                 document.getElementById('onboardingIntro').style.display = 'none';
+                document.getElementById('inputSection').style.display = 'block';
 
                 // Show success message if showNotification exists, otherwise use alert
                 const successMessage = result.message || 'Ready to generate your first quote! You can customize pricing anytime from Settings.';
@@ -7905,6 +7882,8 @@
 
                 setTimeout(async () => {
                     await savePricingToContractor(pricingModel);
+                    // Refresh user info to get updated onboarding_completed_at
+                    await fetchUserInfo();
                     document.getElementById('onboardingNotice').style.display = 'none';
                     document.getElementById('inputSection').style.display = 'block';
                 }, 2000);
@@ -8417,31 +8396,10 @@
         }
 
         async function checkAndShowInputSection() {
-            try {
-                if (!currentUser?.contractor_id) {
-                    document.getElementById('onboardingNotice').style.display = 'block';
-                    return;
-                }
-
-                const response = await fetch(`${API_BASE}/contractors/${currentUser.contractor_id}/pricing`, {
-                    headers: { 'Authorization': `Bearer ${authToken}` },
-                });
-
-                if (response.ok) {
-                    const pricing = await response.json();
-                    // Accept either pricing_knowledge OR basic rates being set
-                    const hasPricingKnowledge = pricing?.pricing_knowledge && Object.keys(pricing.pricing_knowledge).length > 0;
-                    const hasBasicRates = pricing?.labor_rate_hourly > 0 || pricing?.minimum_job_amount > 0;
-                    const hasPricing = hasPricingKnowledge || hasBasicRates;
-                    document.getElementById('onboardingNotice').style.display = hasPricing ? 'none' : 'block';
-                    document.getElementById('inputSection').style.display = hasPricing ? 'block' : 'none';
-                } else {
-                    document.getElementById('onboardingNotice').style.display = 'block';
-                }
-            } catch (err) {
-                console.error('Error checking pricing:', err);
-                document.getElementById('onboardingNotice').style.display = 'block';
-            }
+            // Use onboarding_completed_at to determine if user has completed onboarding
+            const hasCompletedOnboarding = !!currentUser?.onboarding_completed_at;
+            document.getElementById('onboardingNotice').style.display = hasCompletedOnboarding ? 'none' : 'block';
+            document.getElementById('inputSection').style.display = hasCompletedOnboarding ? 'block' : 'none';
         }
 
         // Load quotes from backend
