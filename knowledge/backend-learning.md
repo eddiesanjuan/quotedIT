@@ -187,7 +187,7 @@ Both services follow "fail-safe" pattern:
 ### API Endpoints
 - `GET /api/referral/code` - Get user's referral code
 - `GET /api/referral/stats` - Get referral count and credits
-- `GET /api/referral/link` - Get full shareable link (https://quoted.it.com/signup?ref=CODE)
+- `GET /api/referral/link` - Get full shareable link (https://quoted.it.com/?ref=CODE)
 
 ### Integration Points
 1. **Registration** (`backend/services/auth.py`):

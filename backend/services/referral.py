@@ -216,7 +216,8 @@ class ReferralService:
 
         # Construct shareable link
         base_url = settings.frontend_url.rstrip("/")
-        shareable_link = f"{base_url}/signup?ref={user.referral_code}" if user.referral_code else None
+        # DISC-082: Changed from /signup?ref= (404) to /?ref= (landing page handles referral codes)
+        shareable_link = f"{base_url}/?ref={user.referral_code}" if user.referral_code else None
 
         return {
             "referral_code": user.referral_code,
