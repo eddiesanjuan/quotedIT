@@ -7240,11 +7240,17 @@
                     if (titleInput) {
                         // Clean up the transcription for task title
                         let taskTitle = transcription
-                            .replace(/^(add a |create a |new |schedule a )/i, '')
-                            .replace(/^(task|reminder|follow up)(\s+to\s+)?/i, '')
+                            // Remove common voice command prefixes
+                            .replace(/^(add a |create a |new |schedule a |set a |make a )/i, '')
+                            .replace(/^(task|reminder|follow[- ]?up)(\s+to\s+|\s+for\s+)?/i, '')
+                            .replace(/^(remind me to |remind me about |don't forget to |remember to )/i, '')
+                            .replace(/^(i need to |i have to |i should |i want to )/i, '')
+                            .replace(/^(please |can you )/i, '')
                             .trim();
                         // Capitalize first letter
-                        taskTitle = taskTitle.charAt(0).toUpperCase() + taskTitle.slice(1);
+                        if (taskTitle.length > 0) {
+                            taskTitle = taskTitle.charAt(0).toUpperCase() + taskTitle.slice(1);
+                        }
                         titleInput.value = taskTitle;
                     }
                 }, 100);
@@ -9528,11 +9534,11 @@
             const overdueCountEl = document.getElementById('dashboardOverdueCount');
 
             try {
-                // Fetch today's tasks
-                const todayResponse = await fetch('/api/tasks?filter=today', {
+                // Fetch today's tasks (backend uses 'view' param, not 'filter')
+                const todayResponse = await fetch('/api/tasks?view=today', {
                     headers: { 'Authorization': `Bearer ${authToken}` }
                 });
-                const overdueResponse = await fetch('/api/tasks?filter=overdue', {
+                const overdueResponse = await fetch('/api/tasks?view=overdue', {
                     headers: { 'Authorization': `Bearer ${authToken}` }
                 });
 
@@ -13012,9 +13018,9 @@
                 return;
             }
 
-            // Convert date to ISO datetime string (Pydantic expects full datetime)
+            // Format date as naive datetime string (no timezone - database expects offset-naive)
             const detailDueDateInput = document.getElementById('taskDetailDueDate').value;
-            const detail_due_date = detailDueDateInput ? new Date(detailDueDateInput + 'T12:00:00').toISOString() : null;
+            const detail_due_date = detailDueDateInput ? detailDueDateInput + 'T12:00:00' : null;
 
             const updateData = {
                 title: title,
