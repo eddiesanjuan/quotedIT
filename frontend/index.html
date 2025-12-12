@@ -12917,9 +12917,9 @@
                 return;
             }
 
-            // Convert date to ISO datetime string (Pydantic expects full datetime)
+            // Format date as naive datetime string (no timezone - database expects offset-naive)
             const dueDateInput = document.getElementById('addTaskDueDate').value;
-            const due_date = dueDateInput ? new Date(dueDateInput + 'T12:00:00').toISOString() : null;
+            const due_date = dueDateInput ? dueDateInput + 'T12:00:00' : null;
 
             const customerId = document.getElementById('addTaskCustomer').value;
             const taskData = {
