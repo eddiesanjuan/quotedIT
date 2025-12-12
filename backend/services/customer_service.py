@@ -176,16 +176,20 @@ class CustomerService:
             db=db,
             contractor_id=quote.contractor_id,
             name=quote.customer_name,
-            phone=quote.customer_phone,
-            email=quote.customer_email,
-            address=quote.customer_address
+            phone=getattr(quote, 'customer_phone', None),
+            email=getattr(quote, 'customer_email', None),
+            address=getattr(quote, 'customer_address', None)
         )
 
         if customer:
-            # Link quote to customer
-            quote.customer_id = customer.id
-
-            # Flush to make the quote-customer link visible in the stats query
+            # Link quote to customer via UPDATE statement
+            # (quote object may be detached from this session)
+            from sqlalchemy import update
+            await db.execute(
+                update(Quote)
+                .where(Quote.id == quote.id)
+                .values(customer_id=customer.id)
+            )
             await db.flush()
 
             # Update customer stats
