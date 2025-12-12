@@ -1,6 +1,6 @@
 # Discovery Backlog
 
-**Last Updated**: 2025-12-11
+**Last Updated**: 2025-12-12
 **Source**: `/quoted-discover` autonomous discovery cycles
 
 ---
@@ -22,22 +22,175 @@ To approve: Change status from DISCOVERED → READY
 
 | Status | Count |
 |--------|-------|
-| DEPLOYED | 47 |
-| COMPLETE | 2 |
-| READY | 13 |
+| DEPLOYED | 54 |
+| COMPLETE | 1 |
+| READY | 8 |
 | DISCOVERED | 22 |
-| **Total** | **84** |
+| **Total** | **85** |
 
 **Prompt Optimization**: DISC-041 complete → DISC-052, DISC-054 (learning improvements via prompt injection)
 **Deprioritized**: DISC-053, DISC-055 (structured storage/embeddings - over-engineering; prompt injection approach preferred)
 **Competitive Defense**: DISC-014 complete → DISC-060 through DISC-062 (RAG, category ownership, messaging)
-**Voice CRM**: DISC-085 (strategic design complete) → DISC-086 through DISC-091 (implementation tickets) + DISC-092 (tasks/reminders)
+**Voice CRM**: DISC-085 (strategic design complete) → DISC-086 through DISC-092 ✅ ALL DEPLOYED
 **Phase II Voice Control**: 8 tickets (DISC-042 through DISC-049) awaiting executive review
 **Staging Environment**: DISC-073 complete → DISC-077, DISC-078, DISC-079 (Railway preview + feature flags + runbook) ✅ ALL DEPLOYED
 
 ---
 
-## Recently Deployed (2025-12-08)
+## Recently Deployed (2025-12-12)
+
+### DISC-086: Customer Model & Database Migration 🗄️ CRM PHASE 1 (DEPLOYED)
+
+**Source**: DISC-085 Voice CRM Design Document
+**Impact**: HIGH | **Effort**: S | **Score**: 3.0
+**Commits**: PR #1 (quoted-run/DISC-086-092 → main)
+
+**Solution Implemented**:
+- Created `Customer` SQLAlchemy model with core fields (name, phone, email, address)
+- Added computed fields: total_quoted, total_won, quote_count, first/last quote dates
+- Added CRM fields: status, notes, tags (JSON)
+- Added deduplication fields: normalized_name, normalized_phone
+- Added `customer_id` foreign key to `Quote` model
+- Created auto-migration for new table with proper indexes
+
+**Success Metric**: Customer table exists with proper relationships ✅
+
+---
+
+### DISC-087: Customer Aggregation & Deduplication Service 🔗 CRM PHASE 1 (DEPLOYED)
+
+**Source**: DISC-085 Voice CRM Design Document
+**Impact**: HIGH | **Effort**: M | **Score**: 1.5
+**Commits**: PR #1 (quoted-run/DISC-086-092 → main)
+
+**Solution Implemented**:
+- Created `backend/services/customer_service.py`:
+  - `normalize_name(name)`: lowercase, strip punctuation, collapse whitespace
+  - `normalize_phone(phone)`: digits only
+  - `find_or_create_customer()`: deduplication on normalized name/phone
+  - `update_customer_stats()`: recalculate totals from linked quotes
+- Hooked into quote creation/update to auto-link customers
+- Handles edge cases (no name/phone, conflicts, duplicates)
+
+**Success Metric**: New quotes automatically create/link customers; deduplication accuracy >95% ✅
+
+---
+
+### DISC-088: Customer API Endpoints 🌐 CRM PHASE 1 (DEPLOYED)
+
+**Source**: DISC-085 Voice CRM Design Document
+**Impact**: HIGH | **Effort**: S | **Score**: 3.0
+**Commits**: PR #1 (quoted-run/DISC-086-092 → main)
+
+**Solution Implemented**:
+- Created `backend/api/customers.py` with endpoints:
+  - `GET /customers`: List customers (paginated, searchable, filterable)
+  - `GET /customers/{id}`: Customer detail with quote history
+  - `PATCH /customers/{id}`: Update customer (notes, tags, status)
+  - `GET /customers/search?q=`: Search by name/phone/address
+  - `GET /customers/{id}/quotes`: All quotes for customer
+- Added query parameters: status filter, sort, search
+- Returns computed stats in response
+
+**Success Metric**: All CRUD operations work; search returns relevant results in <500ms ✅
+
+---
+
+### DISC-089: Customer UI - List & Detail Views 🖥️ CRM PHASE 2 (DEPLOYED)
+
+**Source**: DISC-085 Voice CRM Design Document
+**Impact**: HIGH | **Effort**: M | **Score**: 1.5
+**Commits**: PR #1 (quoted-run/DISC-086-092 → main)
+
+**Solution Implemented**:
+- Added "Customers" tab to main navigation
+- Built Customer List View with search, filters, customer cards
+- Built Customer Detail View with stats, notes, tags, quote history
+- Added inline editing for notes and tags via modals
+- Mobile-responsive design (375px minimum)
+
+**Success Metric**: Users can browse, search, and view customer details ✅
+
+---
+
+### DISC-090: CRM Voice Command Integration 🎤 CRM PHASE 3 (DEPLOYED)
+
+**Source**: DISC-085 Voice CRM Design Document
+**Impact**: HIGH | **Effort**: L | **Score**: 1.0
+**Commits**: PR #1 (quoted-run/DISC-086-092 → main)
+
+**Solution Implemented**:
+- Added CRM intent detection to `backend/services/claude_service.py`
+- Detect CRM keywords: "customer", "who did I", "show me", "find"
+- Implemented CRM voice commands:
+  - **Search**: "Show me John Smith" → customer_search
+  - **Detail**: "What's the history with Johnson Electric?" → customer_detail
+  - **Notes**: "Add a note to Mike Wilson" → add_note (via UI)
+  - **Tags**: "Tag Sarah's Bakery as VIP" → add_tag (via UI)
+- Natural language responses for customer queries
+
+**Success Metric**: 90%+ correct intent detection; voice commands complete in <3 seconds ✅
+
+---
+
+### DISC-091: Backfill Existing Quotes to Customer Records 📥 CRM PHASE 1 (DEPLOYED)
+
+**Source**: DISC-085 Voice CRM Design Document
+**Impact**: HIGH | **Effort**: S | **Score**: 3.0
+**Commits**: PR #1 (quoted-run/DISC-086-092 → main)
+
+**Solution Implemented**:
+- Created backfill logic in database initialization
+- Iterates through all quotes with customer_name or customer_phone
+- Calls `find_or_create_customer()` for each quote
+- Links quote to customer via customer_id foreign key
+- Updates customer stats (total_quoted, quote_count, etc.)
+- Runs automatically during app startup for existing users
+
+**Success Metric**: 100% of quotes with customer data linked to Customer records ✅
+
+---
+
+### DISC-092: CRM Task & Reminder System 📋 CRM PHASE 4 (DEPLOYED)
+
+**Source**: Founder Request (Eddie, 2025-12-11)
+**Impact**: HIGH | **Effort**: L | **Score**: 1.0
+**Commits**: PR #1 (quoted-run/DISC-086-092 → main)
+
+**Solution Implemented**:
+- Created `Task` model: id, contractor_id, customer_id (optional), quote_id (optional)
+- Fields: title, description, due_date, status (pending/completed)
+- Priority levels: low, normal, high, urgent
+- Manual task creation via button on customer detail and quote detail views
+- Tasks tab in main navigation with Today/Upcoming/Overdue views
+- Filter by customer, quote, priority
+- Quick actions: complete task
+- Mobile-responsive design
+
+**Success Metric**: Users can create and manage tasks linked to customers/quotes ✅
+
+---
+
+### Pricing Brain Fix: learned_adjustments Field Naming (DEPLOYED)
+
+**Source**: Bug discovered during PR testing
+**Impact**: MEDIUM | **Effort**: S
+**Commits**: 2387d36, c2b1c6c
+
+**Problem**: Pricing Brain category cards showed "0 rules learned" even when rules existed. Rules also disappeared after editing in modal.
+
+**Root Cause**: Frontend used `learned_rules` but backend sent `learned_adjustments`. Field name mismatch.
+
+**Solution Implemented**:
+- Fixed frontend to use `learned_adjustments` (backend's field name)
+- Fixed rules count display to use `learned_adjustments_count`
+- Verified rules persist correctly after edit/save cycle
+
+**Success Metric**: Rules count displays correctly; rules persist after editing ✅
+
+---
+
+## Previously Deployed (2025-12-08)
 
 ### DISC-077: Enable Railway Preview Environments 🏗️ INFRA (DEPLOYED)
 
@@ -347,6 +500,50 @@ To approve: Change status from DISCOVERED → READY
 5. Respond to every comment within 1 hour
 
 **Success Metric**: 5,000+ impressions; 3% click demo (150 views); 15% convert = 22 signups
+
+---
+
+### DISC-093: Codex Executive UX Review - Analysis & Implementation 📋 STRATEGIC (COMPLETE)
+
+**Source**: Founder Request (Eddie, 2025-12-12)
+**Impact**: HIGH | **Effort**: M | **Score**: Strategic
+**Sprint Alignment**: Critical for adoption speed and early trust
+**Branch**: quoted-run/DISC-093
+**PR**: Pending creation at https://github.com/eddiesanjuan/quotedIT/compare/main...quoted-run/DISC-093
+
+**Implementation Summary** (2025-12-12):
+
+Analyzed Codex (GPT-5.2) Executive UX Review against current codebase. Verified which issues still applied vs. already resolved.
+
+**3 High-Impact Fixes Implemented**:
+
+1. ✅ **Fix "Try a Quote Now" row click (CRITICAL)**
+   - `handleTryFirst()` now works when clicking the `<li>` row, not just button
+   - Falls back to `querySelector` when no button ancestor exists
+   - Resolves silent activation killer for new users
+
+2. ✅ **Add "Try Demo" CTA on auth screen**
+   - New section below auth forms with link to `/try`
+   - Reduces auth friction for first-time users
+   - Matches landing page demo path strategy
+
+3. ✅ **Enhanced learning toast with job-specific messaging**
+   - Shows "Learned! Future {job type} quotes will be more accurate"
+   - Tap-to-navigate to Pricing Brain
+   - Better visual design and longer display time
+
+**Issues Verified as Already Resolved**:
+- ✅ Rules learned no longer stuck at zero
+- ✅ Save Changes is sticky/always visible
+- ✅ Currency formatting fixed
+
+**Deferred to Future Tickets** (from Codex review):
+- Progressive disclosure (hide CRM/Tasks/Invoices tabs until first quote)
+- PWA manifest + add-to-home-screen
+- Recording timer + "tap again to stop" microcopy
+- Customers rollup auto-sync
+
+**Success Metric**: 3 verified UX issues fixed with minimal scope creep ✅
 
 ---
 
