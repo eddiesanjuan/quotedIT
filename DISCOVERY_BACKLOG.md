@@ -22,9 +22,9 @@ To approve: Change status from DISCOVERED → READY
 
 | Status | Count |
 |--------|-------|
-| DEPLOYED | 46 |
+| DEPLOYED | 47 |
 | COMPLETE | 2 |
-| READY | 13 |
+| READY | 12 |
 | DISCOVERED | 22 |
 | **Total** | **83** |
 
@@ -640,30 +640,21 @@ To approve: Change status from DISCOVERED → READY
 
 ---
 
-### DISC-084: Onboarding Trade Type List UX Improvement 🎨 UX (READY)
+### DISC-084: Onboarding Trade Type List UX Improvement 🎨 UX (DEPLOYED)
 
 **Source**: Founder Request (Eddie, 2025-12-11)
 **Impact**: MEDIUM | **Effort**: S | **Score**: 2.0
-**Sprint Alignment**: Onboarding friction reduction - better first-run experience
+**Commit**: 9dae270
 
-**Problem**: The "What do you do?" trade type list during onboarding is jumbled and unsorted. Users struggle to find their trade quickly, which creates friction in the onboarding flow. The list has no logical order (not alphabetical, not by popularity).
+**Problem**: The "What do you do?" trade type list during onboarding was jumbled and unsorted. Users struggled to find their trade quickly.
 
-**Proposed Work**:
-1. Sort trade type list: Common categories at top (General Contractor, Electrician, Plumber, etc.), remainder alphabetically
-2. Add free-text input option: "Don't see your trade? Type it here"
-3. AI interpretation: If user types or speaks their trade, use AI to match to existing category or create new one
-4. Allow voice input for trade type (say "I do custom furniture" → AI categorizes)
+**Solution Implemented**:
+- Put 8 popular trades at top: General Contractor, Electrician, Plumber, HVAC, Painter, Roofer, Landscaper, Deck Builder
+- Sorted remaining trades alphabetically (A-Z)
+- Added visual section headers ("Popular" and "All Trades A-Z")
+- "Other" option always last
 
-**Technical Considerations**:
-- Update the trade type list in onboarding flow (frontend)
-- Define "common" trades based on user data or industry prevalence
-- AI interpretation can reuse existing Claude service for categorization
-- Store custom trades for future category expansion
-
-**Success Metric**:
-- Reduced time to complete trade selection step
-- Fewer users abandoning during onboarding
-- Support for niche trades without maintaining massive predefined list
+**Success Metric**: Reduced time to complete trade selection step ✅
 
 ---
 

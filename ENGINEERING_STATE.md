@@ -90,6 +90,8 @@ This section is the **authoritative source** for what features actually exist in
 
 | Ticket | Description | Commits |
 |--------|-------------|---------|
+| DISC-084 | Trade Type List UX (popular at top, alphabetical) | 9dae270 |
+| DISC-085 | Voice CRM Design Document + 6 implementation tickets | 047b897 |
 | DISC-082 | Referral Links 404 Fix (CRITICAL) | 2620866 |
 | DISC-083 | Line Item Quantity/Cost UX Fix | 2a5ba8b |
 | DISC-080 | Account Default Timeline & Terms Settings | d641e45 |
