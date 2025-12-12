@@ -441,3 +441,71 @@ async def remove_customer_tag(
     await db.refresh(customer)
 
     return CustomerResponse.model_validate(customer)
+
+
+# ================================================================
+# DISC-090: CRM Voice Commands
+# ================================================================
+
+class VoiceCommandRequest(BaseModel):
+    """Voice command request."""
+    transcription: str
+
+
+class VoiceCommandResponse(BaseModel):
+    """Voice command response."""
+    intent: str
+    success: bool
+    message: str
+    data: Optional[dict] = None
+    is_crm_command: bool
+
+
+@router.post("/voice-command", response_model=VoiceCommandResponse)
+async def process_voice_command(
+    request: VoiceCommandRequest,
+    user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Process a voice command for CRM operations.
+
+    Detects intent from voice transcription and executes appropriate CRM action:
+    - Search: "Show me John Smith"
+    - Stats: "How much have I quoted the Hendersons?"
+    - Notes: "Add a note to Mike Wilson: Prefers morning"
+    - Tags: "Tag Sarah's Bakery as VIP"
+    - Dormant: "Which customers haven't had a quote in 6 months?"
+    - Top: "Who are my top customers?"
+
+    Returns is_crm_command=False if this appears to be a quote request.
+    """
+    from ..services.crm_voice import crm_voice_service
+
+    contractor = await get_contractor(user, db)
+
+    # Detect intent
+    intent_result = await crm_voice_service.detect_intent(request.transcription)
+
+    if not intent_result.get("is_crm_command", False):
+        return VoiceCommandResponse(
+            intent="not_crm",
+            success=False,
+            message="This doesn't appear to be a CRM command. Try creating a quote instead.",
+            is_crm_command=False
+        )
+
+    # Execute the CRM command
+    result = await crm_voice_service.execute_command(
+        db=db,
+        contractor_id=contractor.id,
+        intent_result=intent_result
+    )
+
+    return VoiceCommandResponse(
+        intent=result.intent.value,
+        success=result.success,
+        message=result.message,
+        data=result.data,
+        is_crm_command=True
+    )

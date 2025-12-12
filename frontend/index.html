@@ -4488,6 +4488,18 @@
                         <option value="quote_count">Quote Count</option>
                     </select>
                     <button class="btn btn-primary" onclick="openAddCustomerModal()" style="padding: 10px 16px;">+ Add Customer</button>
+                    <button class="btn btn-secondary" id="crmVoiceBtn" onclick="startCrmVoiceCommand()" style="padding: 10px 16px; display: flex; align-items: center; gap: 6px;">
+                        🎤 Voice Command
+                    </button>
+                </div>
+
+                <!-- CRM Voice Command Response (DISC-090) -->
+                <div id="crmVoiceResponse" style="display: none; margin-bottom: 20px; padding: 16px; background: var(--bg-elevated); border-radius: 8px; border-left: 4px solid var(--accent);">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                        <span style="font-weight: 600; color: var(--accent);" id="crmVoiceIntent">Search Results</span>
+                        <button onclick="closeCrmVoiceResponse()" style="background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 1.25rem;">&times;</button>
+                    </div>
+                    <div id="crmVoiceMessage" style="color: var(--text-primary); white-space: pre-line;"></div>
                 </div>
 
                 <!-- Customer Summary Stats -->
@@ -11167,6 +11179,238 @@
                     localStorage.removeItem('prefillCustomer');
                 }
             }, 100);
+        }
+
+        // ================================================================
+        // DISC-090: CRM Voice Commands
+        // ================================================================
+
+        let crmMediaRecorder = null;
+        let crmAudioChunks = [];
+        let crmVoiceProcessing = false;
+
+        async function startCrmVoiceCommand() {
+            const btn = document.getElementById('crmVoiceBtn');
+
+            // If already recording, stop
+            if (crmMediaRecorder && crmMediaRecorder.state === 'recording') {
+                crmMediaRecorder.stop();
+                btn.classList.remove('recording');
+                btn.innerHTML = '🎤 Voice Command';
+                btn.style.background = '';
+                return;
+            }
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                const mimeType = getSupportedAudioMimeType();
+                const options = mimeType ? { mimeType } : {};
+                crmMediaRecorder = new MediaRecorder(stream, options);
+                crmAudioChunks = [];
+
+                crmMediaRecorder.ondataavailable = (e) => {
+                    crmAudioChunks.push(e.data);
+                };
+
+                crmMediaRecorder.onstop = async () => {
+                    const audioBlob = new Blob(crmAudioChunks, { type: mimeType || 'audio/webm' });
+                    stream.getTracks().forEach(track => track.stop());
+
+                    // Show processing state
+                    btn.innerHTML = '⏳ Processing...';
+                    btn.disabled = true;
+                    crmVoiceProcessing = true;
+
+                    try {
+                        // First transcribe the audio
+                        const transcription = await transcribeCrmAudio(audioBlob);
+                        if (transcription) {
+                            // Then process the CRM command
+                            await processCrmVoiceCommand(transcription);
+                        }
+                    } catch (err) {
+                        console.error('CRM voice error:', err);
+                        showError('Voice command failed. Please try again.');
+                    } finally {
+                        btn.innerHTML = '🎤 Voice Command';
+                        btn.disabled = false;
+                        crmVoiceProcessing = false;
+                    }
+                };
+
+                crmMediaRecorder.onerror = (event) => {
+                    console.error('CRM MediaRecorder error:', event);
+                    showError('Voice recording failed');
+                    btn.innerHTML = '🎤 Voice Command';
+                    btn.classList.remove('recording');
+                    btn.style.background = '';
+                };
+
+                crmMediaRecorder.start();
+                btn.classList.add('recording');
+                btn.innerHTML = '⏹ Stop Recording';
+                btn.style.background = 'var(--error)';
+
+                // Track usage
+                if (typeof posthog !== 'undefined') {
+                    posthog.capture('crm_voice_started');
+                }
+            } catch (err) {
+                console.error('CRM voice access error:', err);
+                showError('Could not access microphone. Please check permissions.');
+            }
+        }
+
+        async function transcribeCrmAudio(audioBlob) {
+            const formData = new FormData();
+            formData.append('audio', audioBlob, 'recording.webm');
+
+            const response = await fetch('/api/quotes/transcribe', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${getToken()}`
+                },
+                body: formData
+            });
+
+            if (!response.ok) {
+                throw new Error('Transcription failed');
+            }
+
+            const data = await response.json();
+            return data.transcription;
+        }
+
+        async function processCrmVoiceCommand(transcription) {
+            const response = await fetch('/api/customers/voice-command', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${getToken()}`
+                },
+                body: JSON.stringify({ transcription })
+            });
+
+            if (!response.ok) {
+                throw new Error('Voice command processing failed');
+            }
+
+            const result = await response.json();
+
+            // Track usage
+            if (typeof posthog !== 'undefined') {
+                posthog.capture('crm_voice_completed', {
+                    intent: result.intent,
+                    success: result.success,
+                    is_crm_command: result.is_crm_command
+                });
+            }
+
+            // Display the response
+            displayCrmVoiceResponse(result);
+
+            // If it's not a CRM command, suggest they create a quote
+            if (!result.is_crm_command) {
+                showError('This sounds like a quote request. Try using the main voice recorder instead.');
+                return;
+            }
+
+            // If search found customers, optionally navigate to detail
+            if (result.success && result.data?.customers?.length === 1) {
+                // Single customer found - offer to view details
+                const customerId = result.data.customers[0].id;
+                setTimeout(() => {
+                    if (confirm('View customer details?')) {
+                        showCustomerDetail(customerId);
+                        closeCrmVoiceResponse();
+                    }
+                }, 500);
+            }
+
+            // Refresh customer list if data was modified
+            if (result.success && ['add_note', 'add_tag'].includes(result.intent)) {
+                await loadCustomers();
+                if (currentCustomer && result.data?.customer_id === currentCustomer.id) {
+                    await showCustomerDetail(currentCustomer.id);
+                }
+            }
+        }
+
+        function displayCrmVoiceResponse(result) {
+            const container = document.getElementById('crmVoiceResponse');
+            const intentEl = document.getElementById('crmVoiceIntent');
+            const messageEl = document.getElementById('crmVoiceMessage');
+
+            // Map intent to display name
+            const intentNames = {
+                'search': '🔍 Search Results',
+                'detail': '📋 Customer Details',
+                'stats': '📊 Customer Stats',
+                'add_note': '📝 Note Added',
+                'add_tag': '🏷️ Tag Added',
+                'dormant': '💤 Dormant Customers',
+                'top_customers': '⭐ Top Customers',
+                'not_crm': '❓ Not a CRM Command'
+            };
+
+            intentEl.textContent = intentNames[result.intent] || result.intent;
+            messageEl.textContent = result.message;
+
+            // Style based on success
+            if (result.success) {
+                container.style.borderLeftColor = 'var(--success)';
+            } else {
+                container.style.borderLeftColor = 'var(--error)';
+            }
+
+            container.style.display = 'block';
+        }
+
+        function closeCrmVoiceResponse() {
+            document.getElementById('crmVoiceResponse').style.display = 'none';
+        }
+
+        function openAddCustomerModal() {
+            // Simple prompt for now - could be expanded to a modal
+            const name = prompt('Customer name:');
+            if (!name || !name.trim()) return;
+
+            const phone = prompt('Phone (optional):');
+            const email = prompt('Email (optional):');
+
+            createCustomer(name.trim(), phone?.trim(), email?.trim());
+        }
+
+        async function createCustomer(name, phone, email) {
+            try {
+                const response = await fetch('/api/customers', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${getToken()}`
+                    },
+                    body: JSON.stringify({
+                        name,
+                        phone: phone || null,
+                        email: email || null,
+                        status: 'lead'
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to create customer');
+                }
+
+                showSuccess('Customer created!');
+                await loadCustomers();
+
+                if (typeof posthog !== 'undefined') {
+                    posthog.capture('customer_created');
+                }
+            } catch (err) {
+                console.error('Error creating customer:', err);
+                showError('Failed to create customer');
+            }
         }
 
         async function handleLogoFileSelect(event) {

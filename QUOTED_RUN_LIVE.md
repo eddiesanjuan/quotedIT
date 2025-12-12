@@ -42,3 +42,18 @@ Skipping Phase 0 (Orient) and Phase 1 (Executive Council)
 [20:30:06]   📖 Registered router in main.py
 [20:30:16]   ✅ DISC-088 committed: a2aa89c
 [20:30:16] ▶ DISC-089: Customer UI Views (DIRECT)
+[20:30:16]   📖 Added Customers nav button (desktop + mobile)
+[20:30:16]   📖 Created customersSection with search, filters, summary stats
+[20:30:16]   📖 Created customerDetailView with contact info, stats, tags, notes, quote history
+[20:30:16]   📖 Added CSS for customer CRM styles
+[20:30:16]   📖 Added JavaScript functions (loadCustomers, showCustomerDetail, add/remove tags/notes)
+[20:31:45]   ✅ DISC-089 committed: 1e72edd
+[20:31:45] ▶ DISC-090: CRM Voice Commands (DIRECT)
+  📖 Created crm_voice.py service with:
+    - Claude tool calling for intent detection
+    - CRM_KEYWORDS pre-filter for efficiency
+    - Handle search, stats, notes, tags, dormant, top customers
+  📖 Added /voice-command endpoint to customers API
+  📖 Added Voice Command button to customers section
+  📖 Added JavaScript for CRM voice recording/processing
+  📖 Added response display with intent icons
