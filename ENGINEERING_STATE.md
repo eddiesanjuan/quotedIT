@@ -1,6 +1,6 @@
 # Engineering State
 
-**Last Updated**: 2025-12-11 (auto)
+**Last Updated**: 2025-12-12 (auto)
 **Updated By**: Autonomous AI (CEO)
 
 ---
@@ -86,17 +86,16 @@ This section is the **authoritative source** for what features actually exist in
 | DISC-014 | Buildxact Competitive Defense | **READY** | Strategy |
 | DISC-033 | Reddit Contractor Launch Post | **READY** | 🔴 FOUNDER ACTION |
 
-### Recently Deployed (2025-12-11)
+### Recently Deployed (2025-12-12)
 
 | Ticket | Description | Commits |
 |--------|-------------|---------|
+| DISC-093 | Codex UX Review - 3 high-impact fixes (row click, demo CTA, learning toast) | e4f2f6c |
 | DISC-084 | Trade Type List UX (popular at top, alphabetical) | 9dae270 |
 | DISC-085 | Voice CRM Design Document + 6 implementation tickets | 047b897 |
 | DISC-082 | Referral Links 404 Fix (CRITICAL) | 2620866 |
 | DISC-083 | Line Item Quantity/Cost UX Fix | 2a5ba8b |
 | DISC-080 | Account Default Timeline & Terms Settings | d641e45 |
-| BUG | Onboarding bypass for new users | ad757bf |
-| BUG | Backfill onboarding_completed_at for existing users | c13145e |
 
 ### Previously Deployed (2025-12-05)
 

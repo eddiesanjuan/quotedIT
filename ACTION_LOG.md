@@ -4,7 +4,20 @@
 
 ---
 
-## Today (2025-12-07)
+## Today (2025-12-12)
+
+| Time | Agent | Action | Type | Result |
+|------|-------|--------|------|--------|
+| Session | CEO | DISC-093 DEPLOYED: Codex UX Review - 3 fixes merged to main | Type 2 | Commit e4f2f6c |
+| Session | CEO | Fix 3: Enhanced learning toast (job-specific + tap-to-view Pricing Brain) | Type 2 | Learning loop visibility |
+| Session | CEO | Fix 2: Added "Try Demo" CTA on auth screen (reduces auth friction) | Type 2 | Demo funnel improvement |
+| Session | CEO | Fix 1: Fixed "Try a Quote Now" row click (CRITICAL activation killer) | Type 2 | Onboarding fix |
+| Session | CEO | Analyzed Codex UX Review: 3 still applicable, 3 already fixed | Type 1 | Prioritized implementation |
+| Session | CEO | Quoted Run: DISC-093 - Codex Executive UX Review implementation | Type 1 | Branch quoted-run/DISC-093 |
+
+---
+
+## Yesterday (2025-12-07)
 
 | Time | Agent | Action | Type | Result |
 |------|-------|--------|------|--------|
