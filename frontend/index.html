@@ -1918,6 +1918,144 @@
             gap: 4px;
         }
 
+        /* Customer CRM Styles (DISC-089) */
+        .customer-summary-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 768px) {
+            .customer-summary-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .customer-stat-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .customer-stat-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            font-family: var(--font-serif);
+        }
+
+        .customer-stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 4px;
+        }
+
+        .customer-status-badge {
+            display: inline-block;
+            font-size: 0.7rem;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .customer-status-badge.status-active {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .customer-status-badge.status-lead {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+        }
+
+        .customer-status-badge.status-vip {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+        }
+
+        .customer-status-badge.status-inactive {
+            background: linear-gradient(135deg, #6b7280, #4b5563);
+            color: white;
+        }
+
+        .customer-tag {
+            display: inline-flex;
+            align-items: center;
+            font-size: 0.75rem;
+            padding: 4px 10px;
+            background: var(--accent-surface);
+            color: var(--accent);
+            border-radius: 9999px;
+            margin: 4px 4px 4px 0;
+        }
+
+        .customer-info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 576px) {
+            .customer-info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .customer-info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .customer-info-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .customer-info-value {
+            font-size: 0.9375rem;
+            color: var(--text-primary);
+        }
+
+        .customer-detail-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+        }
+
+        .customer-section {
+            background: var(--card-bg);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .customer-section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .customer-section h4 {
+            font-family: var(--font-serif);
+            font-size: 1rem;
+            font-weight: 500;
+            margin: 0;
+            color: var(--text-primary);
+        }
+
         .quote-empty {
             text-align: center;
             padding: 80px 40px;
@@ -3741,6 +3879,8 @@
             <div class="app-nav" id="appNav" style="display: none;">
                 <button class="app-nav-btn active" id="newQuoteNavBtn" onclick="showAppSection('newQuote')">New Quote</button>
                 <button class="app-nav-btn" id="myQuotesNavBtn" onclick="showAppSection('myQuotes')">My Quotes</button>
+                <button class="app-nav-btn" id="customersNavBtn" onclick="showAppSection('customers')">Customers</button>
+                <button class="app-nav-btn" id="tasksNavBtn" onclick="showAppSection('tasks')">Tasks</button>
                 <button class="app-nav-btn" id="invoicesNavBtn" onclick="showAppSection('invoices')">Invoices</button>
                 <button class="app-nav-btn" id="accountNavBtn" onclick="showAppSection('account')">Account</button>
                 <a href="/help" class="app-nav-btn" style="text-decoration: none;">Help</a>
@@ -4321,6 +4461,245 @@
                 </div>
             </div>
 
+            <!-- DISC-089: Customers Section (CRM) -->
+            <div class="card" id="customersSection" style="display: none;">
+                <div class="quote-history-header">
+                    <h2>Customers</h2>
+                    <span class="quote-history-count" id="customerCount">0 customers</span>
+                </div>
+
+                <!-- Customer Search and Filters -->
+                <div class="customer-filters" style="margin-bottom: 20px; display: flex; gap: 12px; flex-wrap: wrap;">
+                    <input type="text" id="customerSearchInput" placeholder="Search customers..."
+                           style="flex: 1; min-width: 200px; padding: 10px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-elevated); color: var(--text-primary); font-size: 0.875rem;"
+                           oninput="debounceCustomerSearch()">
+                    <select id="customerStatusFilter" onchange="loadCustomers()"
+                            style="padding: 10px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-elevated); color: var(--text-primary); font-size: 0.875rem;">
+                        <option value="">All Statuses</option>
+                        <option value="active">Active</option>
+                        <option value="lead">Lead</option>
+                        <option value="vip">VIP</option>
+                        <option value="inactive">Inactive</option>
+                    </select>
+                    <select id="customerSortBy" onchange="loadCustomers()"
+                            style="padding: 10px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-elevated); color: var(--text-primary); font-size: 0.875rem;">
+                        <option value="last_quote_at">Last Quoted</option>
+                        <option value="name">Name</option>
+                        <option value="total_quoted">Total Quoted</option>
+                        <option value="quote_count">Quote Count</option>
+                    </select>
+                    <button class="btn btn-primary" onclick="openAddCustomerModal()" style="padding: 10px 16px;">+ Add Customer</button>
+                    <button class="btn btn-secondary" id="crmVoiceBtn" onclick="startCrmVoiceCommand()" style="padding: 10px 16px; display: flex; align-items: center; gap: 6px;">
+                        🎤 Voice Command
+                    </button>
+                    <button class="btn btn-outline" id="syncCustomersBtn" onclick="syncCustomersFromQuotes()" style="padding: 10px 16px; display: flex; align-items: center; gap: 6px;">
+                        🔄 Sync from Quotes
+                    </button>
+                </div>
+
+                <!-- CRM Voice Command Response (DISC-090) -->
+                <div id="crmVoiceResponse" style="display: none; margin-bottom: 20px; padding: 16px; background: var(--bg-elevated); border-radius: 8px; border-left: 4px solid var(--accent);">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                        <span style="font-weight: 600; color: var(--accent);" id="crmVoiceIntent">Search Results</span>
+                        <button onclick="closeCrmVoiceResponse()" style="background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 1.25rem;">&times;</button>
+                    </div>
+                    <div id="crmVoiceMessage" style="color: var(--text-primary); white-space: pre-line;"></div>
+                </div>
+
+                <!-- Customer Summary Stats -->
+                <div class="customer-summary" id="customerSummary" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 16px; margin-bottom: 24px; padding: 16px; background: var(--bg-elevated); border-radius: 8px;">
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.5rem; font-weight: 600;" id="summaryTotalCustomers">0</div>
+                        <div style="font-size: 0.75rem; color: var(--text-secondary);">Total Customers</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.5rem; font-weight: 600;" id="summaryActiveCustomers">0</div>
+                        <div style="font-size: 0.75rem; color: var(--text-secondary);">Active</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.5rem; font-weight: 600;" id="summaryTotalQuoted">$0</div>
+                        <div style="font-size: 0.75rem; color: var(--text-secondary);">Total Quoted</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.5rem; font-weight: 600;" id="summaryTotalWon">$0</div>
+                        <div style="font-size: 0.75rem; color: var(--text-secondary);">Total Won</div>
+                    </div>
+                </div>
+
+                <div class="quote-list" id="customerList">
+                    <!-- Customer list items will be populated via JavaScript -->
+                </div>
+
+                <div class="empty-state" id="customerEmpty" style="display: none;">
+                    <div class="empty-icon">👥</div>
+                    <h3>No customers yet</h3>
+                    <p>Customers are automatically created from your quotes.</p>
+                    <button class="cta-button" onclick="showAppSection('newQuote')">Create Your First Quote</button>
+                </div>
+
+                <div id="customerLoadingState" style="display: none; text-align: center; padding: 40px;">
+                    <div class="spinner" style="display: inline-block;"></div>
+                    <p style="margin-top: 16px; color: var(--text-secondary);">Loading your customers...</p>
+                </div>
+            </div>
+
+            <!-- Customer Detail View -->
+            <div class="card quote-result" id="customerDetailView" style="display: none;">
+                <div class="quote-header">
+                    <h2 id="customerDetailName">Customer Details</h2>
+                    <span class="confidence-badge" id="customerStatusBadge">Active</span>
+                </div>
+
+                <div class="customer-info-section">
+                    <div class="customer-info-header">
+                        <h3>Contact Information</h3>
+                        <button class="btn btn-secondary btn-sm" onclick="editCrmCustomer()">Edit</button>
+                    </div>
+                    <div class="customer-info-grid">
+                        <div class="customer-info-item">
+                            <div class="customer-info-label">Phone</div>
+                            <div class="customer-info-value" id="customerDetailPhone">—</div>
+                        </div>
+                        <div class="customer-info-item">
+                            <div class="customer-info-label">Email</div>
+                            <div class="customer-info-value" id="customerDetailEmail">—</div>
+                        </div>
+                        <div class="customer-info-item">
+                            <div class="customer-info-label">Address</div>
+                            <div class="customer-info-value" id="customerDetailAddress">—</div>
+                        </div>
+                        <div class="customer-info-item">
+                            <div class="customer-info-label">Source</div>
+                            <div class="customer-info-value" id="customerDetailSource">—</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Customer Stats -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 16px; margin: 24px 0; padding: 16px; background: var(--bg-elevated); border-radius: 8px;">
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.25rem; font-weight: 600;" id="customerDetailQuoteCount">0</div>
+                        <div style="font-size: 0.75rem; color: var(--text-secondary);">Quotes</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.25rem; font-weight: 600;" id="customerDetailTotalQuoted">$0</div>
+                        <div style="font-size: 0.75rem; color: var(--text-secondary);">Total Quoted</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.25rem; font-weight: 600;" id="customerDetailTotalWon">$0</div>
+                        <div style="font-size: 0.75rem; color: var(--text-secondary);">Total Won</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 0.875rem;" id="customerDetailFirstQuote">—</div>
+                        <div style="font-size: 0.75rem; color: var(--text-secondary);">Customer Since</div>
+                    </div>
+                </div>
+
+                <!-- Tags -->
+                <div style="margin-bottom: 24px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <span style="font-weight: 500;">Tags</span>
+                        <button class="btn btn-secondary btn-sm" onclick="addCustomerTag()">+ Add Tag</button>
+                    </div>
+                    <div id="customerDetailTags" style="display: flex; flex-wrap: wrap; gap: 8px;">
+                        <!-- Tags will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Notes -->
+                <div style="margin-bottom: 24px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <span style="font-weight: 500;">Notes</span>
+                        <button class="btn btn-secondary btn-sm" onclick="addCustomerNote()">+ Add Note</button>
+                    </div>
+                    <div id="customerDetailNotes" style="background: var(--bg-elevated); padding: 16px; border-radius: 8px; white-space: pre-wrap; font-size: 0.875rem; color: var(--text-secondary);">
+                        No notes yet.
+                    </div>
+                </div>
+
+                <!-- Quote History -->
+                <div>
+                    <h3 style="margin-bottom: 16px;">Quote History</h3>
+                    <div id="customerDetailQuotes" class="quote-list">
+                        <!-- Quote history will be populated here -->
+                    </div>
+                </div>
+
+                <div class="quote-actions" style="margin-top: 24px;">
+                    <button class="btn btn-primary" onclick="createQuoteForCustomer()">+ New Quote</button>
+                    <button class="btn btn-secondary" onclick="backToCustomerList()">Back to Customers</button>
+                </div>
+            </div>
+
+            <!-- DISC-092: Tasks Section -->
+            <div class="card" id="tasksSection" style="display: none;">
+                <div class="quote-history-header">
+                    <h2>Tasks & Reminders</h2>
+                    <span class="quote-history-count" id="taskCount">0 tasks</span>
+                </div>
+
+                <!-- Task Filters and Add Button -->
+                <div class="task-filters" style="margin-bottom: 20px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
+                    <select id="taskViewFilter" onchange="loadTasks()"
+                            style="padding: 10px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-elevated); color: var(--text-primary); font-size: 0.875rem;">
+                        <option value="all">All Tasks</option>
+                        <option value="today">Due Today</option>
+                        <option value="overdue">Overdue</option>
+                        <option value="upcoming">Upcoming (7 days)</option>
+                        <option value="completed">Completed</option>
+                    </select>
+                    <select id="taskTypeFilter" onchange="loadTasks()"
+                            style="padding: 10px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-elevated); color: var(--text-primary); font-size: 0.875rem;">
+                        <option value="">All Types</option>
+                        <option value="follow_up">Follow Up</option>
+                        <option value="quote">Quote</option>
+                        <option value="call">Call</option>
+                        <option value="site_visit">Site Visit</option>
+                        <option value="material_order">Material Order</option>
+                        <option value="reminder">Reminder</option>
+                        <option value="other">Other</option>
+                    </select>
+                    <button class="btn btn-primary" onclick="openAddTaskModal()" style="padding: 10px 16px;">+ Add Task</button>
+                </div>
+
+                <!-- Task Summary Stats -->
+                <div class="task-summary" id="taskSummary" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 16px; margin-bottom: 24px; padding: 16px; background: var(--bg-elevated); border-radius: 8px;">
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.5rem; font-weight: 600; color: #ef4444;" id="summaryOverdueTasks">0</div>
+                        <div style="font-size: 0.75rem; color: var(--text-secondary);">Overdue</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.5rem; font-weight: 600; color: #f59e0b;" id="summaryTodayTasks">0</div>
+                        <div style="font-size: 0.75rem; color: var(--text-secondary);">Due Today</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.5rem; font-weight: 600; color: var(--accent);" id="summaryUpcomingTasks">0</div>
+                        <div style="font-size: 0.75rem; color: var(--text-secondary);">Upcoming</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.5rem; font-weight: 600;" id="summaryPendingTasks">0</div>
+                        <div style="font-size: 0.75rem; color: var(--text-secondary);">Total Pending</div>
+                    </div>
+                </div>
+
+                <!-- Task List -->
+                <div class="task-list" id="taskList">
+                    <!-- Task items will be populated via JavaScript -->
+                </div>
+
+                <div class="empty-state" id="taskEmpty" style="display: none;">
+                    <div class="empty-icon">✓</div>
+                    <h3>No tasks</h3>
+                    <p>Stay organized by adding tasks and reminders for your customers.</p>
+                    <button class="cta-button" onclick="openAddTaskModal()">Add Your First Task</button>
+                </div>
+
+                <div id="taskLoadingState" style="display: none; text-align: center; padding: 40px;">
+                    <div class="spinner" style="display: inline-block;"></div>
+                    <p style="margin-top: 16px; color: var(--text-secondary);">Loading tasks...</p>
+                </div>
+            </div>
+
             <!-- DISC-071: Invoices Section -->
             <div class="card" id="invoicesSection" style="display: none;">
                 <div class="quote-history-header">
@@ -4855,7 +5234,15 @@
         </button>
         <button class="mobile-nav-btn" id="mobileMyQuotesBtn" onclick="showAppSection('myQuotes')">
             <span class="mobile-nav-icon">📋</span>
-            <span class="mobile-nav-label">My Quotes</span>
+            <span class="mobile-nav-label">Quotes</span>
+        </button>
+        <button class="mobile-nav-btn" id="mobileCustomersBtn" onclick="showAppSection('customers')">
+            <span class="mobile-nav-icon">👥</span>
+            <span class="mobile-nav-label">CRM</span>
+        </button>
+        <button class="mobile-nav-btn" id="mobileTasksBtn" onclick="showAppSection('tasks')">
+            <span class="mobile-nav-icon">✓</span>
+            <span class="mobile-nav-label">Tasks</span>
         </button>
         <button class="mobile-nav-btn" id="mobileAccountBtn" onclick="showAppSection('account')">
             <span class="mobile-nav-icon">👤</span>
@@ -5260,6 +5647,263 @@
         </div>
     </div>
 
+    <!-- Task Detail Modal (DISC-092) -->
+    <div class="modal-overlay" id="taskDetailModal" style="display: none;">
+        <div class="modal-content" style="max-width: 500px;">
+            <button class="modal-close" onclick="closeTaskDetailModal()">&times;</button>
+            <h2 class="modal-title" id="taskDetailTitle">Task Details</h2>
+            <form id="taskDetailForm" onsubmit="saveTaskDetails(event)" style="margin-top: 24px;">
+                <input type="hidden" id="taskDetailId">
+                <div class="form-group">
+                    <label for="taskDetailTitleInput">Task Title *</label>
+                    <input type="text" id="taskDetailTitleInput" required style="background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); padding: 12px; border-radius: 8px; width: 100%; font-family: var(--font-sans); font-size: 1rem;">
+                </div>
+                <div class="form-group" style="margin-top: 16px;">
+                    <label for="taskDetailType">Task Type</label>
+                    <select id="taskDetailType" style="background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); padding: 12px; border-radius: 8px; width: 100%; font-family: var(--font-sans); font-size: 1rem;">
+                        <option value="follow_up">📞 Follow Up</option>
+                        <option value="quote">📝 Quote</option>
+                        <option value="call">☎️ Call</option>
+                        <option value="site_visit">🏠 Site Visit</option>
+                        <option value="material_order">📦 Material Order</option>
+                        <option value="reminder">⏰ Reminder</option>
+                        <option value="other">📌 Other</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-top: 16px;">
+                    <label for="taskDetailDueDate">Due Date</label>
+                    <input type="date" id="taskDetailDueDate" style="background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); padding: 12px; border-radius: 8px; width: 100%; font-family: var(--font-sans); font-size: 1rem;">
+                </div>
+                <div class="form-group" style="margin-top: 16px;">
+                    <label for="taskDetailPriority">Priority</label>
+                    <select id="taskDetailPriority" style="background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); padding: 12px; border-radius: 8px; width: 100%; font-family: var(--font-sans); font-size: 1rem;">
+                        <option value="low">Low</option>
+                        <option value="normal">Normal</option>
+                        <option value="high">High</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-top: 16px;">
+                    <label for="taskDetailDescription">Description</label>
+                    <textarea id="taskDetailDescription" rows="3" style="background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); padding: 12px; border-radius: 8px; width: 100%; font-family: var(--font-sans); font-size: 1rem; resize: vertical;"></textarea>
+                </div>
+                <div class="form-group" style="margin-top: 16px;">
+                    <label>Status</label>
+                    <div id="taskDetailStatus" style="padding: 12px; background: var(--bg-elevated); border-radius: 8px; display: flex; align-items: center; gap: 8px;">
+                        <span id="taskDetailStatusIcon">⏳</span>
+                        <span id="taskDetailStatusText">Pending</span>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 12px; margin-top: 24px;">
+                    <button type="button" class="btn btn-secondary" onclick="closeTaskDetailModal()" style="flex: 1;">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="saveTaskDetailBtn" style="flex: 1;">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Task Modal (DISC-092) -->
+    <div class="modal-overlay" id="addTaskModal" style="display: none;">
+        <div class="modal-content" style="max-width: 500px;">
+            <button class="modal-close" onclick="closeAddTaskModal()">&times;</button>
+            <h2 class="modal-title">Add Task</h2>
+            <p class="modal-subtitle">
+                Create a task or reminder for yourself.
+            </p>
+            <form id="addTaskForm" onsubmit="submitAddTaskForm(event)" style="margin-top: 24px;">
+                <div class="form-group">
+                    <label for="addTaskTitle">Task Title *</label>
+                    <input type="text" id="addTaskTitle" placeholder="Follow up with customer" required style="background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); padding: 12px; border-radius: 8px; width: 100%; font-family: var(--font-sans); font-size: 1rem;">
+                </div>
+                <div class="form-group" style="margin-top: 16px;">
+                    <label for="addTaskType">Task Type</label>
+                    <select id="addTaskType" style="background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); padding: 12px; border-radius: 8px; width: 100%; font-family: var(--font-sans); font-size: 1rem;">
+                        <option value="follow_up">📞 Follow Up</option>
+                        <option value="quote">📝 Quote</option>
+                        <option value="call">☎️ Call</option>
+                        <option value="site_visit">🏠 Site Visit</option>
+                        <option value="material_order">📦 Material Order</option>
+                        <option value="reminder">⏰ Reminder</option>
+                        <option value="other">📌 Other</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-top: 16px;">
+                    <label for="addTaskDueDate">Due Date</label>
+                    <input type="date" id="addTaskDueDate" style="background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); padding: 12px; border-radius: 8px; width: 100%; font-family: var(--font-sans); font-size: 1rem;">
+                </div>
+                <div class="form-group" style="margin-top: 16px;">
+                    <label for="addTaskPriority">Priority</label>
+                    <select id="addTaskPriority" style="background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); padding: 12px; border-radius: 8px; width: 100%; font-family: var(--font-sans); font-size: 1rem;">
+                        <option value="low">Low</option>
+                        <option value="normal" selected>Normal</option>
+                        <option value="high">High</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-top: 16px;">
+                    <label for="addTaskDescription">Description (optional)</label>
+                    <textarea id="addTaskDescription" rows="3" placeholder="Add any additional details..." style="background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); padding: 12px; border-radius: 8px; width: 100%; font-family: var(--font-sans); font-size: 1rem; resize: vertical;"></textarea>
+                </div>
+                <div style="display: flex; gap: 12px; margin-top: 24px;">
+                    <button type="button" class="btn btn-secondary" onclick="closeAddTaskModal()" style="flex: 1;">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="submitTaskBtn" style="flex: 1;">Create Task</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Snooze Task Modal -->
+    <div id="snoozeTaskModal" class="modal-overlay" style="display: none;">
+        <div class="modal-backdrop" onclick="closeSnoozeTaskModal()"></div>
+        <div class="modal-content" style="max-width: 400px;">
+            <button class="modal-close" onclick="closeSnoozeTaskModal()">&times;</button>
+            <h2 class="modal-title">⏰ Snooze Task</h2>
+            <p class="modal-subtitle">Reschedule this task for later.</p>
+            <input type="hidden" id="snoozeTaskId">
+            <div style="margin-top: 20px;">
+                <label style="display: block; margin-bottom: 8px; color: var(--text-secondary);">Snooze for:</label>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+                    <button type="button" class="btn btn-secondary" onclick="confirmSnooze(1)" style="padding: 16px;">1 day</button>
+                    <button type="button" class="btn btn-secondary" onclick="confirmSnooze(3)" style="padding: 16px;">3 days</button>
+                    <button type="button" class="btn btn-secondary" onclick="confirmSnooze(7)" style="padding: 16px;">1 week</button>
+                </div>
+                <div style="margin-top: 16px;">
+                    <label style="display: block; margin-bottom: 8px; color: var(--text-secondary);">Or specify days:</label>
+                    <div style="display: flex; gap: 12px;">
+                        <input type="number" id="snoozeCustomDays" min="1" max="365" placeholder="Days" style="flex: 1; background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); padding: 12px; border-radius: 8px;">
+                        <button type="button" class="btn btn-primary" onclick="confirmSnoozeCustom()">Snooze</button>
+                    </div>
+                </div>
+            </div>
+            <button type="button" class="btn btn-secondary" onclick="closeSnoozeTaskModal()" style="width: 100%; margin-top: 20px;">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Confirm Delete Modal (generic) -->
+    <div id="confirmDeleteModal" class="modal-overlay" style="display: none;">
+        <div class="modal-backdrop" onclick="closeConfirmDeleteModal()"></div>
+        <div class="modal-content" style="max-width: 400px;">
+            <button class="modal-close" onclick="closeConfirmDeleteModal()">&times;</button>
+            <h2 class="modal-title" id="confirmDeleteTitle">🗑️ Delete?</h2>
+            <p class="modal-subtitle" id="confirmDeleteMessage">Are you sure? This action cannot be undone.</p>
+            <div style="display: flex; gap: 12px; margin-top: 24px;">
+                <button type="button" class="btn btn-secondary" onclick="closeConfirmDeleteModal()" style="flex: 1;">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmDeleteBtn" onclick="confirmDelete()" style="flex: 1; background: linear-gradient(135deg, #ef4444, #dc2626);">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Customer Modal -->
+    <div id="addCustomerModal" class="modal-overlay" style="display: none;">
+        <div class="modal-backdrop" onclick="closeAddCustomerModal()"></div>
+        <div class="modal-content" style="max-width: 450px;">
+            <button class="modal-close" onclick="closeAddCustomerModal()">&times;</button>
+            <h2 class="modal-title">👤 Add Customer</h2>
+            <p class="modal-subtitle">Add a new customer to your CRM.</p>
+            <form id="addCustomerForm" onsubmit="submitAddCustomerForm(event)" style="margin-top: 24px;">
+                <div class="form-group">
+                    <label for="addCustomerName">Name *</label>
+                    <input type="text" id="addCustomerName" placeholder="John Smith" required style="background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); padding: 12px; border-radius: 8px; width: 100%;">
+                </div>
+                <div class="form-group" style="margin-top: 16px;">
+                    <label for="addCustomerPhone">Phone</label>
+                    <input type="tel" id="addCustomerPhone" placeholder="(555) 123-4567" style="background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); padding: 12px; border-radius: 8px; width: 100%;">
+                </div>
+                <div class="form-group" style="margin-top: 16px;">
+                    <label for="addCustomerEmail">Email</label>
+                    <input type="email" id="addCustomerEmail" placeholder="john@example.com" style="background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); padding: 12px; border-radius: 8px; width: 100%;">
+                </div>
+                <div class="form-group" style="margin-top: 16px;">
+                    <label for="addCustomerAddress">Address</label>
+                    <input type="text" id="addCustomerAddress" placeholder="123 Main St" style="background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); padding: 12px; border-radius: 8px; width: 100%;">
+                </div>
+                <div style="display: flex; gap: 12px; margin-top: 24px;">
+                    <button type="button" class="btn btn-secondary" onclick="closeAddCustomerModal()" style="flex: 1;">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="submitCustomerBtn" style="flex: 1;">Add Customer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit CRM Customer Modal (different from quote customer editing) -->
+    <div id="editCrmCustomerModal" class="modal-overlay" style="display: none;">
+        <div class="modal-backdrop" onclick="closeEditCrmCustomerModal()"></div>
+        <div class="modal-content" style="max-width: 450px;">
+            <button class="modal-close" onclick="closeEditCrmCustomerModal()">&times;</button>
+            <h2 class="modal-title">✏️ Edit Customer</h2>
+            <p class="modal-subtitle">Update customer information.</p>
+            <form id="editCrmCustomerForm" onsubmit="submitEditCrmCustomerForm(event)" style="margin-top: 24px;">
+                <div class="form-group">
+                    <label for="editCrmCustomerName">Name *</label>
+                    <input type="text" id="editCrmCustomerName" required style="background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); padding: 12px; border-radius: 8px; width: 100%;">
+                </div>
+                <div class="form-group" style="margin-top: 16px;">
+                    <label for="editCrmCustomerPhone">Phone</label>
+                    <input type="tel" id="editCrmCustomerPhone" style="background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); padding: 12px; border-radius: 8px; width: 100%;">
+                </div>
+                <div class="form-group" style="margin-top: 16px;">
+                    <label for="editCrmCustomerEmail">Email</label>
+                    <input type="email" id="editCrmCustomerEmail" style="background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); padding: 12px; border-radius: 8px; width: 100%;">
+                </div>
+                <div class="form-group" style="margin-top: 16px;">
+                    <label for="editCrmCustomerAddress">Address</label>
+                    <input type="text" id="editCrmCustomerAddress" style="background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); padding: 12px; border-radius: 8px; width: 100%;">
+                </div>
+                <div style="display: flex; gap: 12px; margin-top: 24px;">
+                    <button type="button" class="btn btn-secondary" onclick="closeEditCrmCustomerModal()" style="flex: 1;">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="submitEditCrmCustomerBtn" style="flex: 1;">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Note Modal -->
+    <div id="addNoteModal" class="modal-overlay" style="display: none;">
+        <div class="modal-backdrop" onclick="closeAddNoteModal()"></div>
+        <div class="modal-content" style="max-width: 450px;">
+            <button class="modal-close" onclick="closeAddNoteModal()">&times;</button>
+            <h2 class="modal-title">📝 Add Note</h2>
+            <p class="modal-subtitle">Add a note about this customer.</p>
+            <form id="addNoteForm" onsubmit="submitAddNoteForm(event)" style="margin-top: 24px;">
+                <div class="form-group">
+                    <label for="addNoteText">Note</label>
+                    <textarea id="addNoteText" rows="4" placeholder="e.g., Prefers morning appointments, has two dogs..." required style="background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); padding: 12px; border-radius: 8px; width: 100%; resize: vertical;"></textarea>
+                </div>
+                <div style="display: flex; gap: 12px; margin-top: 24px;">
+                    <button type="button" class="btn btn-secondary" onclick="closeAddNoteModal()" style="flex: 1;">Cancel</button>
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">Add Note</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Tag Modal -->
+    <div id="addTagModal" class="modal-overlay" style="display: none;">
+        <div class="modal-backdrop" onclick="closeAddTagModal()"></div>
+        <div class="modal-content" style="max-width: 400px;">
+            <button class="modal-close" onclick="closeAddTagModal()">&times;</button>
+            <h2 class="modal-title">🏷️ Add Tag</h2>
+            <p class="modal-subtitle">Tag this customer for easy filtering.</p>
+            <form id="addTagForm" onsubmit="submitAddTagForm(event)" style="margin-top: 24px;">
+                <div class="form-group">
+                    <label for="addTagText">Tag</label>
+                    <input type="text" id="addTagText" placeholder="e.g., VIP, Repeat, Referral..." required style="background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); padding: 12px; border-radius: 8px; width: 100%;">
+                </div>
+                <div style="margin-top: 12px;">
+                    <label style="color: var(--text-secondary); font-size: 0.875rem;">Suggested tags:</label>
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px;">
+                        <button type="button" class="btn btn-secondary" onclick="setTagValue('VIP')" style="padding: 6px 12px; font-size: 0.875rem;">VIP</button>
+                        <button type="button" class="btn btn-secondary" onclick="setTagValue('Repeat')" style="padding: 6px 12px; font-size: 0.875rem;">Repeat</button>
+                        <button type="button" class="btn btn-secondary" onclick="setTagValue('Referral')" style="padding: 6px 12px; font-size: 0.875rem;">Referral</button>
+                        <button type="button" class="btn btn-secondary" onclick="setTagValue('Priority')" style="padding: 6px 12px; font-size: 0.875rem;">Priority</button>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 12px; margin-top: 24px;">
+                    <button type="button" class="btn btn-secondary" onclick="closeAddTagModal()" style="flex: 1;">Cancel</button>
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">Add Tag</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Testimonial Collection Modal (DISC-010) -->
     <div id="testimonialModal" class="modal-overlay" style="display: none;">
         <div class="modal-backdrop"></div>
@@ -5421,6 +6065,18 @@
             } else {
                 hideCallback();
             }
+        }
+
+        /**
+         * Escape HTML to prevent XSS when inserting user content
+         * @param {string} text - Text to escape
+         * @returns {string} - Escaped text safe for innerHTML
+         */
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
 
         // State
@@ -8377,12 +9033,16 @@
             // Update desktop nav buttons
             document.getElementById('newQuoteNavBtn').classList.toggle('active', section === 'newQuote');
             document.getElementById('myQuotesNavBtn').classList.toggle('active', section === 'myQuotes');
+            document.getElementById('customersNavBtn').classList.toggle('active', section === 'customers');
+            document.getElementById('tasksNavBtn').classList.toggle('active', section === 'tasks');
             document.getElementById('invoicesNavBtn').classList.toggle('active', section === 'invoices');
             document.getElementById('accountNavBtn').classList.toggle('active', section === 'account');
 
             // Update mobile nav buttons
             document.getElementById('mobileNewQuoteBtn').classList.toggle('active', section === 'newQuote');
             document.getElementById('mobileMyQuotesBtn').classList.toggle('active', section === 'myQuotes');
+            document.getElementById('mobileCustomersBtn').classList.toggle('active', section === 'customers');
+            document.getElementById('mobileTasksBtn').classList.toggle('active', section === 'tasks');
             document.getElementById('mobileAccountBtn').classList.toggle('active', section === 'account');
 
             // Hide all sections
@@ -8392,6 +9052,9 @@
             document.getElementById('quoteDetailView').style.display = 'none';
             document.getElementById('invoicesSection').style.display = 'none';
             document.getElementById('invoiceDetailView').style.display = 'none';
+            document.getElementById('customersSection').style.display = 'none';
+            document.getElementById('customerDetailView').style.display = 'none';
+            document.getElementById('tasksSection').style.display = 'none';
             document.getElementById('onboardingNotice').style.display = 'none';
             document.getElementById('loadingSection').style.display = 'none';
             document.getElementById('accountSection').style.display = 'none';
@@ -8418,6 +9081,17 @@
                 // DISC-071: Invoices section
                 document.getElementById('invoicesSection').style.display = 'block';
                 loadInvoices();
+                stopAutosave();
+            } else if (section === 'customers') {
+                // DISC-089: Customers section
+                document.getElementById('customersSection').style.display = 'block';
+                loadCustomers();
+                stopAutosave();
+            } else if (section === 'tasks') {
+                // DISC-092: Tasks section
+                document.getElementById('tasksSection').style.display = 'block';
+                loadTasks();
+                loadTaskSummary();
                 stopAutosave();
             } else if (section === 'account') {
                 document.getElementById('accountSection').style.display = 'block';
@@ -10379,6 +11053,1344 @@
             }
         }
 
+        // ================================================================
+        // DISC-089: Customer Management (CRM)
+        // ================================================================
+
+        let customersCache = [];
+        let currentCustomer = null;
+        let customerSearchTimeout = null;
+
+        async function loadCustomers() {
+            const listEl = document.getElementById('customerList');
+            const emptyEl = document.getElementById('customerEmpty');
+            const loadingEl = document.getElementById('customerLoadingState');
+
+            listEl.textContent = '';
+            emptyEl.style.display = 'none';
+            loadingEl.style.display = 'block';
+
+            try {
+                const search = document.getElementById('customerSearchInput').value.trim();
+                const statusFilter = document.getElementById('customerStatusFilter').value;
+                const sortBy = document.getElementById('customerSortBy').value;
+
+                let url = `${API_BASE}/customers?sort_by=${sortBy}&sort_desc=true`;
+                if (search) url += `&search=${encodeURIComponent(search)}`;
+                if (statusFilter) url += `&status=${statusFilter}`;
+
+                const response = await fetch(url, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load customers');
+                }
+
+                const data = await response.json();
+                customersCache = data.customers || [];
+
+                loadingEl.style.display = 'none';
+
+                if (customersCache.length === 0) {
+                    emptyEl.style.display = 'block';
+                } else {
+                    renderCustomerList(customersCache);
+                }
+
+                // Load summary stats
+                loadCustomerSummary();
+
+            } catch (err) {
+                console.error('Error loading customers:', err);
+                loadingEl.style.display = 'none';
+                emptyEl.style.display = 'block';
+            }
+        }
+
+        function renderCustomerList(customers) {
+            const listEl = document.getElementById('customerList');
+            listEl.textContent = '';
+            listEl.style.display = 'flex';
+
+            customers.forEach(customer => {
+                const item = document.createElement('div');
+                item.className = 'quote-list-item';
+                item.style.cursor = 'pointer';
+                item.onclick = () => showCustomerDetail(customer.id);
+
+                const header = document.createElement('div');
+                header.className = 'quote-list-item-header';
+
+                const titleWrapper = document.createElement('div');
+                titleWrapper.style.display = 'flex';
+                titleWrapper.style.alignItems = 'center';
+                titleWrapper.style.gap = '8px';
+                titleWrapper.style.flex = '1';
+
+                const title = document.createElement('div');
+                title.className = 'quote-list-item-title';
+                title.textContent = customer.name;
+                titleWrapper.appendChild(title);
+
+                // Status badge
+                if (customer.status && customer.status !== 'active') {
+                    const statusBadge = document.createElement('span');
+                    statusBadge.style.cssText = `
+                        font-size: 0.7rem;
+                        padding: 2px 6px;
+                        background: ${customer.status === 'vip' ? 'linear-gradient(135deg, #f59e0b, #d97706)' :
+                                     customer.status === 'lead' ? 'linear-gradient(135deg, #3b82f6, #2563eb)' :
+                                     'linear-gradient(135deg, #6b7280, #4b5563)'};
+                        color: white;
+                        border-radius: 4px;
+                        font-weight: 500;
+                        text-transform: uppercase;
+                    `;
+                    statusBadge.textContent = customer.status;
+                    titleWrapper.appendChild(statusBadge);
+                }
+
+                const amount = document.createElement('div');
+                amount.className = 'quote-list-item-amount';
+                amount.textContent = '$' + (customer.total_quoted || 0).toLocaleString();
+
+                header.appendChild(titleWrapper);
+                header.appendChild(amount);
+
+                // Meta row
+                const meta = document.createElement('div');
+                meta.className = 'quote-list-item-meta';
+                const quoteCount = customer.quote_count || 0;
+                const lastQuote = customer.last_quote_at ? new Date(customer.last_quote_at).toLocaleDateString() : 'No quotes';
+                meta.textContent = `${quoteCount} quote${quoteCount !== 1 ? 's' : ''} • Last: ${lastQuote}`;
+
+                if (customer.phone || customer.email) {
+                    const contact = document.createElement('span');
+                    contact.style.marginLeft = '8px';
+                    contact.style.color = 'var(--text-muted)';
+                    contact.textContent = customer.phone || customer.email;
+                    meta.appendChild(contact);
+                }
+
+                item.appendChild(header);
+                item.appendChild(meta);
+                listEl.appendChild(item);
+            });
+        }
+
+        async function loadCustomerSummary() {
+            try {
+                const response = await fetch(`${API_BASE}/customers/summary`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                if (!response.ok) return;
+
+                const summary = await response.json();
+
+                document.getElementById('summaryTotalCustomers').textContent = summary.total_customers || 0;
+                document.getElementById('summaryActiveCustomers').textContent = summary.by_status?.active || 0;
+                document.getElementById('summaryTotalQuoted').textContent = '$' + (summary.total_quoted || 0).toLocaleString();
+                document.getElementById('summaryTotalWon').textContent = '$' + (summary.total_won || 0).toLocaleString();
+
+            } catch (err) {
+                console.error('Error loading customer summary:', err);
+            }
+        }
+
+        async function showCustomerDetail(customerId) {
+            try {
+                const response = await fetch(`${API_BASE}/customers/${customerId}`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load customer');
+                }
+
+                currentCustomer = await response.json();
+
+                // Hide list, show detail
+                document.getElementById('customersSection').style.display = 'none';
+                document.getElementById('customerDetailView').style.display = 'block';
+
+                // Populate customer info
+                document.getElementById('customerDetailName').textContent = currentCustomer.name;
+                document.getElementById('customerStatusBadge').textContent = currentCustomer.status || 'active';
+                document.getElementById('customerStatusBadge').className = `confidence-badge status-${currentCustomer.status || 'active'}`;
+
+                document.getElementById('customerDetailPhone').textContent = currentCustomer.phone || 'No phone';
+                document.getElementById('customerDetailEmail').textContent = currentCustomer.email || 'No email';
+                document.getElementById('customerDetailAddress').textContent = currentCustomer.address || 'No address';
+                document.getElementById('customerDetailSource').textContent = currentCustomer.source || 'Quote';
+
+                // Stats
+                document.getElementById('customerDetailQuoteCount').textContent = currentCustomer.quote_count || 0;
+                document.getElementById('customerDetailTotalQuoted').textContent = '$' + (currentCustomer.total_quoted || 0).toLocaleString();
+                document.getElementById('customerDetailTotalWon').textContent = '$' + (currentCustomer.total_won || 0).toLocaleString();
+                document.getElementById('customerDetailFirstQuote').textContent = currentCustomer.first_quote_at ?
+                    new Date(currentCustomer.first_quote_at).toLocaleDateString() : '—';
+
+                // Tags
+                renderCustomerTags();
+
+                // Notes
+                document.getElementById('customerDetailNotes').textContent = currentCustomer.notes || 'No notes yet.';
+
+                // Quote history
+                renderCustomerQuotes();
+
+            } catch (err) {
+                console.error('Error loading customer detail:', err);
+                showError('Failed to load customer details');
+            }
+        }
+
+        function renderCustomerTags() {
+            const container = document.getElementById('customerDetailTags');
+            container.textContent = '';
+
+            const tags = currentCustomer.tags || [];
+            tags.forEach(tag => {
+                const tagEl = document.createElement('span');
+                tagEl.className = 'customer-tag';
+                tagEl.textContent = tag;
+
+                const removeBtn = document.createElement('span');
+                removeBtn.textContent = '×';
+                removeBtn.style.marginLeft = '4px';
+                removeBtn.style.cursor = 'pointer';
+                removeBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    removeCustomerTag(tag);
+                };
+                tagEl.appendChild(removeBtn);
+
+                container.appendChild(tagEl);
+            });
+        }
+
+        function renderCustomerQuotes() {
+            const container = document.getElementById('customerDetailQuotes');
+            container.textContent = '';
+
+            const quotes = currentCustomer.quotes || [];
+            if (quotes.length === 0) {
+                container.innerHTML = '<div style="color: var(--text-muted); padding: 12px;">No quotes yet</div>';
+                return;
+            }
+
+            quotes.forEach(quote => {
+                const item = document.createElement('div');
+                item.className = 'quote-list-item';
+                item.style.cursor = 'pointer';
+                item.onclick = () => {
+                    backToCustomerList();
+                    showAppSection('myQuotes');
+                    setTimeout(() => openQuoteDetail(quote.id), 100);
+                };
+
+                const header = document.createElement('div');
+                header.className = 'quote-list-item-header';
+
+                const title = document.createElement('div');
+                title.className = 'quote-list-item-title';
+                title.textContent = quote.job_type ? quote.job_type.replace(/_/g, ' ') : 'General';
+
+                const amount = document.createElement('div');
+                amount.className = 'quote-list-item-amount';
+                amount.textContent = '$' + (quote.total || 0).toLocaleString();
+
+                header.appendChild(title);
+                header.appendChild(amount);
+
+                const meta = document.createElement('div');
+                meta.className = 'quote-list-item-meta';
+                meta.textContent = quote.created_at ? new Date(quote.created_at).toLocaleDateString() : '';
+
+                // Status badge
+                const statusBadge = document.createElement('span');
+                statusBadge.style.cssText = `
+                    margin-left: 8px;
+                    font-size: 0.7rem;
+                    padding: 2px 6px;
+                    background: ${quote.status === 'won' ? 'linear-gradient(135deg, #10b981, #059669)' :
+                                 quote.status === 'lost' ? 'linear-gradient(135deg, #ef4444, #dc2626)' :
+                                 'linear-gradient(135deg, #6b7280, #4b5563)'};
+                    color: white;
+                    border-radius: 4px;
+                `;
+                statusBadge.textContent = quote.status || 'draft';
+                meta.appendChild(statusBadge);
+
+                item.appendChild(header);
+                item.appendChild(meta);
+                container.appendChild(item);
+            });
+        }
+
+        function backToCustomerList() {
+            document.getElementById('customerDetailView').style.display = 'none';
+            document.getElementById('customersSection').style.display = 'block';
+            currentCustomer = null;
+        }
+
+        function debounceCustomerSearch() {
+            if (customerSearchTimeout) {
+                clearTimeout(customerSearchTimeout);
+            }
+            customerSearchTimeout = setTimeout(() => {
+                loadCustomers();
+            }, 300);
+        }
+
+        function addCustomerNote() {
+            if (!currentCustomer) return;
+            openAddNoteModal();
+        }
+
+        function openAddNoteModal() {
+            // Reset form
+            document.getElementById('addNoteText').value = '';
+            // Show modal
+            document.getElementById('addNoteModal').style.display = 'flex';
+            // Focus on textarea
+            setTimeout(() => document.getElementById('addNoteText').focus(), 100);
+        }
+
+        function closeAddNoteModal() {
+            document.getElementById('addNoteModal').style.display = 'none';
+        }
+
+        async function submitAddNoteForm(event) {
+            event.preventDefault();
+
+            if (!currentCustomer) return;
+
+            const note = document.getElementById('addNoteText').value.trim();
+            if (!note) {
+                showError('Note cannot be empty');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/customers/${currentCustomer.id}/notes`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ note: note })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to add note');
+                }
+
+                const updated = await response.json();
+                currentCustomer = updated;
+                document.getElementById('customerDetailNotes').textContent = currentCustomer.notes || 'No notes yet.';
+
+                closeAddNoteModal();
+                showLearningToast('Note added', '📝');
+
+            } catch (err) {
+                console.error('Error adding note:', err);
+                showError('Failed to add note');
+            }
+        }
+
+        function addCustomerTag() {
+            if (!currentCustomer) return;
+            openAddTagModal();
+        }
+
+        function openAddTagModal() {
+            // Reset form
+            document.getElementById('addTagText').value = '';
+            // Show modal
+            document.getElementById('addTagModal').style.display = 'flex';
+            // Focus on input
+            setTimeout(() => document.getElementById('addTagText').focus(), 100);
+        }
+
+        function closeAddTagModal() {
+            document.getElementById('addTagModal').style.display = 'none';
+        }
+
+        function setTagValue(tag) {
+            document.getElementById('addTagText').value = tag;
+            document.getElementById('addTagText').focus();
+        }
+
+        async function submitAddTagForm(event) {
+            event.preventDefault();
+
+            if (!currentCustomer) return;
+
+            const tag = document.getElementById('addTagText').value.trim();
+            if (!tag) {
+                showError('Tag cannot be empty');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/customers/${currentCustomer.id}/tags`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ tag: tag })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to add tag');
+                }
+
+                const updated = await response.json();
+                currentCustomer = updated;
+                renderCustomerTags();
+
+                closeAddTagModal();
+                showLearningToast('Tag added', '🏷️');
+
+            } catch (err) {
+                console.error('Error adding tag:', err);
+                showError('Failed to add tag');
+            }
+        }
+
+        async function removeCustomerTag(tag) {
+            if (!currentCustomer) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/customers/${currentCustomer.id}/tags/${encodeURIComponent(tag)}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to remove tag');
+                }
+
+                const updated = await response.json();
+                currentCustomer = updated;
+                renderCustomerTags();
+
+            } catch (err) {
+                console.error('Error removing tag:', err);
+                showError('Failed to remove tag');
+            }
+        }
+
+        async function updateCustomerStatus(newStatus) {
+            if (!currentCustomer) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/customers/${currentCustomer.id}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ status: newStatus })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to update status');
+                }
+
+                const updated = await response.json();
+                currentCustomer = updated;
+                document.getElementById('customerStatusBadge').textContent = currentCustomer.status;
+                document.getElementById('customerStatusBadge').className = `confidence-badge status-${currentCustomer.status}`;
+                showLearningToast('Status updated', '✓');
+
+            } catch (err) {
+                console.error('Error updating status:', err);
+                showError('Failed to update status');
+            }
+        }
+
+        function editCrmCustomer() {
+            if (!currentCustomer) return;
+            openEditCrmCustomerModal();
+        }
+
+        function openEditCrmCustomerModal() {
+            if (!currentCustomer) return;
+
+            // Pre-fill form with current customer data
+            document.getElementById('editCrmCustomerName').value = currentCustomer.name || '';
+            document.getElementById('editCrmCustomerPhone').value = currentCustomer.phone || '';
+            document.getElementById('editCrmCustomerEmail').value = currentCustomer.email || '';
+            document.getElementById('editCrmCustomerAddress').value = currentCustomer.address || '';
+
+            // Show modal
+            document.getElementById('editCrmCustomerModal').style.display = 'flex';
+        }
+
+        function closeEditCrmCustomerModal() {
+            document.getElementById('editCrmCustomerModal').style.display = 'none';
+        }
+
+        async function submitEditCrmCustomerForm(event) {
+            event.preventDefault();
+
+            if (!currentCustomer) return;
+
+            const name = document.getElementById('editCrmCustomerName').value.trim();
+            const phone = document.getElementById('editCrmCustomerPhone').value.trim();
+            const email = document.getElementById('editCrmCustomerEmail').value.trim();
+            const address = document.getElementById('editCrmCustomerAddress').value.trim();
+
+            if (!name) {
+                showError('Customer name is required');
+                return;
+            }
+
+            const submitBtn = document.getElementById('submitEditCrmCustomerBtn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Saving...';
+
+            try {
+                const updates = {};
+                if (name !== currentCustomer.name) updates.name = name;
+                if (phone !== (currentCustomer.phone || '')) updates.phone = phone || null;
+                if (email !== (currentCustomer.email || '')) updates.email = email || null;
+                if (address !== (currentCustomer.address || '')) updates.address = address || null;
+
+                if (Object.keys(updates).length === 0) {
+                    closeEditCrmCustomerModal();
+                    return; // No changes
+                }
+
+                const response = await fetch(`${API_BASE}/customers/${currentCustomer.id}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(updates)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to update customer');
+                }
+
+                closeEditCrmCustomerModal();
+
+                // Reload customer detail
+                await showCustomerDetail(currentCustomer.id);
+                showLearningToast('Customer updated', '✓');
+
+            } catch (err) {
+                console.error('Error updating customer:', err);
+                showError('Failed to update customer');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Save Changes';
+            }
+        }
+
+        function createQuoteForCustomer() {
+            if (!currentCustomer) return;
+
+            // Pre-fill customer info in the quote form
+            const nameInput = document.getElementById('editCustomerName');
+            const phoneInput = document.getElementById('editCustomerPhone');
+            const addressInput = document.getElementById('editCustomerAddress');
+
+            // Navigate to new quote and pre-fill (via localStorage)
+            localStorage.setItem('prefillCustomer', JSON.stringify({
+                name: currentCustomer.name,
+                phone: currentCustomer.phone,
+                address: currentCustomer.address
+            }));
+
+            backToCustomerList();
+            showAppSection('newQuote');
+
+            // Apply prefill after section loads
+            setTimeout(() => {
+                const prefill = localStorage.getItem('prefillCustomer');
+                if (prefill) {
+                    const data = JSON.parse(prefill);
+                    // The quote edit form will pick this up when opened
+                    localStorage.removeItem('prefillCustomer');
+                }
+            }, 100);
+        }
+
+        // ================================================================
+        // DISC-090: CRM Voice Commands
+        // ================================================================
+
+        let crmMediaRecorder = null;
+        let crmAudioChunks = [];
+        let crmVoiceProcessing = false;
+
+        async function startCrmVoiceCommand() {
+            const btn = document.getElementById('crmVoiceBtn');
+
+            // If already recording, stop
+            if (crmMediaRecorder && crmMediaRecorder.state === 'recording') {
+                crmMediaRecorder.stop();
+                btn.classList.remove('recording');
+                btn.innerHTML = '🎤 Voice Command';
+                btn.style.background = '';
+                return;
+            }
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                const mimeType = getSupportedAudioMimeType();
+                const options = mimeType ? { mimeType } : {};
+                crmMediaRecorder = new MediaRecorder(stream, options);
+                crmAudioChunks = [];
+
+                crmMediaRecorder.ondataavailable = (e) => {
+                    crmAudioChunks.push(e.data);
+                };
+
+                crmMediaRecorder.onstop = async () => {
+                    const audioBlob = new Blob(crmAudioChunks, { type: mimeType || 'audio/webm' });
+                    stream.getTracks().forEach(track => track.stop());
+
+                    // Show processing state
+                    btn.innerHTML = '⏳ Processing...';
+                    btn.disabled = true;
+                    crmVoiceProcessing = true;
+
+                    try {
+                        // First transcribe the audio
+                        const transcription = await transcribeCrmAudio(audioBlob);
+                        if (transcription) {
+                            // Then process the CRM command
+                            await processCrmVoiceCommand(transcription);
+                        }
+                    } catch (err) {
+                        console.error('CRM voice error:', err);
+                        showError('Voice command failed. Please try again.');
+                    } finally {
+                        btn.innerHTML = '🎤 Voice Command';
+                        btn.disabled = false;
+                        crmVoiceProcessing = false;
+                    }
+                };
+
+                crmMediaRecorder.onerror = (event) => {
+                    console.error('CRM MediaRecorder error:', event);
+                    showError('Voice recording failed');
+                    btn.innerHTML = '🎤 Voice Command';
+                    btn.classList.remove('recording');
+                    btn.style.background = '';
+                };
+
+                crmMediaRecorder.start();
+                btn.classList.add('recording');
+                btn.innerHTML = '⏹ Stop Recording';
+                btn.style.background = 'var(--error)';
+
+                // Track usage
+                if (typeof posthog !== 'undefined') {
+                    posthog.capture('crm_voice_started');
+                }
+            } catch (err) {
+                console.error('CRM voice access error:', err);
+                showError('Could not access microphone. Please check permissions.');
+            }
+        }
+
+        async function transcribeCrmAudio(audioBlob) {
+            const formData = new FormData();
+            formData.append('audio', audioBlob, 'recording.webm');
+
+            const response = await fetch('/api/quotes/transcribe', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${authToken}`
+                },
+                body: formData
+            });
+
+            if (!response.ok) {
+                throw new Error('Transcription failed');
+            }
+
+            const data = await response.json();
+            return data.transcription;
+        }
+
+        async function processCrmVoiceCommand(transcription) {
+            const response = await fetch('/api/customers/voice-command', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`
+                },
+                body: JSON.stringify({ transcription })
+            });
+
+            if (!response.ok) {
+                throw new Error('Voice command processing failed');
+            }
+
+            const result = await response.json();
+
+            // Track usage
+            if (typeof posthog !== 'undefined') {
+                posthog.capture('crm_voice_completed', {
+                    intent: result.intent,
+                    success: result.success,
+                    is_crm_command: result.is_crm_command
+                });
+            }
+
+            // Display the response
+            displayCrmVoiceResponse(result);
+
+            // If it's not a CRM command, suggest they create a quote
+            if (!result.is_crm_command) {
+                showError('This sounds like a quote request. Try using the main voice recorder instead.');
+                return;
+            }
+
+            // If search found customers, optionally navigate to detail
+            if (result.success && result.data?.customers?.length === 1) {
+                // Single customer found - offer to view details
+                const customerId = result.data.customers[0].id;
+                setTimeout(() => {
+                    if (confirm('View customer details?')) {
+                        showCustomerDetail(customerId);
+                        closeCrmVoiceResponse();
+                    }
+                }, 500);
+            }
+
+            // Refresh customer list if data was modified
+            if (result.success && ['add_note', 'add_tag'].includes(result.intent)) {
+                await loadCustomers();
+                if (currentCustomer && result.data?.customer_id === currentCustomer.id) {
+                    await showCustomerDetail(currentCustomer.id);
+                }
+            }
+        }
+
+        function displayCrmVoiceResponse(result) {
+            const container = document.getElementById('crmVoiceResponse');
+            const intentEl = document.getElementById('crmVoiceIntent');
+            const messageEl = document.getElementById('crmVoiceMessage');
+
+            // Map intent to display name
+            const intentNames = {
+                'search': '🔍 Search Results',
+                'detail': '📋 Customer Details',
+                'stats': '📊 Customer Stats',
+                'add_note': '📝 Note Added',
+                'add_tag': '🏷️ Tag Added',
+                'dormant': '💤 Dormant Customers',
+                'top_customers': '⭐ Top Customers',
+                'not_crm': '❓ Not a CRM Command'
+            };
+
+            intentEl.textContent = intentNames[result.intent] || result.intent;
+            messageEl.textContent = result.message;
+
+            // Style based on success
+            if (result.success) {
+                container.style.borderLeftColor = 'var(--success)';
+            } else {
+                container.style.borderLeftColor = 'var(--error)';
+            }
+
+            container.style.display = 'block';
+        }
+
+        function closeCrmVoiceResponse() {
+            document.getElementById('crmVoiceResponse').style.display = 'none';
+        }
+
+        function openAddCustomerModal() {
+            // Reset form
+            document.getElementById('addCustomerForm').reset();
+            // Show modal
+            document.getElementById('addCustomerModal').style.display = 'flex';
+        }
+
+        function closeAddCustomerModal() {
+            document.getElementById('addCustomerModal').style.display = 'none';
+        }
+
+        async function submitAddCustomerForm(event) {
+            event.preventDefault();
+
+            const name = document.getElementById('addCustomerName').value.trim();
+            const phone = document.getElementById('addCustomerPhone').value.trim() || null;
+            const email = document.getElementById('addCustomerEmail').value.trim() || null;
+            const address = document.getElementById('addCustomerAddress').value.trim() || null;
+
+            if (!name) {
+                showError('Customer name is required');
+                return;
+            }
+
+            const submitBtn = document.getElementById('submitCustomerBtn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Adding...';
+
+            try {
+                await createCustomer(name, phone, email, address);
+                closeAddCustomerModal();
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Add Customer';
+            }
+        }
+
+        async function createCustomer(name, phone, email, address) {
+            try {
+                const response = await fetch('/api/customers', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        name,
+                        phone: phone || null,
+                        email: email || null,
+                        address: address || null,
+                        status: 'lead'
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to create customer');
+                }
+
+                showSuccess('Customer created!');
+                await loadCustomers();
+
+                if (typeof posthog !== 'undefined') {
+                    posthog.capture('customer_created');
+                }
+            } catch (err) {
+                console.error('Error creating customer:', err);
+                showError('Failed to create customer');
+            }
+        }
+
+        // DISC-091: Sync customers from existing quotes (backfill)
+        async function syncCustomersFromQuotes() {
+            const btn = document.getElementById('syncCustomersBtn');
+            const originalText = btn.innerHTML;
+
+            try {
+                btn.innerHTML = '⏳ Syncing...';
+                btn.disabled = true;
+
+                const response = await fetch('/api/customers/backfill', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Backfill failed');
+                }
+
+                const result = await response.json();
+
+                if (result.success) {
+                    if (result.customers_created > 0 || result.customers_linked > 0) {
+                        showSuccess(`Synced ${result.customers_created} new customers, linked ${result.customers_linked} quotes`);
+                    } else {
+                        showSuccess('All customers already synced');
+                    }
+                    await loadCustomers();
+                    await loadCustomerSummary();
+                } else {
+                    showError('Sync had some errors. Please try again.');
+                }
+
+                if (typeof posthog !== 'undefined') {
+                    posthog.capture('customers_backfill_completed', {
+                        customers_created: result.customers_created,
+                        customers_linked: result.customers_linked,
+                        quotes_processed: result.quotes_processed
+                    });
+                }
+            } catch (err) {
+                console.error('Error syncing customers:', err);
+                showError('Failed to sync customers from quotes');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        // ================================================================
+        // DISC-092: Task & Reminder System
+        // ================================================================
+
+        let tasksCache = [];
+
+        async function loadTasks() {
+            const listEl = document.getElementById('taskList');
+            const emptyEl = document.getElementById('taskEmpty');
+            const loadingEl = document.getElementById('taskLoadingState');
+            const countEl = document.getElementById('taskCount');
+
+            listEl.style.display = 'none';
+            emptyEl.style.display = 'none';
+            loadingEl.style.display = 'block';
+
+            try {
+                const view = document.getElementById('taskViewFilter').value || 'all';
+                const taskType = document.getElementById('taskTypeFilter').value || '';
+
+                let url = `/api/tasks?view=${view}`;
+                if (taskType) url += `&task_type=${taskType}`;
+
+                const response = await fetch(url, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                if (!response.ok) throw new Error('Failed to load tasks');
+
+                const data = await response.json();
+                tasksCache = data.tasks || [];
+
+                countEl.textContent = `${data.total} task${data.total !== 1 ? 's' : ''}`;
+                loadingEl.style.display = 'none';
+
+                if (tasksCache.length === 0) {
+                    emptyEl.style.display = 'block';
+                    return;
+                }
+
+                listEl.style.display = 'block';
+                renderTaskList(tasksCache);
+            } catch (err) {
+                console.error('Error loading tasks:', err);
+                loadingEl.style.display = 'none';
+                emptyEl.style.display = 'block';
+                showError('Failed to load tasks');
+            }
+        }
+
+        async function loadTaskSummary() {
+            try {
+                const response = await fetch('/api/tasks/summary', {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                if (!response.ok) throw new Error('Failed to load task summary');
+
+                const data = await response.json();
+
+                document.getElementById('summaryOverdueTasks').textContent = data.overdue || 0;
+                document.getElementById('summaryTodayTasks').textContent = data.today || 0;
+                document.getElementById('summaryUpcomingTasks').textContent = data.upcoming || 0;
+                document.getElementById('summaryPendingTasks').textContent = data.pending || 0;
+            } catch (err) {
+                console.error('Error loading task summary:', err);
+            }
+        }
+
+        function renderTaskList(tasks) {
+            const listEl = document.getElementById('taskList');
+            listEl.innerHTML = '';
+
+            tasks.forEach(task => {
+                const taskEl = document.createElement('div');
+                taskEl.className = 'quote-item';
+                taskEl.style.cursor = 'pointer';
+                taskEl.onclick = () => openTaskDetailModal(task.id);
+
+                // Priority and overdue styling
+                let priorityColor = 'var(--text-secondary)';
+                let priorityIcon = '';
+                if (task.priority === 'high') {
+                    priorityColor = '#ef4444';
+                    priorityIcon = '🔴';
+                } else if (task.priority === 'medium') {
+                    priorityColor = '#f59e0b';
+                    priorityIcon = '🟡';
+                }
+
+                // Check if overdue
+                const isOverdue = task.due_date && new Date(task.due_date) < new Date() && task.status !== 'completed';
+                const overdueClass = isOverdue ? 'color: #ef4444; font-weight: 600;' : '';
+
+                // Task type icons
+                const typeIcons = {
+                    'follow_up': '📞',
+                    'quote': '📝',
+                    'call': '☎️',
+                    'site_visit': '🏠',
+                    'material_order': '📦',
+                    'reminder': '⏰',
+                    'other': '📌'
+                };
+                const typeIcon = typeIcons[task.task_type] || '📌';
+
+                // Format due date
+                let dueDateText = '';
+                if (task.due_date) {
+                    const dueDate = new Date(task.due_date);
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    const tomorrow = new Date(today);
+                    tomorrow.setDate(tomorrow.getDate() + 1);
+
+                    if (dueDate.toDateString() === today.toDateString()) {
+                        dueDateText = 'Today';
+                    } else if (dueDate.toDateString() === tomorrow.toDateString()) {
+                        dueDateText = 'Tomorrow';
+                    } else if (isOverdue) {
+                        const daysAgo = Math.ceil((today - dueDate) / (1000 * 60 * 60 * 24));
+                        dueDateText = `${daysAgo} day${daysAgo !== 1 ? 's' : ''} overdue`;
+                    } else {
+                        dueDateText = dueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    }
+                }
+
+                taskEl.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;">
+                        <div style="display: flex; align-items: flex-start; gap: 12px; flex: 1;">
+                            <input type="checkbox" ${task.status === 'completed' ? 'checked' : ''}
+                                   onclick="event.stopPropagation(); toggleTaskComplete('${task.id}')"
+                                   style="width: 20px; height: 20px; cursor: pointer; accent-color: var(--accent);">
+                            <div style="flex: 1;">
+                                <div style="font-weight: 500; ${task.status === 'completed' ? 'text-decoration: line-through; color: var(--text-secondary);' : ''}">
+                                    ${typeIcon} ${escapeHtml(task.title)}
+                                </div>
+                                ${task.description ? `<div style="font-size: 0.875rem; color: var(--text-secondary); margin-top: 4px;">${escapeHtml(task.description)}</div>` : ''}
+                                ${task.customer_name ? `<div style="font-size: 0.75rem; color: var(--accent); margin-top: 4px;">👤 ${escapeHtml(task.customer_name)}</div>` : ''}
+                            </div>
+                        </div>
+                        <div style="text-align: right; min-width: 80px;">
+                            ${dueDateText ? `<div style="font-size: 0.875rem; ${overdueClass}">${dueDateText}</div>` : ''}
+                            ${priorityIcon ? `<div style="font-size: 0.75rem;">${priorityIcon} ${task.priority}</div>` : ''}
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 8px; margin-top: 12px; justify-content: flex-end;">
+                        ${task.status !== 'completed' ? `
+                            <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); snoozeTask('${task.id}')" style="padding: 6px 12px; font-size: 0.75rem;">
+                                ⏰ Snooze
+                            </button>
+                        ` : ''}
+                        <button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); deleteTask('${task.id}')" style="padding: 6px 12px; font-size: 0.75rem;">
+                            🗑️
+                        </button>
+                    </div>
+                `;
+
+                listEl.appendChild(taskEl);
+            });
+        }
+
+        async function toggleTaskComplete(taskId) {
+            const task = tasksCache.find(t => t.id === taskId);
+            if (!task) return;
+
+            try {
+                const response = await fetch(`/api/tasks/${taskId}/complete`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                if (!response.ok) throw new Error('Failed to update task');
+
+                showSuccess(task.status === 'completed' ? 'Task reopened' : 'Task completed!');
+                await loadTasks();
+                await loadTaskSummary();
+
+                if (typeof posthog !== 'undefined') {
+                    posthog.capture('task_toggled', { task_id: taskId, completed: task.status !== 'completed' });
+                }
+            } catch (err) {
+                console.error('Error updating task:', err);
+                showError('Failed to update task');
+            }
+        }
+
+        // ========================================
+        // SNOOZE TASK MODAL
+        // ========================================
+        function openSnoozeTaskModal(taskId) {
+            document.getElementById('snoozeTaskId').value = taskId;
+            document.getElementById('snoozeCustomDays').value = '';
+            document.getElementById('snoozeTaskModal').style.display = 'flex';
+        }
+
+        function closeSnoozeTaskModal() {
+            document.getElementById('snoozeTaskModal').style.display = 'none';
+        }
+
+        async function confirmSnooze(days) {
+            const taskId = document.getElementById('snoozeTaskId').value;
+            if (!taskId) return;
+
+            closeSnoozeTaskModal();
+            await snoozeTaskApi(taskId, days);
+        }
+
+        async function confirmSnoozeCustom() {
+            const taskId = document.getElementById('snoozeTaskId').value;
+            const days = parseInt(document.getElementById('snoozeCustomDays').value, 10);
+
+            if (!taskId || isNaN(days) || days < 1) {
+                showError('Please enter a valid number of days');
+                return;
+            }
+
+            closeSnoozeTaskModal();
+            await snoozeTaskApi(taskId, days);
+        }
+
+        // Renamed original snoozeTask to snoozeTaskApi (called after modal)
+        async function snoozeTaskApi(taskId, days) {
+            try {
+                const response = await fetch(`/api/tasks/${taskId}/snooze?days=${days}`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                if (!response.ok) throw new Error('Failed to snooze task');
+
+                showSuccess(`Task snoozed for ${days} day${days !== 1 ? 's' : ''}`);
+                await loadTasks();
+                await loadTaskSummary();
+
+                if (typeof posthog !== 'undefined') {
+                    posthog.capture('task_snoozed', { task_id: taskId, days: days });
+                }
+            } catch (err) {
+                console.error('Error snoozing task:', err);
+                showError('Failed to snooze task');
+            }
+        }
+
+        // Wrapper function for button clicks - opens modal
+        function snoozeTask(taskId) {
+            openSnoozeTaskModal(taskId);
+        }
+
+        // ========================================
+        // DELETE CONFIRMATION MODAL
+        // ========================================
+        let pendingDeleteCallback = null;
+
+        function openConfirmDeleteModal(title, message, onConfirm) {
+            document.getElementById('confirmDeleteTitle').textContent = title || '🗑️ Delete?';
+            document.getElementById('confirmDeleteMessage').textContent = message || 'Are you sure? This action cannot be undone.';
+            pendingDeleteCallback = onConfirm;
+            document.getElementById('confirmDeleteModal').style.display = 'flex';
+        }
+
+        function closeConfirmDeleteModal() {
+            document.getElementById('confirmDeleteModal').style.display = 'none';
+            pendingDeleteCallback = null;
+        }
+
+        function confirmDelete() {
+            if (pendingDeleteCallback) {
+                pendingDeleteCallback();
+            }
+            closeConfirmDeleteModal();
+        }
+
+        // Updated deleteTask to use modal
+        function deleteTask(taskId) {
+            openConfirmDeleteModal(
+                '🗑️ Delete Task?',
+                'This task will be permanently deleted. This action cannot be undone.',
+                async () => {
+                    try {
+                        const response = await fetch(`/api/tasks/${taskId}`, {
+                            method: 'DELETE',
+                            headers: { 'Authorization': `Bearer ${authToken}` }
+                        });
+
+                        if (!response.ok) throw new Error('Failed to delete task');
+
+                        showSuccess('Task deleted');
+                        await loadTasks();
+                        await loadTaskSummary();
+
+                        if (typeof posthog !== 'undefined') {
+                            posthog.capture('task_deleted', { task_id: taskId });
+                        }
+                    } catch (err) {
+                        console.error('Error deleting task:', err);
+                        showError('Failed to delete task');
+                    }
+                }
+            );
+        }
+
+        function openAddTaskModal() {
+            // Reset form
+            document.getElementById('addTaskForm').reset();
+            // Set default due date to today
+            document.getElementById('addTaskDueDate').value = new Date().toISOString().split('T')[0];
+            // Show modal
+            document.getElementById('addTaskModal').style.display = 'flex';
+        }
+
+        function closeAddTaskModal() {
+            document.getElementById('addTaskModal').style.display = 'none';
+        }
+
+        async function submitAddTaskForm(event) {
+            event.preventDefault();
+
+            const title = document.getElementById('addTaskTitle').value.trim();
+            if (!title) {
+                showError('Please enter a task title');
+                return;
+            }
+
+            // Convert date to ISO datetime string (Pydantic expects full datetime)
+            const dueDateInput = document.getElementById('addTaskDueDate').value;
+            const due_date = dueDateInput ? new Date(dueDateInput + 'T12:00:00').toISOString() : null;
+
+            const taskData = {
+                title: title,
+                task_type: document.getElementById('addTaskType').value,
+                due_date: due_date,
+                priority: document.getElementById('addTaskPriority').value,
+                description: document.getElementById('addTaskDescription').value.trim() || null
+            };
+
+            // Disable submit button while creating
+            const submitBtn = document.getElementById('submitTaskBtn');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = 'Creating...';
+            submitBtn.disabled = true;
+
+            try {
+                await createTask(taskData);
+                closeAddTaskModal();
+            } finally {
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            }
+        }
+
+        async function createTask(taskData) {
+            try {
+                const response = await fetch('/api/tasks', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify(taskData)
+                });
+
+                if (!response.ok) throw new Error('Failed to create task');
+
+                showSuccess('Task created!');
+                await loadTasks();
+                await loadTaskSummary();
+
+                if (typeof posthog !== 'undefined') {
+                    posthog.capture('task_created', { task_type: taskData.task_type });
+                }
+            } catch (err) {
+                console.error('Error creating task:', err);
+                showError('Failed to create task');
+            }
+        }
+
+        // Task Detail Modal Functions
+        function openTaskDetailModal(taskId) {
+            const task = tasksCache.find(t => t.id === taskId);
+            if (!task) return;
+
+            // Populate form
+            document.getElementById('taskDetailId').value = task.id;
+            document.getElementById('taskDetailTitleInput').value = task.title || '';
+            document.getElementById('taskDetailType').value = task.task_type || 'other';
+            document.getElementById('taskDetailDueDate').value = task.due_date ? task.due_date.split('T')[0] : '';
+            document.getElementById('taskDetailPriority').value = task.priority || 'normal';
+            document.getElementById('taskDetailDescription').value = task.description || '';
+
+            // Update status display
+            const isCompleted = task.status === 'completed';
+            document.getElementById('taskDetailStatusIcon').textContent = isCompleted ? '✅' : '⏳';
+            document.getElementById('taskDetailStatusText').textContent = isCompleted ? 'Completed' : 'Pending';
+
+            // Show modal
+            document.getElementById('taskDetailModal').style.display = 'flex';
+        }
+
+        function closeTaskDetailModal() {
+            document.getElementById('taskDetailModal').style.display = 'none';
+        }
+
+        async function saveTaskDetails(event) {
+            event.preventDefault();
+
+            const taskId = document.getElementById('taskDetailId').value;
+            const title = document.getElementById('taskDetailTitleInput').value.trim();
+            if (!title) {
+                showError('Please enter a task title');
+                return;
+            }
+
+            // Convert date to ISO datetime string (Pydantic expects full datetime)
+            const detailDueDateInput = document.getElementById('taskDetailDueDate').value;
+            const detail_due_date = detailDueDateInput ? new Date(detailDueDateInput + 'T12:00:00').toISOString() : null;
+
+            const updateData = {
+                title: title,
+                description: document.getElementById('taskDetailDescription').value.trim() || null,
+                priority: document.getElementById('taskDetailPriority').value,
+                due_date: detail_due_date
+            };
+
+            const submitBtn = document.getElementById('saveTaskDetailBtn');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = 'Saving...';
+            submitBtn.disabled = true;
+
+            try {
+                const response = await fetch(`/api/tasks/${taskId}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify(updateData)
+                });
+
+                if (!response.ok) throw new Error('Failed to update task');
+
+                showSuccess('Task updated!');
+                closeTaskDetailModal();
+                await loadTasks();
+                await loadTaskSummary();
+
+                if (typeof posthog !== 'undefined') {
+                    posthog.capture('task_updated', { task_id: taskId });
+                }
+            } catch (err) {
+                console.error('Error updating task:', err);
+                showError('Failed to update task');
+            } finally {
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            }
+        }
+
         async function handleLogoFileSelect(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -11300,7 +13312,7 @@
             stats.className = 'category-stats';
 
             const quotesCount = category.quotes_count || 0;
-            const rulesCount = (category.learned_rules || []).length;
+            const rulesCount = category.learned_adjustments_count || 0;
 
             // Quote stat
             const quoteStat = document.createElement('div');
@@ -11341,17 +13353,17 @@
                 const rulesPreview = document.createElement('div');
                 rulesPreview.className = 'category-rules-preview';
 
-                const rules = category.learned_rules.slice(0, 2);
+                const rules = (category.learned_adjustments || []).slice(0, 2);
                 rules.forEach(rule => {
                     const p = document.createElement('p');
                     p.textContent = `• ${rule}`;
                     rulesPreview.appendChild(p);
                 });
 
-                if (category.learned_rules.length > 2) {
+                if ((category.learned_adjustments || []).length > 2) {
                     const more = document.createElement('p');
                     more.style.fontStyle = 'italic';
-                    more.textContent = `+${category.learned_rules.length - 2} more...`;
+                    more.textContent = `+${(category.learned_adjustments || []).length - 2} more...`;
                     rulesPreview.appendChild(more);
                 }
 
@@ -11378,7 +13390,7 @@
                 // Populate form
                 document.getElementById('editCategoryName').value = currentCategory.display_name || currentCategory.category;
                 document.getElementById('editRateModifier').value = currentCategory.rate_modifier || 0;
-                document.getElementById('editLearnedRules').value = (currentCategory.learned_rules || []).join('\n');
+                document.getElementById('editLearnedRules').value = (currentCategory.learned_adjustments || []).join('\n');
 
                 // Show pattern hints (from stored corrections)
                 renderPatternHints(currentCategory);
@@ -11479,7 +13491,7 @@
                 const updates = {
                     display_name: document.getElementById('editCategoryName').value.trim(),
                     rate_modifier: parseFloat(document.getElementById('editRateModifier').value) || 0,
-                    learned_rules: document.getElementById('editLearnedRules').value
+                    learned_adjustments: document.getElementById('editLearnedRules').value
                         .split('\n')
                         .map(rule => rule.trim())
                         .filter(rule => rule.length > 0)

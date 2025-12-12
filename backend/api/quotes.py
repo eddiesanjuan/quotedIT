@@ -469,6 +469,15 @@ async def generate_quote(
             is_grace_quote=billing_check.get("is_grace_quote", False),
         )
 
+        # DISC-091: Link quote to customer record (auto-creates if needed)
+        if quote.customer_name:
+            try:
+                from ..services.customer_service import CustomerService
+                await CustomerService.link_quote_to_customer(auth_db, quote)
+                await auth_db.commit()
+            except Exception as e:
+                print(f"Warning: Failed to link quote to customer: {e}")
+
         # Register the category so future quotes can match against it
         # This ensures the category list grows with usage, not just edits
         await db.ensure_category_exists(contractor.id, detected_job_type)
@@ -733,6 +742,15 @@ async def generate_quote_with_clarifications(
             estimated_days=quote_data.get("estimated_days"),
             ai_generated_total=quote_data.get("subtotal", 0),
         )
+
+        # DISC-091: Link quote to customer record (auto-creates if needed)
+        if quote.customer_name:
+            try:
+                from ..services.customer_service import CustomerService
+                await CustomerService.link_quote_to_customer(auth_db, quote)
+                await auth_db.commit()
+            except Exception as e:
+                print(f"Warning: Failed to link quote to customer: {e}")
 
         return quote_to_response(quote)
 
@@ -1015,6 +1033,15 @@ async def generate_quote_from_audio(
                 ai_generated_total=quote_data.get("subtotal", 0),
                 is_grace_quote=billing_check.get("is_grace_quote", False),
             )
+
+            # DISC-091: Link quote to customer record (auto-creates if needed)
+            if quote.customer_name:
+                try:
+                    from ..services.customer_service import CustomerService
+                    await CustomerService.link_quote_to_customer(auth_db, quote)
+                    await auth_db.commit()
+                except Exception as e:
+                    print(f"Warning: Failed to link quote to customer: {e}")
 
             # Register the category so future quotes can match against it
             # This ensures the category list grows with usage, not just edits
@@ -1373,6 +1400,18 @@ async def update_quote(
         )
     except Exception as e:
         print(f"Warning: Failed to track quote edit: {e}")
+
+    # DISC-091: Re-link quote to customer if customer info was updated
+    if any([update.customer_name, update.customer_phone, update.customer_email]):
+        try:
+            from ..services.customer_service import CustomerService
+            from ..services.auth import get_db
+            async for auth_db in get_db():
+                await CustomerService.link_quote_to_customer(auth_db, updated_quote)
+                await auth_db.commit()
+                break
+        except Exception as e:
+            print(f"Warning: Failed to re-link quote to customer: {e}")
 
     # Refresh the quote
     updated_quote = await db.get_quote(quote_id)

@@ -105,6 +105,8 @@ class Contractor(Base):
     job_types = relationship("JobType", back_populates="contractor")
     quotes = relationship("Quote", back_populates="contractor")
     invoices = relationship("Invoice", back_populates="contractor")  # DISC-071
+    customers = relationship("Customer", back_populates="contractor")  # DISC-086
+    tasks = relationship("Task", back_populates="contractor")  # DISC-092
 
 
 class PricingModel(Base):
@@ -283,6 +285,9 @@ class Quote(Base):
     customer_phone = Column(String(50))
     customer_address = Column(Text)
 
+    # DISC-086: Link to Customer record (CRM)
+    customer_id = Column(String, ForeignKey("customers.id"), nullable=True, index=True)
+
     # Input
     original_voice_url = Column(String(500))  # S3 URL to audio file
     transcription = Column(Text)  # What they said
@@ -353,6 +358,7 @@ class Quote(Base):
     contractor = relationship("Contractor", back_populates="quotes")
     feedback = relationship("QuoteFeedback", back_populates="quote", uselist=False)
     invoices = relationship("Invoice", back_populates="quote")  # DISC-071: One quote can have multiple invoices
+    customer = relationship("Customer", back_populates="quotes")  # DISC-086: CRM customer link
 
 
 class QuoteFeedback(Base):
@@ -499,6 +505,106 @@ class Invoice(Base):
     # Relationships
     contractor = relationship("Contractor", back_populates="invoices")
     quote = relationship("Quote", back_populates="invoices")
+
+
+# DISC-086: CRM Customer Model
+class Customer(Base):
+    """
+    Customer record aggregated from quotes.
+    Part of the voice-operated CRM system (DISC-085).
+
+    Customers are auto-created from quote data and can be managed via voice/UI.
+    """
+    __tablename__ = "customers"
+
+    id = Column(String, primary_key=True, default=generate_uuid)
+    contractor_id = Column(String, ForeignKey("contractors.id"), nullable=False, index=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Core Info (aggregated from quotes)
+    name = Column(String(255), nullable=False)
+    phone = Column(String(50))
+    email = Column(String(255))
+    address = Column(Text)
+
+    # Computed fields (updated on quote changes)
+    total_quoted = Column(Float, default=0)  # Sum of all quotes
+    total_won = Column(Float, default=0)  # Sum of won quotes
+    quote_count = Column(Integer, default=0)  # Number of quotes
+    first_quote_at = Column(DateTime)  # First interaction
+    last_quote_at = Column(DateTime)  # Most recent interaction
+
+    # CRM-specific fields
+    status = Column(String(50), default="active")  # active, inactive, lead, vip
+    notes = Column(Text)  # Free-form notes
+    tags = Column(JSON, default=list)  # User-defined tags
+
+    # Source tracking
+    source = Column(String(100))  # How they found us (optional)
+
+    # Deduplication - normalized values for matching
+    normalized_name = Column(String(255), index=True)  # Lowercase, no punctuation
+    normalized_phone = Column(String(20), index=True)  # Digits only
+
+    # Relationships
+    contractor = relationship("Contractor", back_populates="customers")
+    quotes = relationship("Quote", back_populates="customer")
+    tasks = relationship("Task", back_populates="customer")  # DISC-092
+
+
+# DISC-092: CRM Task & Reminder Model
+class Task(Base):
+    """
+    Task/reminder record for CRM workflow management.
+    Supports both manual tasks and auto-generated reminders.
+
+    Linked optionally to customers and quotes for context.
+    """
+    __tablename__ = "tasks"
+
+    id = Column(String, primary_key=True, default=generate_uuid)
+    contractor_id = Column(String, ForeignKey("contractors.id"), nullable=False, index=True)
+    customer_id = Column(String, ForeignKey("customers.id"), nullable=True, index=True)
+    quote_id = Column(String, ForeignKey("quotes.id"), nullable=True, index=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Task details
+    title = Column(String(255), nullable=False)
+    description = Column(Text)
+    priority = Column(String(20), default="normal")  # low, normal, high, urgent
+    task_type = Column(String(50), default="other")  # follow_up, quote, call, site_visit, material_order, reminder, other
+
+    # Scheduling
+    due_date = Column(DateTime, index=True)  # When task is due
+    reminder_time = Column(DateTime)  # When to send reminder notification
+    completed_at = Column(DateTime)  # When task was completed
+
+    # Status
+    status = Column(String(50), default="pending")  # pending, completed, snoozed, cancelled
+
+    # Recurrence (optional)
+    recurrence = Column(String(50))  # one_time, daily, weekly, monthly
+    recurrence_end_date = Column(DateTime)  # When recurrence ends
+
+    # Auto-generation tracking
+    auto_generated = Column(Boolean, default=False)  # True if system-created
+    trigger_type = Column(String(100))  # What triggered auto-creation (e.g., "quote_no_response_7d")
+    trigger_entity_id = Column(String)  # ID of quote/customer that triggered this
+
+    # Notification tracking
+    notification_sent = Column(Boolean, default=False)
+    notification_sent_at = Column(DateTime)
+
+    # Snooze tracking
+    snoozed_until = Column(DateTime)
+    snooze_count = Column(Integer, default=0)
+
+    # Relationships
+    contractor = relationship("Contractor", back_populates="tasks")
+    customer = relationship("Customer", back_populates="tasks")
+    quote = relationship("Quote")  # One-way relationship, quote doesn't need back-ref
 
 
 class SetupConversation(Base):
@@ -927,6 +1033,16 @@ async def run_migrations(engine):
                 WHERE table_name = 'contractor_terms' AND column_name = 'default_terms_text'
             """,
             "alter_sql": "ALTER TABLE contractor_terms ADD COLUMN default_terms_text TEXT"
+        },
+        # DISC-086: CRM customer_id FK on quotes
+        {
+            "table": "quotes",
+            "column": "customer_id",
+            "check_sql": """
+                SELECT column_name FROM information_schema.columns
+                WHERE table_name = 'quotes' AND column_name = 'customer_id'
+            """,
+            "alter_sql": "ALTER TABLE quotes ADD COLUMN customer_id VARCHAR"
         },
     ]
 

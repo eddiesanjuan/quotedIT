@@ -349,6 +349,10 @@ class LearningService:
             - confidence: high/medium/low
             - summary: Brief description
         """
+        # Debug: Log raw response (truncated)
+        print(f"[LEARNING PARSE DEBUG] Raw response length: {len(response) if response else 0}")
+        print(f"[LEARNING PARSE DEBUG] Raw response (first 500 chars): {response[:500] if response else 'EMPTY'}...")
+
         # Try to find JSON
         json_match = re.search(r'\{[\s\S]*\}', response)
         if json_match:
@@ -391,9 +395,15 @@ class LearningService:
 
                     result["learning_statements"] = statements
 
+                # Debug: Log extracted result
+                print(f"[LEARNING PARSE DEBUG] Extracted {len(result.get('learning_statements', []))} learning_statements")
+                print(f"[LEARNING PARSE DEBUG] pricing_direction: {result.get('pricing_direction')}")
+                print(f"[LEARNING PARSE DEBUG] summary: {result.get('summary', '')[:100]}...")
+
                 return result
 
-            except json.JSONDecodeError:
+            except json.JSONDecodeError as e:
+                print(f"[LEARNING PARSE DEBUG] JSON decode error: {e}")
                 pass
 
         # Fallback - no learnings extracted
