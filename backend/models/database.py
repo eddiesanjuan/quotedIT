@@ -574,6 +574,7 @@ class Task(Base):
     title = Column(String(255), nullable=False)
     description = Column(Text)
     priority = Column(String(20), default="normal")  # low, normal, high, urgent
+    task_type = Column(String(50), default="other")  # follow_up, quote, call, site_visit, material_order, reminder, other
 
     # Scheduling
     due_date = Column(DateTime, index=True)  # When task is due

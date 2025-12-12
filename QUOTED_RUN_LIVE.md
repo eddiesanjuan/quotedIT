@@ -66,3 +66,22 @@ Skipping Phase 0 (Orient) and Phase 1 (Executive Council)
   📖 Auto-link new quotes to customers in generate_quote, generate_quote_from_audio, generate_quote_with_clarifications
   📖 Re-link quotes on customer info updates
   📖 Added "Sync from Quotes" button in customers UI
+  ✅ DISC-091 committed: e60a5e6
+[continuing] ▶ DISC-092: Task & Reminder System (DIRECT)
+  📖 Created tasks.py API with:
+    - GET /tasks (views: all, today, overdue, upcoming, completed)
+    - GET /tasks/summary for badge counts
+    - GET/POST/PATCH/DELETE /tasks/{id}
+    - POST /tasks/{id}/complete and /snooze
+    - POST /tasks/quick for voice-friendly creation
+  📖 Registered tasks router in main.py
+  📖 Added task_type field to Task model (follow_up, quote, call, site_visit, material_order, reminder, other)
+  📖 Added Tasks nav button (desktop + mobile)
+  📖 Created tasksSection with:
+    - View filters (all, today, overdue, upcoming, completed)
+    - Type filters
+    - Summary stats (overdue, today, upcoming, pending)
+    - Task list with checkbox complete, snooze, delete
+  📖 Added JavaScript functions (loadTasks, loadTaskSummary, createTask, toggleTaskComplete, snoozeTask, deleteTask)
+  📖 Due date formatting (Today, Tomorrow, X days overdue, date)
+  📖 Priority indicators and task type icons

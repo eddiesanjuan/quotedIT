@@ -3880,6 +3880,7 @@
                 <button class="app-nav-btn active" id="newQuoteNavBtn" onclick="showAppSection('newQuote')">New Quote</button>
                 <button class="app-nav-btn" id="myQuotesNavBtn" onclick="showAppSection('myQuotes')">My Quotes</button>
                 <button class="app-nav-btn" id="customersNavBtn" onclick="showAppSection('customers')">Customers</button>
+                <button class="app-nav-btn" id="tasksNavBtn" onclick="showAppSection('tasks')">Tasks</button>
                 <button class="app-nav-btn" id="invoicesNavBtn" onclick="showAppSection('invoices')">Invoices</button>
                 <button class="app-nav-btn" id="accountNavBtn" onclick="showAppSection('account')">Account</button>
                 <a href="/help" class="app-nav-btn" style="text-decoration: none;">Help</a>
@@ -4630,6 +4631,75 @@
                 </div>
             </div>
 
+            <!-- DISC-092: Tasks Section -->
+            <div class="card" id="tasksSection" style="display: none;">
+                <div class="quote-history-header">
+                    <h2>Tasks & Reminders</h2>
+                    <span class="quote-history-count" id="taskCount">0 tasks</span>
+                </div>
+
+                <!-- Task Filters and Add Button -->
+                <div class="task-filters" style="margin-bottom: 20px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
+                    <select id="taskViewFilter" onchange="loadTasks()"
+                            style="padding: 10px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-elevated); color: var(--text-primary); font-size: 0.875rem;">
+                        <option value="all">All Tasks</option>
+                        <option value="today">Due Today</option>
+                        <option value="overdue">Overdue</option>
+                        <option value="upcoming">Upcoming (7 days)</option>
+                        <option value="completed">Completed</option>
+                    </select>
+                    <select id="taskTypeFilter" onchange="loadTasks()"
+                            style="padding: 10px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-elevated); color: var(--text-primary); font-size: 0.875rem;">
+                        <option value="">All Types</option>
+                        <option value="follow_up">Follow Up</option>
+                        <option value="quote">Quote</option>
+                        <option value="call">Call</option>
+                        <option value="site_visit">Site Visit</option>
+                        <option value="material_order">Material Order</option>
+                        <option value="reminder">Reminder</option>
+                        <option value="other">Other</option>
+                    </select>
+                    <button class="btn btn-primary" onclick="openAddTaskModal()" style="padding: 10px 16px;">+ Add Task</button>
+                </div>
+
+                <!-- Task Summary Stats -->
+                <div class="task-summary" id="taskSummary" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 16px; margin-bottom: 24px; padding: 16px; background: var(--bg-elevated); border-radius: 8px;">
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.5rem; font-weight: 600; color: #ef4444;" id="summaryOverdueTasks">0</div>
+                        <div style="font-size: 0.75rem; color: var(--text-secondary);">Overdue</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.5rem; font-weight: 600; color: #f59e0b;" id="summaryTodayTasks">0</div>
+                        <div style="font-size: 0.75rem; color: var(--text-secondary);">Due Today</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.5rem; font-weight: 600; color: var(--accent);" id="summaryUpcomingTasks">0</div>
+                        <div style="font-size: 0.75rem; color: var(--text-secondary);">Upcoming</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.5rem; font-weight: 600;" id="summaryPendingTasks">0</div>
+                        <div style="font-size: 0.75rem; color: var(--text-secondary);">Total Pending</div>
+                    </div>
+                </div>
+
+                <!-- Task List -->
+                <div class="task-list" id="taskList">
+                    <!-- Task items will be populated via JavaScript -->
+                </div>
+
+                <div class="empty-state" id="taskEmpty" style="display: none;">
+                    <div class="empty-icon">✓</div>
+                    <h3>No tasks</h3>
+                    <p>Stay organized by adding tasks and reminders for your customers.</p>
+                    <button class="cta-button" onclick="openAddTaskModal()">Add Your First Task</button>
+                </div>
+
+                <div id="taskLoadingState" style="display: none; text-align: center; padding: 40px;">
+                    <div class="spinner" style="display: inline-block;"></div>
+                    <p style="margin-top: 16px; color: var(--text-secondary);">Loading tasks...</p>
+                </div>
+            </div>
+
             <!-- DISC-071: Invoices Section -->
             <div class="card" id="invoicesSection" style="display: none;">
                 <div class="quote-history-header">
@@ -5169,6 +5239,10 @@
         <button class="mobile-nav-btn" id="mobileCustomersBtn" onclick="showAppSection('customers')">
             <span class="mobile-nav-icon">👥</span>
             <span class="mobile-nav-label">CRM</span>
+        </button>
+        <button class="mobile-nav-btn" id="mobileTasksBtn" onclick="showAppSection('tasks')">
+            <span class="mobile-nav-icon">✓</span>
+            <span class="mobile-nav-label">Tasks</span>
         </button>
         <button class="mobile-nav-btn" id="mobileAccountBtn" onclick="showAppSection('account')">
             <span class="mobile-nav-icon">👤</span>
@@ -8691,6 +8765,7 @@
             document.getElementById('newQuoteNavBtn').classList.toggle('active', section === 'newQuote');
             document.getElementById('myQuotesNavBtn').classList.toggle('active', section === 'myQuotes');
             document.getElementById('customersNavBtn').classList.toggle('active', section === 'customers');
+            document.getElementById('tasksNavBtn').classList.toggle('active', section === 'tasks');
             document.getElementById('invoicesNavBtn').classList.toggle('active', section === 'invoices');
             document.getElementById('accountNavBtn').classList.toggle('active', section === 'account');
 
@@ -8698,6 +8773,7 @@
             document.getElementById('mobileNewQuoteBtn').classList.toggle('active', section === 'newQuote');
             document.getElementById('mobileMyQuotesBtn').classList.toggle('active', section === 'myQuotes');
             document.getElementById('mobileCustomersBtn').classList.toggle('active', section === 'customers');
+            document.getElementById('mobileTasksBtn').classList.toggle('active', section === 'tasks');
             document.getElementById('mobileAccountBtn').classList.toggle('active', section === 'account');
 
             // Hide all sections
@@ -8709,6 +8785,7 @@
             document.getElementById('invoiceDetailView').style.display = 'none';
             document.getElementById('customersSection').style.display = 'none';
             document.getElementById('customerDetailView').style.display = 'none';
+            document.getElementById('tasksSection').style.display = 'none';
             document.getElementById('onboardingNotice').style.display = 'none';
             document.getElementById('loadingSection').style.display = 'none';
             document.getElementById('accountSection').style.display = 'none';
@@ -8740,6 +8817,12 @@
                 // DISC-089: Customers section
                 document.getElementById('customersSection').style.display = 'block';
                 loadCustomers();
+                stopAutosave();
+            } else if (section === 'tasks') {
+                // DISC-092: Tasks section
+                document.getElementById('tasksSection').style.display = 'block';
+                loadTasks();
+                loadTaskSummary();
                 stopAutosave();
             } else if (section === 'account') {
                 document.getElementById('accountSection').style.display = 'block';
@@ -11463,6 +11546,301 @@
             } finally {
                 btn.innerHTML = originalText;
                 btn.disabled = false;
+            }
+        }
+
+        // ================================================================
+        // DISC-092: Task & Reminder System
+        // ================================================================
+
+        let tasksCache = [];
+
+        async function loadTasks() {
+            const listEl = document.getElementById('taskList');
+            const emptyEl = document.getElementById('taskEmpty');
+            const loadingEl = document.getElementById('taskLoadingState');
+            const countEl = document.getElementById('taskCount');
+
+            listEl.style.display = 'none';
+            emptyEl.style.display = 'none';
+            loadingEl.style.display = 'block';
+
+            try {
+                const view = document.getElementById('taskViewFilter').value || 'all';
+                const taskType = document.getElementById('taskTypeFilter').value || '';
+
+                let url = `/api/tasks?view=${view}`;
+                if (taskType) url += `&task_type=${taskType}`;
+
+                const response = await fetch(url, {
+                    headers: { 'Authorization': `Bearer ${getToken()}` }
+                });
+
+                if (!response.ok) throw new Error('Failed to load tasks');
+
+                const data = await response.json();
+                tasksCache = data.tasks || [];
+
+                countEl.textContent = `${data.total} task${data.total !== 1 ? 's' : ''}`;
+                loadingEl.style.display = 'none';
+
+                if (tasksCache.length === 0) {
+                    emptyEl.style.display = 'block';
+                    return;
+                }
+
+                listEl.style.display = 'block';
+                renderTaskList(tasksCache);
+            } catch (err) {
+                console.error('Error loading tasks:', err);
+                loadingEl.style.display = 'none';
+                emptyEl.style.display = 'block';
+                showError('Failed to load tasks');
+            }
+        }
+
+        async function loadTaskSummary() {
+            try {
+                const response = await fetch('/api/tasks/summary', {
+                    headers: { 'Authorization': `Bearer ${getToken()}` }
+                });
+
+                if (!response.ok) throw new Error('Failed to load task summary');
+
+                const data = await response.json();
+
+                document.getElementById('summaryOverdueTasks').textContent = data.overdue || 0;
+                document.getElementById('summaryTodayTasks').textContent = data.today || 0;
+                document.getElementById('summaryUpcomingTasks').textContent = data.upcoming || 0;
+                document.getElementById('summaryPendingTasks').textContent = data.pending || 0;
+            } catch (err) {
+                console.error('Error loading task summary:', err);
+            }
+        }
+
+        function renderTaskList(tasks) {
+            const listEl = document.getElementById('taskList');
+            listEl.innerHTML = '';
+
+            tasks.forEach(task => {
+                const taskEl = document.createElement('div');
+                taskEl.className = 'quote-item';
+                taskEl.style.cursor = 'pointer';
+
+                // Priority and overdue styling
+                let priorityColor = 'var(--text-secondary)';
+                let priorityIcon = '';
+                if (task.priority === 'high') {
+                    priorityColor = '#ef4444';
+                    priorityIcon = '🔴';
+                } else if (task.priority === 'medium') {
+                    priorityColor = '#f59e0b';
+                    priorityIcon = '🟡';
+                }
+
+                // Check if overdue
+                const isOverdue = task.due_date && new Date(task.due_date) < new Date() && task.status !== 'completed';
+                const overdueClass = isOverdue ? 'color: #ef4444; font-weight: 600;' : '';
+
+                // Task type icons
+                const typeIcons = {
+                    'follow_up': '📞',
+                    'quote': '📝',
+                    'call': '☎️',
+                    'site_visit': '🏠',
+                    'material_order': '📦',
+                    'reminder': '⏰',
+                    'other': '📌'
+                };
+                const typeIcon = typeIcons[task.task_type] || '📌';
+
+                // Format due date
+                let dueDateText = '';
+                if (task.due_date) {
+                    const dueDate = new Date(task.due_date);
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    const tomorrow = new Date(today);
+                    tomorrow.setDate(tomorrow.getDate() + 1);
+
+                    if (dueDate.toDateString() === today.toDateString()) {
+                        dueDateText = 'Today';
+                    } else if (dueDate.toDateString() === tomorrow.toDateString()) {
+                        dueDateText = 'Tomorrow';
+                    } else if (isOverdue) {
+                        const daysAgo = Math.ceil((today - dueDate) / (1000 * 60 * 60 * 24));
+                        dueDateText = `${daysAgo} day${daysAgo !== 1 ? 's' : ''} overdue`;
+                    } else {
+                        dueDateText = dueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    }
+                }
+
+                taskEl.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;">
+                        <div style="display: flex; align-items: flex-start; gap: 12px; flex: 1;">
+                            <input type="checkbox" ${task.status === 'completed' ? 'checked' : ''}
+                                   onclick="event.stopPropagation(); toggleTaskComplete('${task.id}')"
+                                   style="width: 20px; height: 20px; cursor: pointer; accent-color: var(--accent);">
+                            <div style="flex: 1;">
+                                <div style="font-weight: 500; ${task.status === 'completed' ? 'text-decoration: line-through; color: var(--text-secondary);' : ''}">
+                                    ${typeIcon} ${escapeHtml(task.title)}
+                                </div>
+                                ${task.description ? `<div style="font-size: 0.875rem; color: var(--text-secondary); margin-top: 4px;">${escapeHtml(task.description)}</div>` : ''}
+                                ${task.customer_name ? `<div style="font-size: 0.75rem; color: var(--accent); margin-top: 4px;">👤 ${escapeHtml(task.customer_name)}</div>` : ''}
+                            </div>
+                        </div>
+                        <div style="text-align: right; min-width: 80px;">
+                            ${dueDateText ? `<div style="font-size: 0.875rem; ${overdueClass}">${dueDateText}</div>` : ''}
+                            ${priorityIcon ? `<div style="font-size: 0.75rem;">${priorityIcon} ${task.priority}</div>` : ''}
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 8px; margin-top: 12px; justify-content: flex-end;">
+                        ${task.status !== 'completed' ? `
+                            <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); snoozeTask('${task.id}')" style="padding: 6px 12px; font-size: 0.75rem;">
+                                ⏰ Snooze
+                            </button>
+                        ` : ''}
+                        <button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); deleteTask('${task.id}')" style="padding: 6px 12px; font-size: 0.75rem;">
+                            🗑️
+                        </button>
+                    </div>
+                `;
+
+                listEl.appendChild(taskEl);
+            });
+        }
+
+        async function toggleTaskComplete(taskId) {
+            const task = tasksCache.find(t => t.id === taskId);
+            if (!task) return;
+
+            try {
+                const response = await fetch(`/api/tasks/${taskId}/complete`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${getToken()}` }
+                });
+
+                if (!response.ok) throw new Error('Failed to update task');
+
+                showSuccess(task.status === 'completed' ? 'Task reopened' : 'Task completed!');
+                await loadTasks();
+                await loadTaskSummary();
+
+                if (typeof posthog !== 'undefined') {
+                    posthog.capture('task_toggled', { task_id: taskId, completed: task.status !== 'completed' });
+                }
+            } catch (err) {
+                console.error('Error updating task:', err);
+                showError('Failed to update task');
+            }
+        }
+
+        async function snoozeTask(taskId, days = null) {
+            if (!days) {
+                const input = prompt('Snooze for how many days?', '1');
+                if (!input) return;
+                days = parseInt(input, 10);
+                if (isNaN(days) || days < 1) {
+                    showError('Please enter a valid number of days');
+                    return;
+                }
+            }
+
+            try {
+                const response = await fetch(`/api/tasks/${taskId}/snooze?days=${days}`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${getToken()}` }
+                });
+
+                if (!response.ok) throw new Error('Failed to snooze task');
+
+                showSuccess(`Task snoozed for ${days} day${days !== 1 ? 's' : ''}`);
+                await loadTasks();
+                await loadTaskSummary();
+
+                if (typeof posthog !== 'undefined') {
+                    posthog.capture('task_snoozed', { task_id: taskId, days: days });
+                }
+            } catch (err) {
+                console.error('Error snoozing task:', err);
+                showError('Failed to snooze task');
+            }
+        }
+
+        async function deleteTask(taskId) {
+            if (!confirm('Delete this task?')) return;
+
+            try {
+                const response = await fetch(`/api/tasks/${taskId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${getToken()}` }
+                });
+
+                if (!response.ok) throw new Error('Failed to delete task');
+
+                showSuccess('Task deleted');
+                await loadTasks();
+                await loadTaskSummary();
+
+                if (typeof posthog !== 'undefined') {
+                    posthog.capture('task_deleted', { task_id: taskId });
+                }
+            } catch (err) {
+                console.error('Error deleting task:', err);
+                showError('Failed to delete task');
+            }
+        }
+
+        function openAddTaskModal() {
+            // Simple prompt-based task creation for now
+            const title = prompt('Task title:');
+            if (!title || !title.trim()) return;
+
+            const taskTypes = ['follow_up', 'quote', 'call', 'site_visit', 'material_order', 'reminder', 'other'];
+            const taskTypeChoice = prompt('Task type (1-7):\n1. Follow Up\n2. Quote\n3. Call\n4. Site Visit\n5. Material Order\n6. Reminder\n7. Other', '1');
+            const taskTypeIndex = parseInt(taskTypeChoice, 10) - 1;
+            const taskType = taskTypes[taskTypeIndex] || 'other';
+
+            const dueDate = prompt('Due date (YYYY-MM-DD or leave empty for today):', new Date().toISOString().split('T')[0]);
+
+            const priorityChoice = prompt('Priority (1-3):\n1. Low\n2. Medium\n3. High', '1');
+            const priorities = ['low', 'medium', 'high'];
+            const priority = priorities[parseInt(priorityChoice, 10) - 1] || 'low';
+
+            const description = prompt('Description (optional):');
+
+            createTask({
+                title: title.trim(),
+                task_type: taskType,
+                due_date: dueDate || new Date().toISOString().split('T')[0],
+                priority,
+                description: description?.trim() || null
+            });
+        }
+
+        async function createTask(taskData) {
+            try {
+                const response = await fetch('/api/tasks', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${getToken()}`
+                    },
+                    body: JSON.stringify(taskData)
+                });
+
+                if (!response.ok) throw new Error('Failed to create task');
+
+                showSuccess('Task created!');
+                await loadTasks();
+                await loadTaskSummary();
+
+                if (typeof posthog !== 'undefined') {
+                    posthog.capture('task_created', { task_type: taskData.task_type });
+                }
+            } catch (err) {
+                console.error('Error creating task:', err);
+                showError('Failed to create task');
             }
         }
 
