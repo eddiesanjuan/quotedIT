@@ -431,6 +431,59 @@
             line-height: 1.8;
         }
 
+        /* CRM Feature Section (DISC-097) */
+        .crm-feature {
+            background: var(--bg-secondary);
+        }
+
+        .crm-content {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .crm-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+            margin-top: 48px;
+        }
+
+        .crm-card {
+            padding: 32px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .crm-card:hover {
+            border-color: var(--border-hover);
+            transform: translateY(-4px);
+        }
+
+        .crm-card-icon {
+            font-size: 2rem;
+            margin-bottom: 16px;
+        }
+
+        .crm-card h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .crm-card p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        .crm-tagline {
+            margin-top: 40px;
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+        }
+
         /* Testimonials */
         .testimonials {
             background: var(--bg-secondary);
@@ -1519,7 +1572,7 @@
                     quoted<span class="logo-spinner"><span class="logo-spinner-inner" id="spinnerInner"><span class="logo-spinner-item">.lawns</span><span class="logo-spinner-item">.decks</span><span class="logo-spinner-item">.consulting</span><span class="logo-spinner-item">.design</span><span class="logo-spinner-item">.photos</span><span class="logo-spinner-item">.events</span><span class="logo-spinner-item">.coaching</span><span class="logo-spinner-item">.weddings</span><span class="logo-spinner-item">.painting</span><span class="logo-spinner-item">.cleaning</span><span class="logo-spinner-item">.it</span><span class="logo-spinner-item">.moving</span></span></span>
                 </div>
                 <h1 class="fade-in fade-in-delay-1">Talk, don't type.<br>Quote in seconds.</h1>
-                <p class="fade-in fade-in-delay-2">Turn voice notes into professional budget quotes in seconds. Qualify leads fast, look polished, and stop wasting time on tire-kickers.</p>
+                <p class="fade-in fade-in-delay-2">Turn voice notes into professional budget quotes in seconds. Track customers, set follow-ups, and stop wasting time on tire-kickers.</p>
                 <div class="fade-in fade-in-delay-3" style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
                     <a href="/demo" class="cta-primary" id="hero-demo-cta">Try It Now — No Signup</a>
                     <a href="/app" class="cta-secondary" id="hero-signup-cta">Start Free Trial</a>
@@ -1675,6 +1728,36 @@
                 <p class="fade-in fade-in-delay-2" style="margin-bottom: 32px;"><span class="highlight">First, we interview you.</span> In about 5 minutes, our AI learns how you price—your rates, your typical projects, what makes jobs cost more. It builds a pricing model customized to your business, not generic templates.</p>
                 <p class="fade-in fade-in-delay-3" style="margin-bottom: 32px;"><span class="highlight">Then it keeps learning.</span> Every time you adjust a quote, the system refines its understanding. Do kitchens differently than bathrooms? Charge more for rush jobs? It learns the patterns for each type of work you do.</p>
                 <p class="fade-in fade-in-delay-4"><span class="highlight">Your gut feeling, systematized.</span> The result: quotes that sound like you wrote them, not a robot.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Customer Management (DISC-097) -->
+    <section class="crm-feature">
+        <div class="container">
+            <div class="crm-content">
+                <p class="section-label fade-in">Built-In CRM</p>
+                <h2 class="section-title fade-in fade-in-delay-1">Your customers, organized automatically</h2>
+
+                <div class="crm-grid">
+                    <div class="crm-card fade-in fade-in-delay-1">
+                        <div class="crm-card-icon">👥</div>
+                        <h3>Customer Profiles</h3>
+                        <p>Every quote builds your customer database. See all their quotes, total spend, and history in one place.</p>
+                    </div>
+                    <div class="crm-card fade-in fade-in-delay-2">
+                        <div class="crm-card-icon">📋</div>
+                        <h3>Task Reminders</h3>
+                        <p>Set follow-up reminders right from your quotes. Never forget to chase a lead or check in on a job.</p>
+                    </div>
+                    <div class="crm-card fade-in fade-in-delay-3">
+                        <div class="crm-card-icon">🔍</div>
+                        <h3>Quick Search</h3>
+                        <p>Find any customer by name, phone, or address. See their full quote history in seconds.</p>
+                    </div>
+                </div>
+
+                <p class="crm-tagline fade-in fade-in-delay-4"><span class="highlight">No spreadsheets. No separate CRM. It just works.</span></p>
             </div>
         </div>
     </section>
