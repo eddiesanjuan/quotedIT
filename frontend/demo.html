@@ -892,19 +892,24 @@
                         </div>
                     </div>
 
-                    <!-- Scene 4: Edit/Feedback -->
+                    <!-- Scene 4: Edit/Feedback - DISC-096: Enhanced learning explanation -->
                     <div class="scene scene-edit" id="scene4">
-                        <div style="font-size: 13px; margin-bottom: 16px; color: var(--text-secondary);">Adjust and I'll learn:</div>
+                        <div id="editPrompt" style="font-size: 13px; margin-bottom: 12px; color: var(--accent); font-weight: 500; opacity: 0;">
+                            ✏️ Try editing a price—
+                        </div>
+                        <div id="editPrompt2" style="font-size: 12px; margin-bottom: 16px; color: var(--text-secondary); opacity: 0;">
+                            That's how Quoted learns your preferences
+                        </div>
                         <div class="edit-highlight" id="editLine1">
                             <span style="font-size: 12px;">Ceiling painting</span>
                             <input type="text" class="edit-input" value="$600" id="editInput" readonly>
                         </div>
                         <div class="edit-highlight visible" id="editLine2" style="opacity: 0;">
                             <span style="font-size: 12px;">Ceiling painting</span>
-                            <input type="text" class="edit-input" value="$750" readonly>
+                            <input type="text" class="edit-input" value="$750" readonly style="color: #4ade80; border-color: #4ade80;">
                         </div>
                         <div class="learn-indicator" id="learnIndicator">
-                            Pricing updated! I'll remember this.
+                            ✓ Pricing updated! I'll use this for future quotes.
                         </div>
                     </div>
 
@@ -1127,18 +1132,32 @@
                 trackDemoQuoteGenerated();
             },
             4: async function() {
+                // DISC-096: Enhanced edit→learn animation
+                const prompt1 = document.getElementById('editPrompt');
+                const prompt2 = document.getElementById('editPrompt2');
                 const line1 = document.getElementById('editLine1');
                 const line2 = document.getElementById('editLine2');
                 const indicator = document.getElementById('learnIndicator');
 
-                await delay(500);
+                // Show the teaching prompt first
+                await delay(300);
+                prompt1.style.opacity = '1';
+                prompt1.style.transition = 'opacity 0.3s ease';
+
+                await delay(400);
+                prompt2.style.opacity = '1';
+                prompt2.style.transition = 'opacity 0.3s ease';
+
+                await delay(400);
                 line1.classList.add('visible');
 
-                await delay(1000);
+                // Show the edit animation
+                await delay(800);
                 line1.style.opacity = '0';
                 line2.style.opacity = '1';
 
-                await delay(800);
+                // Show learning confirmation
+                await delay(600);
                 indicator.classList.add('visible');
             },
             5: async function() {
@@ -1191,6 +1210,9 @@
                     document.getElementById(id).classList.remove('visible');
                 });
             } else if (sceneNum === 4) {
+                // DISC-096: Reset enhanced edit scene
+                document.getElementById('editPrompt').style.opacity = '0';
+                document.getElementById('editPrompt2').style.opacity = '0';
                 document.getElementById('editLine1').classList.remove('visible');
                 document.getElementById('editLine1').style.opacity = '';
                 document.getElementById('editLine2').style.opacity = '0';
