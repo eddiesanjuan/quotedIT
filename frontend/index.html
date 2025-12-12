@@ -11929,10 +11929,14 @@
                 return;
             }
 
+            // Convert date to ISO datetime string (Pydantic expects full datetime)
+            const dueDateInput = document.getElementById('addTaskDueDate').value;
+            const due_date = dueDateInput ? new Date(dueDateInput + 'T12:00:00').toISOString() : null;
+
             const taskData = {
                 title: title,
                 task_type: document.getElementById('addTaskType').value,
-                due_date: document.getElementById('addTaskDueDate').value || null,
+                due_date: due_date,
                 priority: document.getElementById('addTaskPriority').value,
                 description: document.getElementById('addTaskDescription').value.trim() || null
             };
@@ -12014,11 +12018,15 @@
                 return;
             }
 
+            // Convert date to ISO datetime string (Pydantic expects full datetime)
+            const detailDueDateInput = document.getElementById('taskDetailDueDate').value;
+            const detail_due_date = detailDueDateInput ? new Date(detailDueDateInput + 'T12:00:00').toISOString() : null;
+
             const updateData = {
                 title: title,
                 description: document.getElementById('taskDetailDescription').value.trim() || null,
                 priority: document.getElementById('taskDetailPriority').value,
-                due_date: document.getElementById('taskDetailDueDate').value || null
+                due_date: detail_due_date
             };
 
             const submitBtn = document.getElementById('saveTaskDetailBtn');
