@@ -7191,6 +7191,50 @@
             } else if (isTaskIntent) {
                 // Open add task modal with title pre-filled
                 await openAddTaskModal();
+
+                // Extract potential customer name from phrases like "follow up with John", "call Smith"
+                let potentialCustomerName = null;
+                const customerPatterns = [
+                    /(?:follow up|call back|call|contact|reach out to|check in with|remind me about|for|with)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/i,
+                    /([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\s*['']?s?\s+(?:quote|job|project|follow[\s-]?up)/i
+                ];
+                for (const pattern of customerPatterns) {
+                    const match = transcription.match(pattern);
+                    if (match && match[1]) {
+                        potentialCustomerName = match[1].trim();
+                        break;
+                    }
+                }
+
+                // If we found a potential customer name, search and pre-select
+                if (potentialCustomerName) {
+                    try {
+                        const searchResponse = await fetch(`/api/customers?search=${encodeURIComponent(potentialCustomerName)}&limit=5`, {
+                            headers: { 'Authorization': `Bearer ${authToken}` }
+                        });
+                        if (searchResponse.ok) {
+                            const data = await searchResponse.json();
+                            if (data.customers && data.customers.length > 0) {
+                                // Pre-select the first match
+                                setTimeout(() => {
+                                    const customerSelect = document.getElementById('addTaskCustomer');
+                                    if (customerSelect) {
+                                        // Find the option that matches
+                                        for (const opt of customerSelect.options) {
+                                            if (opt.value === data.customers[0].id) {
+                                                customerSelect.value = data.customers[0].id;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }, 150);
+                            }
+                        }
+                    } catch (err) {
+                        console.log('Could not search for customer:', err);
+                    }
+                }
+
                 setTimeout(() => {
                     const titleInput = document.getElementById('addTaskTitle');
                     if (titleInput) {
@@ -12884,7 +12928,7 @@
                 due_date: due_date,
                 priority: document.getElementById('addTaskPriority').value,
                 description: document.getElementById('addTaskDescription').value.trim() || null,
-                customer_id: customerId ? parseInt(customerId) : null
+                customer_id: customerId || null  // Backend expects string, not int
             };
 
             // Disable submit button while creating
