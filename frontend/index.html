@@ -9720,7 +9720,7 @@
 
                 const priceDiv = document.createElement('div');
                 priceDiv.style.cssText = 'font-weight: 600; color: var(--text-primary);';
-                priceDiv.textContent = '$' + (quote.total_amount || 0).toLocaleString();
+                priceDiv.textContent = '$' + (quote.total || quote.subtotal || 0).toLocaleString();
 
                 rightDiv.appendChild(priceDiv);
 
