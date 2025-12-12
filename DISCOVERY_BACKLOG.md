@@ -24,9 +24,9 @@ To approve: Change status from DISCOVERED → READY
 |--------|-------|
 | DEPLOYED | 54 |
 | COMPLETE | 1 |
-| READY | 8 |
+| READY | 9 |
 | DISCOVERED | 22 |
-| **Total** | **85** |
+| **Total** | **86** |
 
 **Prompt Optimization**: DISC-041 complete → DISC-052, DISC-054 (learning improvements via prompt injection)
 **Deprioritized**: DISC-053, DISC-055 (structured storage/embeddings - over-engineering; prompt injection approach preferred)
@@ -500,6 +500,29 @@ To approve: Change status from DISCOVERED → READY
 5. Respond to every comment within 1 hour
 
 **Success Metric**: 5,000+ impressions; 3% click demo (150 views); 15% convert = 22 signups
+
+---
+
+### DISC-094: Fix "Join Waitlist" Button Broken Link 🐛 (READY)
+
+**Source**: Founder Request (Eddie, 2025-12-12)
+**Impact**: LOW (until beta fills) | **Effort**: S | **Score**: 1.0
+**Sprint Alignment**: Social proof / conversion flow
+
+**Problem**: When beta spots are full (remaining = 0), the landing page shows a "Join Waitlist" button instead of signup. This button currently links to a broken URL. If the beta ever fills up, potential users would hit a dead end.
+
+**Proposed Work**:
+1. Find the waitlist button in `frontend/landing.html`
+2. Either fix the link to a working waitlist form, or
+3. Create a simple waitlist signup flow (email capture)
+4. Store waitlisted emails for later outreach
+
+**Technical Considerations**:
+- May need a simple `Waitlist` model or just use existing email infrastructure
+- Could integrate with existing Resend service for confirmation emails
+- Alternative: redirect to a Typeform or Google Form (quickest fix)
+
+**Success Metric**: "Join Waitlist" click → working flow that captures email
 
 ---
 
