@@ -24,9 +24,9 @@ To approve: Change status from DISCOVERED → READY
 |--------|-------|
 | DEPLOYED | 54 |
 | COMPLETE | 1 |
-| READY | 9 |
+| READY | 10 |
 | DISCOVERED | 22 |
-| **Total** | **86** |
+| **Total** | **87** |
 
 **Prompt Optimization**: DISC-041 complete → DISC-052, DISC-054 (learning improvements via prompt injection)
 **Deprioritized**: DISC-053, DISC-055 (structured storage/embeddings - over-engineering; prompt injection approach preferred)
@@ -523,6 +523,60 @@ To approve: Change status from DISCOVERED → READY
 - Alternative: redirect to a Typeform or Google Form (quickest fix)
 
 **Success Metric**: "Join Waitlist" click → working flow that captures email
+
+---
+
+### DISC-095: User Dashboard - Home Base After Login 🏠 PRODUCT (READY)
+
+**Source**: Founder Request (Eddie, 2025-12-12)
+**Impact**: HIGH | **Effort**: L | **Score**: 1.5
+**Sprint Alignment**: Retention & engagement - gives users reason to return beyond just creating quotes
+
+**Problem**: Currently users land directly in quote generation mode. There's no "home base" showing their business activity, pending tasks, or performance insights. Power users have no reason to log in unless actively creating a quote. A dashboard creates stickiness and surfaces the value of data they've accumulated.
+
+**Proposed Work**:
+1. **Dashboard Layout** - New `/dashboard` route as primary post-login destination
+   - Quick Actions bar: "New Quote" (prominent), "View Customers", "View All Quotes"
+   - Keep quote generation one click away (no friction added)
+
+2. **Active Tasks Section** - Leverages CRM task system (DISC-092)
+   - Overdue tasks (red)
+   - Tasks due today (amber)
+   - Upcoming tasks (7 days)
+   - Quick complete/reschedule actions
+
+3. **Quote Analytics Widget**
+   - Period selector: This Week | This Month | This Quarter | Custom
+   - Metrics: Quotes Created, Total Value Quoted, Avg Quote Value
+   - Simple bar chart showing quotes per day/week
+   - Comparison to previous period (↑12% vs last month)
+
+4. **Recent Activity Feed**
+   - Last 5-10 quotes with status indicators
+   - Quick actions: View, Duplicate, Create Invoice
+   - Customer name + job summary + amount
+
+5. **Learning Progress Widget** (ties into Pricing Brain)
+   - "Your AI has learned X pricing rules"
+   - Recent corrections made
+   - Link to Pricing Brain settings
+
+6. **Welcome State** - For new users with no data
+   - "Create your first quote" CTA
+   - Quick tips carousel
+   - Setup checklist (profile, logo, pricing interview)
+
+**Technical Considerations**:
+- New dashboard section in `frontend/index.html` or separate route
+- API endpoint: `GET /api/dashboard` aggregating stats
+- Reuse existing components (quote list, task list)
+- Consider caching dashboard stats (updated on quote create/task complete)
+- Mobile-responsive: stack widgets vertically on small screens
+
+**Success Metric**:
+- 40%+ of sessions include dashboard view
+- Increased return visit frequency
+- Task completion rate visible and actionable
 
 ---
 
