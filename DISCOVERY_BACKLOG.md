@@ -24,9 +24,9 @@ To approve: Change status from DISCOVERED → READY
 |--------|-------|
 | DEPLOYED | 54 |
 | COMPLETE | 1 |
-| READY | 10 |
+| READY | 11 |
 | DISCOVERED | 22 |
-| **Total** | **87** |
+| **Total** | **88** |
 
 **Prompt Optimization**: DISC-041 complete → DISC-052, DISC-054 (learning improvements via prompt injection)
 **Deprioritized**: DISC-053, DISC-055 (structured storage/embeddings - over-engineering; prompt injection approach preferred)
@@ -577,6 +577,31 @@ To approve: Change status from DISCOVERED → READY
 - 40%+ of sessions include dashboard view
 - Increased return visit frequency
 - Task completion rate visible and actionable
+
+---
+
+### DISC-096: Demo Learning Explanation - Show Edit→Teach Flow 🎓 GROWTH (READY)
+
+**Source**: Founder Request (Eddie, 2025-12-12)
+**Impact**: HIGH | **Effort**: S | **Score**: 3.0
+**Sprint Alignment**: Conversion optimization - addresses key objection "what if prices are wrong?"
+
+**Problem**: The demo shows quote generation but doesn't explain what happens if the AI gets pricing wrong. First-time viewers may think incorrect prices are a dealbreaker. They don't realize that editing is the teaching mechanism - the very act of correcting becomes the training data. This is our core differentiator but it's invisible in the demo.
+
+**Proposed Work**:
+1. Add a step/slide in demo showing "What if a price is off?"
+2. Animate the edit flow: click price → change value → show "AI Learning" toast
+3. Add text overlay: "Every correction teaches your AI. It gets smarter with each quote."
+4. Consider showing a before/after: "First quote: You correct 5 items. 10th quote: AI nails it"
+5. Emphasize the feedback loop visually (correction → learning → better next time)
+
+**Technical Considerations**:
+- Update `frontend/demo.html` animation sequence
+- May need new animation frames/steps
+- Keep demo length reasonable (don't add too much time)
+- Consider a "learning progress" visual indicator in demo
+
+**Success Metric**: Demo-to-signup conversion increases; fewer support questions about "what if prices are wrong"
 
 ---
 
