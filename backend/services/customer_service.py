@@ -185,6 +185,9 @@ class CustomerService:
             # Link quote to customer
             quote.customer_id = customer.id
 
+            # Flush to make the quote-customer link visible in the stats query
+            await db.flush()
+
             # Update customer stats
             await CustomerService.update_customer_stats(db, customer)
 
