@@ -265,6 +265,12 @@ class DatabaseService:
                 # with merges, updates, and removals applied - just replace entirely
                 learning_statements = learnings.get("learning_statements", [])
 
+                # Debug logging to track what Claude returned
+                print(f"[LEARNING DEBUG] Category '{category}': Claude returned {len(learning_statements)} learning_statements")
+                print(f"[LEARNING DEBUG] learnings keys: {list(learnings.keys())}")
+                if learnings.get("summary"):
+                    print(f"[LEARNING DEBUG] Claude summary: {learnings.get('summary')[:100]}...")
+
                 if learning_statements:
                     # Filter and validate statements
                     valid_statements = [
@@ -295,6 +301,25 @@ class DatabaseService:
                     tendency = learnings.get("overall_tendency", "")
                     if tendency and len(tendency) > 15 and tendency not in cat_data["learned_adjustments"]:
                         cat_data["learned_adjustments"].append(tendency)
+
+                # FALLBACK: If still no learnings after Claude + legacy parsing, derive from summary
+                # This ensures EVERY correction produces at least one learning
+                if not cat_data["learned_adjustments"]:
+                    summary = learnings.get("summary", "")
+                    pricing_direction = learnings.get("pricing_direction", "")
+
+                    # Try to create a basic learning from what we know
+                    if summary and len(summary) >= 15:
+                        cat_data["learned_adjustments"].append(summary)
+                        print(f"[LEARNING FALLBACK] Created learning from summary for category '{category}'")
+                    elif pricing_direction in ("higher", "lower"):
+                        direction_text = "Contractor typically prices higher than AI estimates" if pricing_direction == "higher" else "Contractor typically prices lower than AI estimates"
+                        cat_data["learned_adjustments"].append(f"{direction_text} for {category.replace('_', ' ')}")
+                        print(f"[LEARNING FALLBACK] Created learning from pricing_direction for category '{category}'")
+                    else:
+                        # Absolute fallback: at least record that corrections were made
+                        cat_data["learned_adjustments"].append(f"Review pricing carefully for {category.replace('_', ' ')} jobs - corrections have been made")
+                        print(f"[LEARNING FALLBACK] Created minimal learning for category '{category}'")
 
                 # Update samples and correction count
                 cat_data["samples"] = cat_data.get("samples", 0) + 1
