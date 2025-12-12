@@ -1550,6 +1550,23 @@
             margin-bottom: 24px;
         }
 
+        .industry-section-header {
+            grid-column: 1 / -1;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            margin-top: 8px;
+            margin-bottom: -4px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .industry-section-header:first-child {
+            margin-top: 0;
+        }
+
         .industry-card {
             padding: 1.5rem;
             text-align: center;
@@ -7030,65 +7047,51 @@
 
         // Industry data
         const industries = [
-            // Construction
-            { key: "deck_builder", display_name: "Deck Builder", icon: "🏗️", category: "Construction" },
-            { key: "roofer", display_name: "Roofer", icon: "🏠", category: "Construction" },
-            { key: "concrete", display_name: "Concrete", icon: "🏗️", category: "Construction" },
-            { key: "framing", display_name: "Framing", icon: "🔨", category: "Construction" },
-            { key: "masonry", display_name: "Masonry", icon: "🧱", category: "Construction" },
-            { key: "fence_installer", display_name: "Fence Installer", icon: "🚧", category: "Construction" },
+            // === POPULAR TRADES (Top of list for quick access) ===
+            { key: "general_contractor", display_name: "General Contractor", icon: "👷", category: "Popular", popular: true },
+            { key: "electrician", display_name: "Electrician", icon: "⚡", category: "Popular", popular: true },
+            { key: "plumber", display_name: "Plumber", icon: "🔧", category: "Popular", popular: true },
+            { key: "hvac", display_name: "HVAC", icon: "❄️", category: "Popular", popular: true },
+            { key: "painter", display_name: "Painter", icon: "🎨", category: "Popular", popular: true },
+            { key: "roofer", display_name: "Roofer", icon: "🏠", category: "Popular", popular: true },
+            { key: "landscaper", display_name: "Landscaper", icon: "🌳", category: "Popular", popular: true },
+            { key: "deck_builder", display_name: "Deck Builder", icon: "🏗️", category: "Popular", popular: true },
 
-            // Finishing
-            { key: "painter", display_name: "Painter", icon: "🎨", category: "Finishing" },
-            { key: "flooring", display_name: "Flooring", icon: "📐", category: "Finishing" },
-            { key: "tile", display_name: "Tile Installer", icon: "🔲", category: "Finishing" },
-            { key: "drywall", display_name: "Drywall", icon: "🧱", category: "Finishing" },
+            // === ALL OTHER TRADES (Alphabetically sorted) ===
             { key: "cabinet_maker", display_name: "Cabinet Maker", icon: "🪑", category: "Finishing" },
-
-            // Electrical & Plumbing
-            { key: "electrician", display_name: "Electrician", icon: "⚡", category: "Electrical" },
-            { key: "plumber", display_name: "Plumber", icon: "🔧", category: "Plumbing" },
-            { key: "hvac", display_name: "HVAC", icon: "❄️", category: "HVAC" },
-
-            // Outdoor
-            { key: "landscaper", display_name: "Landscaper", icon: "🌳", category: "Outdoor" },
-            { key: "pool_spa", display_name: "Pool & Spa", icon: "🏊", category: "Outdoor" },
-            { key: "tree_service", display_name: "Tree Service", icon: "🌲", category: "Outdoor" },
-
-            // Installation & Exterior
-            { key: "window_door", display_name: "Window & Door", icon: "🚪", category: "Installation" },
-            { key: "siding", display_name: "Siding", icon: "🏡", category: "Exterior" },
+            { key: "caterer", display_name: "Caterer", icon: "🍽️", category: "Event Services" },
+            { key: "closet_organizer", display_name: "Closet Organizer", icon: "🗄️", category: "Organization" },
+            { key: "coach", display_name: "Coach", icon: "🎯", category: "Personal Services" },
+            { key: "concrete", display_name: "Concrete", icon: "🏗️", category: "Construction" },
+            { key: "consultant", display_name: "Consultant", icon: "💼", category: "Personal Services" },
+            { key: "dj", display_name: "DJ", icon: "🎧", category: "Event Services" },
+            { key: "drywall", display_name: "Drywall", icon: "🧱", category: "Finishing" },
+            { key: "event_planner", display_name: "Event Planner", icon: "📋", category: "Event Services" },
+            { key: "fence_installer", display_name: "Fence Installer", icon: "🚧", category: "Construction" },
+            { key: "flooring", display_name: "Flooring", icon: "📐", category: "Finishing" },
+            { key: "florist", display_name: "Florist", icon: "💐", category: "Event Services" },
+            { key: "framing", display_name: "Framing", icon: "🔨", category: "Construction" },
+            { key: "garage_door", display_name: "Garage Door", icon: "🚗", category: "Installation" },
+            { key: "graphic_designer", display_name: "Graphic Designer", icon: "🎨", category: "Freelance & Creative" },
             { key: "gutters", display_name: "Gutters", icon: "💧", category: "Exterior" },
             { key: "insulation", display_name: "Insulation", icon: "🧊", category: "Installation" },
-            { key: "garage_door", display_name: "Garage Door", icon: "🚗", category: "Installation" },
-
-            // Cleaning & Organization
-            { key: "pressure_washing", display_name: "Pressure Washing", icon: "💦", category: "Cleaning" },
-            { key: "closet_organizer", display_name: "Closet Organizer", icon: "🗄️", category: "Organization" },
-
-            // Freelance & Creative
-            { key: "graphic_designer", display_name: "Graphic Designer", icon: "🎨", category: "Freelance & Creative" },
-            { key: "web_developer", display_name: "Web Developer", icon: "💻", category: "Freelance & Creative" },
-            { key: "writer", display_name: "Writer", icon: "✍️", category: "Freelance & Creative" },
-            { key: "photographer", display_name: "Photographer", icon: "📷", category: "Freelance & Creative" },
-            { key: "videographer", display_name: "Videographer", icon: "🎥", category: "Freelance & Creative" },
-
-            // Event Services
-            { key: "dj", display_name: "DJ", icon: "🎧", category: "Event Services" },
-            { key: "caterer", display_name: "Caterer", icon: "🍽️", category: "Event Services" },
-            { key: "event_planner", display_name: "Event Planner", icon: "📋", category: "Event Services" },
-            { key: "florist", display_name: "Florist", icon: "💐", category: "Event Services" },
-            { key: "wedding_coordinator", display_name: "Wedding Coordinator", icon: "💒", category: "Event Services" },
-
-            // Personal Services
-            { key: "personal_trainer", display_name: "Personal Trainer", icon: "💪", category: "Personal Services" },
-            { key: "tutor", display_name: "Tutor", icon: "📚", category: "Personal Services" },
-            { key: "coach", display_name: "Coach", icon: "🎯", category: "Personal Services" },
-            { key: "consultant", display_name: "Consultant", icon: "💼", category: "Personal Services" },
+            { key: "masonry", display_name: "Masonry", icon: "🧱", category: "Construction" },
             { key: "music_teacher", display_name: "Music Teacher", icon: "🎵", category: "Personal Services" },
+            { key: "personal_trainer", display_name: "Personal Trainer", icon: "💪", category: "Personal Services" },
+            { key: "photographer", display_name: "Photographer", icon: "📷", category: "Freelance & Creative" },
+            { key: "pool_spa", display_name: "Pool & Spa", icon: "🏊", category: "Outdoor" },
+            { key: "pressure_washing", display_name: "Pressure Washing", icon: "💦", category: "Cleaning" },
+            { key: "siding", display_name: "Siding", icon: "🏡", category: "Exterior" },
+            { key: "tile", display_name: "Tile Installer", icon: "🔲", category: "Finishing" },
+            { key: "tree_service", display_name: "Tree Service", icon: "🌲", category: "Outdoor" },
+            { key: "tutor", display_name: "Tutor", icon: "📚", category: "Personal Services" },
+            { key: "videographer", display_name: "Videographer", icon: "🎥", category: "Freelance & Creative" },
+            { key: "web_developer", display_name: "Web Developer", icon: "💻", category: "Freelance & Creative" },
+            { key: "wedding_coordinator", display_name: "Wedding Coordinator", icon: "💒", category: "Event Services" },
+            { key: "window_door", display_name: "Window & Door", icon: "🚪", category: "Installation" },
+            { key: "writer", display_name: "Writer", icon: "✍️", category: "Freelance & Creative" },
 
-            // General
-            { key: "general_contractor", display_name: "General Contractor", icon: "👷", category: "General" },
+            // === OTHER (Always last) ===
             { key: "other", display_name: "Other", icon: "✨", category: "Other" }
         ];
 
@@ -7108,24 +7111,53 @@
             // Populate industry grid
             const grid = document.getElementById('industryGrid');
             grid.innerHTML = '';
-            industries.forEach(industry => {
-                const card = document.createElement('div');
-                card.className = 'industry-card';
-                card.dataset.industry = industry.key;
 
-                const icon = document.createElement('span');
-                icon.className = 'industry-icon';
-                icon.textContent = industry.icon;
+            // Add section header for popular trades
+            const popularHeader = document.createElement('div');
+            popularHeader.className = 'industry-section-header';
+            popularHeader.textContent = 'Popular';
+            grid.appendChild(popularHeader);
 
-                const name = document.createElement('div');
-                name.className = 'industry-name';
-                name.textContent = industry.display_name;
-
-                card.appendChild(icon);
-                card.appendChild(name);
-                card.onclick = () => selectIndustry(industry.key, industry.display_name);
-                grid.appendChild(card);
+            // Add popular trades first
+            industries.filter(i => i.popular).forEach(industry => {
+                grid.appendChild(createIndustryCard(industry));
             });
+
+            // Add section header for all trades
+            const allHeader = document.createElement('div');
+            allHeader.className = 'industry-section-header';
+            allHeader.textContent = 'All Trades (A-Z)';
+            grid.appendChild(allHeader);
+
+            // Add remaining trades (excluding "other")
+            industries.filter(i => !i.popular && i.key !== 'other').forEach(industry => {
+                grid.appendChild(createIndustryCard(industry));
+            });
+
+            // Add "Other" at the very end
+            const otherIndustry = industries.find(i => i.key === 'other');
+            if (otherIndustry) {
+                grid.appendChild(createIndustryCard(otherIndustry));
+            }
+        }
+
+        function createIndustryCard(industry) {
+            const card = document.createElement('div');
+            card.className = 'industry-card' + (industry.popular ? ' popular' : '');
+            card.dataset.industry = industry.key;
+
+            const icon = document.createElement('span');
+            icon.className = 'industry-icon';
+            icon.textContent = industry.icon;
+
+            const name = document.createElement('div');
+            name.className = 'industry-name';
+            name.textContent = industry.display_name;
+
+            card.appendChild(icon);
+            card.appendChild(name);
+            card.onclick = () => selectIndustry(industry.key, industry.display_name);
+            return card;
         }
 
         function selectIndustry(key, displayName) {
