@@ -524,12 +524,12 @@ async def update_task(
 
 
 @router.post("/{task_id}/complete", response_model=TaskResponse)
-async def complete_task(
+async def toggle_task_complete(
     task_id: str,
     user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Mark a task as complete."""
+    """Toggle a task's completion status (complete ↔ pending)."""
     contractor = await get_contractor(user, db)
 
     result = await db.execute(
@@ -548,8 +548,13 @@ async def complete_task(
             detail="Task not found"
         )
 
-    task.status = "completed"
-    task.completed_at = datetime.utcnow()
+    # Toggle status
+    if task.status == "completed":
+        task.status = "pending"
+        task.completed_at = None
+    else:
+        task.status = "completed"
+        task.completed_at = datetime.utcnow()
     task.updated_at = datetime.utcnow()
 
     await db.commit()

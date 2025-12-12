@@ -5647,6 +5647,60 @@
         </div>
     </div>
 
+    <!-- Task Detail Modal (DISC-092) -->
+    <div class="modal-overlay" id="taskDetailModal" style="display: none;">
+        <div class="modal-content" style="max-width: 500px;">
+            <button class="modal-close" onclick="closeTaskDetailModal()">&times;</button>
+            <h2 class="modal-title" id="taskDetailTitle">Task Details</h2>
+            <form id="taskDetailForm" onsubmit="saveTaskDetails(event)" style="margin-top: 24px;">
+                <input type="hidden" id="taskDetailId">
+                <div class="form-group">
+                    <label for="taskDetailTitleInput">Task Title *</label>
+                    <input type="text" id="taskDetailTitleInput" required style="background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); padding: 12px; border-radius: 8px; width: 100%; font-family: var(--font-sans); font-size: 1rem;">
+                </div>
+                <div class="form-group" style="margin-top: 16px;">
+                    <label for="taskDetailType">Task Type</label>
+                    <select id="taskDetailType" style="background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); padding: 12px; border-radius: 8px; width: 100%; font-family: var(--font-sans); font-size: 1rem;">
+                        <option value="follow_up">📞 Follow Up</option>
+                        <option value="quote">📝 Quote</option>
+                        <option value="call">☎️ Call</option>
+                        <option value="site_visit">🏠 Site Visit</option>
+                        <option value="material_order">📦 Material Order</option>
+                        <option value="reminder">⏰ Reminder</option>
+                        <option value="other">📌 Other</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-top: 16px;">
+                    <label for="taskDetailDueDate">Due Date</label>
+                    <input type="date" id="taskDetailDueDate" style="background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); padding: 12px; border-radius: 8px; width: 100%; font-family: var(--font-sans); font-size: 1rem;">
+                </div>
+                <div class="form-group" style="margin-top: 16px;">
+                    <label for="taskDetailPriority">Priority</label>
+                    <select id="taskDetailPriority" style="background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); padding: 12px; border-radius: 8px; width: 100%; font-family: var(--font-sans); font-size: 1rem;">
+                        <option value="low">Low</option>
+                        <option value="normal">Normal</option>
+                        <option value="high">High</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-top: 16px;">
+                    <label for="taskDetailDescription">Description</label>
+                    <textarea id="taskDetailDescription" rows="3" style="background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); padding: 12px; border-radius: 8px; width: 100%; font-family: var(--font-sans); font-size: 1rem; resize: vertical;"></textarea>
+                </div>
+                <div class="form-group" style="margin-top: 16px;">
+                    <label>Status</label>
+                    <div id="taskDetailStatus" style="padding: 12px; background: var(--bg-elevated); border-radius: 8px; display: flex; align-items: center; gap: 8px;">
+                        <span id="taskDetailStatusIcon">⏳</span>
+                        <span id="taskDetailStatusText">Pending</span>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 12px; margin-top: 24px;">
+                    <button type="button" class="btn btn-secondary" onclick="closeTaskDetailModal()" style="flex: 1;">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="saveTaskDetailBtn" style="flex: 1;">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Add Task Modal (DISC-092) -->
     <div class="modal-overlay" id="addTaskModal" style="display: none;">
         <div class="modal-content" style="max-width: 500px;">
@@ -11687,6 +11741,7 @@
                 const taskEl = document.createElement('div');
                 taskEl.className = 'quote-item';
                 taskEl.style.cursor = 'pointer';
+                taskEl.onclick = () => openTaskDetailModal(task.id);
 
                 // Priority and overdue styling
                 let priorityColor = 'var(--text-secondary)';
@@ -11920,6 +11975,83 @@
             } catch (err) {
                 console.error('Error creating task:', err);
                 showError('Failed to create task');
+            }
+        }
+
+        // Task Detail Modal Functions
+        function openTaskDetailModal(taskId) {
+            const task = tasksCache.find(t => t.id === taskId);
+            if (!task) return;
+
+            // Populate form
+            document.getElementById('taskDetailId').value = task.id;
+            document.getElementById('taskDetailTitleInput').value = task.title || '';
+            document.getElementById('taskDetailType').value = task.task_type || 'other';
+            document.getElementById('taskDetailDueDate').value = task.due_date ? task.due_date.split('T')[0] : '';
+            document.getElementById('taskDetailPriority').value = task.priority || 'normal';
+            document.getElementById('taskDetailDescription').value = task.description || '';
+
+            // Update status display
+            const isCompleted = task.status === 'completed';
+            document.getElementById('taskDetailStatusIcon').textContent = isCompleted ? '✅' : '⏳';
+            document.getElementById('taskDetailStatusText').textContent = isCompleted ? 'Completed' : 'Pending';
+
+            // Show modal
+            document.getElementById('taskDetailModal').style.display = 'flex';
+        }
+
+        function closeTaskDetailModal() {
+            document.getElementById('taskDetailModal').style.display = 'none';
+        }
+
+        async function saveTaskDetails(event) {
+            event.preventDefault();
+
+            const taskId = document.getElementById('taskDetailId').value;
+            const title = document.getElementById('taskDetailTitleInput').value.trim();
+            if (!title) {
+                showError('Please enter a task title');
+                return;
+            }
+
+            const updateData = {
+                title: title,
+                description: document.getElementById('taskDetailDescription').value.trim() || null,
+                priority: document.getElementById('taskDetailPriority').value,
+                due_date: document.getElementById('taskDetailDueDate').value || null
+            };
+
+            const submitBtn = document.getElementById('saveTaskDetailBtn');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = 'Saving...';
+            submitBtn.disabled = true;
+
+            try {
+                const response = await fetch(`/api/tasks/${taskId}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify(updateData)
+                });
+
+                if (!response.ok) throw new Error('Failed to update task');
+
+                showSuccess('Task updated!');
+                closeTaskDetailModal();
+                await loadTasks();
+                await loadTaskSummary();
+
+                if (typeof posthog !== 'undefined') {
+                    posthog.capture('task_updated', { task_id: taskId });
+                }
+            } catch (err) {
+                console.error('Error updating task:', err);
+                showError('Failed to update task');
+            } finally {
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
             }
         }
 
