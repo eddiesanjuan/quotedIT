@@ -24,14 +24,14 @@ To approve: Change status from DISCOVERED → READY
 |--------|-------|
 | DEPLOYED | 47 |
 | COMPLETE | 2 |
-| READY | 12 |
+| READY | 13 |
 | DISCOVERED | 22 |
-| **Total** | **83** |
+| **Total** | **84** |
 
 **Prompt Optimization**: DISC-041 complete → DISC-052, DISC-054 (learning improvements via prompt injection)
 **Deprioritized**: DISC-053, DISC-055 (structured storage/embeddings - over-engineering; prompt injection approach preferred)
 **Competitive Defense**: DISC-014 complete → DISC-060 through DISC-062 (RAG, category ownership, messaging)
-**Voice CRM**: DISC-085 (strategic design complete) → DISC-086 through DISC-091 (implementation tickets)
+**Voice CRM**: DISC-085 (strategic design complete) → DISC-086 through DISC-091 (implementation tickets) + DISC-092 (tasks/reminders)
 **Phase II Voice Control**: 8 tickets (DISC-042 through DISC-049) awaiting executive review
 **Staging Environment**: DISC-073 complete → DISC-077, DISC-078, DISC-079 (Railway preview + feature flags + runbook) ✅ ALL DEPLOYED
 
@@ -863,6 +863,77 @@ To approve: Change status from DISCOVERED → READY
 4. Enable for all users
 
 **Success Metric**: 100% of quotes with customer data linked to Customer records; no duplicate customers created
+
+---
+
+### DISC-092: CRM Task & Reminder System 📋 CRM PHASE 4 (READY)
+
+**Source**: Founder Request (Eddie, 2025-12-11)
+**Impact**: HIGH | **Effort**: L | **Score**: 1.0
+**Sprint Alignment**: CRM Phase 4 - transforms passive CRM into active workflow management
+**Dependencies**: DISC-086 (Customer Model), DISC-088 (Customer API)
+
+**Problem**: Contractors need to track follow-ups, reminders, and tasks related to quotes and customers. Currently they must use separate tools or memory. Key workflows that need support:
+- Following up on sent quotes that haven't received a response
+- Scheduling customer check-ins
+- Remembering to collect deposits or final payments
+- Tracking promised callbacks
+
+**Vision**: Simple task/reminder system integrated with CRM that supports both manual tasks and intelligent auto-generated reminders based on quote/customer activity.
+
+**Proposed Work**:
+
+**1. Task Data Model**
+- Create `Task` model: id, contractor_id, customer_id (optional), quote_id (optional)
+- Fields: title, description, due_date, reminder_time, status (pending/completed/snoozed)
+- Priority levels: low, normal, high, urgent
+- Recurrence: one-time, daily, weekly, monthly
+
+**2. Manual Task Creation**
+- "Add task" button on customer detail and quote detail views
+- Voice command: "Remind me to call Johnson in 3 days"
+- Quick-add from anywhere in app
+
+**3. Auto-Generated Reminders (Rules Engine)**
+- Configurable triggers with defaults:
+  - Quote sent, no response in 7 days → "Follow up on Quote #X for [Customer]"
+  - Quote accepted → "Schedule start date with [Customer]"
+  - Invoice sent, not paid in 14 days → "Payment follow-up for [Customer]"
+  - Customer dormant 90 days → "Re-engage [Customer]"
+- Settings to enable/disable each rule and customize timing
+
+**4. Task Management UI**
+- Tasks tab in main navigation (or integrated into Customers view)
+- Today/Upcoming/Overdue views
+- Filter by customer, quote, priority
+- Quick actions: complete, snooze, reschedule
+
+**5. Notifications**
+- In-app notification badge/list
+- Optional email reminders (daily digest or per-task)
+- Future: push notifications for mobile
+
+**6. Voice Integration**
+- "What's on my task list today?"
+- "Remind me to [action] for [customer] in [timeframe]"
+- "Mark the Johnson follow-up as done"
+
+**Settings (Account → Reminders)**:
+- Enable/disable auto-generated reminders
+- Default follow-up timing (7 days after quote, etc.)
+- Notification preferences (in-app, email, both)
+- Working hours for reminders
+
+**Technical Considerations**:
+- Background job for generating auto-reminders (check quote/customer status periodically)
+- Cron-style scheduler for reminder notifications
+- Link tasks bidirectionally to quotes and customers
+- Respect timezone for due dates/reminders
+
+**Success Metric**:
+- 50%+ of active users create or complete at least one task per week
+- Auto-generated reminders lead to 20% increase in quote follow-up rate
+- Reduction in "forgot to follow up" scenarios
 
 ---
 
