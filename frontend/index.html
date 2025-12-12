@@ -3877,7 +3877,8 @@
         <a href="/" class="logo">quoted<span>.it</span></a>
         <div class="nav-right" id="navRight" style="display: none;">
             <div class="app-nav" id="appNav" style="display: none;">
-                <button class="app-nav-btn active" id="newQuoteNavBtn" onclick="showAppSection('newQuote')">New Quote</button>
+                <button class="app-nav-btn active" id="dashboardNavBtn" onclick="showAppSection('dashboard')">Home</button>
+                <button class="app-nav-btn" id="newQuoteNavBtn" onclick="showAppSection('newQuote')">New Quote</button>
                 <button class="app-nav-btn" id="myQuotesNavBtn" onclick="showAppSection('myQuotes')">My Quotes</button>
                 <button class="app-nav-btn" id="customersNavBtn" onclick="showAppSection('customers')">Customers</button>
                 <button class="app-nav-btn" id="tasksNavBtn" onclick="showAppSection('tasks')">Tasks</button>
@@ -3963,6 +3964,68 @@
 
         <!-- Main App View -->
         <div class="view" id="appView">
+            <!-- DISC-095: Dashboard Section - Home Base After Login -->
+            <div id="dashboardSection" style="display: none;">
+                <!-- Welcome Header -->
+                <div class="dashboard-header" style="margin-bottom: 24px;">
+                    <h1 style="font-family: var(--font-serif); font-weight: 400; font-size: 1.75rem; margin-bottom: 4px;">
+                        Welcome back<span id="dashboardUserName"></span>
+                    </h1>
+                    <p style="color: var(--text-secondary); font-size: 0.9rem;">Here's your quoting overview</p>
+                </div>
+
+                <!-- Stats Grid -->
+                <div class="dashboard-stats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px; margin-bottom: 24px;">
+                    <div class="card" style="padding: 20px; text-align: center;">
+                        <div style="font-size: 2rem; font-weight: 600; color: var(--text-primary);" id="statTotalQuotes">0</div>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em;">Total Quotes</div>
+                    </div>
+                    <div class="card" style="padding: 20px; text-align: center;">
+                        <div style="font-size: 2rem; font-weight: 600; color: #fbbf24;" id="statPendingQuotes">0</div>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em;">Pending</div>
+                    </div>
+                    <div class="card" style="padding: 20px; text-align: center;">
+                        <div style="font-size: 2rem; font-weight: 600; color: #4ade80;" id="statTimeSaved">0h</div>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em;">Time Saved</div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="card" style="padding: 24px; margin-bottom: 24px;">
+                    <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 16px;">Quick Actions</h3>
+                    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                        <button class="btn btn-primary" onclick="showAppSection('newQuote')" style="flex: 1; min-width: 150px;">
+                            <span style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                </svg>
+                                New Quote
+                            </span>
+                        </button>
+                        <button class="btn btn-secondary" onclick="showAppSection('myQuotes')" style="flex: 1; min-width: 150px;">
+                            View All Quotes
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Recent Quotes -->
+                <div class="card" style="padding: 24px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                        <h3 style="font-size: 1rem; font-weight: 600;">Recent Quotes</h3>
+                        <a href="#" onclick="showAppSection('myQuotes'); return false;" style="font-size: 0.875rem; color: var(--text-secondary); text-decoration: none;">View all</a>
+                    </div>
+                    <div id="dashboardRecentQuotes">
+                        <!-- Recent quotes will be loaded here via JS -->
+                        <div style="text-align: center; padding: 32px; color: var(--text-secondary);">
+                            <div style="font-size: 2rem; margin-bottom: 8px;">📝</div>
+                            <p style="margin-bottom: 16px;">No quotes yet. Create your first one!</p>
+                            <button class="btn btn-primary" onclick="showAppSection('newQuote')">Generate Quote</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Onboarding Notice -->
             <div class="card onboarding-notice" id="onboardingNotice" style="display: none;">
                 <!-- Industry Selection -->
@@ -5241,9 +5304,13 @@
 
     <!-- Mobile Bottom Navigation -->
     <div class="mobile-nav" id="mobileNav" style="display: none;">
-        <button class="mobile-nav-btn active" id="mobileNewQuoteBtn" onclick="showAppSection('newQuote')">
+        <button class="mobile-nav-btn active" id="mobileDashboardBtn" onclick="showAppSection('dashboard')">
+            <span class="mobile-nav-icon">🏠</span>
+            <span class="mobile-nav-label">Home</span>
+        </button>
+        <button class="mobile-nav-btn" id="mobileNewQuoteBtn" onclick="showAppSection('newQuote')">
             <span class="mobile-nav-icon">✏️</span>
-            <span class="mobile-nav-label">New Quote</span>
+            <span class="mobile-nav-label">New</span>
         </button>
         <button class="mobile-nav-btn" id="mobileMyQuotesBtn" onclick="showAppSection('myQuotes')">
             <span class="mobile-nav-icon">📋</span>
@@ -5252,10 +5319,6 @@
         <button class="mobile-nav-btn" id="mobileCustomersBtn" onclick="showAppSection('customers')">
             <span class="mobile-nav-icon">👥</span>
             <span class="mobile-nav-label">CRM</span>
-        </button>
-        <button class="mobile-nav-btn" id="mobileTasksBtn" onclick="showAppSection('tasks')">
-            <span class="mobile-nav-icon">✓</span>
-            <span class="mobile-nav-label">Tasks</span>
         </button>
         <button class="mobile-nav-btn" id="mobileAccountBtn" onclick="showAppSection('account')">
             <span class="mobile-nav-icon">👤</span>
@@ -6583,17 +6646,6 @@
             document.getElementById('appNav').style.display = 'flex';
             document.getElementById('mobileNav').classList.add('active');
 
-            // Reset nav buttons to default (New Quote active)
-            document.getElementById('newQuoteNavBtn').classList.add('active');
-            document.getElementById('myQuotesNavBtn').classList.remove('active');
-            document.getElementById('mobileNewQuoteBtn').classList.add('active');
-            document.getElementById('mobileMyQuotesBtn').classList.remove('active');
-            document.getElementById('mobileAccountBtn').classList.remove('active');
-
-            // Hide detail views
-            document.getElementById('myQuotesSection').style.display = 'none';
-            document.getElementById('quoteDetailView').style.display = 'none';
-
             // Ensure we have user info
             if (!currentUser) {
                 try {
@@ -6614,7 +6666,13 @@
             const hasCompletedOnboarding = !!currentUser?.onboarding_completed_at;
 
             if (!hasCompletedOnboarding) {
-                // Show onboarding
+                // Show onboarding - reset nav to New Quote for onboarding flow
+                document.getElementById('dashboardNavBtn').classList.remove('active');
+                document.getElementById('newQuoteNavBtn').classList.add('active');
+                document.getElementById('mobileDashboardBtn').classList.remove('active');
+                document.getElementById('mobileNewQuoteBtn').classList.add('active');
+
+                document.getElementById('dashboardSection').style.display = 'none';
                 document.getElementById('onboardingNotice').style.display = 'block';
                 document.getElementById('inputSection').style.display = 'none';
 
@@ -6626,9 +6684,8 @@
                     showOnboardingIntro();
                 }
             } else {
-                // User has completed onboarding - show main app
-                document.getElementById('onboardingNotice').style.display = 'none';
-                document.getElementById('inputSection').style.display = 'block';
+                // DISC-095: User has completed onboarding - show dashboard as home base
+                showAppSection('dashboard');
             }
 
             // Check if we should show first quote activation modal
@@ -9059,6 +9116,7 @@
         // App section navigation
         function showAppSection(section) {
             // Update desktop nav buttons
+            document.getElementById('dashboardNavBtn').classList.toggle('active', section === 'dashboard');
             document.getElementById('newQuoteNavBtn').classList.toggle('active', section === 'newQuote');
             document.getElementById('myQuotesNavBtn').classList.toggle('active', section === 'myQuotes');
             document.getElementById('customersNavBtn').classList.toggle('active', section === 'customers');
@@ -9067,13 +9125,14 @@
             document.getElementById('accountNavBtn').classList.toggle('active', section === 'account');
 
             // Update mobile nav buttons
+            document.getElementById('mobileDashboardBtn').classList.toggle('active', section === 'dashboard');
             document.getElementById('mobileNewQuoteBtn').classList.toggle('active', section === 'newQuote');
             document.getElementById('mobileMyQuotesBtn').classList.toggle('active', section === 'myQuotes');
             document.getElementById('mobileCustomersBtn').classList.toggle('active', section === 'customers');
-            document.getElementById('mobileTasksBtn').classList.toggle('active', section === 'tasks');
             document.getElementById('mobileAccountBtn').classList.toggle('active', section === 'account');
 
             // Hide all sections
+            document.getElementById('dashboardSection').style.display = 'none';
             document.getElementById('inputSection').style.display = 'none';
             document.getElementById('quoteResult').style.display = 'none';
             document.getElementById('myQuotesSection').style.display = 'none';
@@ -9087,7 +9146,12 @@
             document.getElementById('loadingSection').style.display = 'none';
             document.getElementById('accountSection').style.display = 'none';
 
-            if (section === 'newQuote') {
+            if (section === 'dashboard') {
+                // DISC-095: Dashboard section - home base after login
+                document.getElementById('dashboardSection').style.display = 'block';
+                loadDashboard();
+                stopAutosave();
+            } else if (section === 'newQuote') {
                 // Check if quote result is active (user just generated a quote)
                 const quoteResult = document.getElementById('quoteResult');
                 if (quoteResult.classList.contains('active')) {
@@ -9136,6 +9200,120 @@
 
             document.getElementById('onboardingNotice').style.display = hasCompletedOnboarding ? 'none' : 'block';
             document.getElementById('inputSection').style.display = hasCompletedOnboarding ? 'block' : 'none';
+        }
+
+        // DISC-095: Load dashboard data
+        async function loadDashboard() {
+            // Update welcome name
+            const nameEl = document.getElementById('dashboardUserName');
+            if (currentUser?.business_name) {
+                nameEl.textContent = ', ' + currentUser.business_name.split(' ')[0];
+            } else {
+                nameEl.textContent = '';
+            }
+
+            try {
+                // Fetch quotes for stats and recent list
+                const response = await fetch(`${API_BASE}/quotes/`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` },
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load dashboard data');
+                }
+
+                const data = await response.json();
+                const quotes = data.quotes || [];
+
+                // Update stats
+                document.getElementById('statTotalQuotes').textContent = quotes.length;
+
+                // Count pending quotes (sent but not accepted/declined)
+                const pendingCount = quotes.filter(q => q.status === 'sent' || q.status === 'draft').length;
+                document.getElementById('statPendingQuotes').textContent = pendingCount;
+
+                // Estimate time saved (avg 20 min per quote manual vs 2 min with Quoted = 18 min saved)
+                const minutesSaved = quotes.length * 18;
+                const hoursSaved = Math.round(minutesSaved / 60);
+                document.getElementById('statTimeSaved').textContent = hoursSaved + 'h';
+
+                // Render recent quotes (last 5)
+                renderDashboardRecentQuotes(quotes.slice(0, 5));
+
+            } catch (err) {
+                console.error('Error loading dashboard:', err);
+                // Still show empty state
+                document.getElementById('statTotalQuotes').textContent = '0';
+                document.getElementById('statPendingQuotes').textContent = '0';
+                document.getElementById('statTimeSaved').textContent = '0h';
+            }
+        }
+
+        // DISC-095: Render recent quotes on dashboard
+        function renderDashboardRecentQuotes(quotes) {
+            const container = document.getElementById('dashboardRecentQuotes');
+            container.textContent = ''; // Clear using safe method
+
+            if (quotes.length === 0) {
+                // Show empty state
+                const emptyDiv = document.createElement('div');
+                emptyDiv.style.cssText = 'text-align: center; padding: 32px; color: var(--text-secondary);';
+
+                const iconDiv = document.createElement('div');
+                iconDiv.style.cssText = 'font-size: 2rem; margin-bottom: 8px;';
+                iconDiv.textContent = '📝';
+
+                const textP = document.createElement('p');
+                textP.style.marginBottom = '16px';
+                textP.textContent = 'No quotes yet. Create your first one!';
+
+                const ctaBtn = document.createElement('button');
+                ctaBtn.className = 'btn btn-primary';
+                ctaBtn.textContent = 'Generate Quote';
+                ctaBtn.onclick = () => showAppSection('newQuote');
+
+                emptyDiv.appendChild(iconDiv);
+                emptyDiv.appendChild(textP);
+                emptyDiv.appendChild(ctaBtn);
+                container.appendChild(emptyDiv);
+                return;
+            }
+
+            quotes.forEach(quote => {
+                const item = document.createElement('div');
+                item.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); cursor: pointer;';
+                item.onclick = () => {
+                    showAppSection('myQuotes');
+                    setTimeout(() => showQuoteDetail(quote.id), 100);
+                };
+
+                const leftDiv = document.createElement('div');
+
+                const titleDiv = document.createElement('div');
+                titleDiv.style.cssText = 'font-weight: 500; margin-bottom: 4px;';
+                titleDiv.textContent = quote.job_title || 'Untitled Quote';
+
+                const metaDiv = document.createElement('div');
+                metaDiv.style.cssText = 'font-size: 0.8rem; color: var(--text-secondary);';
+                const dateStr = new Date(quote.created_at).toLocaleDateString();
+                metaDiv.textContent = quote.customer_name ? quote.customer_name + ' • ' + dateStr : dateStr;
+
+                leftDiv.appendChild(titleDiv);
+                leftDiv.appendChild(metaDiv);
+
+                const rightDiv = document.createElement('div');
+                rightDiv.style.cssText = 'text-align: right;';
+
+                const priceDiv = document.createElement('div');
+                priceDiv.style.cssText = 'font-weight: 600; color: var(--text-primary);';
+                priceDiv.textContent = '$' + (quote.total_amount || 0).toLocaleString();
+
+                rightDiv.appendChild(priceDiv);
+
+                item.appendChild(leftDiv);
+                item.appendChild(rightDiv);
+                container.appendChild(item);
+            });
         }
 
         // Load quotes from backend
