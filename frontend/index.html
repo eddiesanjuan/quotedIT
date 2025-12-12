@@ -1918,6 +1918,144 @@
             gap: 4px;
         }
 
+        /* Customer CRM Styles (DISC-089) */
+        .customer-summary-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 768px) {
+            .customer-summary-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .customer-stat-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .customer-stat-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            font-family: var(--font-serif);
+        }
+
+        .customer-stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 4px;
+        }
+
+        .customer-status-badge {
+            display: inline-block;
+            font-size: 0.7rem;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .customer-status-badge.status-active {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .customer-status-badge.status-lead {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+        }
+
+        .customer-status-badge.status-vip {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+        }
+
+        .customer-status-badge.status-inactive {
+            background: linear-gradient(135deg, #6b7280, #4b5563);
+            color: white;
+        }
+
+        .customer-tag {
+            display: inline-flex;
+            align-items: center;
+            font-size: 0.75rem;
+            padding: 4px 10px;
+            background: var(--accent-surface);
+            color: var(--accent);
+            border-radius: 9999px;
+            margin: 4px 4px 4px 0;
+        }
+
+        .customer-info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 576px) {
+            .customer-info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .customer-info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .customer-info-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .customer-info-value {
+            font-size: 0.9375rem;
+            color: var(--text-primary);
+        }
+
+        .customer-detail-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+        }
+
+        .customer-section {
+            background: var(--card-bg);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .customer-section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .customer-section h4 {
+            font-family: var(--font-serif);
+            font-size: 1rem;
+            font-weight: 500;
+            margin: 0;
+            color: var(--text-primary);
+        }
+
         .quote-empty {
             text-align: center;
             padding: 80px 40px;
@@ -3741,6 +3879,7 @@
             <div class="app-nav" id="appNav" style="display: none;">
                 <button class="app-nav-btn active" id="newQuoteNavBtn" onclick="showAppSection('newQuote')">New Quote</button>
                 <button class="app-nav-btn" id="myQuotesNavBtn" onclick="showAppSection('myQuotes')">My Quotes</button>
+                <button class="app-nav-btn" id="customersNavBtn" onclick="showAppSection('customers')">Customers</button>
                 <button class="app-nav-btn" id="invoicesNavBtn" onclick="showAppSection('invoices')">Invoices</button>
                 <button class="app-nav-btn" id="accountNavBtn" onclick="showAppSection('account')">Account</button>
                 <a href="/help" class="app-nav-btn" style="text-decoration: none;">Help</a>
@@ -4321,6 +4460,161 @@
                 </div>
             </div>
 
+            <!-- DISC-089: Customers Section (CRM) -->
+            <div class="card" id="customersSection" style="display: none;">
+                <div class="quote-history-header">
+                    <h2>Customers</h2>
+                    <span class="quote-history-count" id="customerCount">0 customers</span>
+                </div>
+
+                <!-- Customer Search and Filters -->
+                <div class="customer-filters" style="margin-bottom: 20px; display: flex; gap: 12px; flex-wrap: wrap;">
+                    <input type="text" id="customerSearchInput" placeholder="Search customers..."
+                           style="flex: 1; min-width: 200px; padding: 10px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-elevated); color: var(--text-primary); font-size: 0.875rem;"
+                           oninput="debounceCustomerSearch()">
+                    <select id="customerStatusFilter" onchange="loadCustomers()"
+                            style="padding: 10px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-elevated); color: var(--text-primary); font-size: 0.875rem;">
+                        <option value="">All Statuses</option>
+                        <option value="active">Active</option>
+                        <option value="lead">Lead</option>
+                        <option value="vip">VIP</option>
+                        <option value="inactive">Inactive</option>
+                    </select>
+                    <select id="customerSortBy" onchange="loadCustomers()"
+                            style="padding: 10px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-elevated); color: var(--text-primary); font-size: 0.875rem;">
+                        <option value="last_quote_at">Last Quoted</option>
+                        <option value="name">Name</option>
+                        <option value="total_quoted">Total Quoted</option>
+                        <option value="quote_count">Quote Count</option>
+                    </select>
+                    <button class="btn btn-primary" onclick="openAddCustomerModal()" style="padding: 10px 16px;">+ Add Customer</button>
+                </div>
+
+                <!-- Customer Summary Stats -->
+                <div class="customer-summary" id="customerSummary" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 16px; margin-bottom: 24px; padding: 16px; background: var(--bg-elevated); border-radius: 8px;">
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.5rem; font-weight: 600;" id="summaryTotalCustomers">0</div>
+                        <div style="font-size: 0.75rem; color: var(--text-secondary);">Total Customers</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.5rem; font-weight: 600;" id="summaryActiveCustomers">0</div>
+                        <div style="font-size: 0.75rem; color: var(--text-secondary);">Active</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.5rem; font-weight: 600;" id="summaryTotalQuoted">$0</div>
+                        <div style="font-size: 0.75rem; color: var(--text-secondary);">Total Quoted</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.5rem; font-weight: 600;" id="summaryTotalWon">$0</div>
+                        <div style="font-size: 0.75rem; color: var(--text-secondary);">Total Won</div>
+                    </div>
+                </div>
+
+                <div class="quote-list" id="customerList">
+                    <!-- Customer list items will be populated via JavaScript -->
+                </div>
+
+                <div class="empty-state" id="customerEmpty" style="display: none;">
+                    <div class="empty-icon">👥</div>
+                    <h3>No customers yet</h3>
+                    <p>Customers are automatically created from your quotes.</p>
+                    <button class="cta-button" onclick="showAppSection('newQuote')">Create Your First Quote</button>
+                </div>
+
+                <div id="customerLoadingState" style="display: none; text-align: center; padding: 40px;">
+                    <div class="spinner" style="display: inline-block;"></div>
+                    <p style="margin-top: 16px; color: var(--text-secondary);">Loading your customers...</p>
+                </div>
+            </div>
+
+            <!-- Customer Detail View -->
+            <div class="card quote-result" id="customerDetailView" style="display: none;">
+                <div class="quote-header">
+                    <h2 id="customerDetailName">Customer Details</h2>
+                    <span class="confidence-badge" id="customerStatusBadge">Active</span>
+                </div>
+
+                <div class="customer-info-section">
+                    <div class="customer-info-header">
+                        <h3>Contact Information</h3>
+                        <button class="btn btn-secondary btn-sm" onclick="editCrmCustomer()">Edit</button>
+                    </div>
+                    <div class="customer-info-grid">
+                        <div class="customer-info-item">
+                            <div class="customer-info-label">Phone</div>
+                            <div class="customer-info-value" id="customerDetailPhone">—</div>
+                        </div>
+                        <div class="customer-info-item">
+                            <div class="customer-info-label">Email</div>
+                            <div class="customer-info-value" id="customerDetailEmail">—</div>
+                        </div>
+                        <div class="customer-info-item">
+                            <div class="customer-info-label">Address</div>
+                            <div class="customer-info-value" id="customerDetailAddress">—</div>
+                        </div>
+                        <div class="customer-info-item">
+                            <div class="customer-info-label">Source</div>
+                            <div class="customer-info-value" id="customerDetailSource">—</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Customer Stats -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 16px; margin: 24px 0; padding: 16px; background: var(--bg-elevated); border-radius: 8px;">
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.25rem; font-weight: 600;" id="customerDetailQuoteCount">0</div>
+                        <div style="font-size: 0.75rem; color: var(--text-secondary);">Quotes</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.25rem; font-weight: 600;" id="customerDetailTotalQuoted">$0</div>
+                        <div style="font-size: 0.75rem; color: var(--text-secondary);">Total Quoted</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.25rem; font-weight: 600;" id="customerDetailTotalWon">$0</div>
+                        <div style="font-size: 0.75rem; color: var(--text-secondary);">Total Won</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 0.875rem;" id="customerDetailFirstQuote">—</div>
+                        <div style="font-size: 0.75rem; color: var(--text-secondary);">Customer Since</div>
+                    </div>
+                </div>
+
+                <!-- Tags -->
+                <div style="margin-bottom: 24px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <span style="font-weight: 500;">Tags</span>
+                        <button class="btn btn-secondary btn-sm" onclick="addCustomerTag()">+ Add Tag</button>
+                    </div>
+                    <div id="customerDetailTags" style="display: flex; flex-wrap: wrap; gap: 8px;">
+                        <!-- Tags will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Notes -->
+                <div style="margin-bottom: 24px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <span style="font-weight: 500;">Notes</span>
+                        <button class="btn btn-secondary btn-sm" onclick="addCustomerNote()">+ Add Note</button>
+                    </div>
+                    <div id="customerDetailNotes" style="background: var(--bg-elevated); padding: 16px; border-radius: 8px; white-space: pre-wrap; font-size: 0.875rem; color: var(--text-secondary);">
+                        No notes yet.
+                    </div>
+                </div>
+
+                <!-- Quote History -->
+                <div>
+                    <h3 style="margin-bottom: 16px;">Quote History</h3>
+                    <div id="customerDetailQuotes" class="quote-list">
+                        <!-- Quote history will be populated here -->
+                    </div>
+                </div>
+
+                <div class="quote-actions" style="margin-top: 24px;">
+                    <button class="btn btn-primary" onclick="createQuoteForCustomer()">+ New Quote</button>
+                    <button class="btn btn-secondary" onclick="backToCustomerList()">Back to Customers</button>
+                </div>
+            </div>
+
             <!-- DISC-071: Invoices Section -->
             <div class="card" id="invoicesSection" style="display: none;">
                 <div class="quote-history-header">
@@ -4855,7 +5149,11 @@
         </button>
         <button class="mobile-nav-btn" id="mobileMyQuotesBtn" onclick="showAppSection('myQuotes')">
             <span class="mobile-nav-icon">📋</span>
-            <span class="mobile-nav-label">My Quotes</span>
+            <span class="mobile-nav-label">Quotes</span>
+        </button>
+        <button class="mobile-nav-btn" id="mobileCustomersBtn" onclick="showAppSection('customers')">
+            <span class="mobile-nav-icon">👥</span>
+            <span class="mobile-nav-label">CRM</span>
         </button>
         <button class="mobile-nav-btn" id="mobileAccountBtn" onclick="showAppSection('account')">
             <span class="mobile-nav-icon">👤</span>
@@ -8377,12 +8675,14 @@
             // Update desktop nav buttons
             document.getElementById('newQuoteNavBtn').classList.toggle('active', section === 'newQuote');
             document.getElementById('myQuotesNavBtn').classList.toggle('active', section === 'myQuotes');
+            document.getElementById('customersNavBtn').classList.toggle('active', section === 'customers');
             document.getElementById('invoicesNavBtn').classList.toggle('active', section === 'invoices');
             document.getElementById('accountNavBtn').classList.toggle('active', section === 'account');
 
             // Update mobile nav buttons
             document.getElementById('mobileNewQuoteBtn').classList.toggle('active', section === 'newQuote');
             document.getElementById('mobileMyQuotesBtn').classList.toggle('active', section === 'myQuotes');
+            document.getElementById('mobileCustomersBtn').classList.toggle('active', section === 'customers');
             document.getElementById('mobileAccountBtn').classList.toggle('active', section === 'account');
 
             // Hide all sections
@@ -8392,6 +8692,8 @@
             document.getElementById('quoteDetailView').style.display = 'none';
             document.getElementById('invoicesSection').style.display = 'none';
             document.getElementById('invoiceDetailView').style.display = 'none';
+            document.getElementById('customersSection').style.display = 'none';
+            document.getElementById('customerDetailView').style.display = 'none';
             document.getElementById('onboardingNotice').style.display = 'none';
             document.getElementById('loadingSection').style.display = 'none';
             document.getElementById('accountSection').style.display = 'none';
@@ -8418,6 +8720,11 @@
                 // DISC-071: Invoices section
                 document.getElementById('invoicesSection').style.display = 'block';
                 loadInvoices();
+                stopAutosave();
+            } else if (section === 'customers') {
+                // DISC-089: Customers section
+                document.getElementById('customersSection').style.display = 'block';
+                loadCustomers();
                 stopAutosave();
             } else if (section === 'account') {
                 document.getElementById('accountSection').style.display = 'block';
@@ -10377,6 +10684,489 @@
                 console.error('Error deleting invoice:', error);
                 showError('Failed to delete invoice');
             }
+        }
+
+        // ================================================================
+        // DISC-089: Customer Management (CRM)
+        // ================================================================
+
+        let customersCache = [];
+        let currentCustomer = null;
+        let customerSearchTimeout = null;
+
+        async function loadCustomers() {
+            const listEl = document.getElementById('customerList');
+            const emptyEl = document.getElementById('customerEmpty');
+            const loadingEl = document.getElementById('customerLoadingState');
+
+            listEl.textContent = '';
+            emptyEl.style.display = 'none';
+            loadingEl.style.display = 'block';
+
+            try {
+                const search = document.getElementById('customerSearchInput').value.trim();
+                const statusFilter = document.getElementById('customerStatusFilter').value;
+                const sortBy = document.getElementById('customerSortBy').value;
+
+                let url = `${API_BASE}/customers?sort_by=${sortBy}&sort_desc=true`;
+                if (search) url += `&search=${encodeURIComponent(search)}`;
+                if (statusFilter) url += `&status=${statusFilter}`;
+
+                const response = await fetch(url, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load customers');
+                }
+
+                const data = await response.json();
+                customersCache = data.customers || [];
+
+                loadingEl.style.display = 'none';
+
+                if (customersCache.length === 0) {
+                    emptyEl.style.display = 'block';
+                } else {
+                    renderCustomerList(customersCache);
+                }
+
+                // Load summary stats
+                loadCustomerSummary();
+
+            } catch (err) {
+                console.error('Error loading customers:', err);
+                loadingEl.style.display = 'none';
+                emptyEl.style.display = 'block';
+            }
+        }
+
+        function renderCustomerList(customers) {
+            const listEl = document.getElementById('customerList');
+            listEl.textContent = '';
+            listEl.style.display = 'flex';
+
+            customers.forEach(customer => {
+                const item = document.createElement('div');
+                item.className = 'quote-list-item';
+                item.style.cursor = 'pointer';
+                item.onclick = () => showCustomerDetail(customer.id);
+
+                const header = document.createElement('div');
+                header.className = 'quote-list-item-header';
+
+                const titleWrapper = document.createElement('div');
+                titleWrapper.style.display = 'flex';
+                titleWrapper.style.alignItems = 'center';
+                titleWrapper.style.gap = '8px';
+                titleWrapper.style.flex = '1';
+
+                const title = document.createElement('div');
+                title.className = 'quote-list-item-title';
+                title.textContent = customer.name;
+                titleWrapper.appendChild(title);
+
+                // Status badge
+                if (customer.status && customer.status !== 'active') {
+                    const statusBadge = document.createElement('span');
+                    statusBadge.style.cssText = `
+                        font-size: 0.7rem;
+                        padding: 2px 6px;
+                        background: ${customer.status === 'vip' ? 'linear-gradient(135deg, #f59e0b, #d97706)' :
+                                     customer.status === 'lead' ? 'linear-gradient(135deg, #3b82f6, #2563eb)' :
+                                     'linear-gradient(135deg, #6b7280, #4b5563)'};
+                        color: white;
+                        border-radius: 4px;
+                        font-weight: 500;
+                        text-transform: uppercase;
+                    `;
+                    statusBadge.textContent = customer.status;
+                    titleWrapper.appendChild(statusBadge);
+                }
+
+                const amount = document.createElement('div');
+                amount.className = 'quote-list-item-amount';
+                amount.textContent = '$' + (customer.total_quoted || 0).toLocaleString();
+
+                header.appendChild(titleWrapper);
+                header.appendChild(amount);
+
+                // Meta row
+                const meta = document.createElement('div');
+                meta.className = 'quote-list-item-meta';
+                const quoteCount = customer.quote_count || 0;
+                const lastQuote = customer.last_quote_at ? new Date(customer.last_quote_at).toLocaleDateString() : 'No quotes';
+                meta.textContent = `${quoteCount} quote${quoteCount !== 1 ? 's' : ''} • Last: ${lastQuote}`;
+
+                if (customer.phone || customer.email) {
+                    const contact = document.createElement('span');
+                    contact.style.marginLeft = '8px';
+                    contact.style.color = 'var(--text-muted)';
+                    contact.textContent = customer.phone || customer.email;
+                    meta.appendChild(contact);
+                }
+
+                item.appendChild(header);
+                item.appendChild(meta);
+                listEl.appendChild(item);
+            });
+        }
+
+        async function loadCustomerSummary() {
+            try {
+                const response = await fetch(`${API_BASE}/customers/summary`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                if (!response.ok) return;
+
+                const summary = await response.json();
+
+                document.getElementById('summaryTotalCustomers').textContent = summary.total_customers || 0;
+                document.getElementById('summaryActiveCustomers').textContent = summary.by_status?.active || 0;
+                document.getElementById('summaryTotalQuoted').textContent = '$' + (summary.total_quoted || 0).toLocaleString();
+                document.getElementById('summaryTotalWon').textContent = '$' + (summary.total_won || 0).toLocaleString();
+
+            } catch (err) {
+                console.error('Error loading customer summary:', err);
+            }
+        }
+
+        async function showCustomerDetail(customerId) {
+            try {
+                const response = await fetch(`${API_BASE}/customers/${customerId}`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load customer');
+                }
+
+                currentCustomer = await response.json();
+
+                // Hide list, show detail
+                document.getElementById('customersSection').style.display = 'none';
+                document.getElementById('customerDetailView').style.display = 'block';
+
+                // Populate customer info
+                document.getElementById('customerDetailName').textContent = currentCustomer.name;
+                document.getElementById('customerStatusBadge').textContent = currentCustomer.status || 'active';
+                document.getElementById('customerStatusBadge').className = `confidence-badge status-${currentCustomer.status || 'active'}`;
+
+                document.getElementById('customerDetailPhone').textContent = currentCustomer.phone || 'No phone';
+                document.getElementById('customerDetailEmail').textContent = currentCustomer.email || 'No email';
+                document.getElementById('customerDetailAddress').textContent = currentCustomer.address || 'No address';
+                document.getElementById('customerDetailSource').textContent = currentCustomer.source || 'Quote';
+
+                // Stats
+                document.getElementById('customerDetailQuoteCount').textContent = currentCustomer.quote_count || 0;
+                document.getElementById('customerDetailTotalQuoted').textContent = '$' + (currentCustomer.total_quoted || 0).toLocaleString();
+                document.getElementById('customerDetailTotalWon').textContent = '$' + (currentCustomer.total_won || 0).toLocaleString();
+                document.getElementById('customerDetailFirstQuote').textContent = currentCustomer.first_quote_at ?
+                    new Date(currentCustomer.first_quote_at).toLocaleDateString() : '—';
+
+                // Tags
+                renderCustomerTags();
+
+                // Notes
+                document.getElementById('customerDetailNotes').textContent = currentCustomer.notes || 'No notes yet.';
+
+                // Quote history
+                renderCustomerQuotes();
+
+            } catch (err) {
+                console.error('Error loading customer detail:', err);
+                showError('Failed to load customer details');
+            }
+        }
+
+        function renderCustomerTags() {
+            const container = document.getElementById('customerDetailTags');
+            container.textContent = '';
+
+            const tags = currentCustomer.tags || [];
+            tags.forEach(tag => {
+                const tagEl = document.createElement('span');
+                tagEl.className = 'customer-tag';
+                tagEl.textContent = tag;
+
+                const removeBtn = document.createElement('span');
+                removeBtn.textContent = '×';
+                removeBtn.style.marginLeft = '4px';
+                removeBtn.style.cursor = 'pointer';
+                removeBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    removeCustomerTag(tag);
+                };
+                tagEl.appendChild(removeBtn);
+
+                container.appendChild(tagEl);
+            });
+        }
+
+        function renderCustomerQuotes() {
+            const container = document.getElementById('customerDetailQuotes');
+            container.textContent = '';
+
+            const quotes = currentCustomer.quotes || [];
+            if (quotes.length === 0) {
+                container.innerHTML = '<div style="color: var(--text-muted); padding: 12px;">No quotes yet</div>';
+                return;
+            }
+
+            quotes.forEach(quote => {
+                const item = document.createElement('div');
+                item.className = 'quote-list-item';
+                item.style.cursor = 'pointer';
+                item.onclick = () => {
+                    backToCustomerList();
+                    showAppSection('myQuotes');
+                    setTimeout(() => openQuoteDetail(quote.id), 100);
+                };
+
+                const header = document.createElement('div');
+                header.className = 'quote-list-item-header';
+
+                const title = document.createElement('div');
+                title.className = 'quote-list-item-title';
+                title.textContent = quote.job_type ? quote.job_type.replace(/_/g, ' ') : 'General';
+
+                const amount = document.createElement('div');
+                amount.className = 'quote-list-item-amount';
+                amount.textContent = '$' + (quote.total || 0).toLocaleString();
+
+                header.appendChild(title);
+                header.appendChild(amount);
+
+                const meta = document.createElement('div');
+                meta.className = 'quote-list-item-meta';
+                meta.textContent = quote.created_at ? new Date(quote.created_at).toLocaleDateString() : '';
+
+                // Status badge
+                const statusBadge = document.createElement('span');
+                statusBadge.style.cssText = `
+                    margin-left: 8px;
+                    font-size: 0.7rem;
+                    padding: 2px 6px;
+                    background: ${quote.status === 'won' ? 'linear-gradient(135deg, #10b981, #059669)' :
+                                 quote.status === 'lost' ? 'linear-gradient(135deg, #ef4444, #dc2626)' :
+                                 'linear-gradient(135deg, #6b7280, #4b5563)'};
+                    color: white;
+                    border-radius: 4px;
+                `;
+                statusBadge.textContent = quote.status || 'draft';
+                meta.appendChild(statusBadge);
+
+                item.appendChild(header);
+                item.appendChild(meta);
+                container.appendChild(item);
+            });
+        }
+
+        function backToCustomerList() {
+            document.getElementById('customerDetailView').style.display = 'none';
+            document.getElementById('customersSection').style.display = 'block';
+            currentCustomer = null;
+        }
+
+        function debounceCustomerSearch() {
+            if (customerSearchTimeout) {
+                clearTimeout(customerSearchTimeout);
+            }
+            customerSearchTimeout = setTimeout(() => {
+                loadCustomers();
+            }, 300);
+        }
+
+        async function addCustomerNote() {
+            if (!currentCustomer) return;
+
+            const note = prompt('Add a note:');
+            if (!note || !note.trim()) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/customers/${currentCustomer.id}/notes`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ note: note.trim() })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to add note');
+                }
+
+                const updated = await response.json();
+                currentCustomer = updated;
+                document.getElementById('customerDetailNotes').textContent = currentCustomer.notes || 'No notes yet.';
+                showLearningToast('Note added', '📝');
+
+            } catch (err) {
+                console.error('Error adding note:', err);
+                showError('Failed to add note');
+            }
+        }
+
+        async function addCustomerTag() {
+            if (!currentCustomer) return;
+
+            const tag = prompt('Add a tag:');
+            if (!tag || !tag.trim()) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/customers/${currentCustomer.id}/tags`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ tag: tag.trim() })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to add tag');
+                }
+
+                const updated = await response.json();
+                currentCustomer = updated;
+                renderCustomerTags();
+                showLearningToast('Tag added', '🏷️');
+
+            } catch (err) {
+                console.error('Error adding tag:', err);
+                showError('Failed to add tag');
+            }
+        }
+
+        async function removeCustomerTag(tag) {
+            if (!currentCustomer) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/customers/${currentCustomer.id}/tags/${encodeURIComponent(tag)}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to remove tag');
+                }
+
+                const updated = await response.json();
+                currentCustomer = updated;
+                renderCustomerTags();
+
+            } catch (err) {
+                console.error('Error removing tag:', err);
+                showError('Failed to remove tag');
+            }
+        }
+
+        async function updateCustomerStatus(newStatus) {
+            if (!currentCustomer) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/customers/${currentCustomer.id}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ status: newStatus })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to update status');
+                }
+
+                const updated = await response.json();
+                currentCustomer = updated;
+                document.getElementById('customerStatusBadge').textContent = currentCustomer.status;
+                document.getElementById('customerStatusBadge').className = `confidence-badge status-${currentCustomer.status}`;
+                showLearningToast('Status updated', '✓');
+
+            } catch (err) {
+                console.error('Error updating status:', err);
+                showError('Failed to update status');
+            }
+        }
+
+        async function editCrmCustomer() {
+            if (!currentCustomer) return;
+
+            // Simple edit via prompts for now
+            const name = prompt('Customer name:', currentCustomer.name);
+            if (name === null) return; // Cancelled
+
+            const phone = prompt('Phone:', currentCustomer.phone || '');
+            if (phone === null) return;
+
+            const email = prompt('Email:', currentCustomer.email || '');
+            if (email === null) return;
+
+            const address = prompt('Address:', currentCustomer.address || '');
+            if (address === null) return;
+
+            try {
+                const updates = {};
+                if (name && name.trim() !== currentCustomer.name) updates.name = name.trim();
+                if (phone !== currentCustomer.phone) updates.phone = phone || null;
+                if (email !== currentCustomer.email) updates.email = email || null;
+                if (address !== currentCustomer.address) updates.address = address || null;
+
+                if (Object.keys(updates).length === 0) return; // No changes
+
+                const response = await fetch(`${API_BASE}/customers/${currentCustomer.id}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(updates)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to update customer');
+                }
+
+                // Reload customer detail
+                await showCustomerDetail(currentCustomer.id);
+                showLearningToast('Customer updated', '✓');
+
+            } catch (err) {
+                console.error('Error updating customer:', err);
+                showError('Failed to update customer');
+            }
+        }
+
+        function createQuoteForCustomer() {
+            if (!currentCustomer) return;
+
+            // Pre-fill customer info in the quote form
+            const nameInput = document.getElementById('editCustomerName');
+            const phoneInput = document.getElementById('editCustomerPhone');
+            const addressInput = document.getElementById('editCustomerAddress');
+
+            // Navigate to new quote and pre-fill (via localStorage)
+            localStorage.setItem('prefillCustomer', JSON.stringify({
+                name: currentCustomer.name,
+                phone: currentCustomer.phone,
+                address: currentCustomer.address
+            }));
+
+            backToCustomerList();
+            showAppSection('newQuote');
+
+            // Apply prefill after section loads
+            setTimeout(() => {
+                const prefill = localStorage.getItem('prefillCustomer');
+                if (prefill) {
+                    const data = JSON.parse(prefill);
+                    // The quote edit form will pick this up when opened
+                    localStorage.removeItem('prefillCustomer');
+                }
+            }, 100);
         }
 
         async function handleLogoFileSelect(event) {
