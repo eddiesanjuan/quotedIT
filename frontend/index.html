@@ -5750,6 +5750,160 @@
         </div>
     </div>
 
+    <!-- Snooze Task Modal -->
+    <div id="snoozeTaskModal" class="modal-overlay" style="display: none;">
+        <div class="modal-backdrop" onclick="closeSnoozeTaskModal()"></div>
+        <div class="modal-content" style="max-width: 400px;">
+            <button class="modal-close" onclick="closeSnoozeTaskModal()">&times;</button>
+            <h2 class="modal-title">⏰ Snooze Task</h2>
+            <p class="modal-subtitle">Reschedule this task for later.</p>
+            <input type="hidden" id="snoozeTaskId">
+            <div style="margin-top: 20px;">
+                <label style="display: block; margin-bottom: 8px; color: var(--text-secondary);">Snooze for:</label>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+                    <button type="button" class="btn btn-secondary" onclick="confirmSnooze(1)" style="padding: 16px;">1 day</button>
+                    <button type="button" class="btn btn-secondary" onclick="confirmSnooze(3)" style="padding: 16px;">3 days</button>
+                    <button type="button" class="btn btn-secondary" onclick="confirmSnooze(7)" style="padding: 16px;">1 week</button>
+                </div>
+                <div style="margin-top: 16px;">
+                    <label style="display: block; margin-bottom: 8px; color: var(--text-secondary);">Or specify days:</label>
+                    <div style="display: flex; gap: 12px;">
+                        <input type="number" id="snoozeCustomDays" min="1" max="365" placeholder="Days" style="flex: 1; background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); padding: 12px; border-radius: 8px;">
+                        <button type="button" class="btn btn-primary" onclick="confirmSnoozeCustom()">Snooze</button>
+                    </div>
+                </div>
+            </div>
+            <button type="button" class="btn btn-secondary" onclick="closeSnoozeTaskModal()" style="width: 100%; margin-top: 20px;">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Confirm Delete Modal (generic) -->
+    <div id="confirmDeleteModal" class="modal-overlay" style="display: none;">
+        <div class="modal-backdrop" onclick="closeConfirmDeleteModal()"></div>
+        <div class="modal-content" style="max-width: 400px;">
+            <button class="modal-close" onclick="closeConfirmDeleteModal()">&times;</button>
+            <h2 class="modal-title" id="confirmDeleteTitle">🗑️ Delete?</h2>
+            <p class="modal-subtitle" id="confirmDeleteMessage">Are you sure? This action cannot be undone.</p>
+            <div style="display: flex; gap: 12px; margin-top: 24px;">
+                <button type="button" class="btn btn-secondary" onclick="closeConfirmDeleteModal()" style="flex: 1;">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmDeleteBtn" onclick="confirmDelete()" style="flex: 1; background: linear-gradient(135deg, #ef4444, #dc2626);">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Customer Modal -->
+    <div id="addCustomerModal" class="modal-overlay" style="display: none;">
+        <div class="modal-backdrop" onclick="closeAddCustomerModal()"></div>
+        <div class="modal-content" style="max-width: 450px;">
+            <button class="modal-close" onclick="closeAddCustomerModal()">&times;</button>
+            <h2 class="modal-title">👤 Add Customer</h2>
+            <p class="modal-subtitle">Add a new customer to your CRM.</p>
+            <form id="addCustomerForm" onsubmit="submitAddCustomerForm(event)" style="margin-top: 24px;">
+                <div class="form-group">
+                    <label for="addCustomerName">Name *</label>
+                    <input type="text" id="addCustomerName" placeholder="John Smith" required style="background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); padding: 12px; border-radius: 8px; width: 100%;">
+                </div>
+                <div class="form-group" style="margin-top: 16px;">
+                    <label for="addCustomerPhone">Phone</label>
+                    <input type="tel" id="addCustomerPhone" placeholder="(555) 123-4567" style="background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); padding: 12px; border-radius: 8px; width: 100%;">
+                </div>
+                <div class="form-group" style="margin-top: 16px;">
+                    <label for="addCustomerEmail">Email</label>
+                    <input type="email" id="addCustomerEmail" placeholder="john@example.com" style="background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); padding: 12px; border-radius: 8px; width: 100%;">
+                </div>
+                <div class="form-group" style="margin-top: 16px;">
+                    <label for="addCustomerAddress">Address</label>
+                    <input type="text" id="addCustomerAddress" placeholder="123 Main St" style="background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); padding: 12px; border-radius: 8px; width: 100%;">
+                </div>
+                <div style="display: flex; gap: 12px; margin-top: 24px;">
+                    <button type="button" class="btn btn-secondary" onclick="closeAddCustomerModal()" style="flex: 1;">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="submitCustomerBtn" style="flex: 1;">Add Customer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit CRM Customer Modal (different from quote customer editing) -->
+    <div id="editCrmCustomerModal" class="modal-overlay" style="display: none;">
+        <div class="modal-backdrop" onclick="closeEditCrmCustomerModal()"></div>
+        <div class="modal-content" style="max-width: 450px;">
+            <button class="modal-close" onclick="closeEditCrmCustomerModal()">&times;</button>
+            <h2 class="modal-title">✏️ Edit Customer</h2>
+            <p class="modal-subtitle">Update customer information.</p>
+            <form id="editCrmCustomerForm" onsubmit="submitEditCrmCustomerForm(event)" style="margin-top: 24px;">
+                <div class="form-group">
+                    <label for="editCrmCustomerName">Name *</label>
+                    <input type="text" id="editCrmCustomerName" required style="background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); padding: 12px; border-radius: 8px; width: 100%;">
+                </div>
+                <div class="form-group" style="margin-top: 16px;">
+                    <label for="editCrmCustomerPhone">Phone</label>
+                    <input type="tel" id="editCrmCustomerPhone" style="background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); padding: 12px; border-radius: 8px; width: 100%;">
+                </div>
+                <div class="form-group" style="margin-top: 16px;">
+                    <label for="editCrmCustomerEmail">Email</label>
+                    <input type="email" id="editCrmCustomerEmail" style="background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); padding: 12px; border-radius: 8px; width: 100%;">
+                </div>
+                <div class="form-group" style="margin-top: 16px;">
+                    <label for="editCrmCustomerAddress">Address</label>
+                    <input type="text" id="editCrmCustomerAddress" style="background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); padding: 12px; border-radius: 8px; width: 100%;">
+                </div>
+                <div style="display: flex; gap: 12px; margin-top: 24px;">
+                    <button type="button" class="btn btn-secondary" onclick="closeEditCrmCustomerModal()" style="flex: 1;">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="submitEditCrmCustomerBtn" style="flex: 1;">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Note Modal -->
+    <div id="addNoteModal" class="modal-overlay" style="display: none;">
+        <div class="modal-backdrop" onclick="closeAddNoteModal()"></div>
+        <div class="modal-content" style="max-width: 450px;">
+            <button class="modal-close" onclick="closeAddNoteModal()">&times;</button>
+            <h2 class="modal-title">📝 Add Note</h2>
+            <p class="modal-subtitle">Add a note about this customer.</p>
+            <form id="addNoteForm" onsubmit="submitAddNoteForm(event)" style="margin-top: 24px;">
+                <div class="form-group">
+                    <label for="addNoteText">Note</label>
+                    <textarea id="addNoteText" rows="4" placeholder="e.g., Prefers morning appointments, has two dogs..." required style="background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); padding: 12px; border-radius: 8px; width: 100%; resize: vertical;"></textarea>
+                </div>
+                <div style="display: flex; gap: 12px; margin-top: 24px;">
+                    <button type="button" class="btn btn-secondary" onclick="closeAddNoteModal()" style="flex: 1;">Cancel</button>
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">Add Note</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Tag Modal -->
+    <div id="addTagModal" class="modal-overlay" style="display: none;">
+        <div class="modal-backdrop" onclick="closeAddTagModal()"></div>
+        <div class="modal-content" style="max-width: 400px;">
+            <button class="modal-close" onclick="closeAddTagModal()">&times;</button>
+            <h2 class="modal-title">🏷️ Add Tag</h2>
+            <p class="modal-subtitle">Tag this customer for easy filtering.</p>
+            <form id="addTagForm" onsubmit="submitAddTagForm(event)" style="margin-top: 24px;">
+                <div class="form-group">
+                    <label for="addTagText">Tag</label>
+                    <input type="text" id="addTagText" placeholder="e.g., VIP, Repeat, Referral..." required style="background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); padding: 12px; border-radius: 8px; width: 100%;">
+                </div>
+                <div style="margin-top: 12px;">
+                    <label style="color: var(--text-secondary); font-size: 0.875rem;">Suggested tags:</label>
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px;">
+                        <button type="button" class="btn btn-secondary" onclick="setTagValue('VIP')" style="padding: 6px 12px; font-size: 0.875rem;">VIP</button>
+                        <button type="button" class="btn btn-secondary" onclick="setTagValue('Repeat')" style="padding: 6px 12px; font-size: 0.875rem;">Repeat</button>
+                        <button type="button" class="btn btn-secondary" onclick="setTagValue('Referral')" style="padding: 6px 12px; font-size: 0.875rem;">Referral</button>
+                        <button type="button" class="btn btn-secondary" onclick="setTagValue('Priority')" style="padding: 6px 12px; font-size: 0.875rem;">Priority</button>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 12px; margin-top: 24px;">
+                    <button type="button" class="btn btn-secondary" onclick="closeAddTagModal()" style="flex: 1;">Cancel</button>
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">Add Tag</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Testimonial Collection Modal (DISC-010) -->
     <div id="testimonialModal" class="modal-overlay" style="display: none;">
         <div class="modal-backdrop"></div>
@@ -11191,11 +11345,34 @@
             }, 300);
         }
 
-        async function addCustomerNote() {
+        function addCustomerNote() {
+            if (!currentCustomer) return;
+            openAddNoteModal();
+        }
+
+        function openAddNoteModal() {
+            // Reset form
+            document.getElementById('addNoteText').value = '';
+            // Show modal
+            document.getElementById('addNoteModal').style.display = 'flex';
+            // Focus on textarea
+            setTimeout(() => document.getElementById('addNoteText').focus(), 100);
+        }
+
+        function closeAddNoteModal() {
+            document.getElementById('addNoteModal').style.display = 'none';
+        }
+
+        async function submitAddNoteForm(event) {
+            event.preventDefault();
+
             if (!currentCustomer) return;
 
-            const note = prompt('Add a note:');
-            if (!note || !note.trim()) return;
+            const note = document.getElementById('addNoteText').value.trim();
+            if (!note) {
+                showError('Note cannot be empty');
+                return;
+            }
 
             try {
                 const response = await fetch(`${API_BASE}/customers/${currentCustomer.id}/notes`, {
@@ -11204,7 +11381,7 @@
                         'Authorization': `Bearer ${authToken}`,
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ note: note.trim() })
+                    body: JSON.stringify({ note: note })
                 });
 
                 if (!response.ok) {
@@ -11214,6 +11391,8 @@
                 const updated = await response.json();
                 currentCustomer = updated;
                 document.getElementById('customerDetailNotes').textContent = currentCustomer.notes || 'No notes yet.';
+
+                closeAddNoteModal();
                 showLearningToast('Note added', '📝');
 
             } catch (err) {
@@ -11222,11 +11401,39 @@
             }
         }
 
-        async function addCustomerTag() {
+        function addCustomerTag() {
+            if (!currentCustomer) return;
+            openAddTagModal();
+        }
+
+        function openAddTagModal() {
+            // Reset form
+            document.getElementById('addTagText').value = '';
+            // Show modal
+            document.getElementById('addTagModal').style.display = 'flex';
+            // Focus on input
+            setTimeout(() => document.getElementById('addTagText').focus(), 100);
+        }
+
+        function closeAddTagModal() {
+            document.getElementById('addTagModal').style.display = 'none';
+        }
+
+        function setTagValue(tag) {
+            document.getElementById('addTagText').value = tag;
+            document.getElementById('addTagText').focus();
+        }
+
+        async function submitAddTagForm(event) {
+            event.preventDefault();
+
             if (!currentCustomer) return;
 
-            const tag = prompt('Add a tag:');
-            if (!tag || !tag.trim()) return;
+            const tag = document.getElementById('addTagText').value.trim();
+            if (!tag) {
+                showError('Tag cannot be empty');
+                return;
+            }
 
             try {
                 const response = await fetch(`${API_BASE}/customers/${currentCustomer.id}/tags`, {
@@ -11235,7 +11442,7 @@
                         'Authorization': `Bearer ${authToken}`,
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ tag: tag.trim() })
+                    body: JSON.stringify({ tag: tag })
                 });
 
                 if (!response.ok) {
@@ -11245,6 +11452,8 @@
                 const updated = await response.json();
                 currentCustomer = updated;
                 renderCustomerTags();
+
+                closeAddTagModal();
                 showLearningToast('Tag added', '🏷️');
 
             } catch (err) {
@@ -11305,30 +11514,58 @@
             }
         }
 
-        async function editCrmCustomer() {
+        function editCrmCustomer() {
+            if (!currentCustomer) return;
+            openEditCrmCustomerModal();
+        }
+
+        function openEditCrmCustomerModal() {
             if (!currentCustomer) return;
 
-            // Simple edit via prompts for now
-            const name = prompt('Customer name:', currentCustomer.name);
-            if (name === null) return; // Cancelled
+            // Pre-fill form with current customer data
+            document.getElementById('editCrmCustomerName').value = currentCustomer.name || '';
+            document.getElementById('editCrmCustomerPhone').value = currentCustomer.phone || '';
+            document.getElementById('editCrmCustomerEmail').value = currentCustomer.email || '';
+            document.getElementById('editCrmCustomerAddress').value = currentCustomer.address || '';
 
-            const phone = prompt('Phone:', currentCustomer.phone || '');
-            if (phone === null) return;
+            // Show modal
+            document.getElementById('editCrmCustomerModal').style.display = 'flex';
+        }
 
-            const email = prompt('Email:', currentCustomer.email || '');
-            if (email === null) return;
+        function closeEditCrmCustomerModal() {
+            document.getElementById('editCrmCustomerModal').style.display = 'none';
+        }
 
-            const address = prompt('Address:', currentCustomer.address || '');
-            if (address === null) return;
+        async function submitEditCrmCustomerForm(event) {
+            event.preventDefault();
+
+            if (!currentCustomer) return;
+
+            const name = document.getElementById('editCrmCustomerName').value.trim();
+            const phone = document.getElementById('editCrmCustomerPhone').value.trim();
+            const email = document.getElementById('editCrmCustomerEmail').value.trim();
+            const address = document.getElementById('editCrmCustomerAddress').value.trim();
+
+            if (!name) {
+                showError('Customer name is required');
+                return;
+            }
+
+            const submitBtn = document.getElementById('submitEditCrmCustomerBtn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Saving...';
 
             try {
                 const updates = {};
-                if (name && name.trim() !== currentCustomer.name) updates.name = name.trim();
-                if (phone !== currentCustomer.phone) updates.phone = phone || null;
-                if (email !== currentCustomer.email) updates.email = email || null;
-                if (address !== currentCustomer.address) updates.address = address || null;
+                if (name !== currentCustomer.name) updates.name = name;
+                if (phone !== (currentCustomer.phone || '')) updates.phone = phone || null;
+                if (email !== (currentCustomer.email || '')) updates.email = email || null;
+                if (address !== (currentCustomer.address || '')) updates.address = address || null;
 
-                if (Object.keys(updates).length === 0) return; // No changes
+                if (Object.keys(updates).length === 0) {
+                    closeEditCrmCustomerModal();
+                    return; // No changes
+                }
 
                 const response = await fetch(`${API_BASE}/customers/${currentCustomer.id}`, {
                     method: 'PATCH',
@@ -11343,6 +11580,8 @@
                     throw new Error('Failed to update customer');
                 }
 
+                closeEditCrmCustomerModal();
+
                 // Reload customer detail
                 await showCustomerDetail(currentCustomer.id);
                 showLearningToast('Customer updated', '✓');
@@ -11350,6 +11589,9 @@
             } catch (err) {
                 console.error('Error updating customer:', err);
                 showError('Failed to update customer');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Save Changes';
             }
         }
 
@@ -11572,17 +11814,43 @@
         }
 
         function openAddCustomerModal() {
-            // Simple prompt for now - could be expanded to a modal
-            const name = prompt('Customer name:');
-            if (!name || !name.trim()) return;
-
-            const phone = prompt('Phone (optional):');
-            const email = prompt('Email (optional):');
-
-            createCustomer(name.trim(), phone?.trim(), email?.trim());
+            // Reset form
+            document.getElementById('addCustomerForm').reset();
+            // Show modal
+            document.getElementById('addCustomerModal').style.display = 'flex';
         }
 
-        async function createCustomer(name, phone, email) {
+        function closeAddCustomerModal() {
+            document.getElementById('addCustomerModal').style.display = 'none';
+        }
+
+        async function submitAddCustomerForm(event) {
+            event.preventDefault();
+
+            const name = document.getElementById('addCustomerName').value.trim();
+            const phone = document.getElementById('addCustomerPhone').value.trim() || null;
+            const email = document.getElementById('addCustomerEmail').value.trim() || null;
+            const address = document.getElementById('addCustomerAddress').value.trim() || null;
+
+            if (!name) {
+                showError('Customer name is required');
+                return;
+            }
+
+            const submitBtn = document.getElementById('submitCustomerBtn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Adding...';
+
+            try {
+                await createCustomer(name, phone, email, address);
+                closeAddCustomerModal();
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Add Customer';
+            }
+        }
+
+        async function createCustomer(name, phone, email, address) {
             try {
                 const response = await fetch('/api/customers', {
                     method: 'POST',
@@ -11594,6 +11862,7 @@
                         name,
                         phone: phone || null,
                         email: email || null,
+                        address: address || null,
                         status: 'lead'
                     })
                 });
@@ -11851,17 +12120,42 @@
             }
         }
 
-        async function snoozeTask(taskId, days = null) {
-            if (!days) {
-                const input = prompt('Snooze for how many days?', '1');
-                if (!input) return;
-                days = parseInt(input, 10);
-                if (isNaN(days) || days < 1) {
-                    showError('Please enter a valid number of days');
-                    return;
-                }
+        // ========================================
+        // SNOOZE TASK MODAL
+        // ========================================
+        function openSnoozeTaskModal(taskId) {
+            document.getElementById('snoozeTaskId').value = taskId;
+            document.getElementById('snoozeCustomDays').value = '';
+            document.getElementById('snoozeTaskModal').style.display = 'flex';
+        }
+
+        function closeSnoozeTaskModal() {
+            document.getElementById('snoozeTaskModal').style.display = 'none';
+        }
+
+        async function confirmSnooze(days) {
+            const taskId = document.getElementById('snoozeTaskId').value;
+            if (!taskId) return;
+
+            closeSnoozeTaskModal();
+            await snoozeTaskApi(taskId, days);
+        }
+
+        async function confirmSnoozeCustom() {
+            const taskId = document.getElementById('snoozeTaskId').value;
+            const days = parseInt(document.getElementById('snoozeCustomDays').value, 10);
+
+            if (!taskId || isNaN(days) || days < 1) {
+                showError('Please enter a valid number of days');
+                return;
             }
 
+            closeSnoozeTaskModal();
+            await snoozeTaskApi(taskId, days);
+        }
+
+        // Renamed original snoozeTask to snoozeTaskApi (called after modal)
+        async function snoozeTaskApi(taskId, days) {
             try {
                 const response = await fetch(`/api/tasks/${taskId}/snooze?days=${days}`, {
                     method: 'POST',
@@ -11883,28 +12177,62 @@
             }
         }
 
-        async function deleteTask(taskId) {
-            if (!confirm('Delete this task?')) return;
+        // Wrapper function for button clicks - opens modal
+        function snoozeTask(taskId) {
+            openSnoozeTaskModal(taskId);
+        }
 
-            try {
-                const response = await fetch(`/api/tasks/${taskId}`, {
-                    method: 'DELETE',
-                    headers: { 'Authorization': `Bearer ${authToken}` }
-                });
+        // ========================================
+        // DELETE CONFIRMATION MODAL
+        // ========================================
+        let pendingDeleteCallback = null;
 
-                if (!response.ok) throw new Error('Failed to delete task');
+        function openConfirmDeleteModal(title, message, onConfirm) {
+            document.getElementById('confirmDeleteTitle').textContent = title || '🗑️ Delete?';
+            document.getElementById('confirmDeleteMessage').textContent = message || 'Are you sure? This action cannot be undone.';
+            pendingDeleteCallback = onConfirm;
+            document.getElementById('confirmDeleteModal').style.display = 'flex';
+        }
 
-                showSuccess('Task deleted');
-                await loadTasks();
-                await loadTaskSummary();
+        function closeConfirmDeleteModal() {
+            document.getElementById('confirmDeleteModal').style.display = 'none';
+            pendingDeleteCallback = null;
+        }
 
-                if (typeof posthog !== 'undefined') {
-                    posthog.capture('task_deleted', { task_id: taskId });
-                }
-            } catch (err) {
-                console.error('Error deleting task:', err);
-                showError('Failed to delete task');
+        function confirmDelete() {
+            if (pendingDeleteCallback) {
+                pendingDeleteCallback();
             }
+            closeConfirmDeleteModal();
+        }
+
+        // Updated deleteTask to use modal
+        function deleteTask(taskId) {
+            openConfirmDeleteModal(
+                '🗑️ Delete Task?',
+                'This task will be permanently deleted. This action cannot be undone.',
+                async () => {
+                    try {
+                        const response = await fetch(`/api/tasks/${taskId}`, {
+                            method: 'DELETE',
+                            headers: { 'Authorization': `Bearer ${authToken}` }
+                        });
+
+                        if (!response.ok) throw new Error('Failed to delete task');
+
+                        showSuccess('Task deleted');
+                        await loadTasks();
+                        await loadTaskSummary();
+
+                        if (typeof posthog !== 'undefined') {
+                            posthog.capture('task_deleted', { task_id: taskId });
+                        }
+                    } catch (err) {
+                        console.error('Error deleting task:', err);
+                        showError('Failed to delete task');
+                    }
+                }
+            );
         }
 
         function openAddTaskModal() {
