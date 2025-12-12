@@ -10666,12 +10666,14 @@
         }
 
         // Create a pricing card element (safe DOM construction)
+        // DISC-098: Updated to support single-tier pricing
         function createPricingCard(plan) {
             // Map API fields to expected names
             const tier = plan.name || plan.tier;
             const monthlyPrice = plan.price_monthly || plan.monthly_price;
-            const annualPrice = plan.annual_price || Math.round(monthlyPrice * 10); // 2 months free
-            const isFeatured = tier === 'Pro';
+            const annualPrice = plan.price_annual || plan.annual_price || Math.round(monthlyPrice * 10);
+            // DISC-098: Unlimited plan is now featured (single tier)
+            const isFeatured = tier === 'Unlimited' || tier === 'Pro';
             const price = billingPeriod === 'annual' ? annualPrice : monthlyPrice;
             const quotesPerMonth = plan.quotes_per_month;
             const overagePrice = (plan.overage_price ?? plan.overage_price_per_quote ?? 0).toFixed(2);
@@ -10703,39 +10705,52 @@
 
             card.appendChild(priceEl);
 
-            // Annual note
+            // Annual note with savings
             if (billingPeriod === 'annual') {
                 const annualNote = document.createElement('div');
                 annualNote.className = 'plan-annual-note';
-                const savings = (monthlyPrice * 12 - annualPrice).toFixed(0);
-                annualNote.textContent = `$${annualPrice}/year (save $${savings})`;
+                const monthlyCost = (annualPrice / 12).toFixed(2);
+                const savings = Math.round(((monthlyPrice * 12 - annualPrice) / (monthlyPrice * 12)) * 100);
+                annualNote.textContent = `Just $${monthlyCost}/mo (save ${savings}%)`;
                 card.appendChild(annualNote);
             }
 
-            // Features list
+            // Features list - use API features if provided, otherwise generate
             const featuresList = document.createElement('ul');
             featuresList.className = 'plan-features';
 
             const isUnlimited = quotesPerMonth >= 999999;
-            const features = [
-                { text: isUnlimited ? 'Unlimited quotes' : `${quotesPerMonth} quotes`, bold: true, suffix: isUnlimited ? '' : ' per month' },
-                ...(isUnlimited ? [] : [{ text: `$${overagePrice} per extra quote`, bold: false }]),
-                { text: 'PDF export', bold: false },
-                { text: 'Learning system', bold: false },
-                { text: 'Email support', bold: false }
+
+            // DISC-098: Use features from API if provided
+            const features = plan.features || [
+                isUnlimited ? 'Unlimited quotes' : `${quotesPerMonth} quotes per month`,
+                ...(isUnlimited ? [] : [`$${overagePrice} per extra quote`]),
+                'PDF export with your branding',
+                'Learning system',
+                'Email support'
             ];
 
-            features.forEach(feature => {
+            features.forEach((feature, index) => {
                 const li = document.createElement('li');
-                if (feature.bold) {
+                // First feature (unlimited quotes) should be bold
+                if (index === 0 && typeof feature === 'string' && feature.includes('nlimited')) {
                     const strong = document.createElement('strong');
-                    strong.textContent = feature.text;
+                    strong.textContent = feature;
                     li.appendChild(strong);
-                    if (feature.suffix) {
-                        li.appendChild(document.createTextNode(feature.suffix));
+                } else if (typeof feature === 'object') {
+                    // Handle object format { text, bold, suffix }
+                    if (feature.bold) {
+                        const strong = document.createElement('strong');
+                        strong.textContent = feature.text;
+                        li.appendChild(strong);
+                        if (feature.suffix) {
+                            li.appendChild(document.createTextNode(feature.suffix));
+                        }
+                    } else {
+                        li.textContent = feature.text;
                     }
                 } else {
-                    li.textContent = feature.text;
+                    li.textContent = feature;
                 }
                 featuresList.appendChild(li);
             });
@@ -10748,6 +10763,14 @@
             btn.textContent = `Choose ${tier}`;
             btn.onclick = () => startCheckout(plan.id || tier.toLowerCase(), billingPeriod);
             card.appendChild(btn);
+
+            // DISC-098: Add value prop for unlimited plan
+            if (plan.value_props && plan.value_props.tagline) {
+                const valueNote = document.createElement('div');
+                valueNote.style.cssText = 'margin-top: 12px; font-size: 0.85rem; color: var(--text-muted); text-align: center;';
+                valueNote.textContent = plan.value_props.tagline;
+                card.appendChild(valueNote);
+            }
 
             return card;
         }
@@ -10846,8 +10869,8 @@
             }
             {% endif %}
 
-            // Default to Professional monthly (most common choice)
-            await startCheckout('Professional', 'month');
+            // DISC-098: Default to Unlimited plan (single tier)
+            await startCheckout('unlimited', 'monthly');
         }
 
         // Upgrade from quote limit warning
@@ -10859,8 +10882,8 @@
             }
             {% endif %}
 
-            // Default to Professional monthly
-            await startCheckout('Professional', 'month');
+            // Default to unlimited monthly
+            await startCheckout('unlimited', 'monthly');
         }
 
         // Quick upgrade from modal

@@ -23,30 +23,47 @@ class BillingService:
 
     @staticmethod
     def get_plan_config(plan_tier: str) -> Dict[str, Any]:
-        """Get configuration for a specific plan tier."""
+        """Get configuration for a specific plan tier.
+
+        DISC-098: Added unlimited tier as the new single-tier pricing model.
+        Legacy tiers (starter, pro, team) kept for existing subscribers.
+        """
         plans = {
             "trial": {
                 "monthly_quotes": settings.trial_quote_limit,
                 "overage_price": 0,  # No overage during trial
                 "price_monthly": 0,
+                "price_annual": 0,
                 "product_id": None,
             },
+            # New single-tier pricing (DISC-098)
+            "unlimited": {
+                "monthly_quotes": settings.unlimited_monthly_quotes,
+                "overage_price": settings.unlimited_overage_price,
+                "price_monthly": settings.unlimited_price_monthly,
+                "price_annual": settings.unlimited_price_annual,
+                "product_id": settings.stripe_unlimited_product_id,
+            },
+            # Legacy tiers (deprecated, kept for existing subscribers)
             "starter": {
                 "monthly_quotes": settings.starter_monthly_quotes,
                 "overage_price": settings.starter_overage_price,
                 "price_monthly": settings.starter_price_monthly,
+                "price_annual": settings.starter_price_monthly * 10,  # ~17% discount
                 "product_id": settings.stripe_starter_product_id,
             },
             "pro": {
                 "monthly_quotes": settings.pro_monthly_quotes,
                 "overage_price": settings.pro_overage_price,
                 "price_monthly": settings.pro_price_monthly,
+                "price_annual": settings.pro_price_monthly * 10,  # ~17% discount
                 "product_id": settings.stripe_pro_product_id,
             },
             "team": {
                 "monthly_quotes": settings.team_monthly_quotes,
                 "overage_price": settings.team_overage_price,
                 "price_monthly": settings.team_price_monthly,
+                "price_annual": settings.team_price_monthly * 10,  # ~17% discount
                 "product_id": settings.stripe_team_product_id,
             },
         }

@@ -76,9 +76,13 @@ class Settings(BaseSettings):
     stripe_webhook_secret: str = ""
 
     # Stripe Product IDs (production)
+    # Legacy tiers (deprecated, kept for existing subscriber webhook handling)
     stripe_starter_product_id: str = "prod_TXB6SKP96LAlcM"
     stripe_pro_product_id: str = "prod_TXB6du0ylntvVV"
     stripe_team_product_id: str = "prod_TXB6aO5kvAD4uV"
+
+    # New single-tier pricing (DISC-098)
+    stripe_unlimited_product_id: str = "prod_TapBB8ff0tCan0"
 
     # Analytics & Monitoring
     posthog_api_key: str = ""  # PostHog analytics
@@ -88,9 +92,15 @@ class Settings(BaseSettings):
     trial_days: int = 7
     trial_quote_limit: int = 75
 
-    # Plan limits and pricing
-    # Updated 2025-12-02: Executive Council unanimous decision (DECISION-006)
-    # Lowered from $29/$49 to $19/$39 for "no-brainer" adoption
+    # Single-tier pricing (DISC-098) - $9/month or $59/year unlimited quotes
+    # Replaces legacy 3-tier pricing
+    unlimited_monthly_quotes: int = 999999  # Unlimited
+    unlimited_price_monthly: int = 900  # $9.00 in cents
+    unlimited_price_annual: int = 5900  # $59.00 in cents
+    unlimited_overage_price: int = 0  # No overage - unlimited plan
+
+    # Legacy plan limits and pricing (deprecated, kept for existing subscribers)
+    # Note: New signups use unlimited tier only
     starter_monthly_quotes: int = 75
     starter_price_monthly: int = 1900  # $19.00 in cents
     starter_overage_price: int = 50  # $0.50 in cents

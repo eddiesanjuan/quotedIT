@@ -568,6 +568,243 @@
             width: 100%;
         }
 
+        /* Pricing Section (DISC-098) */
+        .pricing {
+            border-top: 1px solid var(--border);
+        }
+
+        .pricing-content {
+            max-width: 900px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .pricing-card-single {
+            max-width: 480px;
+            margin: 48px auto 0;
+            padding: 48px 40px;
+            background: var(--bg-card);
+            border: 2px solid var(--border-hover);
+            border-radius: 16px;
+            text-align: center;
+        }
+
+        .pricing-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #00ff88, #00cc6f);
+            color: var(--bg-primary);
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            padding: 6px 16px;
+            border-radius: 20px;
+            margin-bottom: 24px;
+        }
+
+        .pricing-price {
+            margin-bottom: 16px;
+        }
+
+        .pricing-price .amount {
+            font-family: var(--font-serif);
+            font-size: 4rem;
+            font-weight: 400;
+            line-height: 1;
+        }
+
+        .pricing-price .currency {
+            font-size: 2rem;
+            vertical-align: super;
+            margin-right: 4px;
+        }
+
+        .pricing-price .period {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+        }
+
+        .pricing-toggle {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .pricing-toggle button {
+            padding: 10px 24px;
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            font-family: var(--font-sans);
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-radius: 6px;
+        }
+
+        .pricing-toggle button.active {
+            background: var(--text-primary);
+            color: var(--bg-primary);
+            border-color: var(--text-primary);
+        }
+
+        .pricing-toggle button:hover:not(.active) {
+            border-color: var(--border-hover);
+            color: var(--text-primary);
+        }
+
+        .annual-savings {
+            display: inline-block;
+            background: rgba(0, 255, 136, 0.15);
+            color: #00ff88;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-left: 8px;
+        }
+
+        .pricing-features {
+            list-style: none;
+            text-align: left;
+            margin: 24px 0 32px;
+            padding: 0;
+        }
+
+        .pricing-features li {
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .pricing-features li:last-child {
+            border-bottom: none;
+        }
+
+        .pricing-features .check {
+            color: #00ff88;
+            font-size: 1.25rem;
+        }
+
+        .pricing-cta {
+            display: block;
+            width: 100%;
+            padding: 16px 32px;
+            background: var(--text-primary);
+            color: var(--bg-primary);
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .pricing-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px rgba(255, 255, 255, 0.1);
+        }
+
+        .pricing-guarantee {
+            margin-top: 20px;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        /* ROI Calculator Section */
+        .roi-section {
+            margin-top: 64px;
+            padding: 40px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            text-align: left;
+        }
+
+        .roi-section h3 {
+            font-family: var(--font-serif);
+            font-size: 1.5rem;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .roi-comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 32px;
+        }
+
+        .roi-column {
+            padding: 24px;
+            border-radius: 8px;
+        }
+
+        .roi-column.without {
+            background: rgba(255, 100, 100, 0.1);
+            border: 1px solid rgba(255, 100, 100, 0.2);
+        }
+
+        .roi-column.with {
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid rgba(0, 255, 136, 0.2);
+        }
+
+        .roi-column h4 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 16px;
+        }
+
+        .roi-column.without h4 {
+            color: #ff6464;
+        }
+
+        .roi-column.with h4 {
+            color: #00ff88;
+        }
+
+        .roi-column p {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            line-height: 1.8;
+        }
+
+        .roi-highlight {
+            font-family: var(--font-serif);
+            font-size: 2rem;
+            font-weight: 400;
+            margin-top: 16px;
+        }
+
+        .roi-column.without .roi-highlight {
+            color: #ff6464;
+        }
+
+        .roi-column.with .roi-highlight {
+            color: #00ff88;
+        }
+
+        @media (max-width: 768px) {
+            .roi-comparison {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+
+            .pricing-card-single {
+                padding: 32px 24px;
+            }
+
+            .pricing-price .amount {
+                font-size: 3rem;
+            }
+        }
+
         /* Footer */
         footer {
             padding: 40px;
@@ -1799,6 +2036,62 @@
         </div>
     </section>
 
+    <!-- Pricing Section (DISC-098) -->
+    <section class="pricing" id="pricing">
+        <div class="container">
+            <div class="pricing-content">
+                <p class="section-label fade-in">Simple Pricing</p>
+                <h2 class="section-title fade-in fade-in-delay-1">One plan. Unlimited quotes. $9/month.</h2>
+
+                <div class="pricing-card-single fade-in fade-in-delay-2">
+                    <div class="pricing-badge">Most Popular</div>
+
+                    <div class="pricing-toggle">
+                        <button id="landingMonthlyBtn" class="active" onclick="toggleLandingPricing('monthly')">Monthly</button>
+                        <button id="landingAnnualBtn" onclick="toggleLandingPricing('annual')">Annual <span class="annual-savings">Save 45%</span></button>
+                    </div>
+
+                    <div class="pricing-price">
+                        <span class="currency">$</span><span class="amount" id="landingPriceAmount">9</span><span class="period" id="landingPricePeriod">/month</span>
+                    </div>
+
+                    <p id="landingAnnualNote" style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 24px; display: none;">$59 billed annually (just $4.92/month)</p>
+
+                    <ul class="pricing-features">
+                        <li><span class="check">&#10003;</span> <strong>Unlimited quotes</strong> — no caps, no surprises</li>
+                        <li><span class="check">&#10003;</span> AI-powered quote generation</li>
+                        <li><span class="check">&#10003;</span> PDF export with your branding</li>
+                        <li><span class="check">&#10003;</span> Learning system that improves over time</li>
+                        <li><span class="check">&#10003;</span> Customer tracking & quote history</li>
+                        <li><span class="check">&#10003;</span> Email support</li>
+                    </ul>
+
+                    <a href="/app" class="pricing-cta">Start Free Trial</a>
+
+                    <p class="pricing-guarantee">7-day free trial • 75 quotes included • No credit card required</p>
+                </div>
+
+                <!-- ROI Section -->
+                <div class="roi-section fade-in fade-in-delay-3">
+                    <h3>The math is simple</h3>
+                    <div class="roi-comparison">
+                        <div class="roi-column without">
+                            <h4>Without Quoted</h4>
+                            <p>20 minutes per quote<br>10 quotes/month = 3+ hours<br>Your time @ $75/hour</p>
+                            <div class="roi-highlight">$225 wasted</div>
+                        </div>
+                        <div class="roi-column with">
+                            <h4>With Quoted</h4>
+                            <p>2 minutes per quote<br>Same 10 quotes = 20 min<br>Pay $9/month</p>
+                            <div class="roi-highlight">Save $200+/mo</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
     <!-- Final CTA -->
     <section class="final-cta">
         <div class="container">
@@ -2508,6 +2801,38 @@
             setTimeout(() => {
                 closeExitSurvey();
             }, 2000);
+        }
+
+        // DISC-098: Landing page pricing toggle
+        function toggleLandingPricing(period) {
+            const monthlyBtn = document.getElementById('landingMonthlyBtn');
+            const annualBtn = document.getElementById('landingAnnualBtn');
+            const priceAmount = document.getElementById('landingPriceAmount');
+            const pricePeriod = document.getElementById('landingPricePeriod');
+            const annualNote = document.getElementById('landingAnnualNote');
+
+            if (period === 'annual') {
+                monthlyBtn.classList.remove('active');
+                annualBtn.classList.add('active');
+                priceAmount.textContent = '59';
+                pricePeriod.textContent = '/year';
+                annualNote.style.display = 'block';
+            } else {
+                monthlyBtn.classList.add('active');
+                annualBtn.classList.remove('active');
+                priceAmount.textContent = '9';
+                pricePeriod.textContent = '/month';
+                annualNote.style.display = 'none';
+            }
+
+            // Track analytics
+            {% if posthog_api_key %}
+            if (window.posthog) {
+                posthog.capture('landing_pricing_toggle', {
+                    selected_period: period
+                });
+            }
+            {% endif %}
         }
     </script>
 </body>
