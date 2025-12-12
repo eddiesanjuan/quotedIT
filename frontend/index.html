@@ -3990,11 +3990,24 @@
                     </div>
                 </div>
 
+                <!-- Voice Command - Central Hub -->
+                <div class="card" style="padding: 24px; margin-bottom: 24px; text-align: center;">
+                    <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 16px;">
+                        Speak to create quotes, find customers, or add tasks
+                    </p>
+                    <button class="record-btn" id="dashboardRecordBtn" onclick="toggleRecording()" style="margin: 0 auto 12px;">
+                        <span id="dashboardRecordBtnText">Record</span>
+                    </button>
+                    <p class="record-instructions" id="dashboardRecordInstructions" style="font-size: 0.8rem; color: var(--text-muted);">
+                        Tap to speak
+                    </p>
+                </div>
+
                 <!-- Quick Actions -->
                 <div class="card" style="padding: 24px; margin-bottom: 24px;">
                     <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 16px;">Quick Actions</h3>
                     <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-                        <button class="btn btn-primary" onclick="showAppSection('newQuote')" style="flex: 1; min-width: 150px;">
+                        <button class="btn btn-primary" onclick="showAppSection('newQuote')" style="flex: 1; min-width: 120px;">
                             <span style="display: flex; align-items: center; justify-content: center; gap: 8px;">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -4003,9 +4016,36 @@
                                 New Quote
                             </span>
                         </button>
-                        <button class="btn btn-secondary" onclick="showAppSection('myQuotes')" style="flex: 1; min-width: 150px;">
-                            View All Quotes
+                        <button class="btn btn-secondary" onclick="openAddTaskModal()" style="flex: 1; min-width: 120px;">
+                            <span style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M9 11l3 3L22 4"></path>
+                                    <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"></path>
+                                </svg>
+                                Add Task
+                            </span>
                         </button>
+                        <button class="btn btn-secondary" onclick="showAppSection('customers')" style="flex: 1; min-width: 120px;">
+                            Customers
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Today's Tasks -->
+                <div class="card" style="padding: 24px; margin-bottom: 24px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                        <h3 style="font-size: 1rem; font-weight: 600;">
+                            Today's Tasks
+                            <span id="dashboardOverdueCount" style="display: none; background: #ef4444; color: white; font-size: 0.75rem; padding: 2px 8px; border-radius: 12px; margin-left: 8px;"></span>
+                        </h3>
+                        <a href="#" onclick="showAppSection('tasks'); return false;" style="font-size: 0.875rem; color: var(--text-secondary); text-decoration: none;">View all</a>
+                    </div>
+                    <div id="dashboardTasks">
+                        <!-- Tasks will be loaded here via JS -->
+                        <div style="text-align: center; padding: 24px; color: var(--text-secondary);">
+                            <div style="font-size: 1.5rem; margin-bottom: 8px;">✓</div>
+                            <p>No tasks for today</p>
+                        </div>
                     </div>
                 </div>
 
@@ -5789,6 +5829,13 @@
                 <div class="form-group">
                     <label for="addTaskTitle">Task Title *</label>
                     <input type="text" id="addTaskTitle" placeholder="Follow up with customer" required style="background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); padding: 12px; border-radius: 8px; width: 100%; font-family: var(--font-sans); font-size: 1rem;">
+                </div>
+                <div class="form-group" style="margin-top: 16px;">
+                    <label for="addTaskCustomer">Link to Customer (optional)</label>
+                    <select id="addTaskCustomer" style="background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); padding: 12px; border-radius: 8px; width: 100%; font-family: var(--font-sans); font-size: 1rem;">
+                        <option value="">-- No customer --</option>
+                        <!-- Customer options loaded via JS -->
+                    </select>
                 </div>
                 <div class="form-group" style="margin-top: 16px;">
                     <label for="addTaskType">Task Type</label>
@@ -9247,6 +9294,144 @@
                 document.getElementById('statPendingQuotes').textContent = '0';
                 document.getElementById('statTimeSaved').textContent = '0h';
             }
+
+            // Load today's tasks and overdue tasks for dashboard
+            await loadDashboardTasks();
+        }
+
+        // Load tasks for dashboard (today + overdue)
+        async function loadDashboardTasks() {
+            const container = document.getElementById('dashboardTasks');
+            const overdueCountEl = document.getElementById('dashboardOverdueCount');
+
+            try {
+                // Fetch today's tasks
+                const todayResponse = await fetch('/api/tasks?filter=today', {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const overdueResponse = await fetch('/api/tasks?filter=overdue', {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                let todayTasks = [];
+                let overdueTasks = [];
+
+                if (todayResponse.ok) {
+                    const data = await todayResponse.json();
+                    todayTasks = data.tasks || [];
+                }
+                if (overdueResponse.ok) {
+                    const data = await overdueResponse.json();
+                    overdueTasks = data.tasks || [];
+                }
+
+                // Show overdue count badge
+                if (overdueTasks.length > 0) {
+                    overdueCountEl.textContent = overdueTasks.length + ' overdue';
+                    overdueCountEl.style.display = 'inline';
+                } else {
+                    overdueCountEl.style.display = 'none';
+                }
+
+                // Combine and render (overdue first, then today)
+                const allTasks = [...overdueTasks, ...todayTasks];
+                renderDashboardTasks(allTasks, container);
+
+            } catch (err) {
+                console.error('Error loading dashboard tasks:', err);
+            }
+        }
+
+        // Render tasks on dashboard
+        function renderDashboardTasks(tasks, container) {
+            container.textContent = '';
+
+            if (tasks.length === 0) {
+                const emptyDiv = document.createElement('div');
+                emptyDiv.style.cssText = 'text-align: center; padding: 24px; color: var(--text-secondary);';
+
+                const iconDiv = document.createElement('div');
+                iconDiv.style.cssText = 'font-size: 1.5rem; margin-bottom: 8px;';
+                iconDiv.textContent = '✓';
+                emptyDiv.appendChild(iconDiv);
+
+                const textEl = document.createElement('p');
+                textEl.textContent = 'No tasks for today';
+                emptyDiv.appendChild(textEl);
+
+                container.appendChild(emptyDiv);
+                return;
+            }
+
+            // Show up to 5 tasks
+            tasks.slice(0, 5).forEach(task => {
+                const taskEl = document.createElement('div');
+                taskEl.style.cssText = 'display: flex; align-items: center; gap: 12px; padding: 12px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; cursor: pointer;';
+                taskEl.onclick = () => {
+                    showAppSection('tasks');
+                    setTimeout(() => openTaskDetailModal(task.id), 100);
+                };
+
+                // Checkbox
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.checked = task.status === 'completed';
+                checkbox.style.cssText = 'width: 18px; height: 18px; cursor: pointer;';
+                checkbox.onclick = async (e) => {
+                    e.stopPropagation();
+                    await toggleTaskComplete(task.id);
+                    await loadDashboardTasks();
+                };
+                taskEl.appendChild(checkbox);
+
+                // Task info
+                const infoDiv = document.createElement('div');
+                infoDiv.style.cssText = 'flex: 1; min-width: 0;';
+
+                const titleEl = document.createElement('div');
+                titleEl.style.cssText = 'font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;';
+                if (task.status === 'completed') {
+                    titleEl.style.textDecoration = 'line-through';
+                    titleEl.style.color = 'var(--text-secondary)';
+                }
+                titleEl.textContent = task.title;
+                infoDiv.appendChild(titleEl);
+
+                // Customer name if linked
+                if (task.customer_name) {
+                    const customerEl = document.createElement('div');
+                    customerEl.style.cssText = 'font-size: 0.8rem; color: var(--text-secondary);';
+                    customerEl.textContent = task.customer_name;
+                    infoDiv.appendChild(customerEl);
+                }
+
+                taskEl.appendChild(infoDiv);
+
+                // Overdue indicator
+                const today = new Date().toISOString().split('T')[0];
+                const taskDate = task.due_date ? task.due_date.split('T')[0] : null;
+                if (taskDate && taskDate < today && task.status !== 'completed') {
+                    const overdueTag = document.createElement('span');
+                    overdueTag.style.cssText = 'background: #ef4444; color: white; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px;';
+                    overdueTag.textContent = 'Overdue';
+                    taskEl.appendChild(overdueTag);
+                }
+
+                container.appendChild(taskEl);
+            });
+
+            // Show "more" link if there are more tasks
+            if (tasks.length > 5) {
+                const moreLink = document.createElement('a');
+                moreLink.href = '#';
+                moreLink.style.cssText = 'display: block; text-align: center; padding: 8px; color: var(--text-secondary); font-size: 0.875rem; text-decoration: none;';
+                moreLink.textContent = `+ ${tasks.length - 5} more tasks`;
+                moreLink.onclick = (e) => {
+                    e.preventDefault();
+                    showAppSection('tasks');
+                };
+                container.appendChild(moreLink);
+            }
         }
 
         // DISC-095: Render recent quotes on dashboard
@@ -12461,11 +12646,37 @@
             );
         }
 
-        function openAddTaskModal() {
+        async function openAddTaskModal() {
             // Reset form
             document.getElementById('addTaskForm').reset();
             // Set default due date to today
             document.getElementById('addTaskDueDate').value = new Date().toISOString().split('T')[0];
+
+            // Load customers into dropdown
+            const customerSelect = document.getElementById('addTaskCustomer');
+            customerSelect.textContent = '';
+            const defaultOpt = document.createElement('option');
+            defaultOpt.value = '';
+            defaultOpt.textContent = '-- No customer --';
+            customerSelect.appendChild(defaultOpt);
+
+            try {
+                const response = await fetch('/api/customers?sort_by=last_quote_date&sort_desc=true&limit=100', {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    (data.customers || []).forEach(customer => {
+                        const opt = document.createElement('option');
+                        opt.value = customer.id;
+                        opt.textContent = customer.name + (customer.phone ? ` (${customer.phone})` : '');
+                        customerSelect.appendChild(opt);
+                    });
+                }
+            } catch (err) {
+                console.error('Error loading customers for dropdown:', err);
+            }
+
             // Show modal
             document.getElementById('addTaskModal').style.display = 'flex';
         }
@@ -12487,12 +12698,14 @@
             const dueDateInput = document.getElementById('addTaskDueDate').value;
             const due_date = dueDateInput ? new Date(dueDateInput + 'T12:00:00').toISOString() : null;
 
+            const customerId = document.getElementById('addTaskCustomer').value;
             const taskData = {
                 title: title,
                 task_type: document.getElementById('addTaskType').value,
                 due_date: due_date,
                 priority: document.getElementById('addTaskPriority').value,
-                description: document.getElementById('addTaskDescription').value.trim() || null
+                description: document.getElementById('addTaskDescription').value.trim() || null,
+                customer_id: customerId ? parseInt(customerId) : null
             };
 
             // Disable submit button while creating
@@ -12526,6 +12739,10 @@
                 showSuccess('Task created!');
                 await loadTasks();
                 await loadTaskSummary();
+                // Also refresh dashboard tasks if on dashboard
+                if (typeof loadDashboardTasks === 'function') {
+                    await loadDashboardTasks();
+                }
 
                 if (typeof posthog !== 'undefined') {
                     posthog.capture('task_created', { task_type: taskData.task_type });
