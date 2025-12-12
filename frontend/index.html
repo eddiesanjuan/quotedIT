@@ -4491,6 +4491,9 @@
                     <button class="btn btn-secondary" id="crmVoiceBtn" onclick="startCrmVoiceCommand()" style="padding: 10px 16px; display: flex; align-items: center; gap: 6px;">
                         🎤 Voice Command
                     </button>
+                    <button class="btn btn-outline" id="syncCustomersBtn" onclick="syncCustomersFromQuotes()" style="padding: 10px 16px; display: flex; align-items: center; gap: 6px;">
+                        🔄 Sync from Quotes
+                    </button>
                 </div>
 
                 <!-- CRM Voice Command Response (DISC-090) -->
@@ -11410,6 +11413,56 @@
             } catch (err) {
                 console.error('Error creating customer:', err);
                 showError('Failed to create customer');
+            }
+        }
+
+        // DISC-091: Sync customers from existing quotes (backfill)
+        async function syncCustomersFromQuotes() {
+            const btn = document.getElementById('syncCustomersBtn');
+            const originalText = btn.innerHTML;
+
+            try {
+                btn.innerHTML = '⏳ Syncing...';
+                btn.disabled = true;
+
+                const response = await fetch('/api/customers/backfill', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${getToken()}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Backfill failed');
+                }
+
+                const result = await response.json();
+
+                if (result.success) {
+                    if (result.customers_created > 0 || result.customers_linked > 0) {
+                        showSuccess(`Synced ${result.customers_created} new customers, linked ${result.customers_linked} quotes`);
+                    } else {
+                        showSuccess('All customers already synced');
+                    }
+                    await loadCustomers();
+                    await loadCustomerSummary();
+                } else {
+                    showError('Sync had some errors. Please try again.');
+                }
+
+                if (typeof posthog !== 'undefined') {
+                    posthog.capture('customers_backfill_completed', {
+                        customers_created: result.customers_created,
+                        customers_linked: result.customers_linked,
+                        quotes_processed: result.quotes_processed
+                    });
+                }
+            } catch (err) {
+                console.error('Error syncing customers:', err);
+                showError('Failed to sync customers from quotes');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
             }
         }
 

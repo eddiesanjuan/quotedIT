@@ -509,3 +509,48 @@ async def process_voice_command(
         data=result.data,
         is_crm_command=True
     )
+
+
+# ================================================================
+# DISC-091: Backfill Existing Quotes to Customers
+# ================================================================
+
+class BackfillResponse(BaseModel):
+    """Backfill operation response."""
+    success: bool
+    quotes_processed: int
+    customers_created: int
+    customers_linked: int
+    errors: int
+
+
+@router.post("/backfill", response_model=BackfillResponse)
+async def backfill_quotes_to_customers(
+    user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Backfill existing quotes to customer records.
+
+    Processes all quotes with customer data and creates/links
+    Customer records using the deduplication service.
+
+    Safe to run multiple times - idempotent operation.
+    """
+    from ..scripts.backfill_customers import backfill_customers_for_contractor
+
+    contractor = await get_contractor(user, db)
+
+    stats = await backfill_customers_for_contractor(
+        db=db,
+        contractor_id=contractor.id,
+        verbose=False
+    )
+
+    return BackfillResponse(
+        success=stats["errors"] == 0,
+        quotes_processed=stats["quotes_processed"],
+        customers_created=stats["customers_created"],
+        customers_linked=stats["customers_linked"],
+        errors=stats["errors"]
+    )

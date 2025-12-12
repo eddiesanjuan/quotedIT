@@ -57,3 +57,12 @@ Skipping Phase 0 (Orient) and Phase 1 (Executive Council)
   📖 Added Voice Command button to customers section
   📖 Added JavaScript for CRM voice recording/processing
   📖 Added response display with intent icons
+  ✅ DISC-090 committed: 590bd63
+[continuing] ▶ DISC-091: Backfill Quotes to Customers (DIRECT)
+  📖 Created backfill_customers.py script with:
+    - Standalone CLI for backfill (python -m backend.scripts.backfill_customers)
+    - Status check for pending backfill
+  📖 Added POST /api/customers/backfill endpoint
+  📖 Auto-link new quotes to customers in generate_quote, generate_quote_from_audio, generate_quote_with_clarifications
+  📖 Re-link quotes on customer info updates
+  📖 Added "Sync from Quotes" button in customers UI
