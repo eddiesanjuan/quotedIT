@@ -13390,7 +13390,7 @@
                 // Populate form
                 document.getElementById('editCategoryName').value = currentCategory.display_name || currentCategory.category;
                 document.getElementById('editRateModifier').value = currentCategory.rate_modifier || 0;
-                document.getElementById('editLearnedRules').value = (currentCategory.learned_rules || []).join('\n');
+                document.getElementById('editLearnedRules').value = (currentCategory.learned_adjustments || []).join('\n');
 
                 // Show pattern hints (from stored corrections)
                 renderPatternHints(currentCategory);
@@ -13491,7 +13491,7 @@
                 const updates = {
                     display_name: document.getElementById('editCategoryName').value.trim(),
                     rate_modifier: parseFloat(document.getElementById('editRateModifier').value) || 0,
-                    learned_rules: document.getElementById('editLearnedRules').value
+                    learned_adjustments: document.getElementById('editLearnedRules').value
                         .split('\n')
                         .map(rule => rule.trim())
                         .filter(rule => rule.length > 0)
