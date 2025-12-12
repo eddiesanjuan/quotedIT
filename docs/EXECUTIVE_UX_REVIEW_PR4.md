@@ -19,11 +19,13 @@ The main risk is **adoption speed and early trust**, not core capability. The ap
 
 ## What We Evaluated
 Live PR walkthrough included:
-- Login → New Quote → Generate quote from text  
-- Navigation into My Quotes, Customers, Tasks, Invoices, Account  
-- Review of empty‑state flows and suite mental model  
-- Review of quote output hierarchy and actions
-- Live landing + demo flow on `quoted.it.com` (`/demo`, `/use-cases`) to validate top‑of‑funnel.
+- Live landing + demo flow on `quoted.it.com` (hero, `/demo` voice/text, demo→signup handoff).  
+- App signup → industry selection → onboarding entry choice (Try‑first / Quick Chat / Manual).  
+- First quote generation (text and voice), transcription review, and PDF‑ready output.  
+- Edit flow: line‑item corrections, Save Changes + correction notes.  
+- Second quote to test learning carryover.  
+- Navigation into My Quotes, Customers, Tasks, Invoices, and Account/Pricing Brain.  
+- Review of empty‑state flows, suite mental model, and quote‑output hierarchy/actions.
 
 ---
 
@@ -54,6 +56,7 @@ Live PR walkthrough included:
 3. **Learning loop visibility is low.** The moat requires edits; the product doesn’t yet make “edit → it gets smarter” obvious and motivating.  
 4. **Mobile voice UX is existential.** Contractors live on phones. If iOS recording or quote actions feel flaky/buried, adoption stalls.
 5. **Plan/packaging consistency risk.** Pricing and usage‑cap messaging must stay consistent across landing, in‑app billing, and docs to avoid trust erosion.
+6. **Small trust papercuts show up in core surfaces.** Example: edited quote totals can display with stray decimals in My Quotes list, which reads as sloppy math even if the underlying number is right.
 
 ---
 
@@ -109,13 +112,14 @@ Live PR walkthrough included:
 **Editing UX recommendations**
 - Make **Save Changes sticky/docked** whenever unsaved changes exist.  
 - Surface correction notes at save time (modal or near top), not hidden at bottom.  
-- After saving, show a clear “Learned adjustment saved” toast and **reflect the first correction immediately** in Pricing Brain. In PR‑4, Pricing Brain remained empty after a first correction, which undercuts the reward loop.
+- After saving, show a clear “Learned adjustment saved” toast and **reflect the first correction immediately** in Pricing Brain. In the deep PR‑4 pass, Pricing Brain *did* populate with learning‑progress UI after the first correction, but it still showed **0 rules learned** and no concrete “we learned X about your pricing” item. That weakens the reward loop; surface explicit learned adjustments immediately (even if provisional).
 
 ### 5) My Quotes
-**Observed:** Great empty state and CTA.  
+**Observed:** Great empty state and CTA; list view is clean. **Bug:** edited totals can show unrounded decimals in the list (e.g., `$17,398.4`), which is a small but real trust hit.  
 **Future‑state recommendation**
 - Keep history UX lightweight; contractors mostly need recency and search.
 - Add **“duplicate quote”** once usage grows (high leverage for repeat jobs).
+- Ensure **currency formatting is consistent everywhere** (list, detail, PDF, exports).
 
 ### 6) Customers CRM
 **Observed:** Even empty, UI shows filters/actions/stats.
@@ -212,6 +216,8 @@ Right now Quoted feels close to “all‑in‑one quoting + CRM suite.” That�
 - Add “Try a demo quote” CTA on `/app` auth for first‑timers to match landing.
 - Fix “Try a Quote Now” list‑row click so it always advances.  
 - Make Save Changes sticky and bring correction notes into view on long quotes.
+- Round/format totals everywhere to standard currency (especially My Quotes list).  
+- Show the **first learned rule/adjustment immediately** in Pricing Brain and increment rules‑learned count after a correction.
 
 ---
 

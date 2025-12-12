@@ -13312,7 +13312,7 @@
             stats.className = 'category-stats';
 
             const quotesCount = category.quotes_count || 0;
-            const rulesCount = (category.learned_rules || []).length;
+            const rulesCount = category.learned_adjustments_count || 0;
 
             // Quote stat
             const quoteStat = document.createElement('div');
@@ -13353,17 +13353,17 @@
                 const rulesPreview = document.createElement('div');
                 rulesPreview.className = 'category-rules-preview';
 
-                const rules = category.learned_rules.slice(0, 2);
+                const rules = (category.learned_adjustments || []).slice(0, 2);
                 rules.forEach(rule => {
                     const p = document.createElement('p');
                     p.textContent = `• ${rule}`;
                     rulesPreview.appendChild(p);
                 });
 
-                if (category.learned_rules.length > 2) {
+                if ((category.learned_adjustments || []).length > 2) {
                     const more = document.createElement('p');
                     more.style.fontStyle = 'italic';
-                    more.textContent = `+${category.learned_rules.length - 2} more...`;
+                    more.textContent = `+${(category.learned_adjustments || []).length - 2} more...`;
                     rulesPreview.appendChild(more);
                 }
 

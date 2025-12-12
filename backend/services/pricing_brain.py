@@ -61,13 +61,15 @@ class PricingBrainService:
             # Use max of stored and calculated to handle migration
             quotes_count = max(stored_count, db_count)
 
+            learned_adjustments = category_data.get("learned_adjustments", [])
             result.append({
                 "category": category_key,
                 "display_name": category_data.get("display_name", category_key.replace("_", " ").title()),
                 "quotes_count": quotes_count,
                 "confidence": category_data.get("confidence", 0.5),
                 "samples": category_data.get("samples", 0),
-                "learned_adjustments_count": len(category_data.get("learned_adjustments", [])),
+                "learned_adjustments_count": len(learned_adjustments),
+                "learned_adjustments": learned_adjustments,  # Include for card preview
             })
 
         # Sort by quotes_count descending
