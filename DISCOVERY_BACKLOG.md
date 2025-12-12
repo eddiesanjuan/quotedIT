@@ -24,9 +24,9 @@ To approve: Change status from DISCOVERED → READY
 |--------|-------|
 | DEPLOYED | 54 |
 | COMPLETE | 1 |
-| READY | 11 |
+| READY | 12 |
 | DISCOVERED | 22 |
-| **Total** | **88** |
+| **Total** | **89** |
 
 **Prompt Optimization**: DISC-041 complete → DISC-052, DISC-054 (learning improvements via prompt injection)
 **Deprioritized**: DISC-053, DISC-055 (structured storage/embeddings - over-engineering; prompt injection approach preferred)
@@ -602,6 +602,37 @@ To approve: Change status from DISCOVERED → READY
 - Consider a "learning progress" visual indicator in demo
 
 **Success Metric**: Demo-to-signup conversion increases; fewer support questions about "what if prices are wrong"
+
+---
+
+### DISC-097: Landing Page & Marketing - Add CRM Feature Messaging 📢 GROWTH (READY)
+
+**Source**: Founder Request (Eddie, 2025-12-12)
+**Impact**: HIGH | **Effort**: S | **Score**: 3.0
+**Sprint Alignment**: Value prop expansion - CRM is major differentiator now live (DISC-086-092)
+
+**Problem**: We just shipped a full micro-CRM (customer tracking, task management, quote history by customer) but our landing page and marketing still position Quoted as "voice-to-quote" only. Visitors don't know they're getting customer management built-in. This undersells our value and misses a key differentiator vs. competitors who require separate CRM tools.
+
+**Proposed Work**:
+1. **Audit current messaging** - Review `landing.html` for CRM mentions (likely zero)
+2. **Add CRM feature section** to landing page:
+   - "Your customers, organized automatically"
+   - Customer cards with quote history, contact info
+   - Task reminders and follow-ups
+   - "No spreadsheets, no separate CRM"
+3. **Update hero/subhead** to hint at more than quotes:
+   - Current: "Voice-to-quote in seconds"
+   - New: "Quote, track, and manage customers - all by voice"
+4. **Demo update** - Add CRM screens to demo flow (if applicable)
+5. **Feature comparison** - Update any comparison tables to include CRM
+
+**Technical Considerations**:
+- Updates to `frontend/landing.html`
+- May need new screenshots/mockups of CRM features
+- Keep mobile layout in mind
+- Consider A/B testing new vs. old messaging
+
+**Success Metric**: Improved landing page conversion; CRM mentioned in user feedback/reviews
 
 ---
 
