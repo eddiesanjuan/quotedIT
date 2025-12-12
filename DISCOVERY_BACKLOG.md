@@ -24,13 +24,14 @@ To approve: Change status from DISCOVERED → READY
 |--------|-------|
 | DEPLOYED | 46 |
 | COMPLETE | 2 |
-| READY | 11 |
-| DISCOVERED | 16 |
-| **Total** | **75** |
+| READY | 13 |
+| DISCOVERED | 22 |
+| **Total** | **83** |
 
 **Prompt Optimization**: DISC-041 complete → DISC-052, DISC-054 (learning improvements via prompt injection)
 **Deprioritized**: DISC-053, DISC-055 (structured storage/embeddings - over-engineering; prompt injection approach preferred)
 **Competitive Defense**: DISC-014 complete → DISC-060 through DISC-062 (RAG, category ownership, messaging)
+**Voice CRM**: DISC-085 (strategic design complete) → DISC-086 through DISC-091 (implementation tickets)
 **Phase II Voice Control**: 8 tickets (DISC-042 through DISC-049) awaiting executive review
 **Staging Environment**: DISC-073 complete → DISC-077, DISC-078, DISC-079 (Railway preview + feature flags + runbook) ✅ ALL DEPLOYED
 
@@ -636,6 +637,241 @@ To approve: Change status from DISCOVERED → READY
 - ✅ Users can still override per-quote
 
 **Success Metric**: New quotes pre-populate with account defaults ✅
+
+---
+
+### DISC-084: Onboarding Trade Type List UX Improvement 🎨 UX (READY)
+
+**Source**: Founder Request (Eddie, 2025-12-11)
+**Impact**: MEDIUM | **Effort**: S | **Score**: 2.0
+**Sprint Alignment**: Onboarding friction reduction - better first-run experience
+
+**Problem**: The "What do you do?" trade type list during onboarding is jumbled and unsorted. Users struggle to find their trade quickly, which creates friction in the onboarding flow. The list has no logical order (not alphabetical, not by popularity).
+
+**Proposed Work**:
+1. Sort trade type list: Common categories at top (General Contractor, Electrician, Plumber, etc.), remainder alphabetically
+2. Add free-text input option: "Don't see your trade? Type it here"
+3. AI interpretation: If user types or speaks their trade, use AI to match to existing category or create new one
+4. Allow voice input for trade type (say "I do custom furniture" → AI categorizes)
+
+**Technical Considerations**:
+- Update the trade type list in onboarding flow (frontend)
+- Define "common" trades based on user data or industry prevalence
+- AI interpretation can reuse existing Claude service for categorization
+- Store custom trades for future category expansion
+
+**Success Metric**:
+- Reduced time to complete trade selection step
+- Fewer users abandoning during onboarding
+- Support for niche trades without maintaining massive predefined list
+
+---
+
+### DISC-085: Voice/Chat-Operated Simple CRM 💬 STRATEGIC (COMPLETE)
+
+**Source**: Founder Request (Eddie, 2025-12-11)
+**Impact**: HIGH | **Effort**: XL | **Score**: Strategic
+**Sprint Alignment**: Future roadmap - expand Quoted from quoting tool to contractor operating system
+**Design Document**: `/docs/DISC-085_VOICE_CRM_DESIGN.md`
+
+**Problem**: Contractors generate quotes for customers but have no built-in way to track those customers over time. Customer data exists in quotes but isn't aggregated or accessible as a customer base. Users must use separate CRM tools, creating fragmentation.
+
+**Vision**: An extremely simple, voice-operated or chat-operated CRM that allows users to:
+- Build a customer base from quote history automatically
+- Track customer interactions, job history, and notes
+- Retrieve customer info via voice ("What's the status with John Smith?")
+- Update customer status via voice ("Mark the Johnson job as completed")
+- Get simple CRM insights ("Which customers haven't had a quote in 6 months?")
+
+**Design Completed** ✅:
+- Comprehensive design document created at `/docs/DISC-085_VOICE_CRM_DESIGN.md`
+- Data model defined (Customer table with aggregated stats)
+- Voice command interface specified (6 command categories)
+- UI mockups for customer list and detail views
+- 4-phase implementation plan with specific tickets
+
+**Implementation Tickets Created**:
+- DISC-086: Customer Model & Migration (Phase 1)
+- DISC-087: Customer Aggregation Service (Phase 1)
+- DISC-088: Customer API Endpoints (Phase 1)
+- DISC-089: Customer UI - List & Detail Views (Phase 2)
+- DISC-090: CRM Voice Command Integration (Phase 3)
+- DISC-091: Backfill Existing Quotes to Customers (Phase 1)
+
+**Success Metric**:
+- Users can view aggregated customer list from quotes
+- Voice commands successfully retrieve customer info 90%+ of time
+- Customer lookup faster than searching through quote history manually
+
+---
+
+### DISC-086: Customer Model & Database Migration 🗄️ CRM PHASE 1 (DISCOVERED)
+
+**Source**: DISC-085 Voice CRM Design Document
+**Impact**: HIGH | **Effort**: S | **Score**: 3.0
+**Sprint Alignment**: Phase 1 foundation - must be completed before any CRM features
+**Dependencies**: None (foundational)
+
+**Problem**: No data model exists to store aggregated customer information. Quotes contain customer data but it's isolated per-quote with no linking.
+
+**Proposed Work**:
+1. Create `Customer` SQLAlchemy model with fields:
+   - Core: id, contractor_id, name, phone, email, address
+   - Computed: total_quoted, total_won, quote_count, first_quote_at, last_quote_at
+   - CRM: status, notes, tags (JSON)
+   - Deduplication: normalized_name, normalized_phone
+2. Add `customer_id` foreign key to `Quote` model
+3. Create Alembic migration for new table
+4. Add database indexes for performance:
+   - `(contractor_id, normalized_name)`
+   - `(contractor_id, last_quote_at)`
+
+**Technical Reference**: See `/docs/DISC-085_VOICE_CRM_DESIGN.md` for complete schema
+
+**Success Metric**: Customer table exists with proper relationships; migrations run without errors
+
+---
+
+### DISC-087: Customer Aggregation & Deduplication Service 🔗 CRM PHASE 1 (DISCOVERED)
+
+**Source**: DISC-085 Voice CRM Design Document
+**Impact**: HIGH | **Effort**: M | **Score**: 1.5
+**Sprint Alignment**: Phase 1 - creates customers from quote data automatically
+**Dependencies**: DISC-086 (Customer Model)
+
+**Problem**: Customer data exists in quotes but isn't aggregated. Same customer may appear with slight name/phone variations across quotes. Need service to create and deduplicate customers.
+
+**Proposed Work**:
+1. Create `backend/services/customer_service.py`:
+   - `normalize_name(name)`: lowercase, strip punctuation, collapse whitespace
+   - `normalize_phone(phone)`: digits only
+   - `find_or_create_customer(contractor_id, name, phone, email, address)`:
+     - Look for match on (contractor_id, normalized_name) OR (contractor_id, normalized_phone)
+     - If match: update fields if newer, return existing customer
+     - If no match: create new customer
+   - `update_customer_stats(customer_id)`: recalculate totals from linked quotes
+2. Hook into quote creation/update to auto-link customers
+3. Handle edge cases:
+   - No name/phone → Don't create customer
+   - Name only → Create, may merge later
+   - Phone only → Create with "Unknown" name
+   - Conflicts → Prefer most recent quote data
+
+**Success Metric**: New quotes automatically create/link customers; deduplication accuracy >95%
+
+---
+
+### DISC-088: Customer API Endpoints 🌐 CRM PHASE 1 (DISCOVERED)
+
+**Source**: DISC-085 Voice CRM Design Document
+**Impact**: HIGH | **Effort**: S | **Score**: 3.0
+**Sprint Alignment**: Phase 1 - enables UI and voice commands to access customer data
+**Dependencies**: DISC-086 (Customer Model), DISC-087 (Aggregation Service)
+
+**Problem**: No API endpoints exist to retrieve or manage customer data.
+
+**Proposed Work**:
+1. Create `backend/api/customers.py` with endpoints:
+   - `GET /customers`: List customers for contractor (paginated, searchable, filterable)
+   - `GET /customers/{id}`: Get customer detail with quote history
+   - `PATCH /customers/{id}`: Update customer (notes, tags, status)
+   - `GET /customers/search?q=`: Search customers by name/phone/address
+   - `GET /customers/{id}/quotes`: Get all quotes for customer
+2. Add query parameters:
+   - `status`: Filter by active/inactive/lead/vip
+   - `sort`: last_quote_at, total_quoted, name
+   - `search`: Fuzzy search across name, phone, address
+3. Return computed stats in response (total_quoted, quote_count, etc.)
+
+**Success Metric**: All CRUD operations work; search returns relevant results in <500ms
+
+---
+
+### DISC-089: Customer UI - List & Detail Views 🖥️ CRM PHASE 2 (DISCOVERED)
+
+**Source**: DISC-085 Voice CRM Design Document
+**Impact**: HIGH | **Effort**: M | **Score**: 1.5
+**Sprint Alignment**: Phase 2 - user-facing CRM interface
+**Dependencies**: DISC-088 (Customer API)
+
+**Problem**: Users have no way to view or manage their customer base. Need visual interface for CRM features.
+
+**Proposed Work**:
+1. Add "Customers" tab to main navigation (alongside New Quote, My Quotes, etc.)
+2. Build Customer List View:
+   - Customer cards showing: name, phone, quote count, total quoted, last quote date
+   - Search bar with live filtering
+   - Filter dropdowns: status, sort order
+   - Customer count display
+3. Build Customer Detail View:
+   - Customer info header (name, phone, email, address)
+   - Stats summary cards (quotes, quoted amount, won amount, customer since)
+   - Notes section with add/edit capability
+   - Tags management (add/remove tags)
+   - Quote history list with links to individual quotes
+4. Add inline editing for notes and tags
+5. Mobile-responsive design (375px minimum)
+
+**UI Reference**: See `/docs/DISC-085_VOICE_CRM_DESIGN.md` for wireframe mockups
+
+**Success Metric**: Users can browse, search, and view customer details; mobile-friendly
+
+---
+
+### DISC-090: CRM Voice Command Integration 🎤 CRM PHASE 3 (DISCOVERED)
+
+**Source**: DISC-085 Voice CRM Design Document
+**Impact**: HIGH | **Effort**: L | **Score**: 1.0
+**Sprint Alignment**: Phase 3 - voice-operated CRM (core differentiator)
+**Dependencies**: DISC-088 (Customer API), DISC-042 (Voice Command Interpreter - if available)
+
+**Problem**: CRM features exist but can't be accessed via voice. Contractors in trucks need hands-free customer lookup.
+
+**Proposed Work**:
+1. Add CRM intent detection to `backend/services/claude_service.py`:
+   - Detect CRM keywords: "customer", "who did I", "show me", "find", "add note to"
+   - Route to CRM handler instead of quote generation
+2. Implement CRM voice commands:
+   - **Search**: "Show me John Smith" → customer_search
+   - **Detail**: "What's the history with Johnson Electric?" → customer_detail
+   - **Stats**: "How much have I quoted the Hendersons?" → customer_stats
+   - **Notes**: "Add a note to Mike Wilson: Prefers morning" → add_note
+   - **Tags**: "Tag Sarah's Bakery as VIP" → add_tag
+   - **Insights**: "Which customers haven't had a quote in 6 months?" → dormant_customers
+3. Generate natural language responses:
+   - "Found 3 customers matching 'Smith'. John Smith with 5 quotes totaling $12,400..."
+4. Add voice input option in Customers tab (or reuse existing voice button)
+
+**Success Metric**: 90%+ correct intent detection; voice commands complete in <3 seconds
+
+---
+
+### DISC-091: Backfill Existing Quotes to Customer Records 📥 CRM PHASE 1 (DISCOVERED)
+
+**Source**: DISC-085 Voice CRM Design Document
+**Impact**: HIGH | **Effort**: S | **Score**: 3.0
+**Sprint Alignment**: Phase 1 - populates CRM with existing data (zero data entry promise)
+**Dependencies**: DISC-086 (Customer Model), DISC-087 (Aggregation Service)
+
+**Problem**: Existing quotes contain customer data that needs to be extracted and aggregated into Customer records. Without backfill, CRM launches empty.
+
+**Proposed Work**:
+1. Create migration script `backend/scripts/backfill_customers.py`:
+   - Iterate through all quotes with customer_name or customer_phone
+   - Call `find_or_create_customer()` for each quote
+   - Link quote to customer via customer_id foreign key
+   - Update customer stats (total_quoted, quote_count, etc.)
+2. Add to database initialization (similar to onboarding_completed_at backfill)
+3. Run as part of deployment for existing users
+4. Add PostHog event tracking for backfill completion
+
+**Execution Strategy**:
+1. Deploy Phase 1 with feature flag `crm_enabled = false`
+2. Run backfill job
+3. Enable for Eddie first (validate data quality)
+4. Enable for all users
+
+**Success Metric**: 100% of quotes with customer data linked to Customer records; no duplicate customers created
 
 ---
 
