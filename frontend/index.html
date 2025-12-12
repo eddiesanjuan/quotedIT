@@ -3991,16 +3991,25 @@
                 </div>
 
                 <!-- Voice Command - Central Hub -->
-                <div class="card" style="padding: 24px; margin-bottom: 24px; text-align: center;">
+                <div class="card" style="padding: 24px; margin-bottom: 24px; text-align: center;" id="dashboardVoiceCard">
                     <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 16px;">
                         Speak to create quotes, find customers, or add tasks
                     </p>
-                    <button class="record-btn" id="dashboardRecordBtn" onclick="toggleRecording()" style="margin: 0 auto 12px;">
+                    <button class="record-btn" id="dashboardRecordBtn" onclick="dashboardToggleRecording()" style="margin: 0 auto 12px;">
                         <span id="dashboardRecordBtnText">Record</span>
                     </button>
                     <p class="record-instructions" id="dashboardRecordInstructions" style="font-size: 0.8rem; color: var(--text-muted);">
                         Tap to speak
                     </p>
+
+                    <!-- Dashboard Transcription Preview (hidden by default) -->
+                    <div id="dashboardTranscriptionArea" style="display: none; margin-top: 16px; text-align: left;">
+                        <textarea id="dashboardTranscriptionText" rows="3" placeholder="Your transcription will appear here..." style="width: 100%; background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); padding: 12px; border-radius: 8px; font-family: var(--font-sans); font-size: 0.95rem; resize: vertical;"></textarea>
+                        <div style="display: flex; gap: 12px; margin-top: 12px;">
+                            <button class="btn btn-secondary" onclick="dashboardReRecord()" style="flex: 1;">Re-record</button>
+                            <button class="btn btn-primary" onclick="dashboardSubmitVoice()" style="flex: 1;">Submit</button>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Quick Actions -->
@@ -7034,6 +7043,176 @@
 
             // Use existing generateQuote function
             await generateQuote();
+        }
+
+        // ============================================
+        // Dashboard Voice Functions (separate flow)
+        // ============================================
+        let dashboardMediaRecorder = null;
+        let dashboardAudioChunks = [];
+
+        async function dashboardToggleRecording() {
+            const btn = document.getElementById('dashboardRecordBtn');
+            const btnText = document.getElementById('dashboardRecordBtnText');
+            const instructions = document.getElementById('dashboardRecordInstructions');
+
+            if (dashboardMediaRecorder && dashboardMediaRecorder.state === 'recording') {
+                dashboardMediaRecorder.stop();
+                btn.classList.remove('recording');
+                btnText.textContent = 'Record';
+                instructions.textContent = 'Processing...';
+            } else {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    const mimeType = getSupportedAudioMimeType();
+                    const options = mimeType ? { mimeType } : {};
+                    dashboardMediaRecorder = new MediaRecorder(stream, options);
+                    dashboardAudioChunks = [];
+
+                    dashboardMediaRecorder.ondataavailable = (e) => {
+                        dashboardAudioChunks.push(e.data);
+                    };
+
+                    dashboardMediaRecorder.onstop = async () => {
+                        const audioBlob = new Blob(dashboardAudioChunks, { type: mimeType || 'audio/webm' });
+                        await dashboardSendAudioForTranscription(audioBlob);
+                        stream.getTracks().forEach(track => track.stop());
+                    };
+
+                    dashboardMediaRecorder.onerror = (event) => {
+                        console.error('Dashboard MediaRecorder error:', event);
+                        showError('Recording failed. Please try again.');
+                        btn.classList.remove('recording');
+                        btnText.textContent = 'Record';
+                        instructions.textContent = 'Tap to speak';
+                    };
+
+                    dashboardMediaRecorder.start();
+                    btn.classList.add('recording');
+                    btnText.textContent = 'Stop';
+                    instructions.textContent = 'Recording... Tap again when done';
+
+                } catch (err) {
+                    console.error('Microphone error:', err);
+                    showError('Could not access microphone. Please allow access and try again.');
+                }
+            }
+        }
+
+        async function dashboardSendAudioForTranscription(audioBlob) {
+            const instructions = document.getElementById('dashboardRecordInstructions');
+            instructions.textContent = 'Transcribing...';
+
+            try {
+                const formData = new FormData();
+                formData.append('audio', audioBlob, 'recording.webm');
+
+                const response = await fetch(`${API_BASE}/quotes/transcribe`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${authToken}` },
+                    body: formData,
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Failed to transcribe audio');
+                }
+
+                const result = await response.json();
+                dashboardShowTranscription(result.text);
+
+            } catch (err) {
+                console.error('Error:', err);
+                showError(err.message);
+                instructions.textContent = 'Tap to speak';
+            }
+        }
+
+        function dashboardShowTranscription(text) {
+            const instructions = document.getElementById('dashboardRecordInstructions');
+            const transcriptionArea = document.getElementById('dashboardTranscriptionArea');
+            const transcriptionText = document.getElementById('dashboardTranscriptionText');
+
+            instructions.textContent = 'Review and submit:';
+            transcriptionText.value = text;
+            transcriptionArea.style.display = 'block';
+            transcriptionText.focus();
+        }
+
+        function dashboardReRecord() {
+            const transcriptionArea = document.getElementById('dashboardTranscriptionArea');
+            const transcriptionText = document.getElementById('dashboardTranscriptionText');
+            const instructions = document.getElementById('dashboardRecordInstructions');
+
+            transcriptionArea.style.display = 'none';
+            transcriptionText.value = '';
+            instructions.textContent = 'Tap to speak';
+        }
+
+        async function dashboardSubmitVoice() {
+            const transcription = document.getElementById('dashboardTranscriptionText').value.trim();
+
+            if (!transcription) {
+                showError('Please enter or record something first');
+                return;
+            }
+
+            const lowerText = transcription.toLowerCase();
+
+            // Detect intent based on keywords
+            const isCustomerQuery = lowerText.includes('customer') || lowerText.includes('who did') ||
+                                    lowerText.includes('show me') || lowerText.includes('find') ||
+                                    lowerText.includes('search for') || lowerText.includes('look up');
+
+            const isTaskIntent = lowerText.includes('task') || lowerText.includes('remind') ||
+                                 lowerText.includes('follow up') || lowerText.includes('call back') ||
+                                 lowerText.includes('schedule') || lowerText.startsWith('add a ');
+
+            // Hide transcription area
+            document.getElementById('dashboardTranscriptionArea').style.display = 'none';
+            document.getElementById('dashboardRecordInstructions').textContent = 'Tap to speak';
+
+            if (isCustomerQuery) {
+                // Route to customer search
+                showAppSection('customers');
+                setTimeout(() => {
+                    const searchInput = document.getElementById('customerSearchInput');
+                    if (searchInput) {
+                        // Extract search term (remove common prefixes)
+                        let searchTerm = transcription
+                            .replace(/^(show me|find|search for|look up|who is|who did i quote)\s*/i, '')
+                            .replace(/['"]s?\s*(quotes?|jobs?|history)?$/i, '')
+                            .trim();
+                        searchInput.value = searchTerm;
+                        loadCustomers();
+                    }
+                }, 100);
+                showSuccess('Searching customers...');
+            } else if (isTaskIntent) {
+                // Open add task modal with title pre-filled
+                await openAddTaskModal();
+                setTimeout(() => {
+                    const titleInput = document.getElementById('addTaskTitle');
+                    if (titleInput) {
+                        // Clean up the transcription for task title
+                        let taskTitle = transcription
+                            .replace(/^(add a |create a |new |schedule a )/i, '')
+                            .replace(/^(task|reminder|follow up)(\s+to\s+)?/i, '')
+                            .trim();
+                        // Capitalize first letter
+                        taskTitle = taskTitle.charAt(0).toUpperCase() + taskTitle.slice(1);
+                        titleInput.value = taskTitle;
+                    }
+                }, 100);
+                showSuccess('Creating task...');
+            } else {
+                // Default: treat as quote request
+                showAppSection('newQuote');
+                setTimeout(() => {
+                    document.getElementById('jobDescription').value = transcription;
+                    generateQuote();
+                }, 100);
+            }
         }
 
         // Generate quote from text
