@@ -49,7 +49,7 @@ Live PR walkthrough included:
 ---
 
 ## Primary Weaknesses / Risks
-1. **Demo→signup conversion still needs proof.** The live site now solves the trust gap with a real `/demo` quote flow; the remaining risk is making that path convert and ensuring post‑signup onboarding stays lightweight.  
+1. **Demo→signup conversion still needs proof.** The live site now solves the trust gap with a real `/demo` quote flow; the remaining risk is making that path convert and ensuring post‑signup onboarding stays lightweight. In PR‑4 the post‑signup path is mostly progressive, but the industry‑selection step is a noticeable extra screen and the “Try a Quote Now” list row looked tappable yet didn’t reliably advance unless the primary button was used.  
 2. **Too much surface area too early.** The app feels like an all‑in‑one suite before the user has completed the core loop.  
 3. **Learning loop visibility is low.** The moat requires edits; the product doesn’t yet make “edit → it gets smarter” obvious and motivating.  
 4. **Mobile voice UX is existential.** Contractors live on phones. If iOS recording or quote actions feel flaky/buried, adoption stalls.
@@ -69,13 +69,18 @@ Live PR walkthrough included:
 - **Align auth model in messaging.** UI is password‑based here; docs previously referenced magic links. Pick one and keep it consistent.
 
 ### 2) Onboarding
-**Issue:** Asking for full pricing interview before first value is a conversion leak.
+**Observed:** After signup, users pick a trade/industry, then see a 3‑option start screen: **Try a Quote Now (industry defaults)**, Quick Chat Setup, or Manual Setup. This is the right progressive onboarding pattern and matches the landing `/demo` promise.
+
+**Issues**
+- **Industry selection is heavy for first value.** The grid is large (many non‑contractor roles), so it adds friction before a user gets their first quote.  
+- **Try‑first row click reliability.** The “Try a Quote Now” *list row* looks tappable but didn’t reliably proceed unless the large primary button was clicked → risk of stuck users.
 
 **Recommendations**
-- **Progressive onboarding:**  
-  1. 2‑minute baseline setup (trade + rough rates) → allow first quote.  
-  2. Deeper interview later to refine categories/terms.  
-- **Post‑interview recap:** One screen in plain English: “Here’s what I learned about how you price.”
+- Keep the 3‑option progressive start, but **reduce friction**:  
+  - Auto‑suggest/top‑filter the trade based on landing “use cases,” and allow a “skip/decide later” path for unsure users.  
+  - Make the entire “Try a Quote Now” row reliably trigger the same behavior as the button.  
+- After try‑first activation, show a one‑sentence reassurance: “Using industry defaults now; edits teach your real pricing.”  
+- Add a short post‑interview recap (plain English) to cement trust and reduce “what did it learn?” anxiety.
 
 ### 3) New Quote (Voice/Text)
 **Observed:** Clean, minimal, correct hierarchy.  
@@ -98,6 +103,13 @@ Live PR walkthrough included:
 - Add a **one‑sentence explainer under badge:**  
   “Edit any line item and Quoted will learn your real pricing for next time.”
 - **If clarifying questions exist:** offer “Answer now” vs “Create follow‑up task.”
+
+**Observed in edit detail view:** Line items are editable via name/qty/unit/unit‑cost, and an edit‑mode banner + change summary appear once you modify something. However, the **Save Changes panel (including correction notes) sits below the fold** on long quotes; it’s easy to miss unless the user scrolls.
+
+**Editing UX recommendations**
+- Make **Save Changes sticky/docked** whenever unsaved changes exist.  
+- Surface correction notes at save time (modal or near top), not hidden at bottom.  
+- After saving, show a clear “Learned adjustment saved” toast and **reflect the first correction immediately** in Pricing Brain. In PR‑4, Pricing Brain remained empty after a first correction, which undercuts the reward loop.
 
 ### 5) My Quotes
 **Observed:** Great empty state and CTA.  
@@ -198,6 +210,8 @@ Right now Quoted feels close to “all‑in‑one quoting + CRM suite.” That�
 - Sticky action bar on quote results for mobile.
 - Post‑edit “Here’s what I learned” toast + link to Pricing Brain.
 - Add “Try a demo quote” CTA on `/app` auth for first‑timers to match landing.
+- Fix “Try a Quote Now” list‑row click so it always advances.  
+- Make Save Changes sticky and bring correction notes into view on long quotes.
 
 ---
 

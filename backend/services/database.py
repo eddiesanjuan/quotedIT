@@ -265,11 +265,16 @@ class DatabaseService:
                 # with merges, updates, and removals applied - just replace entirely
                 learning_statements = learnings.get("learning_statements", [])
 
+                # Track if we added any learnings in this correction
+                learning_added_this_correction = False
+                original_count = len(cat_data["learned_adjustments"])
+
                 # Debug logging to track what Claude returned
                 print(f"[LEARNING DEBUG] Category '{category}': Claude returned {len(learning_statements)} learning_statements")
                 print(f"[LEARNING DEBUG] learnings keys: {list(learnings.keys())}")
+                print(f"[LEARNING DEBUG] existing learned_adjustments count: {original_count}")
                 if learnings.get("summary"):
-                    print(f"[LEARNING DEBUG] Claude summary: {learnings.get('summary')[:100]}...")
+                    print(f"[LEARNING DEBUG] Claude summary: {learnings.get('summary')[:200]}...")
 
                 if learning_statements:
                     # Filter and validate statements
@@ -277,8 +282,11 @@ class DatabaseService:
                         stmt for stmt in learning_statements
                         if stmt and isinstance(stmt, str) and len(stmt) >= 15
                     ]
-                    # REPLACE the list (Claude has already optimized it)
-                    cat_data["learned_adjustments"] = valid_statements
+                    if valid_statements:
+                        # REPLACE the list (Claude has already optimized it)
+                        cat_data["learned_adjustments"] = valid_statements
+                        learning_added_this_correction = True
+                        print(f"[LEARNING] Category '{category}': Replaced with {len(valid_statements)} valid statements")
 
                     # Log what changed for debugging
                     changes_made = learnings.get("changes_made", "")
@@ -287,24 +295,27 @@ class DatabaseService:
 
                 # LEGACY FORMAT: Fall back to append approach if no learning_statements
                 # This handles old format responses during transition
-                else:
+                if not learning_added_this_correction:
                     for adjustment in learnings.get("pricing_adjustments", []):
                         learning = adjustment.get("learning", "")
                         if learning and learning not in cat_data["learned_adjustments"]:
                             cat_data["learned_adjustments"].append(learning)
+                            learning_added_this_correction = True
 
                     for rule in learnings.get("new_pricing_rules", []):
                         rule_text = rule.get("rule", "")
                         if rule_text and rule_text not in cat_data["learned_adjustments"]:
                             cat_data["learned_adjustments"].append(rule_text)
+                            learning_added_this_correction = True
 
                     tendency = learnings.get("overall_tendency", "")
                     if tendency and len(tendency) > 15 and tendency not in cat_data["learned_adjustments"]:
                         cat_data["learned_adjustments"].append(tendency)
+                        learning_added_this_correction = True
 
-                # FALLBACK: If still no learnings after Claude + legacy parsing, derive from summary
-                # This ensures EVERY correction produces at least one learning
-                if not cat_data["learned_adjustments"]:
+                # MANDATORY FALLBACK: EVERY correction MUST produce at least one learning
+                # This ensures rules are never "0" after a correction
+                if not learning_added_this_correction:
                     summary = learnings.get("summary", "")
                     pricing_direction = learnings.get("pricing_direction", "")
 
