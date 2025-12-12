@@ -11354,7 +11354,7 @@
             const response = await fetch('/api/quotes/transcribe', {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${getToken()}`
+                    'Authorization': `Bearer ${authToken}`
                 },
                 body: formData
             });
@@ -11372,7 +11372,7 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${getToken()}`
+                    'Authorization': `Bearer ${authToken}`
                 },
                 body: JSON.stringify({ transcription })
             });
@@ -11473,7 +11473,7 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${getToken()}`
+                        'Authorization': `Bearer ${authToken}`
                     },
                     body: JSON.stringify({
                         name,
@@ -11511,7 +11511,7 @@
                 const response = await fetch('/api/customers/backfill', {
                     method: 'POST',
                     headers: {
-                        'Authorization': `Bearer ${getToken()}`
+                        'Authorization': `Bearer ${authToken}`
                     }
                 });
 
@@ -11573,7 +11573,7 @@
                 if (taskType) url += `&task_type=${taskType}`;
 
                 const response = await fetch(url, {
-                    headers: { 'Authorization': `Bearer ${getToken()}` }
+                    headers: { 'Authorization': `Bearer ${authToken}` }
                 });
 
                 if (!response.ok) throw new Error('Failed to load tasks');
@@ -11602,7 +11602,7 @@
         async function loadTaskSummary() {
             try {
                 const response = await fetch('/api/tasks/summary', {
-                    headers: { 'Authorization': `Bearer ${getToken()}` }
+                    headers: { 'Authorization': `Bearer ${authToken}` }
                 });
 
                 if (!response.ok) throw new Error('Failed to load task summary');
@@ -11717,7 +11717,7 @@
             try {
                 const response = await fetch(`/api/tasks/${taskId}/complete`, {
                     method: 'POST',
-                    headers: { 'Authorization': `Bearer ${getToken()}` }
+                    headers: { 'Authorization': `Bearer ${authToken}` }
                 });
 
                 if (!response.ok) throw new Error('Failed to update task');
@@ -11749,7 +11749,7 @@
             try {
                 const response = await fetch(`/api/tasks/${taskId}/snooze?days=${days}`, {
                     method: 'POST',
-                    headers: { 'Authorization': `Bearer ${getToken()}` }
+                    headers: { 'Authorization': `Bearer ${authToken}` }
                 });
 
                 if (!response.ok) throw new Error('Failed to snooze task');
@@ -11773,7 +11773,7 @@
             try {
                 const response = await fetch(`/api/tasks/${taskId}`, {
                     method: 'DELETE',
-                    headers: { 'Authorization': `Bearer ${getToken()}` }
+                    headers: { 'Authorization': `Bearer ${authToken}` }
                 });
 
                 if (!response.ok) throw new Error('Failed to delete task');
@@ -11824,7 +11824,7 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${getToken()}`
+                        'Authorization': `Bearer ${authToken}`
                     },
                     body: JSON.stringify(taskData)
                 });
