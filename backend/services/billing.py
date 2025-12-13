@@ -317,6 +317,110 @@ class BillingService:
         }
 
     @staticmethod
+    async def create_embedded_checkout_session(
+        db: AsyncSession,
+        user_id: str,
+        plan_tier: str,
+        billing_interval: str,
+        return_url: str,
+    ) -> Dict[str, str]:
+        """
+        Create a Stripe embedded checkout session.
+        Returns client_secret and session ID for initializing embedded checkout.
+
+        Args:
+            billing_interval: "monthly" or "annual"
+            return_url: URL to redirect to after checkout completes
+        """
+        result = await db.execute(select(User).where(User.id == user_id))
+        user = result.scalar_one_or_none()
+
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found"
+            )
+
+        plan_config = BillingService.get_plan_config(plan_tier)
+
+        if not plan_config["product_id"]:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid plan tier: {plan_tier}"
+            )
+
+        # Create or get Stripe customer
+        if not user.stripe_customer_id:
+            customer = stripe.Customer.create(
+                email=user.email,
+                metadata={"user_id": user.id}
+            )
+            user.stripe_customer_id = customer.id
+            await db.commit()
+        else:
+            customer = stripe.Customer.retrieve(user.stripe_customer_id)
+
+        # Get price for this product with correct interval
+        stripe_interval = "year" if billing_interval == "annual" else "month"
+
+        try:
+            prices = stripe.Price.list(product=plan_config["product_id"], active=True)
+        except Exception as e:
+            print(f"Error listing prices for product {plan_config['product_id']}: {e}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Failed to retrieve pricing information for {plan_tier} plan."
+            )
+
+        if not prices.data:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Pricing not configured for {plan_tier} plan."
+            )
+
+        # Find price with matching interval (prefer licensed over metered)
+        licensed_prices = []
+        metered_prices = []
+
+        for price in prices.data:
+            if price.recurring and price.recurring.interval == stripe_interval:
+                if price.recurring.usage_type == "metered":
+                    metered_prices.append(price)
+                else:
+                    licensed_prices.append(price)
+
+        if licensed_prices:
+            matching_price = licensed_prices[0]
+        elif metered_prices:
+            matching_price = metered_prices[0]
+        else:
+            matching_price = prices.data[0]
+
+        # Create line item
+        line_item = {"price": matching_price.id}
+        if matching_price.recurring and matching_price.recurring.usage_type != "metered":
+            line_item["quantity"] = 1
+
+        # Create embedded checkout session (ui_mode='embedded')
+        session = stripe.checkout.Session.create(
+            customer=customer.id,
+            payment_method_types=["card"],
+            line_items=[line_item],
+            mode="subscription",
+            ui_mode="embedded",
+            return_url=return_url + "?session_id={CHECKOUT_SESSION_ID}",
+            metadata={
+                "user_id": user.id,
+                "plan_tier": plan_tier,
+            },
+        )
+
+        return {
+            "client_secret": session.client_secret,
+            "session_id": session.id,
+        }
+
+    @staticmethod
     async def create_portal_session(
         db: AsyncSession,
         user_id: str,

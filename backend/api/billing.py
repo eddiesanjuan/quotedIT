@@ -24,6 +24,13 @@ class CheckoutRequest(BaseModel):
     cancel_url: str
 
 
+class EmbeddedCheckoutRequest(BaseModel):
+    """Request to create an embedded checkout session."""
+    plan_tier: str = "unlimited"  # Default to unlimited (DISC-098)
+    billing_interval: str = "monthly"  # "monthly" or "annual"
+    return_url: str  # URL to return to after checkout
+
+
 class PortalRequest(BaseModel):
     """Request to create a customer portal session."""
     return_url: str
@@ -76,6 +83,43 @@ async def create_checkout_session(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to create checkout session: {str(e)}"
+        )
+
+
+@router.post("/create-embedded-checkout")
+async def create_embedded_checkout_session(
+    request: EmbeddedCheckoutRequest,
+    user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Create a Stripe embedded checkout session.
+    Returns client_secret for initializing Stripe Embedded Checkout on the frontend.
+    """
+    valid_tiers = ["unlimited", "starter", "pro", "team"]
+    if request.plan_tier not in valid_tiers:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid plan tier: {request.plan_tier}. Must be one of: {', '.join(valid_tiers)}"
+        )
+
+    try:
+        result = await BillingService.create_embedded_checkout_session(
+            db=db,
+            user_id=user["id"],
+            plan_tier=request.plan_tier,
+            billing_interval=request.billing_interval,
+            return_url=request.return_url,
+        )
+
+        return {
+            "client_secret": result["client_secret"],
+            "session_id": result["session_id"],
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to create embedded checkout session: {str(e)}"
         )
 
 
