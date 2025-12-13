@@ -113,6 +113,10 @@ class Settings(BaseSettings):
     team_price_monthly: int = 7900  # $79.00 in cents
     team_overage_price: int = 0  # No overage - unlimited plan
 
+    # One-time migration flags (DISC-098)
+    # Set CLEAR_STRIPE_TEST_CUSTOMERS=true when switching from test to live Stripe
+    clear_stripe_test_customers: bool = False
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"

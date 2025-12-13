@@ -1105,6 +1105,30 @@ async def run_migrations(engine):
             },
         ]
 
+        # DISC-098: One-time migration to clear test-mode Stripe customer IDs
+        # Triggered by CLEAR_STRIPE_TEST_CUSTOMERS=true environment variable
+        from ..config import settings
+        if settings.clear_stripe_test_customers:
+            try:
+                result = await conn.execute(text(
+                    "SELECT COUNT(*) FROM users WHERE stripe_customer_id IS NOT NULL"
+                ))
+                row = result.fetchone()
+                count = row[0] if row else 0
+
+                if count > 0:
+                    print(f"DISC-098 Migration: Clearing {count} test-mode Stripe customer IDs")
+                    await conn.execute(text("""
+                        UPDATE users
+                        SET stripe_customer_id = NULL, subscription_id = NULL
+                        WHERE stripe_customer_id IS NOT NULL
+                    """))
+                    await conn.commit()
+                    print(f"DISC-098 Migration: Successfully cleared Stripe customer IDs for {count} users")
+                    print("IMPORTANT: Remove CLEAR_STRIPE_TEST_CUSTOMERS env var after this deploy!")
+            except Exception as e:
+                print(f"DISC-098 Migration warning: {e}")
+
         for migration in data_migrations:
             try:
                 result = await conn.execute(text(migration["check_sql"]))
