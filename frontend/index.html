@@ -33,6 +33,9 @@
         {% endif %}
     </script>
 
+    <!-- Stripe.js for Embedded Checkout -->
+    <script src="https://js.stripe.com/v3/"></script>
+
     <style>
         :root {
             --bg-primary: #0a0a0a;
@@ -3869,9 +3872,398 @@
                 padding: 16px;
             }
         }
+
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            pointer-events: none;
+        }
+
+        .toast {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px 20px;
+            min-width: 300px;
+            max-width: 420px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+            pointer-events: auto;
+            animation: toastSlideIn 0.3s ease-out;
+        }
+
+        .toast.toast-success {
+            border-color: rgba(74, 222, 128, 0.3);
+        }
+
+        .toast.toast-error {
+            border-color: rgba(248, 113, 113, 0.3);
+        }
+
+        .toast.toast-info {
+            border-color: rgba(96, 165, 250, 0.3);
+        }
+
+        .toast-icon {
+            flex-shrink: 0;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .toast-success .toast-icon {
+            background: rgba(74, 222, 128, 0.15);
+            color: #4ade80;
+        }
+
+        .toast-error .toast-icon {
+            background: rgba(248, 113, 113, 0.15);
+            color: #f87171;
+        }
+
+        .toast-info .toast-icon {
+            background: rgba(96, 165, 250, 0.15);
+            color: #60a5fa;
+        }
+
+        .toast-content {
+            flex: 1;
+        }
+
+        .toast-title {
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 4px;
+        }
+
+        .toast-message {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 4px;
+            margin: -4px -4px -4px 8px;
+            transition: color 0.2s;
+        }
+
+        .toast-close:hover {
+            color: var(--text-primary);
+        }
+
+        .toast.toast-exit {
+            animation: toastSlideOut 0.2s ease-in forwards;
+        }
+
+        @keyframes toastSlideIn {
+            from {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes toastSlideOut {
+            from {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+        }
+
+        /* Welcome Modal (for first-time users after skipping setup) */
+        .welcome-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .welcome-modal-content {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 48px;
+            max-width: 480px;
+            width: 90%;
+            text-align: center;
+            animation: modalSlideUp 0.3s ease-out;
+        }
+
+        .welcome-modal-icon {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, #4ade80, #22c55e);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+        }
+
+        .welcome-modal-icon svg {
+            width: 32px;
+            height: 32px;
+            color: white;
+        }
+
+        .welcome-modal h2 {
+            font-family: var(--font-serif);
+            font-size: 1.75rem;
+            margin-bottom: 12px;
+        }
+
+        .welcome-modal p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+
+        .welcome-modal .tip {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 24px;
+            text-align: left;
+        }
+
+        .welcome-modal .tip-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .welcome-modal .tip-text {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        @keyframes modalSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .toast-container {
+                top: auto;
+                bottom: 24px;
+                left: 16px;
+                right: 16px;
+            }
+
+            .toast {
+                min-width: auto;
+                max-width: none;
+            }
+
+            .welcome-modal-content {
+                padding: 32px 24px;
+            }
+        }
+
+        /* ========== STRIPE CHECKOUT MODAL ========== */
+        .checkout-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .checkout-modal.checkout-modal-show {
+            opacity: 1;
+        }
+
+        .checkout-modal-content {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            width: 95%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            animation: modalSlideUp 0.3s ease-out;
+        }
+
+        .checkout-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .checkout-modal-header h2 {
+            font-family: var(--font-serif);
+            font-size: 1.25rem;
+            margin: 0;
+        }
+
+        .checkout-modal-close {
+            background: none;
+            border: none;
+            padding: 8px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .checkout-modal-close:hover {
+            color: var(--text-primary);
+            background: var(--bg-secondary);
+        }
+
+        .checkout-modal-close svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .checkout-container {
+            flex: 1;
+            overflow-y: auto;
+            min-height: 400px;
+        }
+
+        .checkout-loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 24px;
+            color: var(--text-secondary);
+        }
+
+        .checkout-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 16px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 640px) {
+            .checkout-modal-content {
+                width: 100%;
+                max-width: 100%;
+                height: 100%;
+                max-height: 100%;
+                border-radius: 0;
+            }
+
+            .checkout-modal-header {
+                padding: 16px;
+            }
+        }
     </style>
 </head>
 <body>
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Welcome Modal (shown after skipping setup) -->
+    <div id="welcomeModal" class="welcome-modal" style="display: none;">
+        <div class="welcome-modal-content">
+            <div class="welcome-modal-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 6L9 17l-5-5"></path>
+                </svg>
+            </div>
+            <h2>You're all set!</h2>
+            <p>We've set up industry-standard pricing for you. Your first quote is ready to create.</p>
+            <div class="tip">
+                <div class="tip-label">Pro Tip</div>
+                <div class="tip-text">Quoted learns from your edits. After a few quotes, it'll match your exact pricing style.</div>
+            </div>
+            <button class="btn btn-primary btn-large" onclick="closeWelcomeModal()" style="width: 100%;">
+                Create My First Quote
+            </button>
+            <button class="btn btn-link" onclick="closeWelcomeModal(); switchTab('account');" style="margin-top: 12px; color: var(--text-muted);">
+                Customize pricing in Settings
+            </button>
+        </div>
+    </div>
+
+    <!-- Stripe Embedded Checkout Modal -->
+    <div id="checkoutModal" class="checkout-modal" style="display: none;">
+        <div class="checkout-modal-content">
+            <div class="checkout-modal-header">
+                <h2>Complete Your Upgrade</h2>
+                <button class="checkout-modal-close" onclick="closeCheckoutModal()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div id="checkoutContainer" class="checkout-container">
+                <!-- Stripe Embedded Checkout will be mounted here -->
+                <div class="checkout-loading">
+                    <div class="checkout-spinner"></div>
+                    <p>Loading secure checkout...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Navigation -->
     <nav>
         <a href="/" class="logo">quoted<span>.it</span></a>
@@ -5050,7 +5442,7 @@
 
                     <div class="billing-toggle">
                         <button id="monthlyBtn" class="active" onclick="toggleBillingPeriod('monthly')">Monthly</button>
-                        <button id="annualBtn" onclick="toggleBillingPeriod('annual')">Annual <span class="discount-badge" style="margin-left: 8px;">Save 17%</span></button>
+                        <button id="annualBtn" onclick="toggleBillingPeriod('annual')">Annual <span class="discount-badge" style="margin-left: 8px;">Save 45%</span></button>
                     </div>
 
                     <div class="pricing-grid" id="pricingGrid">
@@ -6211,6 +6603,311 @@
             return div.innerHTML;
         }
 
+        // ========== TOAST NOTIFICATIONS ==========
+
+        /**
+         * Create an SVG icon element safely (no innerHTML)
+         * @param {string} type - Icon type: 'success', 'error', 'warning', 'info', 'close'
+         * @returns {SVGElement}
+         */
+        function createToastIcon(type) {
+            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.setAttribute('viewBox', '0 0 24 24');
+            svg.setAttribute('fill', 'none');
+            svg.setAttribute('stroke', 'currentColor');
+            svg.setAttribute('stroke-width', '2');
+
+            if (type === 'success') {
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                path.setAttribute('d', 'M20 6L9 17l-5-5');
+                svg.appendChild(path);
+            } else if (type === 'error') {
+                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circle.setAttribute('cx', '12');
+                circle.setAttribute('cy', '12');
+                circle.setAttribute('r', '10');
+                svg.appendChild(circle);
+                const line1 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line1.setAttribute('x1', '15');
+                line1.setAttribute('y1', '9');
+                line1.setAttribute('x2', '9');
+                line1.setAttribute('y2', '15');
+                svg.appendChild(line1);
+                const line2 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line2.setAttribute('x1', '9');
+                line2.setAttribute('y1', '9');
+                line2.setAttribute('x2', '15');
+                line2.setAttribute('y2', '15');
+                svg.appendChild(line2);
+            } else if (type === 'warning') {
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                path.setAttribute('d', 'M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z');
+                svg.appendChild(path);
+                const line1 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line1.setAttribute('x1', '12');
+                line1.setAttribute('y1', '9');
+                line1.setAttribute('x2', '12');
+                line1.setAttribute('y2', '13');
+                svg.appendChild(line1);
+                const line2 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line2.setAttribute('x1', '12');
+                line2.setAttribute('y1', '17');
+                line2.setAttribute('x2', '12.01');
+                line2.setAttribute('y2', '17');
+                svg.appendChild(line2);
+            } else if (type === 'info') {
+                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circle.setAttribute('cx', '12');
+                circle.setAttribute('cy', '12');
+                circle.setAttribute('r', '10');
+                svg.appendChild(circle);
+                const line1 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line1.setAttribute('x1', '12');
+                line1.setAttribute('y1', '16');
+                line1.setAttribute('x2', '12');
+                line1.setAttribute('y2', '12');
+                svg.appendChild(line1);
+                const line2 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line2.setAttribute('x1', '12');
+                line2.setAttribute('y1', '8');
+                line2.setAttribute('x2', '12.01');
+                line2.setAttribute('y2', '8');
+                svg.appendChild(line2);
+            } else if (type === 'close') {
+                const line1 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line1.setAttribute('x1', '18');
+                line1.setAttribute('y1', '6');
+                line1.setAttribute('x2', '6');
+                line1.setAttribute('y2', '18');
+                svg.appendChild(line1);
+                const line2 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line2.setAttribute('x1', '6');
+                line2.setAttribute('y1', '6');
+                line2.setAttribute('x2', '18');
+                line2.setAttribute('y2', '18');
+                svg.appendChild(line2);
+            }
+
+            return svg;
+        }
+
+        /**
+         * Show a toast notification
+         * @param {string} message - The message to display
+         * @param {string} type - 'success', 'error', 'warning', or 'info'
+         * @param {number} duration - How long to show (ms), default 4000
+         */
+        function showNotification(message, type = 'info', duration = 4000) {
+            const container = document.getElementById('toastContainer');
+            if (!container) {
+                console.warn('Toast container not found, falling back to console');
+                console.log(`[${type.toUpperCase()}] ${message}`);
+                return;
+            }
+
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+
+            const iconContainer = document.createElement('div');
+            iconContainer.className = 'toast-icon';
+            iconContainer.appendChild(createToastIcon(type));
+
+            const messageEl = document.createElement('div');
+            messageEl.className = 'toast-message';
+            messageEl.textContent = message;
+
+            const closeBtn = document.createElement('button');
+            closeBtn.className = 'toast-close';
+            closeBtn.appendChild(createToastIcon('close'));
+            closeBtn.onclick = () => dismissToast(toast);
+
+            toast.appendChild(iconContainer);
+            toast.appendChild(messageEl);
+            toast.appendChild(closeBtn);
+
+            container.appendChild(toast);
+
+            // Trigger animation
+            requestAnimationFrame(() => {
+                toast.classList.add('toast-show');
+            });
+
+            // Auto dismiss
+            setTimeout(() => dismissToast(toast), duration);
+        }
+
+        function dismissToast(toast) {
+            if (!toast || toast.classList.contains('toast-hiding')) return;
+            toast.classList.add('toast-hiding');
+            toast.classList.remove('toast-show');
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.parentNode.removeChild(toast);
+                }
+            }, 300);
+        }
+
+        // ========== WELCOME MODAL (Onboarding Skip) ==========
+
+        /**
+         * Show welcome modal after user skips onboarding interview
+         */
+        function showWelcomeModal() {
+            const modal = document.getElementById('welcomeModal');
+            if (modal) {
+                modal.style.display = 'flex';
+                // Trigger animation
+                requestAnimationFrame(() => {
+                    modal.classList.add('welcome-modal-show');
+                });
+            }
+        }
+
+        /**
+         * Close welcome modal
+         */
+        function closeWelcomeModal() {
+            const modal = document.getElementById('welcomeModal');
+            if (modal) {
+                modal.classList.remove('welcome-modal-show');
+                setTimeout(() => {
+                    modal.style.display = 'none';
+                }, 300);
+            }
+        }
+
+        // ========== STRIPE EMBEDDED CHECKOUT ==========
+
+        // Initialize Stripe (will be set when publishable key is available)
+        let stripeInstance = null;
+        let embeddedCheckout = null;
+
+        {% if stripe_publishable_key %}
+        stripeInstance = Stripe('{{ stripe_publishable_key }}');
+        {% endif %}
+
+        /**
+         * Show the checkout modal and initialize embedded checkout
+         */
+        async function showCheckoutModal(planTier = 'unlimited', billingInterval = 'monthly') {
+            if (!stripeInstance) {
+                showNotification('Payment system not available. Please try again.', 'error');
+                return;
+            }
+
+            const modal = document.getElementById('checkoutModal');
+            const container = document.getElementById('checkoutContainer');
+
+            if (!modal || !container) return;
+
+            // Show modal with loading state
+            modal.style.display = 'flex';
+            requestAnimationFrame(() => {
+                modal.classList.add('checkout-modal-show');
+            });
+
+            // Reset container to loading state
+            while (container.firstChild) {
+                container.removeChild(container.firstChild);
+            }
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'checkout-loading';
+            const spinner = document.createElement('div');
+            spinner.className = 'checkout-spinner';
+            loadingDiv.appendChild(spinner);
+            const loadingText = document.createElement('p');
+            loadingText.textContent = 'Loading secure checkout...';
+            loadingDiv.appendChild(loadingText);
+            container.appendChild(loadingDiv);
+
+            try {
+                // Get client secret from backend
+                const response = await fetch(`${API_BASE}/billing/create-embedded-checkout`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        plan_tier: planTier,
+                        billing_interval: billingInterval,
+                        return_url: window.location.origin + '/app'
+                    })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Failed to create checkout session');
+                }
+
+                const data = await response.json();
+
+                // Clear loading state
+                while (container.firstChild) {
+                    container.removeChild(container.firstChild);
+                }
+
+                // Initialize embedded checkout
+                embeddedCheckout = await stripeInstance.initEmbeddedCheckout({
+                    clientSecret: data.client_secret,
+                    onComplete: handleCheckoutComplete
+                });
+
+                // Mount to container
+                embeddedCheckout.mount(container);
+
+            } catch (err) {
+                console.error('Checkout error:', err);
+                closeCheckoutModal();
+                showNotification(err.message || 'Failed to load checkout. Please try again.', 'error');
+            }
+        }
+
+        /**
+         * Close the checkout modal and cleanup
+         */
+        function closeCheckoutModal() {
+            const modal = document.getElementById('checkoutModal');
+
+            if (embeddedCheckout) {
+                embeddedCheckout.destroy();
+                embeddedCheckout = null;
+            }
+
+            if (modal) {
+                modal.classList.remove('checkout-modal-show');
+                setTimeout(() => {
+                    modal.style.display = 'none';
+                }, 300);
+            }
+        }
+
+        /**
+         * Handle successful checkout completion
+         */
+        async function handleCheckoutComplete() {
+            // Close the modal
+            closeCheckoutModal();
+
+            // Show success notification
+            showNotification('Payment successful! Your account has been upgraded.', 'success', 6000);
+
+            // Track successful subscription
+            {% if posthog_api_key %}
+            if (window.posthog) {
+                posthog.capture('subscription_completed');
+            }
+            {% endif %}
+
+            // Refresh user info to get updated plan
+            await fetchUserInfo();
+
+            // Update UI to reflect new plan
+            if (typeof loadBillingStatus === 'function') {
+                await loadBillingStatus();
+            }
+        }
+
         // State
         let authToken = localStorage.getItem('quoted_token');
         let currentUser = JSON.parse(localStorage.getItem('quoted_user') || 'null');
@@ -6413,6 +7110,17 @@
             const refCode = urlParams.get('ref');
             if (refCode) {
                 localStorage.setItem('referral_code', refCode);
+            }
+
+            // Check for Stripe checkout return (embedded checkout completion)
+            const sessionId = urlParams.get('session_id');
+            if (sessionId && authToken) {
+                // Clean up URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+                // Show success notification
+                showNotification('Payment successful! Your account has been upgraded.', 'success', 6000);
+                // Refresh user info
+                fetchUserInfo();
             }
 
             if (authToken && currentUser) {
@@ -8639,22 +9347,17 @@
                 document.getElementById('onboardingIntro').style.display = 'none';
                 document.getElementById('inputSection').style.display = 'block';
 
-                // Show success message if showNotification exists, otherwise use alert
-                const successMessage = result.message || 'Ready to generate your first quote! You can customize pricing anytime from Settings.';
-                if (typeof showNotification === 'function') {
-                    showNotification(successMessage, 'success');
-                } else {
-                    alert(successMessage);
-                }
+                // Show welcome modal instead of toast/alert
+                showWelcomeModal();
 
-                // Switch to quotes tab immediately
+                // Switch to quotes tab immediately (modal appears on top)
                 setTimeout(() => {
                     switchTab('quotes');
-                }, 500);
+                }, 100);
 
             } catch (err) {
                 console.error('Error activating try-first:', err);
-                alert(err.message || 'Failed to set up pricing. Please try again or choose a different onboarding option.');
+                showNotification(err.message || 'Failed to set up pricing. Please try again.', 'error');
 
                 // Restore button and list item states (DISC-093)
                 const btn = event.target.closest('button') || document.querySelector('.onboarding-options .btn-primary');
@@ -10666,12 +11369,14 @@
         }
 
         // Create a pricing card element (safe DOM construction)
+        // DISC-098: Updated to support single-tier pricing
         function createPricingCard(plan) {
             // Map API fields to expected names
             const tier = plan.name || plan.tier;
             const monthlyPrice = plan.price_monthly || plan.monthly_price;
-            const annualPrice = plan.annual_price || Math.round(monthlyPrice * 10); // 2 months free
-            const isFeatured = tier === 'Pro';
+            const annualPrice = plan.price_annual || plan.annual_price || Math.round(monthlyPrice * 10);
+            // DISC-098: Unlimited plan is now featured (single tier)
+            const isFeatured = tier === 'Unlimited' || tier === 'Pro';
             const price = billingPeriod === 'annual' ? annualPrice : monthlyPrice;
             const quotesPerMonth = plan.quotes_per_month;
             const overagePrice = (plan.overage_price ?? plan.overage_price_per_quote ?? 0).toFixed(2);
@@ -10703,39 +11408,52 @@
 
             card.appendChild(priceEl);
 
-            // Annual note
+            // Annual note with savings
             if (billingPeriod === 'annual') {
                 const annualNote = document.createElement('div');
                 annualNote.className = 'plan-annual-note';
-                const savings = (monthlyPrice * 12 - annualPrice).toFixed(0);
-                annualNote.textContent = `$${annualPrice}/year (save $${savings})`;
+                const monthlyCost = (annualPrice / 12).toFixed(2);
+                const savings = Math.round(((monthlyPrice * 12 - annualPrice) / (monthlyPrice * 12)) * 100);
+                annualNote.textContent = `Just $${monthlyCost}/mo (save ${savings}%)`;
                 card.appendChild(annualNote);
             }
 
-            // Features list
+            // Features list - use API features if provided, otherwise generate
             const featuresList = document.createElement('ul');
             featuresList.className = 'plan-features';
 
             const isUnlimited = quotesPerMonth >= 999999;
-            const features = [
-                { text: isUnlimited ? 'Unlimited quotes' : `${quotesPerMonth} quotes`, bold: true, suffix: isUnlimited ? '' : ' per month' },
-                ...(isUnlimited ? [] : [{ text: `$${overagePrice} per extra quote`, bold: false }]),
-                { text: 'PDF export', bold: false },
-                { text: 'Learning system', bold: false },
-                { text: 'Email support', bold: false }
+
+            // DISC-098: Use features from API if provided
+            const features = plan.features || [
+                isUnlimited ? 'Unlimited quotes' : `${quotesPerMonth} quotes per month`,
+                ...(isUnlimited ? [] : [`$${overagePrice} per extra quote`]),
+                'PDF export with your branding',
+                'Learning system',
+                'Email support'
             ];
 
-            features.forEach(feature => {
+            features.forEach((feature, index) => {
                 const li = document.createElement('li');
-                if (feature.bold) {
+                // First feature (unlimited quotes) should be bold
+                if (index === 0 && typeof feature === 'string' && feature.includes('nlimited')) {
                     const strong = document.createElement('strong');
-                    strong.textContent = feature.text;
+                    strong.textContent = feature;
                     li.appendChild(strong);
-                    if (feature.suffix) {
-                        li.appendChild(document.createTextNode(feature.suffix));
+                } else if (typeof feature === 'object') {
+                    // Handle object format { text, bold, suffix }
+                    if (feature.bold) {
+                        const strong = document.createElement('strong');
+                        strong.textContent = feature.text;
+                        li.appendChild(strong);
+                        if (feature.suffix) {
+                            li.appendChild(document.createTextNode(feature.suffix));
+                        }
+                    } else {
+                        li.textContent = feature.text;
                     }
                 } else {
-                    li.textContent = feature.text;
+                    li.textContent = feature;
                 }
                 featuresList.appendChild(li);
             });
@@ -10748,6 +11466,14 @@
             btn.textContent = `Choose ${tier}`;
             btn.onclick = () => startCheckout(plan.id || tier.toLowerCase(), billingPeriod);
             card.appendChild(btn);
+
+            // DISC-098: Add value prop for unlimited plan
+            if (plan.value_props && plan.value_props.tagline) {
+                const valueNote = document.createElement('div');
+                valueNote.style.cssText = 'margin-top: 12px; font-size: 0.85rem; color: var(--text-muted); text-align: center;';
+                valueNote.textContent = plan.value_props.tagline;
+                card.appendChild(valueNote);
+            }
 
             return card;
         }
@@ -10772,38 +11498,8 @@
             }
             {% endif %}
 
-            try {
-                const response = await fetch(`${API_BASE}/billing/create-checkout`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${authToken}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        plan_tier: planTier,
-                        billing_interval: interval,
-                        success_url: window.location.origin + '/?checkout=success',
-                        cancel_url: window.location.origin + '/?checkout=cancelled'
-                    })
-                });
-
-                if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(error.detail || 'Failed to create checkout session');
-                }
-
-                const data = await response.json();
-
-                // Redirect to Stripe Checkout
-                if (data.checkout_url) {
-                    window.location.href = data.checkout_url;
-                } else {
-                    throw new Error('No checkout URL returned');
-                }
-            } catch (err) {
-                console.error('Checkout error:', err);
-                showError('Failed to start checkout: ' + err.message);
-            }
+            // Use embedded checkout modal
+            await showCheckoutModal(planTier, interval);
         }
 
         // Open Stripe customer portal
@@ -10846,8 +11542,8 @@
             }
             {% endif %}
 
-            // Default to Professional monthly (most common choice)
-            await startCheckout('Professional', 'month');
+            // DISC-098: Default to Unlimited plan (single tier)
+            await startCheckout('unlimited', 'monthly');
         }
 
         // Upgrade from quote limit warning
@@ -10859,8 +11555,8 @@
             }
             {% endif %}
 
-            // Default to Professional monthly
-            await startCheckout('Professional', 'month');
+            // Default to unlimited monthly
+            await startCheckout('unlimited', 'monthly');
         }
 
         // Quick upgrade from modal

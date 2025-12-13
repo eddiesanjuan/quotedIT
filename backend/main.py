@@ -202,6 +202,7 @@ if frontend_path.exists():
             "posthog_api_key": settings.posthog_api_key,
             "sentry_dsn": settings.sentry_dsn,
             "environment": settings.environment,
+            "stripe_publishable_key": settings.stripe_publishable_key,
         })
 
     @app.get("/demo")

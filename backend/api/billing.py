@@ -18,10 +18,17 @@ router = APIRouter()
 
 class CheckoutRequest(BaseModel):
     """Request to create a checkout session."""
-    plan_tier: str  # "starter", "pro", or "team"
+    plan_tier: str  # "unlimited" (new) or legacy: "starter", "pro", "team"
     billing_interval: str = "monthly"  # "monthly" or "annual"
     success_url: str
     cancel_url: str
+
+
+class EmbeddedCheckoutRequest(BaseModel):
+    """Request to create an embedded checkout session."""
+    plan_tier: str = "unlimited"  # Default to unlimited (DISC-098)
+    billing_interval: str = "monthly"  # "monthly" or "annual"
+    return_url: str  # URL to return to after checkout
 
 
 class PortalRequest(BaseModel):
@@ -50,10 +57,12 @@ async def create_checkout_session(
     Create a Stripe checkout session for subscription.
     Returns checkout URL to redirect user to Stripe payment page.
     """
-    if request.plan_tier not in ["starter", "pro", "team"]:
+    # DISC-098: unlimited is the new single tier; legacy tiers still accepted for existing subscribers
+    valid_tiers = ["unlimited", "starter", "pro", "team"]
+    if request.plan_tier not in valid_tiers:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Invalid plan tier: {request.plan_tier}. Must be starter, pro, or team."
+            detail=f"Invalid plan tier: {request.plan_tier}. Must be one of: {', '.join(valid_tiers)}"
         )
 
     try:
@@ -74,6 +83,43 @@ async def create_checkout_session(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to create checkout session: {str(e)}"
+        )
+
+
+@router.post("/create-embedded-checkout")
+async def create_embedded_checkout_session(
+    request: EmbeddedCheckoutRequest,
+    user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Create a Stripe embedded checkout session.
+    Returns client_secret for initializing Stripe Embedded Checkout on the frontend.
+    """
+    valid_tiers = ["unlimited", "starter", "pro", "team"]
+    if request.plan_tier not in valid_tiers:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid plan tier: {request.plan_tier}. Must be one of: {', '.join(valid_tiers)}"
+        )
+
+    try:
+        result = await BillingService.create_embedded_checkout_session(
+            db=db,
+            user_id=user["id"],
+            plan_tier=request.plan_tier,
+            billing_interval=request.billing_interval,
+            return_url=request.return_url,
+        )
+
+        return {
+            "client_secret": result["client_secret"],
+            "session_id": result["session_id"],
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to create embedded checkout session: {str(e)}"
         )
 
 
@@ -221,56 +267,43 @@ async def get_plans():
     """
     Get available subscription plans and pricing.
     Public endpoint - no authentication required.
+
+    DISC-098: Returns single-tier "unlimited" pricing.
+    Legacy tiers no longer shown to new users.
     """
     return {
         "plans": [
             {
-                "id": "starter",
-                "name": "Starter",
-                "price_monthly": settings.starter_price_monthly / 100,  # Convert cents to dollars
-                "quotes_per_month": settings.starter_monthly_quotes,
-                "overage_price": settings.starter_overage_price / 100,
-                "features": [
-                    f"{settings.starter_monthly_quotes} quotes per month",
-                    f"${settings.starter_overage_price / 100:.2f} per additional quote",
-                    "AI-powered quote generation",
-                    "PDF export",
-                    "Quote history",
-                ],
-            },
-            {
-                "id": "pro",
-                "name": "Pro",
-                "price_monthly": settings.pro_price_monthly / 100,
-                "quotes_per_month": settings.pro_monthly_quotes,
-                "overage_price": settings.pro_overage_price / 100,
-                "features": [
-                    f"{settings.pro_monthly_quotes} quotes per month",
-                    f"${settings.pro_overage_price / 100:.2f} per additional quote",
-                    "AI-powered quote generation",
-                    "PDF export",
-                    "Quote history",
-                    "Priority support",
-                    "Custom branding",
-                ],
-            },
-            {
-                "id": "team",
-                "name": "Team",
-                "price_monthly": settings.team_price_monthly / 100,
-                "quotes_per_month": settings.team_monthly_quotes,
-                "overage_price": settings.team_overage_price / 100,
+                "id": "unlimited",
+                "name": "Unlimited",
+                "price_monthly": settings.unlimited_price_monthly / 100,  # $9.00
+                "price_annual": settings.unlimited_price_annual / 100,  # $59.00
+                "quotes_per_month": settings.unlimited_monthly_quotes,
+                "overage_price": 0,
                 "features": [
                     "Unlimited quotes",
-                    "Everything in Pro",
-                    "Team collaboration",
-                    "White-label branding",
-                    "Priority support",
+                    "AI-powered quote generation",
+                    "PDF export with your branding",
+                    "Quote history & customer tracking",
+                    "Learning system that improves over time",
+                    "Email support",
                 ],
+                # ROI messaging (DISC-098)
+                "value_props": {
+                    "time_saved": "20 min per quote",
+                    "monthly_savings": "$160+",  # 10 quotes × 20 min × $50/hr
+                    "tagline": "Less than a cup of coffee. Unlimited professional quotes.",
+                },
             },
         ],
         "trial": {
             "days": settings.trial_days,
             "quote_limit": settings.trial_quote_limit,
         },
+        # Legacy plans (not shown in UI, but available for existing subscriber webhook handling)
+        "legacy_plans": [
+            {"id": "starter", "name": "Starter", "price_monthly": settings.starter_price_monthly / 100},
+            {"id": "pro", "name": "Pro", "price_monthly": settings.pro_price_monthly / 100},
+            {"id": "team", "name": "Team", "price_monthly": settings.team_price_monthly / 100},
+        ],
     }
