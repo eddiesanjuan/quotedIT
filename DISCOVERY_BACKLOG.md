@@ -24,9 +24,9 @@ To approve: Change status from DISCOVERED → READY
 |--------|-------|
 | DEPLOYED | 54 |
 | COMPLETE | 1 |
-| READY | 13 |
+| READY | 14 |
 | DISCOVERED | 22 |
-| **Total** | **90** |
+| **Total** | **91** |
 
 **Prompt Optimization**: DISC-041 complete → DISC-052, DISC-054 (learning improvements via prompt injection)
 **Deprioritized**: DISC-053, DISC-055 (structured storage/embeddings - over-engineering; prompt injection approach preferred)
@@ -664,6 +664,47 @@ To approve: Change status from DISCOVERED → READY
 - Support link visible in UI; users can reach founder directly
 - Response time under 4 hours during beta
 - Qualitative: "Wow, the founder replied!" moments create advocates
+
+---
+
+### DISC-100: Landing Page - "Pricing Intelligence for Novices" Messaging 📢 GROWTH (READY)
+
+**Source**: Founder Request (Eddie, 2025-12-19)
+**Impact**: HIGH | **Effort**: S | **Score**: 3.0
+**Sprint Alignment**: Expands target audience beyond experienced contractors to novices/freelancers
+
+**Problem**: Current landing page positions Quoted as "save time on quotes" - which resonates with experienced contractors. But there's a larger underserved audience: **novices who don't know what to charge yet**. New freelancers, people who just went solo, artists, consultants - they don't need speed, they need **pricing confidence**. The learning system is perfect for them but we don't communicate this.
+
+**Target Audiences**:
+- Consultants going independent → "What do I charge for this?"
+- Artists/creatives → "I always undercharge, I don't know my worth"
+- Event planners → "Every event is different, pricing is chaos"
+- Handymen who just went solo → "I know the work, not the business side"
+
+**Proposed Work**:
+1. **Add "Pricing Intelligence" section** to landing page:
+   - Headline: "Your pricing gets smarter with every quote"
+   - Subhead: "New to pricing? No problem. Quoted learns from every correction you make."
+   - Body: "After 10-20 quotes, your AI starts nailing your rates automatically. It's like building a pricing brain trained on YOUR decisions."
+2. **Add novice-focused testimonial/quote**:
+   - "I went from guessing to confident in two weeks"
+   - "Finally stopped second-guessing every number"
+3. **Consider dual messaging** on hero:
+   - For experienced: "Voice to quote in seconds"
+   - For novices: "AI that learns what to charge"
+4. **Update demo** to show the learning/correction flow more prominently
+5. **Reddit/marketing alignment** - this messaging works for r/freelance, r/ArtBusiness, r/consulting
+
+**Technical Considerations**:
+- Updates to `frontend/landing.html`
+- Keep mobile layout in mind
+- May want A/B test: current vs. novice-focused messaging
+- Complements DISC-096 (Demo Learning Explanation)
+
+**Success Metric**:
+- Increased signups from non-contractor audiences
+- User feedback mentions "pricing confidence" or "learning" as value prop
+- Lower bounce rate on landing page for freelance/creative traffic sources
 
 ---
 
