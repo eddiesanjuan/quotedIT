@@ -1,6 +1,6 @@
 # Discovery Backlog
 
-**Last Updated**: 2025-12-12
+**Last Updated**: 2025-12-19
 **Source**: `/quoted-discover` autonomous discovery cycles
 
 ---
@@ -24,9 +24,9 @@ To approve: Change status from DISCOVERED → READY
 |--------|-------|
 | DEPLOYED | 54 |
 | COMPLETE | 1 |
-| READY | 12 |
+| READY | 13 |
 | DISCOVERED | 22 |
-| **Total** | **89** |
+| **Total** | **90** |
 
 **Prompt Optimization**: DISC-041 complete → DISC-052, DISC-054 (learning improvements via prompt injection)
 **Deprioritized**: DISC-053, DISC-055 (structured storage/embeddings - over-engineering; prompt injection approach preferred)
@@ -633,6 +633,37 @@ To approve: Change status from DISCOVERED → READY
 - Consider A/B testing new vs. old messaging
 
 **Success Metric**: Improved landing page conversion; CRM mentioned in user feedback/reviews
+
+---
+
+### DISC-099: Direct Founder Support Channel - Text/Twitter Link 📞 PRODUCT (READY)
+
+**Source**: Founder Request (Eddie, 2025-12-19)
+**Impact**: HIGH | **Effort**: S | **Score**: 3.0
+**Sprint Alignment**: Early user trust & retention - high-touch support differentiates from faceless SaaS
+
+**Problem**: As we push Reddit advertising (DISC-033), new users may need immediate help. Early-stage startups win by offering founder-level support that competitors can't match. Currently there's no obvious "talk to a human" path in the app. Users hitting friction may churn silently instead of reaching out.
+
+**Proposed Work**:
+1. **Add support contact in-app** - Floating help button or nav item
+2. **Link to preferred channel** - Options:
+   - SMS/text link (`sms:+1XXXXXXXXXX`) for mobile users
+   - Twitter DM link (`https://twitter.com/messages/compose?recipient_id=XXX`)
+   - Email fallback for web users
+3. **Help page update** - Add "Talk to Eddie" section on `help.html`
+4. **Consider PostHog tracking** - Track when users click support link (identify friction points)
+5. **Optional: Magic response system** - Auto-reply confirming message received + ETA
+
+**Technical Considerations**:
+- Mobile-friendly: SMS links work great on phone, less so on desktop
+- Twitter DM requires user to be logged into Twitter
+- Could use a simple toggle to switch between SMS/Twitter based on founder preference
+- Privacy: Consider not exposing personal phone number publicly (use redirect service?)
+
+**Success Metric**:
+- Support link visible in UI; users can reach founder directly
+- Response time under 4 hours during beta
+- Qualitative: "Wow, the founder replied!" moments create advocates
 
 ---
 
