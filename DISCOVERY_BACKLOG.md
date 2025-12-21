@@ -22,9 +22,9 @@ To approve: Change status from DISCOVERED → READY
 
 | Status | Count |
 |--------|-------|
-| DEPLOYED | 55 |
+| DEPLOYED | 63 |
 | COMPLETE | 1 |
-| READY | 14 |
+| READY | 6 |
 | DISCOVERED | 22 |
 | **Total** | **92** |
 
@@ -503,7 +503,7 @@ To approve: Change status from DISCOVERED → READY
 
 ---
 
-### DISC-094: Fix "Join Waitlist" Button Broken Link 🐛 (READY)
+### DISC-094: Fix "Join Waitlist" Button Broken Link 🐛 (DEPLOYED)
 
 **Source**: Founder Request (Eddie, 2025-12-12)
 **Impact**: LOW (until beta fills) | **Effort**: S | **Score**: 1.0
@@ -526,7 +526,7 @@ To approve: Change status from DISCOVERED → READY
 
 ---
 
-### DISC-095: User Dashboard - Home Base After Login 🏠 PRODUCT (READY)
+### DISC-095: User Dashboard - Home Base After Login 🏠 PRODUCT (DEPLOYED)
 
 **Source**: Founder Request (Eddie, 2025-12-12)
 **Impact**: HIGH | **Effort**: L | **Score**: 1.5
@@ -580,7 +580,7 @@ To approve: Change status from DISCOVERED → READY
 
 ---
 
-### DISC-096: Demo Learning Explanation - Show Edit→Teach Flow 🎓 GROWTH (READY)
+### DISC-096: Demo Learning Explanation - Show Edit→Teach Flow 🎓 GROWTH (DEPLOYED)
 
 **Source**: Founder Request (Eddie, 2025-12-12)
 **Impact**: HIGH | **Effort**: S | **Score**: 3.0
@@ -605,7 +605,7 @@ To approve: Change status from DISCOVERED → READY
 
 ---
 
-### DISC-097: Landing Page & Marketing - Add CRM Feature Messaging 📢 GROWTH (READY)
+### DISC-097: Landing Page & Marketing - Add CRM Feature Messaging 📢 GROWTH (DEPLOYED)
 
 **Source**: Founder Request (Eddie, 2025-12-12)
 **Impact**: HIGH | **Effort**: S | **Score**: 3.0
@@ -884,7 +884,7 @@ Analyzed Codex (GPT-5.2) Executive UX Review against current codebase. Verified 
 
 ---
 
-### DISC-071: Quote-to-Invoice Conversion 💰 (READY)
+### DISC-071: Quote-to-Invoice Conversion 💰 (DEPLOYED)
 
 **Source**: Founder Request (Eddie, 2025-12-08)
 **Impact**: HIGH | **Effort**: L | **Score**: 1.5
@@ -917,7 +917,7 @@ Analyzed Codex (GPT-5.2) Executive UX Review against current codebase. Verified 
 
 ---
 
-### DISC-072: PDF Template Polish & Robustness 📄 (READY)
+### DISC-072: PDF Template Polish & Robustness 📄 (DEPLOYED)
 
 **Source**: Founder Request (Eddie, 2025-12-08)
 **Impact**: HIGH | **Effort**: M | **Score**: 2.0
@@ -1284,7 +1284,7 @@ Analyzed Codex (GPT-5.2) Executive UX Review against current codebase. Verified 
 
 ---
 
-### DISC-092: CRM Task & Reminder System 📋 CRM PHASE 4 (READY)
+### DISC-092: CRM Task & Reminder System 📋 CRM PHASE 4 (DEPLOYED)
 
 **Source**: Founder Request (Eddie, 2025-12-11)
 **Impact**: HIGH | **Effort**: L | **Score**: 1.0
