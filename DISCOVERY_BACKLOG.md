@@ -484,22 +484,50 @@ To approve: Change status from DISCOVERED → READY
 
 ---
 
-### DISC-033: Reddit Contractor Launch Post 🚀 FOUNDER ACTION (READY)
+### DISC-033: Reddit Organic Launch - Pricing Intelligence for Novices 🚀 FOUNDER ACTION (READY)
 
-**Source**: Growth Discovery Agent
+**Source**: Growth Discovery Agent (updated 2025-12-19 per founder direction)
 **Impact**: HIGH | **Effort**: M | **Score**: 1.5
-**Sprint Alignment**: 410K+ contractors on Reddit, single post could deliver 20%+ of beta goal
+**Sprint Alignment**: Broad Reddit reach across freelance/creative/trade communities
 
-**Problem**: 410K+ contractors on Reddit, zero awareness of Quoted. Warm audience that complains daily about quoting friction. Demo ready but not distributed.
+**Problem**: Millions of freelancers, consultants, artists, and tradespeople on Reddit struggle with pricing - not speed. They don't know what to charge, second-guess every quote, and chronically undervalue their work. The learning system is perfect for them but we've been messaging "save time" instead of "build pricing confidence."
+
+**Target Subreddits** (prioritized by fit):
+| Subreddit | Size | Why It Fits |
+|-----------|------|-------------|
+| r/freelance | 1.4M | Consultants, creatives, all struggle with pricing |
+| r/ArtBusiness | 60K | Artists chronically undercharge |
+| r/consulting | 400K | "What do I charge?" is constant topic |
+| r/Handyman | 35K | Solo operators figuring out rates |
+| r/smallbusiness | 1.5M | Broad, includes all above |
+| r/EventPlanning | 36K | Variable pricing, complex quotes |
 
 **Proposed Work**:
-1. Craft founder-story Reddit post for r/contractors, r/Construction, r/smallbusiness
-2. Format: "I built a voice-to-quote tool because I was tired of 30-minute spreadsheets - would love beta feedback"
-3. Include demo link, emphasize learning system
-4. Post during peak hours (Tuesday-Thursday 9am-11am EST)
-5. Respond to every comment within 1 hour
+1. **Lead with pricing confidence, not speed**:
+   - ❌ "I built a voice-to-quote tool to save time"
+   - ✅ "I built something to stop second-guessing every price I quote"
+2. **Post as feedback request, not ad**:
+   - Ask genuine questions: "How did you figure out your pricing?"
+   - Share the learning feature as the differentiator
+   - Don't link in post - wait for comments to ask
+3. **Start with r/freelance** (biggest, broadest audience)
+4. **Post timing**: Tuesday-Thursday 9am-11am EST
+5. **Respond to every comment within 1 hour** - be genuinely helpful
 
-**Success Metric**: 5,000+ impressions; 3% click demo (150 views); 15% convert = 22 signups
+**Sample Post (r/freelance)**:
+> **Title:** I built something to stop second-guessing every price I quote
+>
+> I used to agonize over every quote. Too high? Lose the job. Too low? Hate myself for a week.
+>
+> So I built a tool where I describe the project out loud, and it generates a quote. But here's the part that actually helped: every time I correct a price, it learns. After ~20 quotes, it basically built a "pricing brain" from my own decisions.
+>
+> Question for the group: How long did it take you to feel confident in your pricing after going solo?
+
+**Success Metric**:
+- 5,000+ impressions across subreddits
+- Genuine engagement (comments asking "what did you build?")
+- 20+ signups from Reddit traffic
+- Users mentioning "pricing confidence" in feedback
 
 ---
 
