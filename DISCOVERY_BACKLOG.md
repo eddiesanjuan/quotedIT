@@ -1,6 +1,6 @@
 # Discovery Backlog
 
-**Last Updated**: 2025-12-19
+**Last Updated**: 2025-12-21
 **Source**: `/quoted-discover` autonomous discovery cycles
 
 ---
@@ -22,11 +22,11 @@ To approve: Change status from DISCOVERED → READY
 
 | Status | Count |
 |--------|-------|
-| DEPLOYED | 54 |
+| DEPLOYED | 55 |
 | COMPLETE | 1 |
 | READY | 14 |
 | DISCOVERED | 22 |
-| **Total** | **91** |
+| **Total** | **92** |
 
 **Prompt Optimization**: DISC-041 complete → DISC-052, DISC-054 (learning improvements via prompt injection)
 **Deprioritized**: DISC-053, DISC-055 (structured storage/embeddings - over-engineering; prompt injection approach preferred)
@@ -633,6 +633,22 @@ To approve: Change status from DISCOVERED → READY
 - Consider A/B testing new vs. old messaging
 
 **Success Metric**: Improved landing page conversion; CRM mentioned in user feedback/reviews
+
+---
+
+### DISC-098: Simplified Single-Tier Pricing - $9/month or $59/year 💰 PRICING (DEPLOYED)
+
+**Source**: Founder Request (Eddie, 2025-12-12)
+**Impact**: HIGH | **Effort**: L | **Score**: 2.0
+**Sprint Alignment**: Pricing strategy overhaul - "no-brainer" pricing to maximize adoption
+**Deployed**: 2025-12-12
+**Commits**: e20f1ff, 638e13e, 527c512, 17fb1e5, 560fda1
+
+**Implementation Summary**:
+- Single tier $9/month or $59/year (45% savings) unlimited quotes
+- Stripe embedded checkout modal
+- Onboarding welcome modal for new subscribers
+- Migration script to clear test-mode Stripe customer IDs
 
 ---
 
