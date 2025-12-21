@@ -407,6 +407,69 @@
             text-align: center;
         }
 
+        /* Pricing Intelligence Section (DISC-100) */
+        .pricing-intelligence {
+            background: linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            border-top: 1px solid var(--border);
+        }
+
+        .pricing-intel-content {
+            text-align: center;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .pricing-intel-content h2 {
+            font-family: var(--font-serif);
+            font-size: clamp(2rem, 5vw, 3rem);
+            font-weight: 400;
+            line-height: 1.2;
+            letter-spacing: -0.02em;
+            margin-bottom: 16px;
+        }
+
+        .pricing-intel-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-top: 24px;
+        }
+
+        .pricing-intel-card {
+            padding: 32px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .pricing-intel-card:hover {
+            border-color: var(--border-hover);
+            transform: translateY(-4px);
+        }
+
+        .pricing-intel-number {
+            font-family: var(--font-serif);
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+        }
+
+        .pricing-intel-card h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+        }
+
+        .pricing-intel-card p {
+            font-size: 0.9375rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
         /* Learning Section */
         .learning {
             border-top: 1px solid var(--border);
@@ -1956,11 +2019,42 @@
         </div>
     </section>
 
+    <!-- Pricing Intelligence for Novices (DISC-100) -->
+    <section class="pricing-intelligence">
+        <div class="container">
+            <div class="pricing-intel-content">
+                <p class="section-label fade-in">Pricing Intelligence</p>
+                <h2 class="fade-in fade-in-delay-1">Your pricing gets smarter with every quote.</h2>
+                <p class="fade-in fade-in-delay-2" style="font-size: 1.25rem; color: var(--text-secondary); margin-bottom: 40px; max-width: 600px; margin-left: auto; margin-right: auto;">New to pricing? No problem. Quoted learns from every correction you make.</p>
+
+                <div class="pricing-intel-grid fade-in fade-in-delay-3">
+                    <div class="pricing-intel-card">
+                        <div class="pricing-intel-number">5 min</div>
+                        <h3>Quick Setup</h3>
+                        <p>Answer a few questions about your rates and typical projects. That's your starting point—not a ceiling.</p>
+                    </div>
+                    <div class="pricing-intel-card">
+                        <div class="pricing-intel-number">10-20</div>
+                        <h3>Quotes to Accuracy</h3>
+                        <p>After 10-20 quotes with your corrections, the AI starts nailing your rates automatically. Like building a pricing brain trained on YOUR decisions.</p>
+                    </div>
+                    <div class="pricing-intel-card">
+                        <div class="pricing-intel-number">∞</div>
+                        <h3>Always Learning</h3>
+                        <p>Every correction makes it smarter. Different pricing for different job types? Rush premiums? It learns your patterns.</p>
+                    </div>
+                </div>
+
+                <p class="fade-in fade-in-delay-4" style="margin-top: 40px; font-size: 1.125rem;"><span class="highlight">"I went from guessing to confident in two weeks."</span><br><span style="color: var(--text-secondary); font-size: 0.9375rem;">— First-time freelancer, now pricing like a pro</span></p>
+            </div>
+        </div>
+    </section>
+
     <!-- Learning System -->
     <section class="learning">
         <div class="container">
             <div class="learning-content">
-                <p class="section-label fade-in">Smart Pricing</p>
+                <p class="section-label fade-in">How It Works</p>
                 <h2 class="fade-in fade-in-delay-1">Gets smarter with every correction.</h2>
                 <p class="fade-in fade-in-delay-2" style="margin-bottom: 32px;"><span class="highlight">First, we interview you.</span> In about 5 minutes, our AI learns how you price—your rates, your typical projects, what makes jobs cost more. It builds a pricing model customized to your business, not generic templates.</p>
                 <p class="fade-in fade-in-delay-3" style="margin-bottom: 32px;"><span class="highlight">Then it keeps learning.</span> Every time you adjust a quote, the system refines its understanding. Do kitchens differently than bathrooms? Charge more for rush jobs? It learns the patterns for each type of work you do.</p>
