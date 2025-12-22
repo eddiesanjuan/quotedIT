@@ -801,6 +801,455 @@
             color: var(--text-primary);
         }
 
+        /* ========== DISC-110: Product Tour System ========== */
+
+        /* Tour Overlay */
+        .tour-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 900;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .tour-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Tour Spotlight - cuts through overlay */
+        .tour-spotlight {
+            position: fixed;
+            border-radius: 12px;
+            box-shadow:
+                0 0 0 4px rgba(99, 102, 241, 0.5),
+                0 0 0 9999px rgba(0, 0, 0, 0.85);
+            z-index: 901;
+            pointer-events: none;
+            opacity: 0;
+            transition: all 0.4s ease;
+        }
+
+        .tour-spotlight.active {
+            opacity: 1;
+        }
+
+        /* Tour Tooltip */
+        .tour-tooltip {
+            position: fixed;
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 340px;
+            width: calc(100% - 32px);
+            z-index: 902;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        .tour-tooltip.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .tour-tooltip-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background: linear-gradient(135deg, var(--accent), #8b5cf6);
+            color: white;
+            font-size: 0.6875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            border-radius: 100px;
+            margin-bottom: 12px;
+        }
+
+        .tour-tooltip-title {
+            font-family: var(--font-serif);
+            font-size: 1.25rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+            letter-spacing: -0.02em;
+        }
+
+        .tour-tooltip-body {
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+
+        .tour-tooltip-highlight {
+            color: var(--success);
+            font-weight: 500;
+        }
+
+        /* Tour Navigation */
+        .tour-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .tour-nav-progress {
+            display: flex;
+            gap: 6px;
+        }
+
+        .tour-progress-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--border);
+            transition: all 0.3s ease;
+        }
+
+        .tour-progress-dot.active {
+            background: var(--accent);
+            width: 16px;
+            border-radius: 3px;
+        }
+
+        .tour-progress-dot.completed {
+            background: var(--success);
+        }
+
+        .tour-nav-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .tour-btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text-secondary);
+            font-family: var(--font-sans);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-height: 40px;
+        }
+
+        .tour-btn:hover {
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+            border-color: var(--border-hover);
+        }
+
+        .tour-btn.primary {
+            background: linear-gradient(135deg, var(--accent), #8b5cf6);
+            border-color: transparent;
+            color: white;
+        }
+
+        .tour-btn.primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+        }
+
+        .tour-btn.cta {
+            background: linear-gradient(135deg, #00ff88, #00cc6a);
+            border-color: transparent;
+            color: var(--bg-primary);
+            font-weight: 600;
+        }
+
+        .tour-btn.cta:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(0, 255, 136, 0.4);
+        }
+
+        /* Tour Welcome Modal */
+        .tour-welcome {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.95);
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 440px;
+            width: calc(100% - 40px);
+            text-align: center;
+            z-index: 902;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .tour-welcome.active {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .tour-welcome-icon {
+            width: 72px;
+            height: 72px;
+            margin: 0 auto 24px;
+            background: linear-gradient(135deg, var(--accent), #8b5cf6);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .tour-welcome-icon svg {
+            width: 36px;
+            height: 36px;
+            stroke: white;
+        }
+
+        .tour-welcome h2 {
+            font-family: var(--font-serif);
+            font-size: 1.5rem;
+            margin-bottom: 12px;
+        }
+
+        .tour-welcome p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            margin-bottom: 28px;
+            line-height: 1.5;
+        }
+
+        .tour-welcome-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .tour-welcome-skip {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-family: var(--font-sans);
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: color 0.2s ease;
+            padding: 8px;
+        }
+
+        .tour-welcome-skip:hover {
+            color: var(--text-secondary);
+        }
+
+        /* Tour Feature Preview Cards */
+        .tour-preview-card {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 16px;
+            border: 1px solid var(--border);
+        }
+
+        .tour-preview-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.875rem;
+        }
+
+        .tour-preview-row:last-child {
+            border-bottom: none;
+        }
+
+        .tour-preview-label {
+            color: var(--text-secondary);
+        }
+
+        .tour-preview-value {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .tour-preview-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            background: rgba(74, 222, 128, 0.1);
+            border: 1px solid rgba(74, 222, 128, 0.2);
+            border-radius: 100px;
+            color: var(--success);
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        /* Tour Final CTA */
+        .tour-final {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.95);
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 48px 40px;
+            max-width: 500px;
+            width: calc(100% - 40px);
+            text-align: center;
+            z-index: 902;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .tour-final.active {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .tour-final-checkmark {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 24px;
+            background: linear-gradient(135deg, #00ff88, #00cc6a);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tour-final-checkmark svg {
+            width: 40px;
+            height: 40px;
+            stroke: var(--bg-primary);
+            stroke-width: 3;
+        }
+
+        .tour-final h2 {
+            font-family: var(--font-serif);
+            font-size: 1.75rem;
+            margin-bottom: 12px;
+        }
+
+        .tour-final-subtitle {
+            color: var(--text-secondary);
+            font-size: 1.0625rem;
+            margin-bottom: 32px;
+            line-height: 1.5;
+        }
+
+        .tour-feature-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 32px;
+        }
+
+        .tour-feature-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            font-size: 0.875rem;
+        }
+
+        .tour-feature-item svg {
+            width: 18px;
+            height: 18px;
+            stroke: var(--success);
+            flex-shrink: 0;
+        }
+
+        .tour-final-cta {
+            display: block;
+            width: 100%;
+            padding: 16px 32px;
+            background: linear-gradient(135deg, #00ff88, #00cc6a);
+            color: var(--bg-primary);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1rem;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            margin-bottom: 16px;
+        }
+
+        .tour-final-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 255, 136, 0.4);
+        }
+
+        .tour-final-secondary {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: color 0.2s ease;
+            background: none;
+            border: none;
+            font-family: var(--font-sans);
+        }
+
+        .tour-final-secondary:hover {
+            color: var(--text-secondary);
+        }
+
+        /* Mobile Tour Styles */
+        @media (max-width: 768px) {
+            .tour-tooltip {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                top: auto;
+                max-width: none;
+                width: 100%;
+                border-radius: 20px 20px 0 0;
+                padding: 24px 20px 32px;
+                transform: translateY(100%);
+            }
+
+            .tour-tooltip.active {
+                transform: translateY(0);
+            }
+
+            .tour-spotlight {
+                /* Ensure spotlight doesn't go below bottom sheet */
+                max-height: calc(100vh - 200px);
+            }
+
+            .tour-welcome,
+            .tour-final {
+                padding: 32px 24px;
+                border-radius: 20px;
+            }
+
+            .tour-feature-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .tour-nav {
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .tour-nav-buttons {
+                width: 100%;
+            }
+
+            .tour-nav-buttons .tour-btn {
+                flex: 1;
+            }
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             nav {
@@ -1022,6 +1471,90 @@
                 <p>Send branded PDF quotes to customers instantly. No design skills needed.</p>
             </div>
         </div>
+    </div>
+
+    <!-- DISC-110: Product Tour Elements -->
+    <div class="tour-overlay" id="tourOverlay"></div>
+    <div class="tour-spotlight" id="tourSpotlight"></div>
+
+    <!-- Tour Welcome Prompt -->
+    <div class="tour-welcome" id="tourWelcome">
+        <div class="tour-welcome-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 16v-4M12 8h.01"/>
+            </svg>
+        </div>
+        <h2>Want a quick tour?</h2>
+        <p>See what else Quoted can do beyond voice-to-quote — including features that save hours every week.</p>
+        <div class="tour-welcome-actions">
+            <button class="tour-btn primary" onclick="startTour()">
+                Show me (60 seconds)
+            </button>
+            <button class="tour-welcome-skip" onclick="skipTour()">
+                Skip — take me to sign up
+            </button>
+        </div>
+    </div>
+
+    <!-- Tour Tooltip (positioned dynamically) -->
+    <div class="tour-tooltip" id="tourTooltip">
+        <span class="tour-tooltip-badge" id="tourBadge">Feature</span>
+        <h3 class="tour-tooltip-title" id="tourTitle">Feature Title</h3>
+        <p class="tour-tooltip-body" id="tourBody">Feature description</p>
+        <div id="tourPreview"></div>
+        <div class="tour-nav">
+            <div class="tour-nav-progress" id="tourProgress"></div>
+            <div class="tour-nav-buttons">
+                <button class="tour-btn" onclick="prevTourStep()" id="tourPrevBtn">Back</button>
+                <button class="tour-btn primary" onclick="nextTourStep()" id="tourNextBtn">Next</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tour Final CTA -->
+    <div class="tour-final" id="tourFinal">
+        <div class="tour-final-checkmark">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <polyline points="20 6 9 17 4 12"/>
+            </svg>
+        </div>
+        <h2>You just saw 20% of Quoted.</h2>
+        <p class="tour-final-subtitle">The rest gets even better once it learns YOUR pricing.</p>
+
+        <div class="tour-feature-grid">
+            <div class="tour-feature-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 20V10M18 20V4M6 20v-4"/>
+                </svg>
+                <span>Learning AI</span>
+            </div>
+            <div class="tour-feature-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+                <span>Customer CRM</span>
+            </div>
+            <div class="tour-feature-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+                <span>Tasks & Reminders</span>
+            </div>
+            <div class="tour-feature-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+                </svg>
+                <span>Invoicing</span>
+            </div>
+        </div>
+
+        <a href="/app" class="tour-final-cta" onclick="trackTourSignup()">
+            Start Free Trial — 75 Quotes Free
+        </a>
+        <button class="tour-final-secondary" onclick="restartTour()">
+            Watch tour again
+        </button>
     </div>
 
     <!-- Conversion Modal -->
@@ -1276,9 +1809,9 @@
 
             currentScene++;
             if (currentScene > 5) {
-                // Demo completed - show conversion modal after a short delay
+                // DISC-110: Demo completed - show tour prompt instead of conversion modal
                 setTimeout(function() {
-                    showConversionModal();
+                    showTourPrompt();
                 }, 1000);
 
                 // Reset to beginning
@@ -1338,6 +1871,326 @@
             showScene(1);
             scheduleNextScene();
         });
+
+        // ========== DISC-110: Product Tour System ==========
+
+        let tourStep = 0;
+        let tourActive = false;
+        const TOUR_STORAGE_KEY = 'quoted_tour_skipped';
+
+        // Tour steps define what to highlight and the messaging
+        // Note: All content here is static/hardcoded, not user-provided
+        const tourSteps = [
+            {
+                badge: 'Learning AI',
+                title: 'Edit any line item',
+                bodyText: 'Change a price and Quoted learns from it. After 10-20 quotes, it knows your pricing better than you do.',
+                bodyHighlight: 'Quoted learns from it',
+                target: 'scene4',
+                previewRows: null
+            },
+            {
+                badge: 'Instant Delivery',
+                title: 'Professional PDFs, ready to send',
+                bodyText: 'Beautiful quotes with your logo and branding. Download or email directly to customers.',
+                bodyHighlight: null,
+                target: 'quoteCard',
+                previewRows: [
+                    { label: '8 PDF templates', value: '✓ Included', isBadge: true },
+                    { label: 'Custom branding', value: '✓ Your logo', isBadge: true }
+                ]
+            },
+            {
+                badge: 'One Tap',
+                title: 'Convert quotes to invoices',
+                bodyText: 'Customer approved? Tap once to turn any quote into a professional invoice. No re-typing.',
+                bodyHighlight: null,
+                target: 'phone-frame',
+                previewRows: [
+                    { label: 'Quote #2847', value: '→ Invoice #2847', isBadge: false },
+                    { label: 'Time saved', value: '✓ 5 minutes', isBadge: true }
+                ]
+            },
+            {
+                badge: 'Never Forget',
+                title: 'Set follow-up reminders',
+                bodyText: '"Remind me to follow up on the Johnson quote Friday" — so no quote falls through the cracks.',
+                bodyHighlight: 'no quote falls through the cracks',
+                target: 'phone-frame',
+                previewRows: [
+                    { label: '📅 Friday, Dec 27', value: 'Follow up: Johnson', isBadge: false },
+                    { label: '💬 Wed, Jan 8', value: 'Check on materials', isBadge: false }
+                ]
+            },
+            {
+                badge: 'Built-in CRM',
+                title: 'Track every customer',
+                bodyText: 'See quote history, contact info, and notes for every customer. No spreadsheets needed.',
+                bodyHighlight: null,
+                target: 'phone-frame',
+                previewRows: [
+                    { label: 'Mike Thompson', value: '4 quotes', isBadge: true },
+                    { label: 'Total value', value: '$12,400', isBadge: false }
+                ]
+            },
+            {
+                badge: 'Gets Smarter',
+                title: 'Your AI improves every day',
+                bodyText: 'The more you use Quoted, the more accurate it gets. Most users hit 95%+ accuracy by quote 20.',
+                bodyHighlight: 'Most users hit 95%+ accuracy by quote 20.',
+                target: 'scene5',
+                previewRows: [
+                    { label: 'Accuracy', value: '97%', isBadge: false, valueStyle: 'color: var(--success)' },
+                    { label: 'Pricing rules learned', value: '24', isBadge: false }
+                ]
+            }
+        ];
+
+        function shouldShowTour() {
+            return localStorage.getItem(TOUR_STORAGE_KEY) !== 'true';
+        }
+
+        function showTourPrompt() {
+            if (!shouldShowTour() || hasShownConversionModal) {
+                showConversionModal();
+                return;
+            }
+
+            isPaused = true;
+            updatePauseButton();
+            if (animationTimer) clearTimeout(animationTimer);
+
+            document.getElementById('tourOverlay').classList.add('active');
+            document.getElementById('tourWelcome').classList.add('active');
+
+            trackEvent('tour_prompt_shown', { source: 'demo_completion' });
+        }
+
+        function startTour() {
+            trackEvent('tour_started', { source: 'welcome_modal' });
+            document.getElementById('tourWelcome').classList.remove('active');
+            tourActive = true;
+            tourStep = 0;
+            showTourStep(tourStep);
+        }
+
+        function skipTour() {
+            trackEvent('tour_skipped', { step: 'welcome' });
+            localStorage.setItem(TOUR_STORAGE_KEY, 'true');
+            hideTourElements();
+            hasShownConversionModal = false;
+            showConversionModal();
+        }
+
+        // Build preview card using safe DOM methods
+        function buildPreviewCard(rows) {
+            if (!rows || rows.length === 0) return null;
+
+            var card = document.createElement('div');
+            card.className = 'tour-preview-card';
+
+            rows.forEach(function(row) {
+                var rowEl = document.createElement('div');
+                rowEl.className = 'tour-preview-row';
+
+                var labelEl = document.createElement('span');
+                labelEl.className = 'tour-preview-label';
+                labelEl.textContent = row.label;
+
+                var valueEl = document.createElement('span');
+                valueEl.className = row.isBadge ? 'tour-preview-badge' : 'tour-preview-value';
+                valueEl.textContent = row.value;
+                if (row.valueStyle) valueEl.style.cssText = row.valueStyle;
+
+                rowEl.appendChild(labelEl);
+                rowEl.appendChild(valueEl);
+                card.appendChild(rowEl);
+            });
+
+            return card;
+        }
+
+        // Build body with optional highlight using safe DOM methods
+        function buildBodyContent(text, highlightText) {
+            var container = document.createDocumentFragment();
+
+            if (!highlightText) {
+                var textNode = document.createTextNode(text);
+                container.appendChild(textNode);
+                return container;
+            }
+
+            var parts = text.split(highlightText);
+            if (parts.length === 2) {
+                container.appendChild(document.createTextNode(parts[0]));
+                var highlight = document.createElement('span');
+                highlight.className = 'tour-tooltip-highlight';
+                highlight.textContent = highlightText;
+                container.appendChild(highlight);
+                container.appendChild(document.createTextNode(parts[1]));
+            } else {
+                container.appendChild(document.createTextNode(text));
+            }
+
+            return container;
+        }
+
+        function showTourStep(stepIndex) {
+            var step = tourSteps[stepIndex];
+            var tooltip = document.getElementById('tourTooltip');
+            var spotlight = document.getElementById('tourSpotlight');
+
+            document.getElementById('tourBadge').textContent = step.badge;
+            document.getElementById('tourTitle').textContent = step.title;
+
+            var bodyEl = document.getElementById('tourBody');
+            bodyEl.textContent = '';
+            bodyEl.appendChild(buildBodyContent(step.bodyText, step.bodyHighlight));
+
+            var previewEl = document.getElementById('tourPreview');
+            previewEl.textContent = '';
+            var previewCard = buildPreviewCard(step.previewRows);
+            if (previewCard) previewEl.appendChild(previewCard);
+
+            updateTourProgress(stepIndex);
+
+            document.getElementById('tourPrevBtn').style.display = stepIndex === 0 ? 'none' : 'inline-flex';
+
+            var nextBtn = document.getElementById('tourNextBtn');
+            if (stepIndex === tourSteps.length - 1) {
+                nextBtn.textContent = 'See all features';
+                nextBtn.classList.add('cta');
+                nextBtn.classList.remove('primary');
+            } else {
+                nextBtn.textContent = 'Next';
+                nextBtn.classList.add('primary');
+                nextBtn.classList.remove('cta');
+            }
+
+            positionSpotlight(step.target);
+            positionTooltip();
+
+            spotlight.classList.add('active');
+            tooltip.classList.add('active');
+
+            trackEvent('tour_step_viewed', {
+                step: stepIndex + 1,
+                step_name: step.badge,
+                total_steps: tourSteps.length
+            });
+        }
+
+        function updateTourProgress(currentStep) {
+            var progressContainer = document.getElementById('tourProgress');
+            progressContainer.textContent = '';
+
+            for (var i = 0; i < tourSteps.length; i++) {
+                var dot = document.createElement('div');
+                dot.className = 'tour-progress-dot';
+                if (i < currentStep) dot.classList.add('completed');
+                if (i === currentStep) dot.classList.add('active');
+                progressContainer.appendChild(dot);
+            }
+        }
+
+        function positionSpotlight(targetId) {
+            var spotlight = document.getElementById('tourSpotlight');
+            var target = document.getElementById(targetId) || document.querySelector('.phone-frame');
+
+            if (!target) return;
+
+            var rect = target.getBoundingClientRect();
+            var padding = 8;
+
+            spotlight.style.top = (rect.top - padding) + 'px';
+            spotlight.style.left = (rect.left - padding) + 'px';
+            spotlight.style.width = (rect.width + padding * 2) + 'px';
+            spotlight.style.height = (rect.height + padding * 2) + 'px';
+        }
+
+        function positionTooltip() {
+            var tooltip = document.getElementById('tourTooltip');
+            var isMobile = window.innerWidth <= 768;
+
+            if (isMobile) {
+                tooltip.style.top = '';
+                tooltip.style.left = '';
+                tooltip.style.right = '';
+            } else {
+                var phoneFrame = document.querySelector('.phone-frame');
+                var phoneRect = phoneFrame.getBoundingClientRect();
+                var rightSpace = window.innerWidth - phoneRect.right;
+                var tooltipWidth = 340;
+
+                if (rightSpace > tooltipWidth + 40) {
+                    tooltip.style.top = (phoneRect.top + 60) + 'px';
+                    tooltip.style.left = (phoneRect.right + 24) + 'px';
+                    tooltip.style.right = 'auto';
+                } else {
+                    tooltip.style.top = (phoneRect.top + 60) + 'px';
+                    tooltip.style.left = 'auto';
+                    tooltip.style.right = (window.innerWidth - phoneRect.left + 24) + 'px';
+                }
+            }
+        }
+
+        function nextTourStep() {
+            tourStep++;
+            if (tourStep >= tourSteps.length) {
+                showTourFinal();
+            } else {
+                showTourStep(tourStep);
+            }
+        }
+
+        function prevTourStep() {
+            if (tourStep > 0) {
+                tourStep--;
+                showTourStep(tourStep);
+            }
+        }
+
+        function showTourFinal() {
+            document.getElementById('tourTooltip').classList.remove('active');
+            document.getElementById('tourSpotlight').classList.remove('active');
+            document.getElementById('tourFinal').classList.add('active');
+
+            trackEvent('tour_completed', { total_steps: tourSteps.length });
+        }
+
+        function trackTourSignup() {
+            trackEvent('tour_signup_clicked', { source: 'tour_final_cta' });
+        }
+
+        function restartTour() {
+            document.getElementById('tourFinal').classList.remove('active');
+            tourStep = 0;
+            showTourStep(tourStep);
+            trackEvent('tour_restarted');
+        }
+
+        function hideTourElements() {
+            document.getElementById('tourOverlay').classList.remove('active');
+            document.getElementById('tourWelcome').classList.remove('active');
+            document.getElementById('tourTooltip').classList.remove('active');
+            document.getElementById('tourSpotlight').classList.remove('active');
+            document.getElementById('tourFinal').classList.remove('active');
+            tourActive = false;
+        }
+
+        window.addEventListener('resize', function() {
+            if (tourActive && tourStep < tourSteps.length) {
+                positionSpotlight(tourSteps[tourStep].target);
+                positionTooltip();
+            }
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && tourActive) {
+                skipTour();
+            }
+        });
+
     </script>
 </body>
 </html>
