@@ -2132,25 +2132,39 @@
             // Update progress dots
             updateProgressDots(stepIndex);
 
-            // Position spotlight and tooltip
+            // Update nav buttons
+            tourPrevBtn.style.display = stepIndex === 0 ? 'none' : 'inline-flex';
+            tourNextBtn.textContent = stepIndex === tourSteps.length - 1 ? 'Finish' : 'Next';
+
+            // Scroll and position spotlight/tooltip
             if (step.target) {
                 var targetEl = document.querySelector(step.target);
                 if (targetEl) {
-                    positionSpotlight(targetEl);
-                    positionTooltip(targetEl);
-                    tourSpotlight.classList.add('active');
+                    // Scroll target element into view first
+                    targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    // Wait for scroll animation, then position spotlight and tooltip
+                    setTimeout(function() {
+                        positionSpotlight(targetEl);
+                        positionTooltip(targetEl);
+                        tourSpotlight.classList.add('active');
+                    }, 400);
                 } else {
                     tourSpotlight.classList.remove('active');
                     centerTooltip();
                 }
             } else {
+                // Visual-only step - hide spotlight
                 tourSpotlight.classList.remove('active');
-                centerTooltip();
+                // Scroll results section into view for context
+                var resultsEl = document.getElementById('resultsSection');
+                if (resultsEl) {
+                    resultsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+                // Wait for scroll, then center tooltip
+                setTimeout(function() {
+                    centerTooltip();
+                }, 400);
             }
-
-            // Update nav buttons
-            tourPrevBtn.style.display = stepIndex === 0 ? 'none' : 'inline-flex';
-            tourNextBtn.textContent = stepIndex === tourSteps.length - 1 ? 'Finish' : 'Next';
         }
 
         // Update progress dots
