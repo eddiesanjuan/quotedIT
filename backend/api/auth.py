@@ -10,6 +10,10 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
+from ..services.logging import get_auth_logger
+
+logger = get_auth_logger()
+
 from ..services.auth import (
     UserCreate,
     UserLogin,
@@ -51,7 +55,7 @@ async def register(
         )
     except Exception as e:
         # Log the error but don't block registration
-        print(f"Warning: Failed to send welcome email to {user.email}: {e}")
+        logger.warning(f"Failed to send welcome email to {user.email}", exc_info=True)
 
     # Track signup event
     try:
@@ -84,7 +88,7 @@ async def register(
         )
     except Exception as e:
         # Log the error but don't block registration
-        print(f"Warning: Failed to track signup event for {user.email}: {e}")
+        logger.warning(f"Failed to track signup event for {user.email}", exc_info=True)
 
     # Create access token
     access_token = create_access_token(

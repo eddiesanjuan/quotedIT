@@ -21,10 +21,16 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 from .config import settings
 from .models.database import init_db
-from .api import quotes, contractors, onboarding, auth, billing, pricing_brain, demo, referral, share, beta, testimonials, learning, invoices, customers, tasks
+from .services.logging import configure_logging, get_logger
 
-# Configure logger
-logger = logging.getLogger(__name__)
+# Configure structured logging (INFRA-008)
+configure_logging(
+    environment=settings.environment,
+    log_level="DEBUG" if settings.debug else "INFO"
+)
+logger = get_logger("quoted.main")
+
+from .api import quotes, contractors, onboarding, auth, billing, pricing_brain, demo, referral, share, beta, testimonials, learning, invoices, customers, tasks
 
 # Initialize Sentry if DSN is configured
 if settings.sentry_dsn:
@@ -83,8 +89,10 @@ class HTTPSRedirectMiddleware(BaseHTTPMiddleware):
 async def lifespan(app: FastAPI):
     """Application lifespan handler - startup and shutdown."""
     # Startup
-    print(f"Starting {settings.app_name} v{settings.app_version}")
-    print(f"Environment: {settings.environment}")
+    logger.info(
+        f"Starting {settings.app_name} v{settings.app_version}",
+        extra={"environment": settings.environment}
+    )
 
     # Ensure data directories exist
     os.makedirs("./data", exist_ok=True)
@@ -93,12 +101,12 @@ async def lifespan(app: FastAPI):
 
     # Initialize database
     await init_db()
-    print("Database initialized")
+    logger.info("Database initialized")
 
     yield
 
     # Shutdown
-    print("Shutting down...")
+    logger.info("Shutting down...")
 
 
 # Create application
@@ -175,8 +183,18 @@ async def api_info():
 
 @app.get("/health")
 async def health():
-    """Health check endpoint."""
-    return {"status": "healthy"}
+    """Health check endpoint with infrastructure status."""
+    from .services.cache import cache_service
+    from .services.storage import storage_service
+
+    cache_health = await cache_service.health_check()
+    storage_health = await storage_service.health_check()
+
+    return {
+        "status": "healthy",
+        "cache": cache_health,
+        "storage": storage_health,
+    }
 
 
 # Serve frontend static files
