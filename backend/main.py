@@ -175,8 +175,16 @@ async def api_info():
 
 @app.get("/health")
 async def health():
-    """Health check endpoint."""
-    return {"status": "healthy"}
+    """Quick health check for load balancers."""
+    from .services.health import get_quick_health
+    return await get_quick_health()
+
+
+@app.get("/health/full")
+async def health_full():
+    """Comprehensive health check including all external services."""
+    from .services.health import check_all_health
+    return await check_all_health(include_external=True)
 
 
 # Serve frontend static files
