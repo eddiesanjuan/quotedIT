@@ -14,8 +14,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, RedirectResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
-from slowapi import Limiter, _rate_limit_exceeded_handler
-from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from starlette.middleware.base import BaseHTTPMiddleware
 
@@ -56,8 +54,12 @@ else:
     logger.info("Sentry DSN not configured - error tracking disabled")
 
 
-# Rate limiter
-limiter = Limiter(key_func=get_remote_address)
+# Rate limiter with enhanced configuration (SEC-004)
+from .services.rate_limiting import (
+    ip_limiter,
+    rate_limit_exceeded_handler,
+)
+limiter = ip_limiter  # Use IP-based limiter as default
 
 
 class HTTPSRedirectMiddleware(BaseHTTPMiddleware):
@@ -109,9 +111,9 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# Add rate limiter to app state
+# Add rate limiter to app state with custom handler (SEC-004)
 app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)
 
 # HTTPS redirect middleware (production only)
 if settings.environment == "production":
