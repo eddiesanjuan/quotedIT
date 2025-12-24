@@ -1211,6 +1211,85 @@ class EmailService:
             logger.error(f"Failed to send quote first-view email to {to_email}", exc_info=True)
             raise
 
+    @staticmethod
+    async def send_invoice_email(
+        to_email: str,
+        contractor_name: str,
+        invoice_number: str,
+        total: float,
+        due_date: Optional[str] = None,
+        share_url: Optional[str] = None,
+        message: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Send invoice via email to customer (DISC-071).
+
+        Args:
+            to_email: Customer's email address
+            contractor_name: Name of the contractor/business
+            invoice_number: Invoice number (e.g., INV-0001)
+            total: Invoice total amount
+            due_date: Optional due date string
+            share_url: URL to view invoice online
+            message: Optional personal message from contractor
+
+        Returns:
+            Resend API response
+        """
+        formatted_total = f"${total:,.2f}"
+        personal_msg = f"<p>{message}</p>" if message else ""
+        due_info = f"<p><strong>Due:</strong> {due_date}</p>" if due_date else ""
+
+        content = f"""
+            <h1>Invoice from {contractor_name}</h1>
+
+            <p>Hello,</p>
+
+            <p>You have received an invoice from {contractor_name}.</p>
+
+            {personal_msg}
+
+            <div class="stat-box" style="margin: 24px 0;">
+                <div style="color: #a0a0a0; font-size: 13px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">
+                    Invoice #{invoice_number}
+                </div>
+                <div class="stat-value" style="font-family: 'Playfair Display', Georgia, serif; font-size: 32px; font-weight: 600; color: #ffffff; margin-bottom: 12px;">
+                    {formatted_total}
+                </div>
+                {due_info}
+            </div>
+
+            <a href="{share_url}" class="button">View Invoice</a>
+
+            <p class="muted" style="margin-top: 32px;">Thank you for your business!</p>
+
+            <p class="muted" style="padding-top: 24px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+                This invoice was sent via Quoted.<br>
+                <a href="https://quoted.it" style="color: #a0a0a0;">Learn more</a>
+            </p>
+        """
+
+        # Escape curly braces in content to prevent format() issues
+        content = content.replace('{', '{{').replace('}', '}}')
+        html = EmailService._get_base_template().replace('{content}', content)
+
+        try:
+            loop = asyncio.get_event_loop()
+            response = await loop.run_in_executor(
+                None,
+                partial(resend.Emails.send, {
+                    "from": EmailService.FROM_EMAIL,
+                    "to": to_email,
+                    "subject": f"Invoice {invoice_number} from {contractor_name}",
+                    "html": html,
+                })
+            )
+            logger.info(f"Invoice email sent successfully to {to_email}")
+            return response
+        except Exception as e:
+            logger.error(f"Failed to send invoice email to {to_email}", exc_info=True)
+            raise
+
 
 # Convenience instance
 email_service = EmailService()

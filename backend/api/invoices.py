@@ -617,7 +617,7 @@ async def send_invoice(
 
     Updates invoice status to 'sent' and records sent_at timestamp.
     """
-    from ..services.email_service import email_service
+    from ..services.email import email_service
 
     contractor = await get_contractor_for_user(current_user["id"])
     if not contractor:
@@ -640,33 +640,14 @@ async def send_invoice(
 
     # Send email
     try:
-        subject = f"Invoice {invoice.invoice_number} from {contractor.business_name}"
-
-        # Build email body
-        body_parts = []
-        if send_request.message:
-            body_parts.append(send_request.message)
-            body_parts.append("")
-
-        body_parts.append(f"You have received an invoice from {contractor.business_name}.")
-        body_parts.append("")
-        body_parts.append(f"Invoice #: {invoice.invoice_number}")
-        body_parts.append(f"Amount Due: ${invoice.total:,.2f}")
-        if invoice.due_date:
-            body_parts.append(f"Due Date: {invoice.due_date.strftime('%B %d, %Y')}")
-        body_parts.append("")
-        body_parts.append(f"View your invoice: {share_url}")
-        body_parts.append("")
-        body_parts.append("Thank you for your business!")
-        body_parts.append("")
-        body_parts.append(f"— {contractor.business_name}")
-
-        body = "\n".join(body_parts)
-
-        await email_service.send_email(
+        await email_service.send_invoice_email(
             to_email=send_request.recipient_email,
-            subject=subject,
-            body=body,
+            contractor_name=contractor.business_name,
+            invoice_number=invoice.invoice_number,
+            total=invoice.total,
+            due_date=invoice.due_date.strftime('%B %d, %Y') if invoice.due_date else None,
+            share_url=share_url,
+            message=send_request.message,
         )
 
         # Update invoice status
