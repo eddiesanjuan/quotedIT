@@ -6647,12 +6647,15 @@
             const invoicesNavBtn = document.getElementById('invoicesNavBtn');
             const createInvoiceBtn = document.getElementById('createInvoiceBtn');
 
-            if (isFeatureEnabled('invoicing_enabled', false)) {
-                // Show invoicing UI
+            // DISC-071: Invoicing was already deployed and live before Wave 2.
+            // Default to TRUE (showing invoicing) since it was already a working feature.
+            // Feature flag allows disabling via PostHog if needed for rollback.
+            if (isFeatureEnabled('invoicing_enabled', true)) {
+                // Show invoicing UI (default behavior - feature already live)
                 if (invoicesNavBtn) invoicesNavBtn.style.display = '';
                 if (createInvoiceBtn) createInvoiceBtn.style.display = '';
             } else {
-                // Keep invoicing UI hidden
+                // Hide invoicing UI (only if explicitly disabled in PostHog)
                 if (invoicesNavBtn) invoicesNavBtn.style.display = 'none';
                 if (createInvoiceBtn) createInvoiceBtn.style.display = 'none';
             }
@@ -6666,8 +6669,9 @@
             applyInvoicingFeatureFlag();
         }
         {% else %}
-        // No PostHog - default to hiding invoicing (feature flag not available)
-        // Invoicing buttons are already hidden via style="display: none;" in HTML
+        // No PostHog - still show invoicing since it was already a live feature (DISC-071)
+        // Call applyInvoicingFeatureFlag which will use default=true
+        applyInvoicingFeatureFlag();
         {% endif %}
 
         /**
