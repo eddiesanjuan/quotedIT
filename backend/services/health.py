@@ -59,11 +59,13 @@ async def check_database_health() -> ServiceHealth:
     """Check database connectivity."""
     try:
         from sqlalchemy import text
-        from ..models.database import get_db_session
+        from sqlalchemy.ext.asyncio import create_async_engine
 
         start = time.time()
-        async with get_db_session() as db:
-            await db.execute(text("SELECT 1"))
+        engine = create_async_engine(settings.async_database_url)
+        async with engine.connect() as conn:
+            await conn.execute(text("SELECT 1"))
+        await engine.dispose()
         latency = (time.time() - start) * 1000
 
         return ServiceHealth(
