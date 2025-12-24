@@ -1,0 +1,36 @@
+# robots.txt for quoted.it.com
+
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://quoted.it.com/sitemap.xml
+
+# Disallow app/authenticated areas from indexing
+Disallow: /app
+Disallow: /api/
+
+# Allow all crawlers access to marketing pages
+User-agent: Googlebot
+Allow: /
+Allow: /blog/
+
+User-agent: Bingbot
+Allow: /
+Allow: /blog/
+
+# Block AI training crawlers (optional - preserves content value)
+User-agent: GPTBot
+Disallow: /
+
+User-agent: ChatGPT-User
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: anthropic-ai
+Disallow: /
+
+User-agent: Claude-Web
+Disallow: /

@@ -9,7 +9,7 @@ from contextlib import asynccontextmanager
 
 from pathlib import Path
 
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI, Request, Response, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, RedirectResponse, HTMLResponse
@@ -305,6 +305,32 @@ if frontend_path.exists():
             "sentry_dsn": settings.sentry_dsn,
             "environment": settings.environment,
         })
+
+    # SEO: Sitemap and robots.txt
+    @app.get("/sitemap.xml")
+    async def serve_sitemap():
+        """Serve the XML sitemap for search engines."""
+        return FileResponse(frontend_path / "sitemap.xml", media_type="application/xml")
+
+    @app.get("/robots.txt")
+    async def serve_robots():
+        """Serve robots.txt for search engine crawlers."""
+        return FileResponse(frontend_path / "robots.txt", media_type="text/plain")
+
+    # Blog routes
+    @app.get("/blog/")
+    @app.get("/blog")
+    async def serve_blog_index():
+        """Serve the blog index page."""
+        return FileResponse(frontend_path / "blog" / "index.html")
+
+    @app.get("/blog/{filename}")
+    async def serve_blog_post(filename: str):
+        """Serve individual blog posts."""
+        blog_path = frontend_path / "blog" / filename
+        if blog_path.exists() and blog_path.suffix == ".html":
+            return FileResponse(blog_path)
+        raise HTTPException(status_code=404, detail="Blog post not found")
 
     # Mount static files (CSS, JS, images if any)
     app.mount("/static", StaticFiles(directory=str(frontend_path)), name="static")
