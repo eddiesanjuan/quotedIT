@@ -4,9 +4,15 @@ Uses environment variables for secrets.
 """
 
 import secrets
+import sys
 from pydantic_settings import BaseSettings
 from functools import lru_cache
 import os
+
+
+# Generate a stable default for development only
+# In production, JWT_SECRET_KEY MUST be set as environment variable
+_DEV_JWT_SECRET = "dev-only-secret-key-do-not-use-in-production"
 
 
 class Settings(BaseSettings):
@@ -28,7 +34,9 @@ class Settings(BaseSettings):
     database_url: str = "sqlite+aiosqlite:///./data/quoted.db"
 
     # JWT Authentication (SEC-003: Short-lived access + refresh tokens)
-    jwt_secret_key: str = secrets.token_urlsafe(32)  # Auto-generate if not set
+    # CRITICAL: In production, JWT_SECRET_KEY MUST be set as environment variable
+    # If not set, all tokens will be invalidated on each deploy!
+    jwt_secret_key: str = _DEV_JWT_SECRET
     jwt_algorithm: str = "HS256"
     jwt_expire_minutes: int = 15  # Access token: 15 minutes (security best practice)
     jwt_refresh_expire_days: int = 7  # Refresh token: 7 days
@@ -129,10 +137,45 @@ class Settings(BaseSettings):
         env_file_encoding = "utf-8"
 
 
+def _validate_jwt_secret(s: Settings) -> None:
+    """
+    Validate JWT secret key configuration.
+
+    CRITICAL: In production, JWT_SECRET_KEY MUST be set as an environment variable.
+    Without this, a new secret is generated on each deploy, invalidating all tokens
+    and causing the "quotes not visible" bug.
+    """
+    # Check if JWT_SECRET_KEY was explicitly set via environment variable
+    jwt_from_env = os.environ.get("JWT_SECRET_KEY")
+
+    if s.environment == "production":
+        if jwt_from_env is None:
+            # JWT_SECRET_KEY not set - this is a CRITICAL issue
+            print("\n" + "=" * 80)
+            print("🚨 CRITICAL: JWT_SECRET_KEY not set in environment!")
+            print("=" * 80)
+            print("\nThis causes ALL user sessions to be invalidated on each deploy!")
+            print("Users will appear logged out with no quotes visible.")
+            print("\n📋 FIX THIS NOW:")
+            print("1. Go to Railway Dashboard → quoted project → Variables")
+            print("2. Add: JWT_SECRET_KEY = <paste the key below>")
+            print("\n🔑 Use this key (save it securely):")
+            print(f"   {secrets.token_urlsafe(32)}")
+            print("\n⚠️  After adding the variable, redeploy the service.")
+            print("=" * 80 + "\n")
+        elif len(s.jwt_secret_key) < 32:
+            print("\n" + "=" * 80)
+            print("⚠️  WARNING: JWT_SECRET_KEY is too short (< 32 characters)")
+            print("For security, use at least 32 characters.")
+            print("=" * 80 + "\n")
+
+
 @lru_cache()
 def get_settings() -> Settings:
     """Get cached settings instance."""
-    return Settings()
+    s = Settings()
+    _validate_jwt_secret(s)
+    return s
 
 
 # Convenience access
