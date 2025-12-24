@@ -371,6 +371,19 @@ async def view_shared_quote(
         # Update quote in database
         quote = await db.update_quote(str(quote.id), **update_fields)
 
+        # Wave 3: Send first-view notification email to contractor
+        if is_first_view:
+            try:
+                await email_service.send_quote_first_view_email(
+                    to_email=contractor.email,
+                    contractor_name=contractor.business_name or contractor.owner_name or "there",
+                    customer_name=quote.customer_name,
+                    quote_total=quote.total or quote.subtotal or 0,
+                    quote_token=token,
+                )
+            except Exception as e:
+                print(f"Warning: Failed to send first-view notification email: {e}")
+
         # Track view event in PostHog (for detailed analytics)
         try:
             analytics_service.track_event(

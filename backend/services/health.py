@@ -376,3 +376,27 @@ async def get_quick_health() -> Dict[str, Any]:
         "cache": cache_health,
         "storage": storage_health,
     }
+
+
+def get_scheduler_health() -> Dict[str, Any]:
+    """
+    Get scheduler health status (Wave 3).
+    Returns running state and job info.
+    """
+    from .scheduler import get_scheduler_status
+
+    status = get_scheduler_status()
+
+    if not status["running"]:
+        return {
+            "status": "unhealthy",
+            "running": False,
+            "message": "Scheduler not running",
+            "jobs": [],
+        }
+
+    return {
+        "status": "healthy",
+        "running": True,
+        "jobs": status["jobs"],
+    }

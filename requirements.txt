@@ -47,6 +47,9 @@ slowapi==0.1.9
 tenacity>=8.2.0  # Retry with exponential backoff
 circuitbreaker>=2.0.0  # Circuit breaker pattern
 
+# Background Jobs (Wave 3)
+apscheduler>=3.10.0  # Lightweight in-process scheduler
+
 # Audio processing
 pydub==0.25.1
 

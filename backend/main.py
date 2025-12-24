@@ -105,10 +105,15 @@ async def lifespan(app: FastAPI):
     await init_db()
     logger.info("Database initialized")
 
+    # Start background scheduler (Wave 3)
+    from .services.scheduler import start_scheduler, stop_scheduler
+    start_scheduler()
+
     yield
 
     # Shutdown
     logger.info("Shutting down...")
+    stop_scheduler()
 
 
 # Create application
@@ -194,6 +199,13 @@ async def health_full():
     """Comprehensive health check including all external services."""
     from .services.health import check_all_health
     return await check_all_health(include_external=True)
+
+
+@app.get("/health/scheduler")
+async def health_scheduler():
+    """Health check for background scheduler (Wave 3)."""
+    from .services.health import get_scheduler_health
+    return get_scheduler_health()
 
 
 # Serve frontend static files

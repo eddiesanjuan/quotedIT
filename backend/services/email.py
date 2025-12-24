@@ -1048,6 +1048,169 @@ class EmailService:
             logger.error(f"Failed to send win-back email to {to_email}", exc_info=True)
             raise
 
+    @staticmethod
+    async def send_task_reminder_email(
+        to_email: str,
+        contractor_name: str,
+        task_title: str,
+        task_description: Optional[str],
+        due_date: Optional[datetime],
+        customer_name: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Send task reminder notification (Wave 3 - Background Jobs).
+
+        Args:
+            to_email: Recipient email address
+            contractor_name: Name of the contractor/business
+            task_title: Title of the task
+            task_description: Optional task description
+            due_date: Optional due date for the task
+            customer_name: Optional related customer name
+
+        Returns:
+            Resend API response
+        """
+        due_info = ""
+        if due_date:
+            due_info = f"""
+                <div class="stat-box" style="margin: 16px 0;">
+                    <div style="color: #a0a0a0; font-size: 13px; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">
+                        Due Date
+                    </div>
+                    <div style="color: #ffffff; font-size: 18px; font-weight: 600;">
+                        {due_date.strftime('%B %d, %Y')}
+                    </div>
+                </div>
+            """
+
+        customer_info = ""
+        if customer_name:
+            customer_info = f"""
+                <div style="color: #a0a0a0; font-size: 14px; margin-bottom: 8px;">
+                    Related to: <strong style="color: #e0e0e0;">{customer_name}</strong>
+                </div>
+            """
+
+        description_html = ""
+        if task_description:
+            description_html = f"""
+                <div style="color: #e0e0e0; font-size: 15px; line-height: 1.6; margin: 16px 0; padding: 16px; background-color: #1a1a1a; border-radius: 8px;">
+                    {task_description}
+                </div>
+            """
+
+        content = f"""
+            <h1>Task Reminder ⏰</h1>
+
+            <p>Hey {contractor_name},</p>
+
+            <p>Just a friendly reminder about this task:</p>
+
+            <div class="stat-box" style="margin: 24px 0;">
+                <div style="color: #ffffff; font-size: 20px; font-weight: 600; margin-bottom: 12px;">
+                    {task_title}
+                </div>
+                {customer_info}
+                {description_html}
+            </div>
+
+            {due_info}
+
+            <a href="https://quoted.it/app?tab=tasks" class="button">View My Tasks</a>
+
+            <p class="muted">You can manage your task reminders in the Tasks section of your dashboard.</p>
+        """
+
+        html = EmailService._get_base_template().format(content=content)
+
+        try:
+            loop = asyncio.get_event_loop()
+            response = await loop.run_in_executor(
+                None,
+                partial(resend.Emails.send, {
+                    "from": EmailService.FROM_EMAIL,
+                    "to": to_email,
+                    "subject": f"⏰ Reminder: {task_title}",
+                    "html": html,
+                })
+            )
+            logger.info(f"Task reminder email sent successfully to {to_email}")
+            return response
+        except Exception as e:
+            logger.error(f"Failed to send task reminder email to {to_email}", exc_info=True)
+            raise
+
+    @staticmethod
+    async def send_quote_first_view_email(
+        to_email: str,
+        contractor_name: str,
+        customer_name: Optional[str],
+        quote_total: float,
+        quote_token: str
+    ) -> Dict[str, Any]:
+        """
+        Send notification when a quote is viewed for the first time (Wave 3).
+
+        Args:
+            to_email: Contractor's email address
+            contractor_name: Name of the contractor/business
+            customer_name: Customer's name who viewed the quote
+            quote_total: Quote total amount
+            quote_token: Token for the shared quote link
+
+        Returns:
+            Resend API response
+        """
+        customer_display = customer_name if customer_name else "Your customer"
+        formatted_total = f"${quote_total:,.2f}"
+
+        content = f"""
+            <h1>Your quote was just viewed! 👀</h1>
+
+            <p>Hey {contractor_name},</p>
+
+            <p><strong>{customer_display}</strong> just opened and viewed your quote.</p>
+
+            <div class="stats-grid" style="margin: 24px 0;">
+                <div class="stat-box">
+                    <div class="stat-value">{formatted_total}</div>
+                    <div class="stat-label">Quote Total</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value">Just Now</div>
+                    <div class="stat-label">First Viewed</div>
+                </div>
+            </div>
+
+            <p>This is a great sign! They're actively reviewing your proposal. Consider following up if you don't hear back soon.</p>
+
+            <a href="https://quoted.it/app" class="button">View Quote Details</a>
+
+            <p class="muted" style="margin-top: 24px;">
+                <a href="https://quoted.it/shared/{quote_token}" style="color: #a0a0a0;">View the quote as your customer sees it →</a>
+            </p>
+        """
+
+        html = EmailService._get_base_template().format(content=content)
+
+        try:
+            loop = asyncio.get_event_loop()
+            response = await loop.run_in_executor(
+                None,
+                partial(resend.Emails.send, {
+                    "from": EmailService.FROM_EMAIL,
+                    "to": to_email,
+                    "subject": f"👀 {customer_display} just viewed your quote!",
+                    "html": html,
+                })
+            )
+            logger.info(f"Quote first-view email sent successfully to {to_email}")
+            return response
+        except Exception as e:
+            logger.error(f"Failed to send quote first-view email to {to_email}", exc_info=True)
+            raise
+
 
 # Convenience instance
 email_service = EmailService()
