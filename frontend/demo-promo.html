@@ -289,45 +289,6 @@
             }
         }
 
-        /* Beta Counter */
-        .beta-counter {
-            position: fixed;
-            top: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 99;
-            background: linear-gradient(135deg, rgba(20, 20, 20, 0.95), rgba(10, 10, 10, 0.95));
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 100px;
-            padding: 12px 24px;
-            backdrop-filter: blur(10px);
-            display: none;
-        }
-
-        .beta-counter-inner {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-        }
-
-        .beta-text strong {
-            color: #10b981;
-            font-weight: 700;
-            font-size: 1rem;
-        }
-
-        @media (max-width: 600px) {
-            .beta-counter {
-                top: 70px;
-                padding: 10px 16px;
-            }
-            .beta-counter-inner {
-                font-size: 0.8125rem;
-                gap: 8px;
-            }
-        }
     </style>
 </head>
 <body>
@@ -337,26 +298,10 @@
         <a href="/app" class="nav-cta" onclick="trackCtaClick('nav')">Try Now</a>
     </nav>
 
-    <!-- Beta Spots Counter -->
-    <div id="beta-counter" class="beta-counter">
-        <div class="beta-counter-inner">
-            <span class="beta-pulse"></span>
-            <span class="beta-text">
-                <strong id="beta-remaining">9</strong> beta spots left
-            </span>
-        </div>
-    </div>
-
     <!-- Hero Section -->
     <section class="hero">
         <h1>See voice-to-quote in 60 seconds</h1>
         <p>No signup required - watch how contractors are quoting jobs from the truck</p>
-
-        <!-- Social Proof -->
-        <div class="social-proof">
-            <span class="beta-pulse"></span>
-            <span><strong id="social-remaining">9</strong> beta spots left</span>
-        </div>
 
         <!-- Demo Animation - Embedded via iframe for consistency -->
         <div class="demo-animation-container">
@@ -417,17 +362,6 @@
             }
         }
 
-        // Load beta spots counter
-        fetch('/api/beta/spots')
-            .then(response => response.json())
-            .then(data => {
-                if (!data.is_full) {
-                    document.getElementById('beta-remaining').textContent = data.remaining;
-                    document.getElementById('social-remaining').textContent = data.remaining;
-                    document.getElementById('beta-counter').style.display = 'block';
-                }
-            })
-            .catch(error => console.warn('Failed to load beta spots:', error));
     </script>
 </body>
 </html>
