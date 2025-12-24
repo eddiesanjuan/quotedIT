@@ -182,18 +182,16 @@ async def api_info():
 
 @app.get("/health")
 async def health():
-    """Health check endpoint with infrastructure status."""
-    from .services.cache import cache_service
-    from .services.storage import storage_service
+    """Quick health check for load balancers."""
+    from .services.health import get_quick_health
+    return await get_quick_health()
 
-    cache_health = await cache_service.health_check()
-    storage_health = await storage_service.health_check()
 
-    return {
-        "status": "healthy",
-        "cache": cache_health,
-        "storage": storage_health,
-    }
+@app.get("/health/full")
+async def health_full():
+    """Comprehensive health check including all external services."""
+    from .services.health import check_all_health
+    return await check_all_health(include_external=True)
 
 
 # Serve frontend static files
