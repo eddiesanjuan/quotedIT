@@ -19,10 +19,15 @@ from ..services.auth import (
     UserLogin,
     Token,
     UserResponse,
+    RefreshTokenRequest,
     get_db,
     register_user,
     authenticate_user,
     create_access_token,
+    create_refresh_token,
+    store_refresh_token,
+    validate_and_rotate_refresh_token,
+    revoke_all_user_tokens,
     get_current_user,
     get_current_contractor,
 )
@@ -90,16 +95,27 @@ async def register(
         # Log the error but don't block registration
         logger.warning(f"Failed to track signup event for {user.email}", exc_info=True)
 
-    # Create access token
+    # Create access token (15 minutes - SEC-003)
     access_token = create_access_token(
         data={"sub": user.id, "contractor_id": contractor.id},
         expires_delta=timedelta(minutes=settings.jwt_expire_minutes),
     )
 
+    # Create and store refresh token (7 days - SEC-003)
+    refresh_token_value, jti = create_refresh_token()
+    await store_refresh_token(
+        db=db,
+        user_id=user.id,
+        token_value=refresh_token_value,
+        jti=jti,
+    )
+
     return Token(
         access_token=access_token,
+        refresh_token=refresh_token_value,
         user_id=user.id,
         contractor_id=contractor.id,
+        expires_in=settings.jwt_expire_minutes * 60,
     )
 
 
@@ -133,16 +149,27 @@ async def login(
             detail="Contractor profile not found",
         )
 
-    # Create access token
+    # Create access token (15 minutes - SEC-003)
     access_token = create_access_token(
         data={"sub": user.id, "contractor_id": contractor.id},
         expires_delta=timedelta(minutes=settings.jwt_expire_minutes),
     )
 
+    # Create and store refresh token (7 days - SEC-003)
+    refresh_token_value, jti = create_refresh_token()
+    await store_refresh_token(
+        db=db,
+        user_id=user.id,
+        token_value=refresh_token_value,
+        jti=jti,
+    )
+
     return Token(
         access_token=access_token,
+        refresh_token=refresh_token_value,
         user_id=user.id,
         contractor_id=contractor.id,
+        expires_in=settings.jwt_expire_minutes * 60,
     )
 
 
@@ -181,16 +208,26 @@ async def get_me(
 
 @router.post("/refresh", response_model=Token)
 async def refresh_token(
-    user: dict = Depends(get_current_user),
+    request: RefreshTokenRequest,
     db: AsyncSession = Depends(get_db),
 ):
     """
-    Refresh the access token.
-    Requires a valid (non-expired) token.
+    Refresh the access token using a refresh token.
+
+    SEC-003: Uses refresh token rotation for security:
+    - Each refresh token can only be used once
+    - A new refresh token is issued with each request
+    - Old refresh token is revoked immediately
     """
+    # Validate and rotate refresh token
+    user, new_refresh_token, jti = await validate_and_rotate_refresh_token(
+        db=db,
+        token_value=request.refresh_token,
+    )
+
     # Get contractor profile
     result = await db.execute(
-        select(Contractor).where(Contractor.user_id == user["id"])
+        select(Contractor).where(Contractor.user_id == user.id)
     )
     contractor = result.scalar_one_or_none()
 
@@ -202,12 +239,33 @@ async def refresh_token(
 
     # Create new access token
     access_token = create_access_token(
-        data={"sub": user["id"], "contractor_id": contractor.id},
+        data={"sub": user.id, "contractor_id": contractor.id},
         expires_delta=timedelta(minutes=settings.jwt_expire_minutes),
     )
 
     return Token(
         access_token=access_token,
-        user_id=user["id"],
+        refresh_token=new_refresh_token,
+        user_id=user.id,
         contractor_id=contractor.id,
+        expires_in=settings.jwt_expire_minutes * 60,
     )
+
+
+@router.post("/logout")
+async def logout(
+    user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Logout the current user by revoking all their refresh tokens.
+
+    SEC-003: This effectively invalidates all sessions for the user,
+    ensuring they must re-authenticate to get new tokens.
+    """
+    revoked_count = await revoke_all_user_tokens(db, user["id"], reason="logout")
+
+    return {
+        "message": "Successfully logged out",
+        "sessions_revoked": revoked_count,
+    }

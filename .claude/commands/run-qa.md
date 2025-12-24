@@ -68,7 +68,6 @@ Spawn 6 QA agents in parallel using the Task tool. Each agent tests a specific d
 **Tests**:
 - [ ] Landing page loads at `https://quoted.it.com`
 - [ ] All images load (no broken images)
-- [ ] Beta counter displays and shows real number
 - [ ] "Try Demo" button navigates to demo page
 - [ ] "Start Free Trial" button shows auth modal
 - [ ] Mobile menu works at 640px viewport
@@ -129,7 +128,6 @@ DEMO_RESULTS:
 **Tests** (use direct fetch, no browser needed):
 - [ ] `GET /health` returns 200
 - [ ] `GET /api/billing/plans` returns valid JSON with 3 plans
-- [ ] `GET /api/beta/spots` returns valid spots data
 - [ ] `POST /api/auth/magic-link` with invalid email returns 422
 - [ ] `GET /api/testimonials/?approved_only=true` returns array
 - [ ] Rate limiting works (429 after too many requests)
@@ -323,7 +321,6 @@ QA_CYCLE_COMPLETE:
 |----------|--------|------|----------|
 | `/health` | GET | No | 200 OK |
 | `/api/billing/plans` | GET | No | JSON with plans |
-| `/api/beta/spots` | GET | No | JSON with spots |
 | `/api/testimonials/` | GET | No | JSON array |
 | `/api/auth/magic-link` | POST | No | 200 or 422 |
 

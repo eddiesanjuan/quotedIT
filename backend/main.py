@@ -142,11 +142,11 @@ if settings.environment != "production":
     ])
 
 # CORS middleware with Railway preview environment support (DISC-077)
-# allow_origin_regex enables Railway PR preview URLs: pr-{number}-quoted.up.railway.app
+# allow_origin_regex restricted to Quoted's Railway domains only (pr-XXX-quoted and web-production-*)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
-    allow_origin_regex=r"https://.*\.up\.railway\.app",  # Railway preview environments
+    allow_origin_regex=r"https://(pr-\d+-quoted|web-production-\w+)\.up\.railway\.app",  # Only Quoted's Railway domains
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -162,7 +162,6 @@ app.include_router(pricing_brain.router, prefix="/api/pricing-brain", tags=["Pri
 app.include_router(demo.router, prefix="/api/demo", tags=["Demo"])
 app.include_router(referral.router, prefix="/api/referral", tags=["Referral"])
 app.include_router(share.router, prefix="/api/quotes", tags=["Share Quote"])
-app.include_router(beta.router, prefix="/api/beta", tags=["Beta"])
 app.include_router(testimonials.router, prefix="/api/testimonials", tags=["Testimonials"])
 app.include_router(learning.router, prefix="/api/learning", tags=["Learning"])
 app.include_router(invoices.router, prefix="/api/invoices", tags=["Invoices"])  # DISC-071
@@ -233,15 +232,10 @@ if frontend_path.exists():
         """Serve the functional demo page - generate real quotes without signup."""
         return FileResponse(frontend_path / "try.html")
 
-    @app.get("/demo-promo", response_class=HTMLResponse)
-    async def serve_demo_promo(request: Request):
-        """Serve the promotional demo landing page with injected config."""
-        return templates.TemplateResponse("demo-promo.html", {
-            "request": request,
-            "posthog_api_key": settings.posthog_api_key,
-            "sentry_dsn": settings.sentry_dsn,
-            "environment": settings.environment,
-        })
+    @app.get("/demo-promo")
+    async def serve_demo_promo():
+        """Redirect legacy demo-promo to /try."""
+        return RedirectResponse("/try", status_code=301)
 
     @app.get("/terms")
     async def serve_terms():

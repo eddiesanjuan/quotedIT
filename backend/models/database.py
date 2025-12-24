@@ -700,6 +700,46 @@ class UserIssue(Base):
     verified_at = Column(DateTime)
 
 
+class RefreshToken(Base):
+    """
+    Refresh tokens for JWT authentication (SEC-003).
+
+    Workflow:
+    1. On login/register, generate both access token (15 min) and refresh token (7 days)
+    2. Store refresh token hash in database
+    3. When access token expires, client uses refresh token to get new access token
+    4. On logout, revoke all refresh tokens for user
+
+    Security features:
+    - Tokens stored as hashes (bcrypt), not plaintext
+    - Each token has unique jti (JWT ID) for revocation
+    - Tokens can be revoked individually or all at once
+    - Family-based rotation prevents token theft attacks
+    """
+    __tablename__ = "refresh_tokens"
+
+    id = Column(String, primary_key=True, default=generate_uuid)
+    user_id = Column(String, ForeignKey("users.id"), nullable=False, index=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    expires_at = Column(DateTime, nullable=False, index=True)
+
+    # Token identification
+    jti = Column(String(36), unique=True, nullable=False, index=True)  # JWT ID for revocation
+    token_hash = Column(String(255), nullable=False)  # bcrypt hash of the token
+
+    # Device/session tracking (optional)
+    device_info = Column(String(255))  # Browser/device identifier
+    ip_address = Column(String(45))  # IPv4 or IPv6
+
+    # Revocation
+    revoked = Column(Boolean, default=False, index=True)
+    revoked_at = Column(DateTime)
+    revoked_reason = Column(String(100))  # logout, token_rotation, security, expired
+
+    # Token family for rotation (prevents reuse of old tokens)
+    family_id = Column(String(36), index=True)  # All tokens in rotation share this
+
+
 class Testimonial(Base):
     """
     User testimonials collected from beta users.

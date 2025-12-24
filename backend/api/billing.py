@@ -226,6 +226,11 @@ async def stripe_webhook(
     event_type = event["type"]
     event_data = event["data"]["object"]
 
+    # Log webhook receipt for monitoring
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.info(f"Received Stripe webhook: {event_type}")
+
     try:
         if event_type == "checkout.session.completed":
             # Payment successful, subscription created
@@ -254,12 +259,17 @@ async def stripe_webhook(
             pass
 
     except Exception as e:
-        # Log the error but return 200 to Stripe (so they don't retry)
-        # In production, you'd log this to a monitoring service
-        print(f"Error handling webhook {event_type}: {str(e)}")
+        # Log the error and return 500 so Stripe will retry
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Webhook processing failed for {event_type}: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Webhook processing failed: {str(e)}"
+        )
 
-    # Return success to Stripe
-    return {"status": "success"}
+    # Only return success if we actually processed successfully
+    return {"status": "success", "event_type": event_type}
 
 
 @router.get("/plans")
