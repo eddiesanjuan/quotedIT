@@ -90,6 +90,9 @@ class QuoteResponse(BaseModel):
     terms_text: Optional[str] = None
     # Track if quote has been converted to invoice
     has_invoice: bool = False
+    # Wave 2: View tracking for shared quotes
+    view_count: int = 0
+    status: Optional[str] = None
 
 
 class QuoteUpdateRequest(BaseModel):
@@ -247,6 +250,9 @@ def quote_to_response(quote, has_invoice: bool = False) -> QuoteResponse:
         timeline_text=getattr(quote, 'timeline_text', None),
         terms_text=getattr(quote, 'terms_text', None),
         has_invoice=has_invoice,
+        # Wave 2: View tracking for shared quotes
+        view_count=quote.view_count or 0,
+        status=quote.status,
     )
 
 
@@ -1143,6 +1149,81 @@ async def get_quote(quote_id: str, current_user: dict = Depends(get_current_user
         raise HTTPException(status_code=403, detail="Not authorized")
 
     return quote_to_response(quote)
+
+
+# ============================================================================
+# Wave 2: Quote Analytics Endpoint (Proposify Domination)
+# ============================================================================
+
+class QuoteAnalyticsResponse(BaseModel):
+    """Analytics data for a quote."""
+    quote_id: str
+    view_count: int
+    first_viewed_at: Optional[str] = None
+    last_viewed_at: Optional[str] = None
+    status: Optional[str] = None
+    sent_at: Optional[str] = None
+    accepted_at: Optional[str] = None
+    rejected_at: Optional[str] = None
+    # Expiration info
+    expires_at: Optional[str] = None
+    is_expired: bool = False
+    days_remaining: Optional[int] = None
+
+
+@router.get("/{quote_id}/analytics", response_model=QuoteAnalyticsResponse)
+async def get_quote_analytics(
+    quote_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get analytics for a specific quote.
+
+    Wave 2: Proposify Domination - Provides view tracking, status history,
+    and expiration information for contractor visibility.
+    """
+    from datetime import timedelta
+
+    db = get_db_service()
+    quote = await db.get_quote(quote_id)
+
+    if not quote:
+        raise HTTPException(status_code=404, detail="Quote not found")
+
+    # Verify ownership
+    contractor = await db.get_contractor_by_user_id(current_user["id"])
+    if not contractor or quote.contractor_id != contractor.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    # Get terms for expiration calculation
+    terms = await db.get_terms(contractor.id)
+    quote_valid_days = terms.quote_valid_days if terms else None
+
+    # Calculate expiration
+    expires_at = None
+    is_expired = False
+    days_remaining = None
+
+    if quote_valid_days and quote.created_at:
+        expires_at_dt = quote.created_at + timedelta(days=quote_valid_days)
+        expires_at = expires_at_dt.isoformat()
+        is_expired = datetime.utcnow() > expires_at_dt
+        if not is_expired:
+            days_remaining = max(0, (expires_at_dt - datetime.utcnow()).days)
+
+    return QuoteAnalyticsResponse(
+        quote_id=str(quote.id),
+        view_count=quote.view_count or 0,
+        first_viewed_at=quote.first_viewed_at.isoformat() if quote.first_viewed_at else None,
+        last_viewed_at=quote.last_viewed_at.isoformat() if quote.last_viewed_at else None,
+        status=quote.status,
+        sent_at=quote.sent_at.isoformat() if quote.sent_at else None,
+        accepted_at=quote.accepted_at.isoformat() if quote.accepted_at else None,
+        rejected_at=quote.rejected_at.isoformat() if quote.rejected_at else None,
+        expires_at=expires_at,
+        is_expired=is_expired,
+        days_remaining=days_remaining,
+    )
 
 
 @router.delete("/{quote_id}")

@@ -589,6 +589,41 @@
             border: 1px solid #fde047;
         }
 
+        /* Wave 2: Expiration Warning Banner */
+        .expiration-warning {
+            background: #fffbeb;
+            border: 1px solid #fcd34d;
+            border-radius: 8px;
+            padding: 16px 20px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .expiration-warning.urgent {
+            background: #fef2f2;
+            border-color: #fecaca;
+        }
+
+        .expiration-warning-icon {
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .expiration-warning-text {
+            font-size: 0.9375rem;
+            color: #92400e;
+        }
+
+        .expiration-warning.urgent .expiration-warning-text {
+            color: #991b1b;
+        }
+
+        .expiration-warning strong {
+            font-weight: 600;
+        }
+
         .status-icon {
             font-size: 2.5rem;
             margin-bottom: 12px;
@@ -658,6 +693,12 @@
 <body>
     <div class="container">
         <span class="shared-badge">SHARED QUOTE</span>
+
+        <!-- Wave 2: Expiration Warning Banner (hidden by default) -->
+        <div id="expirationWarning" class="expiration-warning" style="display: none;">
+            <span class="expiration-warning-icon">⏰</span>
+            <span class="expiration-warning-text" id="expirationWarningText"></span>
+        </div>
 
         <div class="card">
             <div class="quote-header">
@@ -853,18 +894,25 @@
                 currentQuoteData = quoteData;
                 const status = quoteData.status || 'draft';
 
-                if (status === 'won' || status === 'accepted') {
+                // Wave 2: Check for expiration from API response
+                const expiration = quoteData.expiration;
+                if (expiration && expiration.expired) {
+                    // Quote expired - show expired banner, hide actions
+                    showStatusBanner('expired', quoteData);
+                } else if (status === 'won' || status === 'accepted') {
                     // Quote was already accepted - show accepted banner
                     showStatusBanner('won', quoteData);
                 } else if (status === 'lost' || status === 'rejected') {
                     // Quote was already rejected - show rejected banner
                     showStatusBanner('lost', quoteData);
-                } else if (status === 'expired') {
-                    // Quote expired - show expired banner
-                    showStatusBanner('expired', quoteData);
                 } else {
                     // Quote is actionable (draft, sent, viewed) - show accept/reject buttons
                     showActionButtons();
+
+                    // Wave 2: Show expiration warning if quote expires soon
+                    if (expiration && expiration.days_remaining !== null) {
+                        showExpirationWarning(expiration.days_remaining);
+                    }
                 }
 
             } catch (error) {
@@ -958,6 +1006,43 @@
         // Show action buttons for actionable quotes
         function showActionButtons() {
             document.getElementById('quoteActions').style.display = 'block';
+        }
+
+        // Wave 2: Show expiration warning when quote expires soon
+        function showExpirationWarning(daysRemaining) {
+            // Only show warning if expiring within 7 days
+            if (daysRemaining > 7) return;
+
+            const warningDiv = document.getElementById('expirationWarning');
+            const warningText = document.getElementById('expirationWarningText');
+
+            // Clear existing content
+            warningText.textContent = '';
+
+            // Create bold element for emphasis
+            const strong = document.createElement('strong');
+            const rest = document.createTextNode('');
+
+            if (daysRemaining === 0) {
+                warningDiv.classList.add('urgent');
+                strong.textContent = 'This quote expires today!';
+                warningText.appendChild(strong);
+                warningText.appendChild(document.createTextNode(' Accept now to secure this price.'));
+            } else if (daysRemaining === 1) {
+                warningDiv.classList.add('urgent');
+                strong.textContent = 'This quote expires tomorrow!';
+                warningText.appendChild(strong);
+                warningText.appendChild(document.createTextNode(' Accept now to secure this price.'));
+            } else if (daysRemaining <= 3) {
+                warningDiv.classList.add('urgent');
+                strong.textContent = 'This quote expires in ' + daysRemaining + ' days.';
+                warningText.appendChild(strong);
+                warningText.appendChild(document.createTextNode(' Act soon to secure this price.'));
+            } else {
+                warningText.textContent = 'This quote is valid for ' + daysRemaining + ' more days.';
+            }
+
+            warningDiv.style.display = 'flex';
         }
 
         // Hide action buttons and forms

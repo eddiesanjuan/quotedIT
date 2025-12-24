@@ -12,7 +12,7 @@ Key features:
 import secrets
 import os
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from fastapi import APIRouter, HTTPException, Depends, Request
 from fastapi.responses import FileResponse
@@ -65,6 +65,13 @@ class ShareLinkResponse(BaseModel):
     quote_id: str
 
 
+class ExpirationInfo(BaseModel):
+    """Expiration status for quotes (Wave 2)."""
+    expired: bool = False
+    expires_at: Optional[str] = None
+    days_remaining: Optional[int] = None
+
+
 class SharedQuoteResponse(BaseModel):
     """Public quote data for shared view (limited fields)."""
     id: str
@@ -83,6 +90,8 @@ class SharedQuoteResponse(BaseModel):
     status: Optional[str] = None
     accepted_at: Optional[str] = None
     signature_name: Optional[str] = None
+    # Wave 2: Expiration info
+    expiration: Optional[ExpirationInfo] = None
 
 
 # ============================================================================
@@ -380,6 +389,21 @@ async def view_shared_quote(
         except Exception as e:
             print(f"Warning: Failed to track view event: {e}")
 
+        # Wave 2: Calculate expiration
+        expiration_info = None
+        terms = await db.get_terms(contractor.id)
+        if terms and terms.quote_valid_days and quote.created_at:
+            expires_at_dt = quote.created_at + timedelta(days=terms.quote_valid_days)
+            is_expired = datetime.utcnow() > expires_at_dt
+            days_remaining = None
+            if not is_expired:
+                days_remaining = max(0, (expires_at_dt - datetime.utcnow()).days)
+            expiration_info = ExpirationInfo(
+                expired=is_expired,
+                expires_at=expires_at_dt.isoformat(),
+                days_remaining=days_remaining,
+            )
+
         # Return limited public data (PROPOSIFY-DOMINATION: include status/signature)
         return SharedQuoteResponse(
             id=quote.id,
@@ -398,6 +422,8 @@ async def view_shared_quote(
             status=quote.status,
             accepted_at=quote.accepted_at.isoformat() if quote.accepted_at else None,
             signature_name=quote.signature_name,
+            # Wave 2: Expiration info
+            expiration=expiration_info,
         )
 
     except HTTPException:

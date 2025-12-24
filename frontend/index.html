@@ -4322,7 +4322,7 @@
                 <button class="app-nav-btn" id="myQuotesNavBtn" onclick="showAppSection('myQuotes')">My Quotes</button>
                 <button class="app-nav-btn" id="customersNavBtn" onclick="showAppSection('customers')">Customers</button>
                 <button class="app-nav-btn" id="tasksNavBtn" onclick="showAppSection('tasks')">Tasks</button>
-                <button class="app-nav-btn" id="invoicesNavBtn" onclick="showAppSection('invoices')">Invoices</button>
+                <button class="app-nav-btn" id="invoicesNavBtn" onclick="showAppSection('invoices')" style="display: none;">Invoices</button>
                 <button class="app-nav-btn" id="accountNavBtn" onclick="showAppSection('account')">Account</button>
                 <a href="/help" class="app-nav-btn" style="text-decoration: none;">Help</a>
             </div>
@@ -5019,7 +5019,7 @@
                 <div class="quote-actions" id="detailQuoteActions">
                     <button class="btn btn-primary" onclick="downloadDetailPdf()">Download PDF</button>
                     <button class="btn btn-primary" onclick="openShareModal()">📤 Share</button>
-                    <button class="btn btn-success" id="createInvoiceBtn" onclick="createInvoiceFromQuote()">📄 Create Invoice</button>
+                    <button class="btn btn-success" id="createInvoiceBtn" onclick="createInvoiceFromQuote()" style="display: none;">📄 Create Invoice</button>
                     <button class="btn btn-secondary" onclick="duplicateQuote()">📋 Duplicate</button>
                     <button class="btn btn-secondary" onclick="backToQuoteList()">Back to My Quotes</button>
                     <button class="btn btn-danger" onclick="confirmDeleteQuote()">🗑️ Delete</button>
@@ -6638,6 +6638,42 @@
                 hideCallback();
             }
         }
+
+        /**
+         * Wave 2: Check invoicing feature flag and show/hide invoicing UI
+         * Called after PostHog feature flags are loaded
+         */
+        function applyInvoicingFeatureFlag() {
+            const invoicesNavBtn = document.getElementById('invoicesNavBtn');
+            const createInvoiceBtn = document.getElementById('createInvoiceBtn');
+
+            if (isFeatureEnabled('invoicing_enabled', true)) {
+                // Show invoicing UI
+                if (invoicesNavBtn) invoicesNavBtn.style.display = '';
+                if (createInvoiceBtn) createInvoiceBtn.style.display = '';
+            } else {
+                // Keep invoicing UI hidden
+                if (invoicesNavBtn) invoicesNavBtn.style.display = 'none';
+                if (createInvoiceBtn) createInvoiceBtn.style.display = 'none';
+            }
+        }
+
+        // Apply feature flags when PostHog loads them
+        {% if posthog_api_key %}
+        if (window.posthog) {
+            posthog.onFeatureFlags(applyInvoicingFeatureFlag);
+            // Also check immediately in case flags are already loaded
+            applyInvoicingFeatureFlag();
+        }
+        {% else %}
+        // No PostHog - default to showing invoicing
+        document.addEventListener('DOMContentLoaded', function() {
+            const invoicesNavBtn = document.getElementById('invoicesNavBtn');
+            const createInvoiceBtn = document.getElementById('createInvoiceBtn');
+            if (invoicesNavBtn) invoicesNavBtn.style.display = '';
+            if (createInvoiceBtn) createInvoiceBtn.style.display = '';
+        });
+        {% endif %}
 
         /**
          * Escape HTML to prevent XSS when inserting user content
@@ -10666,6 +10702,57 @@
                         white-space: nowrap;
                     `;
                     titleWrapper.appendChild(invoiceBadge);
+                }
+
+                // Wave 2: Show view count badge if quote has been viewed
+                if (quote.view_count && quote.view_count > 0) {
+                    const viewBadge = document.createElement('span');
+                    viewBadge.className = 'view-badge';
+                    viewBadge.textContent = '👁 ' + quote.view_count;
+                    viewBadge.title = quote.view_count + ' view' + (quote.view_count !== 1 ? 's' : '');
+                    viewBadge.style.cssText = `
+                        font-size: 0.7rem;
+                        padding: 2px 6px;
+                        background: #f3f4f6;
+                        color: #6b7280;
+                        border-radius: 4px;
+                        font-weight: 500;
+                        white-space: nowrap;
+                    `;
+                    titleWrapper.appendChild(viewBadge);
+                }
+
+                // Wave 2: Show status badge for won/lost quotes
+                if (quote.status === 'won') {
+                    const wonBadge = document.createElement('span');
+                    wonBadge.className = 'status-badge won';
+                    wonBadge.textContent = '✓ Won';
+                    wonBadge.title = 'Customer accepted this quote';
+                    wonBadge.style.cssText = `
+                        font-size: 0.7rem;
+                        padding: 2px 6px;
+                        background: #dcfce7;
+                        color: #166534;
+                        border-radius: 4px;
+                        font-weight: 600;
+                        white-space: nowrap;
+                    `;
+                    titleWrapper.appendChild(wonBadge);
+                } else if (quote.status === 'lost') {
+                    const lostBadge = document.createElement('span');
+                    lostBadge.className = 'status-badge lost';
+                    lostBadge.textContent = '✗ Lost';
+                    lostBadge.title = 'Customer declined this quote';
+                    lostBadge.style.cssText = `
+                        font-size: 0.7rem;
+                        padding: 2px 6px;
+                        background: #fef2f2;
+                        color: #991b1b;
+                        border-radius: 4px;
+                        font-weight: 600;
+                        white-space: nowrap;
+                    `;
+                    titleWrapper.appendChild(lostBadge);
                 }
 
                 const amount = document.createElement('div');
