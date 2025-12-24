@@ -28,7 +28,7 @@ configure_logging(
 )
 logger = get_logger("quoted.main")
 
-from .api import quotes, contractors, onboarding, auth, billing, pricing_brain, demo, referral, share, beta, testimonials, learning, invoices, customers, tasks
+from .api import quotes, contractors, onboarding, auth, billing, pricing_brain, demo, referral, share, testimonials, learning, invoices, customers, tasks
 
 # Initialize Sentry if DSN is configured
 if settings.sentry_dsn:
