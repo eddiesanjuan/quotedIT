@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quoted Blog - Guides for Anyone Who Quotes Services</title>
+    <meta name="description" content="Expert guides on writing professional quotes, pricing strategies, and winning more clients. For freelancers, contractors, photographers, consultants, and anyone who quotes services.">
+    <meta name="keywords" content="quote template, proposal template, how to write a quote, pricing guide, freelancer quotes, contractor estimates">
+    <link rel="canonical" href="https://quoted.it.com/blog/">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Quoted Blog - Guides for Anyone Who Quotes Services">
+    <meta property="og:description" content="Expert guides on writing professional quotes, pricing strategies, and winning more clients.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://quoted.it.com/blog/">
+
+    <!-- Schema.org markup -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Blog",
+        "name": "Quoted Blog",
+        "description": "Expert guides on writing professional quotes and winning more clients",
+        "url": "https://quoted.it.com/blog/",
+        "publisher": {
+            "@type": "Organization",
+            "name": "Quoted",
+            "url": "https://quoted.it.com"
+        }
+    }
+    </script>
+
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-tertiary: #1a1a25;
+            --border: #2a2a3a;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0b0;
+            --text-muted: #666677;
+            --accent-purple: #8b5cf6;
+            --accent-blue: #3b82f6;
+            --accent-green: #22c55e;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 24px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-decoration: none;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav {
+            display: flex;
+            gap: 24px;
+            align-items: center;
+        }
+
+        .nav a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: color 0.2s;
+        }
+
+        .nav a:hover {
+            color: var(--text-primary);
+        }
+
+        .btn-demo {
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: transform 0.2s, opacity 0.2s;
+        }
+
+        .btn-demo:hover {
+            transform: translateY(-2px);
+            opacity: 0.9;
+            color: white;
+        }
+
+        /* Hero */
+        .hero {
+            text-align: center;
+            padding: 80px 24px;
+            background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, var(--text-primary), var(--text-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Categories */
+        .categories {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            padding: 0 24px 48px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .category-pill {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .category-pill:hover,
+        .category-pill.active {
+            border-color: var(--accent-purple);
+            color: var(--text-primary);
+            background: rgba(139, 92, 246, 0.1);
+        }
+
+        /* Blog Grid */
+        .blog-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px 80px;
+        }
+
+        .blog-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 24px;
+        }
+
+        /* Blog Card */
+        .blog-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: transform 0.2s, border-color 0.2s;
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .blog-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent-purple);
+        }
+
+        .blog-card-image {
+            height: 200px;
+            background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+        }
+
+        .blog-card-content {
+            padding: 24px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .blog-card-category {
+            font-size: 0.8rem;
+            color: var(--accent-purple);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 8px;
+        }
+
+        .blog-card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+
+        .blog-card-excerpt {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 16px;
+            flex: 1;
+        }
+
+        .blog-card-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .read-time {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* Featured Post */
+        .featured-post {
+            grid-column: 1 / -1;
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            gap: 0;
+        }
+
+        .featured-post .blog-card-image {
+            height: 100%;
+            min-height: 300px;
+            border-radius: 16px 0 0 16px;
+        }
+
+        .featured-post .blog-card-content {
+            padding: 32px;
+        }
+
+        .featured-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .featured-post .blog-card-title {
+            font-size: 1.75rem;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 48px;
+            text-align: center;
+            margin: 48px auto;
+            max-width: 800px;
+        }
+
+        .cta-section h2 {
+            font-size: 2rem;
+            margin-bottom: 16px;
+        }
+
+        .cta-section p {
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+            font-size: 1.1rem;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+            color: white;
+            padding: 14px 32px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            font-size: 1.1rem;
+            transition: transform 0.2s;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border);
+            padding: 48px 24px;
+            text-align: center;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.95rem;
+        }
+
+        .footer-links a:hover {
+            color: var(--text-primary);
+        }
+
+        .footer-copy {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .blog-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .featured-post {
+                grid-template-columns: 1fr;
+            }
+
+            .featured-post .blog-card-image {
+                border-radius: 16px 16px 0 0;
+                min-height: 200px;
+            }
+
+            .nav {
+                gap: 12px;
+            }
+
+            .nav a:not(.btn-demo) {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-inner">
+            <a href="/" class="logo">Quoted</a>
+            <nav class="nav">
+                <a href="/">Home</a>
+                <a href="/blog/">Blog</a>
+                <a href="/demo" class="btn-demo">Try Demo</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero -->
+    <section class="hero">
+        <h1>The Quoting Guide</h1>
+        <p>Expert guides on writing professional quotes, pricing strategies, and winning more clients. For anyone who quotes services.</p>
+    </section>
+
+    <!-- Categories -->
+    <div class="categories">
+        <a href="#all" class="category-pill active">All Posts</a>
+        <a href="#freelancers" class="category-pill">Freelancers</a>
+        <a href="#contractors" class="category-pill">Contractors</a>
+        <a href="#photographers" class="category-pill">Photographers</a>
+        <a href="#consultants" class="category-pill">Consultants</a>
+        <a href="#home-services" class="category-pill">Home Services</a>
+    </div>
+
+    <!-- Blog Grid -->
+    <div class="blog-container">
+        <div class="blog-grid">
+            <!-- Featured Post -->
+            <a href="/blog/ultimate-guide-professional-quotes.html" class="blog-card featured-post">
+                <div class="blog-card-image">&#128221;</div>
+                <div class="blog-card-content">
+                    <span class="featured-badge">Featured Guide</span>
+                    <div class="blog-card-category">Quoting Fundamentals</div>
+                    <h2 class="blog-card-title">The Ultimate Guide to Writing Professional Quotes That Win</h2>
+                    <p class="blog-card-excerpt">Everything you need to know about creating quotes that convert prospects into paying clients. From pricing psychology to PDF formatting, this comprehensive guide covers it all.</p>
+                    <div class="blog-card-meta">
+                        <span>December 2025</span>
+                        <span class="read-time">&#128337; 15 min read</span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Freelancer Post -->
+            <a href="/blog/freelancer-quoting-guide.html" class="blog-card">
+                <div class="blog-card-image">&#128187;</div>
+                <div class="blog-card-content">
+                    <div class="blog-card-category">Freelancers</div>
+                    <h2 class="blog-card-title">The Freelancer's Complete Guide to Quoting Projects</h2>
+                    <p class="blog-card-excerpt">Stop undercharging and start winning better clients. Learn how to quote design, development, writing, and other freelance work professionally.</p>
+                    <div class="blog-card-meta">
+                        <span>December 2025</span>
+                        <span class="read-time">&#128337; 12 min read</span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Contractor Post -->
+            <a href="/blog/contractor-estimating-guide.html" class="blog-card">
+                <div class="blog-card-image">&#128295;</div>
+                <div class="blog-card-content">
+                    <div class="blog-card-category">Contractors</div>
+                    <h2 class="blog-card-title">Contractor Estimating: From Job Site to Professional Quote in Minutes</h2>
+                    <p class="blog-card-excerpt">Whether you're in plumbing, electrical, HVAC, or general contracting, learn how to create accurate estimates that win jobs without leaving money on the table.</p>
+                    <div class="blog-card-meta">
+                        <span>December 2025</span>
+                        <span class="read-time">&#128337; 14 min read</span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Photographer Post -->
+            <a href="/blog/photography-pricing-guide.html" class="blog-card">
+                <div class="blog-card-image">&#128247;</div>
+                <div class="blog-card-content">
+                    <div class="blog-card-category">Photographers</div>
+                    <h2 class="blog-card-title">Photography Pricing: How to Quote Weddings, Events, and Sessions</h2>
+                    <p class="blog-card-excerpt">Master the art of photography pricing. Learn package structures, how to communicate value, and create quotes that book more clients.</p>
+                    <div class="blog-card-meta">
+                        <span>December 2025</span>
+                        <span class="read-time">&#128337; 11 min read</span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Consultant Post -->
+            <a href="/blog/consultant-proposal-guide.html" class="blog-card">
+                <div class="blog-card-image">&#128188;</div>
+                <div class="blog-card-content">
+                    <div class="blog-card-category">Consultants</div>
+                    <h2 class="blog-card-title">Consulting Proposals: How to Quote Your Expertise and Close Deals</h2>
+                    <p class="blog-card-excerpt">From hourly to project-based to retainers, learn how consultants and agencies should structure and present their pricing.</p>
+                    <div class="blog-card-meta">
+                        <span>December 2025</span>
+                        <span class="read-time">&#128337; 13 min read</span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Home Services Post -->
+            <a href="/blog/home-services-quoting-guide.html" class="blog-card">
+                <div class="blog-card-image">&#127968;</div>
+                <div class="blog-card-content">
+                    <div class="blog-card-category">Home Services</div>
+                    <h2 class="blog-card-title">Home Services Quoting: Cleaners, Movers, Handymen & More</h2>
+                    <p class="blog-card-excerpt">A complete guide to quoting home services. Learn pricing strategies for cleaning, moving, handyman work, and other residential services.</p>
+                    <div class="blog-card-meta">
+                        <span>December 2025</span>
+                        <span class="read-time">&#128337; 10 min read</span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Auto Services Post -->
+            <a href="/blog/auto-services-estimate-guide.html" class="blog-card">
+                <div class="blog-card-image">&#128663;</div>
+                <div class="blog-card-content">
+                    <div class="blog-card-category">Auto Services</div>
+                    <h2 class="blog-card-title">Auto Service Estimates: Mechanics, Detailers, and Body Shops</h2>
+                    <p class="blog-card-excerpt">How to create professional estimates for automotive work that build trust and win customers in a competitive market.</p>
+                    <div class="blog-card-meta">
+                        <span>December 2025</span>
+                        <span class="read-time">&#128337; 9 min read</span>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- CTA Section -->
+        <div class="cta-section">
+            <h2>Stop Wasting Time on Quotes</h2>
+            <p>Speak your estimate, get a professional PDF in 60 seconds. Quoted learns your pricing and makes quoting effortless.</p>
+            <a href="/demo" class="cta-button">Try the Demo Free</a>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-links">
+            <a href="/">Home</a>
+            <a href="/demo">Demo</a>
+            <a href="/blog/">Blog</a>
+            <a href="/help">Help</a>
+            <a href="/terms">Terms</a>
+            <a href="/privacy">Privacy</a>
+        </div>
+        <p class="footer-copy">&copy; 2025 Quoted. Built for anyone who quotes services.</p>
+    </footer>
+</body>
+</html>
