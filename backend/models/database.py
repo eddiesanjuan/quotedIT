@@ -1101,6 +1101,88 @@ async def run_migrations(engine):
             """,
             "alter_sql": "ALTER TABLE quotes ADD COLUMN customer_id VARCHAR"
         },
+        # PROPOSIFY-DOMINATION: Quote accept/reject and view tracking columns
+        {
+            "table": "quotes",
+            "column": "signature_name",
+            "check_sql": """
+                SELECT column_name FROM information_schema.columns
+                WHERE table_name = 'quotes' AND column_name = 'signature_name'
+            """,
+            "alter_sql": "ALTER TABLE quotes ADD COLUMN signature_name VARCHAR(255)"
+        },
+        {
+            "table": "quotes",
+            "column": "signature_ip",
+            "check_sql": """
+                SELECT column_name FROM information_schema.columns
+                WHERE table_name = 'quotes' AND column_name = 'signature_ip'
+            """,
+            "alter_sql": "ALTER TABLE quotes ADD COLUMN signature_ip VARCHAR(45)"
+        },
+        {
+            "table": "quotes",
+            "column": "signature_at",
+            "check_sql": """
+                SELECT column_name FROM information_schema.columns
+                WHERE table_name = 'quotes' AND column_name = 'signature_at'
+            """,
+            "alter_sql": "ALTER TABLE quotes ADD COLUMN signature_at TIMESTAMP"
+        },
+        {
+            "table": "quotes",
+            "column": "accepted_at",
+            "check_sql": """
+                SELECT column_name FROM information_schema.columns
+                WHERE table_name = 'quotes' AND column_name = 'accepted_at'
+            """,
+            "alter_sql": "ALTER TABLE quotes ADD COLUMN accepted_at TIMESTAMP"
+        },
+        {
+            "table": "quotes",
+            "column": "rejected_at",
+            "check_sql": """
+                SELECT column_name FROM information_schema.columns
+                WHERE table_name = 'quotes' AND column_name = 'rejected_at'
+            """,
+            "alter_sql": "ALTER TABLE quotes ADD COLUMN rejected_at TIMESTAMP"
+        },
+        {
+            "table": "quotes",
+            "column": "rejection_reason",
+            "check_sql": """
+                SELECT column_name FROM information_schema.columns
+                WHERE table_name = 'quotes' AND column_name = 'rejection_reason'
+            """,
+            "alter_sql": "ALTER TABLE quotes ADD COLUMN rejection_reason TEXT"
+        },
+        {
+            "table": "quotes",
+            "column": "view_count",
+            "check_sql": """
+                SELECT column_name FROM information_schema.columns
+                WHERE table_name = 'quotes' AND column_name = 'view_count'
+            """,
+            "alter_sql": "ALTER TABLE quotes ADD COLUMN view_count INTEGER DEFAULT 0"
+        },
+        {
+            "table": "quotes",
+            "column": "first_viewed_at",
+            "check_sql": """
+                SELECT column_name FROM information_schema.columns
+                WHERE table_name = 'quotes' AND column_name = 'first_viewed_at'
+            """,
+            "alter_sql": "ALTER TABLE quotes ADD COLUMN first_viewed_at TIMESTAMP"
+        },
+        {
+            "table": "quotes",
+            "column": "last_viewed_at",
+            "check_sql": """
+                SELECT column_name FROM information_schema.columns
+                WHERE table_name = 'quotes' AND column_name = 'last_viewed_at'
+            """,
+            "alter_sql": "ALTER TABLE quotes ADD COLUMN last_viewed_at TIMESTAMP"
+        },
     ]
 
     # Constraint changes (PostgreSQL only - SQLite doesn't support these)
