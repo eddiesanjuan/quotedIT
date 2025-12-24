@@ -360,12 +360,19 @@ async def check_all_health(
 
 async def get_quick_health() -> Dict[str, Any]:
     """
-    Quick health check - database only.
+    Quick health check - database, cache, and storage.
     For use by load balancers that need fast response.
     """
+    from .cache import cache_service
+    from .storage import storage_service
+
     db_health = await check_database_health()
+    cache_health = await cache_service.health_check()
+    storage_health = await storage_service.health_check()
 
     return {
         "status": db_health.status.value,
         "database": db_health.to_dict(),
+        "cache": cache_health,
+        "storage": storage_health,
     }

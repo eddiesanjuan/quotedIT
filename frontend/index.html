@@ -6958,12 +6958,84 @@
 
         // State
         let authToken = localStorage.getItem('quoted_token');
+        let refreshToken = localStorage.getItem('quoted_refresh_token');
         let currentUser = JSON.parse(localStorage.getItem('quoted_user') || 'null');
         let currentQuoteId = null;
         let mediaRecorder = null;
         let audioChunks = [];
         let lastInputMethod = null; // Track whether last quote was voice or text
         let autosaveInterval = null; // Autosave interval timer
+        let isRefreshing = false; // SEC-003: Prevent concurrent refresh attempts
+        let refreshPromise = null; // SEC-003: Shared promise for concurrent refresh requests
+
+        // SEC-003: Refresh token logic
+        async function refreshAccessToken() {
+            if (!refreshToken) {
+                throw new Error('No refresh token available');
+            }
+
+            // If already refreshing, wait for the existing refresh to complete
+            if (isRefreshing && refreshPromise) {
+                return refreshPromise;
+            }
+
+            isRefreshing = true;
+            refreshPromise = (async () => {
+                try {
+                    const response = await fetch(`${API_BASE}/auth/refresh`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ refresh_token: refreshToken }),
+                    });
+
+                    if (!response.ok) {
+                        // Refresh failed - clear tokens and force re-login
+                        throw new Error('Token refresh failed');
+                    }
+
+                    const data = await response.json();
+                    authToken = data.access_token;
+                    refreshToken = data.refresh_token;
+                    localStorage.setItem('quoted_token', authToken);
+                    localStorage.setItem('quoted_refresh_token', refreshToken);
+
+                    return authToken;
+                } finally {
+                    isRefreshing = false;
+                    refreshPromise = null;
+                }
+            })();
+
+            return refreshPromise;
+        }
+
+        // SEC-003: Wrapper for authenticated API calls with auto-refresh
+        async function authenticatedFetch(url, options = {}) {
+            // Add auth header
+            const headers = {
+                ...options.headers,
+                'Authorization': `Bearer ${authToken}`,
+            };
+
+            let response = await fetch(url, { ...options, headers });
+
+            // If 401 and we have a refresh token, try to refresh
+            if (response.status === 401 && refreshToken) {
+                try {
+                    await refreshAccessToken();
+                    // Retry the request with new token
+                    headers['Authorization'] = `Bearer ${authToken}`;
+                    response = await fetch(url, { ...options, headers });
+                } catch (err) {
+                    // Refresh failed - force logout
+                    console.error('Token refresh failed:', err);
+                    logout();
+                    throw new Error('Session expired. Please log in again.');
+                }
+            }
+
+            return response;
+        }
 
         // ========== DRAFT AUTOSAVE (DISC-032) ==========
 
@@ -7349,8 +7421,11 @@
                     throw new Error(data.detail || 'Login failed');
                 }
 
+                // SEC-003: Store both access and refresh tokens
                 authToken = data.access_token;
+                refreshToken = data.refresh_token;
                 localStorage.setItem('quoted_token', authToken);
+                localStorage.setItem('quoted_refresh_token', refreshToken);
 
                 await fetchUserInfo();
                 showAppView();
@@ -7396,8 +7471,11 @@
                     throw new Error(result.detail || 'Registration failed');
                 }
 
+                // SEC-003: Store both access and refresh tokens
                 authToken = result.access_token;
+                refreshToken = result.refresh_token;
                 localStorage.setItem('quoted_token', authToken);
+                localStorage.setItem('quoted_refresh_token', refreshToken);
 
                 await fetchUserInfo();
                 showAppView();
@@ -7410,22 +7488,16 @@
             }
         }
 
-        // Fetch user info
+        // Fetch user info - SEC-003: Use authenticatedFetch for auto-refresh
         async function fetchUserInfo() {
             try {
-                const response = await fetch(`${API_BASE}/auth/me`, {
-                    headers: { 'Authorization': `Bearer ${authToken}` },
-                });
+                const response = await authenticatedFetch(`${API_BASE}/auth/me`);
 
                 if (response.ok) {
                     currentUser = await response.json();
                     localStorage.setItem('quoted_user', JSON.stringify(currentUser));
                 } else {
                     console.error('fetchUserInfo failed:', response.status);
-                    // Clear invalid auth state
-                    if (response.status === 401) {
-                        logout();
-                    }
                     throw new Error('Failed to fetch user info');
                 }
             } catch (err) {
@@ -7434,11 +7506,26 @@
             }
         }
 
-        // Logout
-        function logout() {
+        // Logout - SEC-003: Clear tokens and revoke on server
+        async function logout() {
+            // Revoke tokens on server (don't block on failure)
+            if (authToken) {
+                try {
+                    await fetch(`${API_BASE}/auth/logout`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${authToken}` },
+                    });
+                } catch (err) {
+                    console.warn('Server logout failed:', err);
+                }
+            }
+
+            // Clear local state
             authToken = null;
+            refreshToken = null;
             currentUser = null;
             localStorage.removeItem('quoted_token');
+            localStorage.removeItem('quoted_refresh_token');
             localStorage.removeItem('quoted_user');
             showAuthView();
         }
@@ -14042,33 +14129,51 @@
         function renderCustomerSuggestions(customers) {
             const dropdown = document.getElementById('customerAutocomplete');
 
+            // Clear existing content safely
+            while (dropdown.firstChild) {
+                dropdown.removeChild(dropdown.firstChild);
+            }
+
             if (customers.length === 0) {
-                dropdown.innerHTML = '<div class="autocomplete-empty">No previous customers found</div>';
+                const emptyDiv = document.createElement('div');
+                emptyDiv.className = 'autocomplete-empty';
+                emptyDiv.textContent = 'No previous customers found';
+                dropdown.appendChild(emptyDiv);
                 dropdown.style.display = 'block';
                 return;
             }
 
-            dropdown.innerHTML = customers.map(customer => {
+            // Create dropdown items using safe DOM methods
+            customers.forEach(customer => {
+                const item = document.createElement('div');
+                item.className = 'autocomplete-item';
+                item.dataset.customer = JSON.stringify(customer);
+
+                const nameDiv = document.createElement('div');
+                nameDiv.className = 'autocomplete-item-name';
+                nameDiv.textContent = customer.name || 'Unnamed Customer';
+                item.appendChild(nameDiv);
+
                 const details = [];
                 if (customer.phone) details.push(customer.phone);
                 if (customer.email) details.push(customer.email);
 
-                return `
-                    <div class="autocomplete-item" data-customer='${JSON.stringify(customer)}'>
-                        <div class="autocomplete-item-name">${customer.name || 'Unnamed Customer'}</div>
-                        ${details.length > 0 ? `<div class="autocomplete-item-details">${details.join(' • ')}</div>` : ''}
-                    </div>
-                `;
-            }).join('');
+                if (details.length > 0) {
+                    const detailsDiv = document.createElement('div');
+                    detailsDiv.className = 'autocomplete-item-details';
+                    detailsDiv.textContent = details.join(' • ');
+                    item.appendChild(detailsDiv);
+                }
 
-            dropdown.style.display = 'block';
-
-            // Add click handlers
-            dropdown.querySelectorAll('.autocomplete-item').forEach(item => {
+                // Add click handler
                 item.addEventListener('click', function() {
                     selectCustomer(JSON.parse(this.dataset.customer));
                 });
+
+                dropdown.appendChild(item);
             });
+
+            dropdown.style.display = 'block';
         }
 
         // Select a customer from autocomplete

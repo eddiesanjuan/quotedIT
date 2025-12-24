@@ -1,21 +1,25 @@
 """
 Authentication service for Quoted.
 Handles user registration, login, and JWT token management.
+
+SEC-003: Implements short-lived access tokens (15 min) + refresh tokens (7 days)
+for improved security while maintaining good UX.
 """
 
 from datetime import datetime, timedelta
 from typing import Optional
+import secrets
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from pydantic import BaseModel, EmailStr
-from sqlalchemy import select
+from sqlalchemy import select, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..config import settings
-from ..models.database import User, Contractor, PricingModel, ContractorTerms, Base, generate_uuid
+from ..models.database import User, Contractor, PricingModel, ContractorTerms, RefreshToken, Base, generate_uuid
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 
 # Password hashing
@@ -42,9 +46,16 @@ class UserLogin(BaseModel):
 
 class Token(BaseModel):
     access_token: str
+    refresh_token: str  # SEC-003: Add refresh token to response
     token_type: str = "bearer"
     user_id: str
     contractor_id: str
+    expires_in: int = 900  # Access token expiry in seconds (15 min)
+
+
+class RefreshTokenRequest(BaseModel):
+    """Request body for token refresh endpoint."""
+    refresh_token: str
 
 
 class UserResponse(BaseModel):
@@ -112,6 +123,223 @@ def decode_access_token(token: str) -> Optional[dict]:
         return payload
     except JWTError:
         return None
+
+
+# SEC-003: Refresh Token Management Functions
+
+def create_refresh_token() -> tuple[str, str]:
+    """
+    Create a new refresh token.
+    Returns (token_value, jti) where:
+    - token_value: The actual token to send to client (64 bytes, URL-safe)
+    - jti: The JWT ID for tracking/revocation
+    """
+    token_value = secrets.token_urlsafe(64)
+    jti = generate_uuid()
+    return token_value, jti
+
+
+def hash_refresh_token(token: str) -> str:
+    """Hash a refresh token for secure storage."""
+    return pwd_context.hash(token)
+
+
+def verify_refresh_token(plain_token: str, hashed_token: str) -> bool:
+    """Verify a refresh token against its hash."""
+    return pwd_context.verify(plain_token, hashed_token)
+
+
+async def store_refresh_token(
+    db: AsyncSession,
+    user_id: str,
+    token_value: str,
+    jti: str,
+    family_id: Optional[str] = None,
+    device_info: Optional[str] = None,
+    ip_address: Optional[str] = None,
+) -> RefreshToken:
+    """
+    Store a new refresh token in the database.
+
+    Args:
+        db: Database session
+        user_id: User ID this token belongs to
+        token_value: The actual token value (will be hashed)
+        jti: JWT ID for this token
+        family_id: Token family ID for rotation tracking
+        device_info: Optional device/browser info
+        ip_address: Optional client IP address
+    """
+    expires_at = datetime.utcnow() + timedelta(days=settings.jwt_refresh_expire_days)
+
+    refresh_token = RefreshToken(
+        id=generate_uuid(),
+        user_id=user_id,
+        jti=jti,
+        token_hash=hash_refresh_token(token_value),
+        family_id=family_id or generate_uuid(),
+        expires_at=expires_at,
+        device_info=device_info,
+        ip_address=ip_address,
+    )
+    db.add(refresh_token)
+    await db.commit()
+    await db.refresh(refresh_token)
+    return refresh_token
+
+
+async def validate_and_rotate_refresh_token(
+    db: AsyncSession,
+    token_value: str,
+    device_info: Optional[str] = None,
+    ip_address: Optional[str] = None,
+) -> tuple[User, str, str]:
+    """
+    Validate a refresh token and rotate it (issue new one, revoke old).
+
+    This implements token rotation for security:
+    - Each refresh token can only be used once
+    - If an old token is reused, the entire token family is revoked (potential theft)
+
+    Args:
+        db: Database session
+        token_value: The refresh token from client
+        device_info: Optional device/browser info
+        ip_address: Optional client IP address
+
+    Returns:
+        (user, new_token_value, new_jti) tuple
+
+    Raises:
+        HTTPException: If token is invalid, expired, or revoked
+    """
+    # Find all non-expired tokens for iteration
+    # We need to check each one since we can't query by token value directly (it's hashed)
+    result = await db.execute(
+        select(RefreshToken).where(
+            and_(
+                RefreshToken.expires_at > datetime.utcnow(),
+            )
+        ).order_by(RefreshToken.created_at.desc())
+    )
+    tokens = result.scalars().all()
+
+    # Find the matching token
+    matching_token = None
+    for token in tokens:
+        if verify_refresh_token(token_value, token.token_hash):
+            matching_token = token
+            break
+
+    if not matching_token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired refresh token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    # Check if token is revoked
+    if matching_token.revoked:
+        # Token was already used - potential theft! Revoke entire family
+        await revoke_token_family(db, matching_token.family_id, "security")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Refresh token has been revoked. Please login again.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    # Get the user
+    user = await get_user_by_id(db, matching_token.user_id)
+    if not user or not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User account not found or disabled",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    # Revoke the old token (rotation)
+    matching_token.revoked = True
+    matching_token.revoked_at = datetime.utcnow()
+    matching_token.revoked_reason = "token_rotation"
+
+    # Create new token in the same family
+    new_token_value, new_jti = create_refresh_token()
+    await store_refresh_token(
+        db=db,
+        user_id=user.id,
+        token_value=new_token_value,
+        jti=new_jti,
+        family_id=matching_token.family_id,  # Same family
+        device_info=device_info,
+        ip_address=ip_address,
+    )
+
+    return user, new_token_value, new_jti
+
+
+async def revoke_token_family(db: AsyncSession, family_id: str, reason: str = "logout"):
+    """
+    Revoke all tokens in a token family.
+    Used on logout or when suspicious activity is detected.
+    """
+    result = await db.execute(
+        select(RefreshToken).where(
+            and_(
+                RefreshToken.family_id == family_id,
+                RefreshToken.revoked == False,
+            )
+        )
+    )
+    tokens = result.scalars().all()
+
+    for token in tokens:
+        token.revoked = True
+        token.revoked_at = datetime.utcnow()
+        token.revoked_reason = reason
+
+    await db.commit()
+
+
+async def revoke_all_user_tokens(db: AsyncSession, user_id: str, reason: str = "logout"):
+    """
+    Revoke all refresh tokens for a user.
+    Used for "logout everywhere" functionality.
+    """
+    result = await db.execute(
+        select(RefreshToken).where(
+            and_(
+                RefreshToken.user_id == user_id,
+                RefreshToken.revoked == False,
+            )
+        )
+    )
+    tokens = result.scalars().all()
+
+    for token in tokens:
+        token.revoked = True
+        token.revoked_at = datetime.utcnow()
+        token.revoked_reason = reason
+
+    await db.commit()
+    return len(tokens)
+
+
+async def cleanup_expired_tokens(db: AsyncSession) -> int:
+    """
+    Delete expired refresh tokens from database.
+    Should be run periodically (e.g., daily cron job).
+    """
+    result = await db.execute(
+        select(RefreshToken).where(RefreshToken.expires_at < datetime.utcnow())
+    )
+    expired_tokens = result.scalars().all()
+
+    count = len(expired_tokens)
+    for token in expired_tokens:
+        await db.delete(token)
+
+    await db.commit()
+    return count
 
 
 async def get_user_by_email(db: AsyncSession, email: str) -> Optional[User]:

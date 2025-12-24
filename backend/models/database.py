@@ -275,8 +275,10 @@ class Quote(Base):
     __tablename__ = "quotes"
 
     id = Column(String, primary_key=True, default=generate_uuid)
-    contractor_id = Column(String, ForeignKey("contractors.id"), nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    # INFRA-005: Index on contractor_id for frequent queries
+    contractor_id = Column(String, ForeignKey("contractors.id"), nullable=False, index=True)
+    # INFRA-005: Index on created_at for sorting/filtering
+    created_at = Column(DateTime, default=datetime.utcnow, index=True)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Customer info (optional - might not have it for budgetary quotes)
@@ -319,8 +321,8 @@ class Quote(Base):
     timeline_text = Column(Text)  # Free-form timeline description for this quote
     terms_text = Column(Text)  # Free-form terms/conditions for this quote
 
-    # Status
-    status = Column(String(50), default="draft")  # draft, sent, won, lost, expired
+    # Status - INFRA-005: Index for filtering by status
+    status = Column(String(50), default="draft", index=True)  # draft, sent, won, lost, expired
     sent_at = Column(DateTime)
     is_grace_quote = Column(Boolean, default=False)  # DISC-018: True if generated during grace period
 
@@ -442,9 +444,11 @@ class Invoice(Base):
     __tablename__ = "invoices"
 
     id = Column(String, primary_key=True, default=generate_uuid)
-    contractor_id = Column(String, ForeignKey("contractors.id"), nullable=False)
-    quote_id = Column(String, ForeignKey("quotes.id"), nullable=True)  # Can create standalone invoices
-    created_at = Column(DateTime, default=datetime.utcnow)
+    # INFRA-005: Index on contractor_id for frequent queries
+    contractor_id = Column(String, ForeignKey("contractors.id"), nullable=False, index=True)
+    # INFRA-005: Index on quote_id for joins
+    quote_id = Column(String, ForeignKey("quotes.id"), nullable=True, index=True)  # Can create standalone invoices
+    created_at = Column(DateTime, default=datetime.utcnow, index=True)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Invoice number (auto-generated per contractor)
@@ -694,6 +698,46 @@ class UserIssue(Base):
     human_notes = Column(Text)
     verified_by = Column(String)  # Admin who verified the fix
     verified_at = Column(DateTime)
+
+
+class RefreshToken(Base):
+    """
+    Refresh tokens for JWT authentication (SEC-003).
+
+    Workflow:
+    1. On login/register, generate both access token (15 min) and refresh token (7 days)
+    2. Store refresh token hash in database
+    3. When access token expires, client uses refresh token to get new access token
+    4. On logout, revoke all refresh tokens for user
+
+    Security features:
+    - Tokens stored as hashes (bcrypt), not plaintext
+    - Each token has unique jti (JWT ID) for revocation
+    - Tokens can be revoked individually or all at once
+    - Family-based rotation prevents token theft attacks
+    """
+    __tablename__ = "refresh_tokens"
+
+    id = Column(String, primary_key=True, default=generate_uuid)
+    user_id = Column(String, ForeignKey("users.id"), nullable=False, index=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    expires_at = Column(DateTime, nullable=False, index=True)
+
+    # Token identification
+    jti = Column(String(36), unique=True, nullable=False, index=True)  # JWT ID for revocation
+    token_hash = Column(String(255), nullable=False)  # bcrypt hash of the token
+
+    # Device/session tracking (optional)
+    device_info = Column(String(255))  # Browser/device identifier
+    ip_address = Column(String(45))  # IPv4 or IPv6
+
+    # Revocation
+    revoked = Column(Boolean, default=False, index=True)
+    revoked_at = Column(DateTime)
+    revoked_reason = Column(String(100))  # logout, token_rotation, security, expired
+
+    # Token family for rotation (prevents reuse of old tokens)
+    family_id = Column(String(36), index=True)  # All tokens in rotation share this
 
 
 class Testimonial(Base):
@@ -1059,6 +1103,46 @@ async def run_migrations(engine):
         },
     ]
 
+    # INFRA-005: Index migrations for performance
+    index_migrations = [
+        {
+            "name": "ix_quotes_contractor_id",
+            "table": "quotes",
+            "column": "contractor_id",
+            "create_sql": "CREATE INDEX IF NOT EXISTS ix_quotes_contractor_id ON quotes(contractor_id)"
+        },
+        {
+            "name": "ix_quotes_created_at",
+            "table": "quotes",
+            "column": "created_at",
+            "create_sql": "CREATE INDEX IF NOT EXISTS ix_quotes_created_at ON quotes(created_at)"
+        },
+        {
+            "name": "ix_quotes_status",
+            "table": "quotes",
+            "column": "status",
+            "create_sql": "CREATE INDEX IF NOT EXISTS ix_quotes_status ON quotes(status)"
+        },
+        {
+            "name": "ix_invoices_contractor_id",
+            "table": "invoices",
+            "column": "contractor_id",
+            "create_sql": "CREATE INDEX IF NOT EXISTS ix_invoices_contractor_id ON invoices(contractor_id)"
+        },
+        {
+            "name": "ix_invoices_quote_id",
+            "table": "invoices",
+            "column": "quote_id",
+            "create_sql": "CREATE INDEX IF NOT EXISTS ix_invoices_quote_id ON invoices(quote_id)"
+        },
+        {
+            "name": "ix_invoices_created_at",
+            "table": "invoices",
+            "column": "created_at",
+            "create_sql": "CREATE INDEX IF NOT EXISTS ix_invoices_created_at ON invoices(created_at)"
+        },
+    ]
+
     async with engine.connect() as conn:
         # Run column additions
         for migration in column_migrations:
@@ -1157,6 +1241,16 @@ async def run_migrations(engine):
                 # SQLite doesn't support ALTER COLUMN, skip these migrations
                 if "information_schema" not in str(e).lower():
                     print(f"Migration warning (constraint): {e}")
+
+        # INFRA-005: Run index migrations
+        for migration in index_migrations:
+            try:
+                await conn.execute(text(migration["create_sql"]))
+                await conn.commit()
+            except Exception as e:
+                # Index might already exist or table doesn't exist yet
+                if "already exists" not in str(e).lower():
+                    print(f"Index migration warning ({migration['name']}): {e}")
 
 
 def init_db_sync():

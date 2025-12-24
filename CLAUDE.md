@@ -19,7 +19,6 @@ quoted/
 │   │   ├── contractors.py   # User profiles, logo upload
 │   │   ├── onboarding.py    # Pricing interview/quick setup
 │   │   ├── quotes.py        # Quote generation
-│   │   ├── beta.py          # Beta spots counter
 │   │   └── referral.py      # Referral system
 │   ├── services/            # Business logic
 │   │   ├── claude_service.py    # AI quote generation

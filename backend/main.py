@@ -21,10 +21,16 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 from .config import settings
 from .models.database import init_db
-from .api import quotes, contractors, onboarding, auth, billing, pricing_brain, demo, referral, share, beta, testimonials, learning, invoices, customers, tasks
+from .services.logging import configure_logging, get_logger
 
-# Configure logger
-logger = logging.getLogger(__name__)
+# Configure structured logging (INFRA-008)
+configure_logging(
+    environment=settings.environment,
+    log_level="DEBUG" if settings.debug else "INFO"
+)
+logger = get_logger("quoted.main")
+
+from .api import quotes, contractors, onboarding, auth, billing, pricing_brain, demo, referral, share, beta, testimonials, learning, invoices, customers, tasks
 
 # Initialize Sentry if DSN is configured
 if settings.sentry_dsn:
@@ -83,8 +89,10 @@ class HTTPSRedirectMiddleware(BaseHTTPMiddleware):
 async def lifespan(app: FastAPI):
     """Application lifespan handler - startup and shutdown."""
     # Startup
-    print(f"Starting {settings.app_name} v{settings.app_version}")
-    print(f"Environment: {settings.environment}")
+    logger.info(
+        f"Starting {settings.app_name} v{settings.app_version}",
+        extra={"environment": settings.environment}
+    )
 
     # Ensure data directories exist
     os.makedirs("./data", exist_ok=True)
@@ -93,12 +101,12 @@ async def lifespan(app: FastAPI):
 
     # Initialize database
     await init_db()
-    print("Database initialized")
+    logger.info("Database initialized")
 
     yield
 
     # Shutdown
-    print("Shutting down...")
+    logger.info("Shutting down...")
 
 
 # Create application
@@ -134,11 +142,11 @@ if settings.environment != "production":
     ])
 
 # CORS middleware with Railway preview environment support (DISC-077)
-# allow_origin_regex enables Railway PR preview URLs: pr-{number}-quoted.up.railway.app
+# allow_origin_regex restricted to Quoted's Railway domains only (pr-XXX-quoted and web-production-*)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
-    allow_origin_regex=r"https://.*\.up\.railway\.app",  # Railway preview environments
+    allow_origin_regex=r"https://(pr-\d+-quoted|web-production-\w+)\.up\.railway\.app",  # Only Quoted's Railway domains
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -154,7 +162,6 @@ app.include_router(pricing_brain.router, prefix="/api/pricing-brain", tags=["Pri
 app.include_router(demo.router, prefix="/api/demo", tags=["Demo"])
 app.include_router(referral.router, prefix="/api/referral", tags=["Referral"])
 app.include_router(share.router, prefix="/api/quotes", tags=["Share Quote"])
-app.include_router(beta.router, prefix="/api/beta", tags=["Beta"])
 app.include_router(testimonials.router, prefix="/api/testimonials", tags=["Testimonials"])
 app.include_router(learning.router, prefix="/api/learning", tags=["Learning"])
 app.include_router(invoices.router, prefix="/api/invoices", tags=["Invoices"])  # DISC-071
@@ -223,15 +230,10 @@ if frontend_path.exists():
         """Serve the functional demo page - generate real quotes without signup."""
         return FileResponse(frontend_path / "try.html")
 
-    @app.get("/demo-promo", response_class=HTMLResponse)
-    async def serve_demo_promo(request: Request):
-        """Serve the promotional demo landing page with injected config."""
-        return templates.TemplateResponse("demo-promo.html", {
-            "request": request,
-            "posthog_api_key": settings.posthog_api_key,
-            "sentry_dsn": settings.sentry_dsn,
-            "environment": settings.environment,
-        })
+    @app.get("/demo-promo")
+    async def serve_demo_promo():
+        """Redirect legacy demo-promo to /try."""
+        return RedirectResponse("/try", status_code=301)
 
     @app.get("/terms")
     async def serve_terms():

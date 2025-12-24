@@ -27,10 +27,11 @@ class Settings(BaseSettings):
     # Database - supports both SQLite (dev) and PostgreSQL (prod)
     database_url: str = "sqlite+aiosqlite:///./data/quoted.db"
 
-    # JWT Authentication
+    # JWT Authentication (SEC-003: Short-lived access + refresh tokens)
     jwt_secret_key: str = secrets.token_urlsafe(32)  # Auto-generate if not set
     jwt_algorithm: str = "HS256"
-    jwt_expire_minutes: int = 60 * 24 * 7  # 7 days
+    jwt_expire_minutes: int = 15  # Access token: 15 minutes (security best practice)
+    jwt_refresh_expire_days: int = 7  # Refresh token: 7 days
 
     @property
     def async_database_url(self) -> str:
@@ -54,6 +55,12 @@ class Settings(BaseSettings):
         elif "aiosqlite" in url:
             url = url.replace("+aiosqlite", "", 1)
         return url
+
+    # Redis Cache (INFRA-004)
+    redis_url: str = ""  # e.g., redis://localhost:6379 or Railway Redis URL
+    cache_ttl_default: int = 300  # 5 minutes default TTL
+    cache_ttl_contractor: int = 600  # 10 minutes for contractor profiles
+    cache_ttl_pricing: int = 1800  # 30 minutes for pricing categories
 
     # File Storage (S3 or local for MVP)
     storage_type: str = "local"  # "local" or "s3"
