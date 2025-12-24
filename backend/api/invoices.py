@@ -718,3 +718,92 @@ async def create_invoice_from_quote(
     # Just delegate to create_invoice with quote_id
     request = InvoiceCreateRequest(quote_id=quote_id)
     return await create_invoice(request, current_user, db)
+
+
+# ============================================================================
+# Public Shared Invoice View (No Authentication Required)
+# ============================================================================
+
+class SharedInvoiceResponse(BaseModel):
+    """Public invoice data returned for shared link viewing."""
+    id: str
+    invoice_number: str
+    customer_name: str
+    customer_address: Optional[str] = None
+    description: Optional[str] = None
+    line_items: list
+    subtotal: float
+    tax_amount: float
+    total: float
+    status: str  # draft, sent, viewed, paid, overdue
+    due_date: Optional[str] = None
+    created_at: str
+    contractor_name: str
+    contractor_phone: Optional[str] = None
+    contractor_email: Optional[str] = None
+
+
+@router.get("/shared/{token}", response_model=SharedInvoiceResponse)
+async def view_shared_invoice(token: str):
+    """
+    View a publicly shared invoice (no authentication required).
+
+    Returns invoice data for public viewing. Does not expose
+    sensitive contractor information beyond business name and contact.
+    """
+    async with async_session_factory() as db:
+        try:
+            # Find invoice by share token
+            result = await db.execute(
+                select(Invoice).where(Invoice.share_token == token)
+            )
+            invoice = result.scalars().first()
+
+            if not invoice:
+                raise HTTPException(status_code=404, detail="Invoice not found")
+
+            # Get contractor info (limited fields)
+            contractor = await db.get(Contractor, invoice.contractor_id)
+            if not contractor:
+                raise HTTPException(status_code=404, detail="Contractor not found")
+
+            # Track view event (anonymous)
+            try:
+                analytics_service.track_event(
+                    user_id=f"invoice_{token[:8]}",
+                    event_name="invoice_viewed",
+                    properties={
+                        "token": token,
+                        "invoice_id": str(invoice.id),
+                        "contractor_id": str(invoice.contractor_id),
+                        "total": invoice.total or 0,
+                        "status": invoice.status,
+                    }
+                )
+            except Exception as e:
+                print(f"Warning: Failed to track invoice view event: {e}")
+
+            # Return public invoice data
+            return SharedInvoiceResponse(
+                id=str(invoice.id),
+                invoice_number=invoice.invoice_number,
+                customer_name=invoice.customer_name,
+                customer_address=invoice.customer_address,
+                description=invoice.description,
+                line_items=invoice.line_items or [],
+                subtotal=invoice.subtotal or 0,
+                tax_amount=invoice.tax_amount or 0,
+                total=invoice.total or 0,
+                status=invoice.status or "draft",
+                due_date=invoice.due_date.isoformat() if invoice.due_date else None,
+                created_at=invoice.created_at.isoformat() if invoice.created_at else None,
+                contractor_name=contractor.business_name or contractor.owner_name or "Unknown",
+                contractor_phone=contractor.phone,
+                contractor_email=contractor.email,
+            )
+
+        except HTTPException:
+            raise
+        except Exception as e:
+            print(f"Error viewing shared invoice: {e}")
+            raise HTTPException(status_code=500, detail=str(e))

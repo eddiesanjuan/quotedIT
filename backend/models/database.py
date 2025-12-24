@@ -353,6 +353,19 @@ class Quote(Base):
     shared_at = Column(DateTime, nullable=True)  # When first shared
     share_count = Column(Integer, default=0)  # Track total shares
 
+    # E-signature on acceptance (PROPOSIFY-DOMINATION)
+    signature_name = Column(String(255), nullable=True)  # Customer's typed name
+    signature_ip = Column(String(45), nullable=True)  # IP address at time of signing
+    signature_at = Column(DateTime, nullable=True)  # When they signed
+    accepted_at = Column(DateTime, nullable=True)  # When quote was accepted
+    rejected_at = Column(DateTime, nullable=True)  # If rejected
+    rejection_reason = Column(Text, nullable=True)  # Why they rejected
+
+    # View tracking (PROPOSIFY-DOMINATION)
+    view_count = Column(Integer, default=0)  # Number of times viewed
+    first_viewed_at = Column(DateTime, nullable=True)  # First view timestamp
+    last_viewed_at = Column(DateTime, nullable=True)  # Most recent view
+
     # Duplication (DISC-038)
     duplicate_source_quote_id = Column(String(36), nullable=True)  # Quote this was duplicated from
 

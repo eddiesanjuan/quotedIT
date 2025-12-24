@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice | Quoted</title>
+
+    <!-- PostHog Analytics -->
+    <script>
+        {% if posthog_api_key %}
+        !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.async=!0,p.src=s.api_host+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="capture identify alias people.set people.set_once set_config register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled onFeatureFlags getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures getActiveMatchingSurveys getSurveys".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
+        posthog.init('{{ posthog_api_key }}', {api_host: 'https://us.i.posthog.com'});
+        {% endif %}
+    </script>
+
+    <style>
+        :root {
+            --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --font-serif: 'Georgia', 'Times New Roman', serif;
+            --bg-primary: #fafaf9;
+            --bg-card: #ffffff;
+            --text-primary: #1a1a1a;
+            --text-secondary: #666666;
+            --text-muted: #999999;
+            --border: #e5e5e5;
+            --accent: #2563eb;
+            --accent-hover: #1d4ed8;
+            --success: #16a34a;
+            --warning: #d97706;
+            --danger: #dc2626;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .invoice-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 24px;
+        }
+
+        .badge-draft { background: #e5e5e5; color: #666; }
+        .badge-sent, .badge-viewed { background: #dbeafe; color: #1d4ed8; }
+        .badge-paid { background: #dcfce7; color: #16a34a; }
+        .badge-overdue { background: #fef2f2; color: #dc2626; }
+
+        .status-banner {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .status-banner.paid {
+            background: #dcfce7;
+            color: #16a34a;
+            border: 1px solid #bbf7d0;
+        }
+
+        .status-banner.overdue {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+
+        .status-banner.due-soon {
+            background: #fffbeb;
+            color: #d97706;
+            border: 1px solid #fde68a;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 32px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            margin-bottom: 24px;
+        }
+
+        .invoice-header {
+            margin-bottom: 32px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .invoice-title {
+            font-family: var(--font-serif);
+            font-size: 2rem;
+            font-weight: 500;
+            margin-bottom: 12px;
+            letter-spacing: -0.02em;
+        }
+
+        .contractor-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .info-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .info-value {
+            font-size: 1rem;
+            color: var(--text-primary);
+        }
+
+        .customer-info {
+            background: var(--bg-primary);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 32px;
+        }
+
+        .customer-info h3 {
+            font-family: var(--font-serif);
+            font-size: 1.25rem;
+            margin-bottom: 16px;
+        }
+
+        .description {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            line-height: 1.8;
+            margin-bottom: 32px;
+        }
+
+        .line-items {
+            margin-bottom: 32px;
+        }
+
+        .line-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .line-item:last-child {
+            border-bottom: none;
+        }
+
+        .item-description {
+            flex: 1;
+        }
+
+        .item-name {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 4px;
+        }
+
+        .item-details {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .item-cost {
+            font-weight: 600;
+            font-size: 1.125rem;
+            margin-left: 16px;
+            white-space: nowrap;
+        }
+
+        .invoice-totals {
+            background: var(--bg-primary);
+            border-radius: 8px;
+            padding: 24px;
+            margin-top: 32px;
+        }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+        }
+
+        .total-row.subtotal, .total-row.tax {
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+        }
+
+        .total-row.grand-total {
+            border-top: 2px solid var(--border);
+            margin-top: 12px;
+            padding-top: 16px;
+        }
+
+        .total-label {
+            font-family: var(--font-serif);
+            font-size: 1.5rem;
+            font-weight: 500;
+        }
+
+        .total-amount {
+            font-family: var(--font-serif);
+            font-size: 2.5rem;
+            font-weight: 500;
+            color: var(--accent);
+        }
+
+        .total-amount.paid {
+            color: var(--success);
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 48px;
+            padding-top: 32px;
+            border-top: 1px solid var(--border);
+        }
+
+        .branding {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .branding-logo {
+            font-family: var(--font-serif);
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .branding-logo-it {
+            color: var(--accent);
+        }
+
+        .viral-message {
+            font-size: 0.9375rem;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+            line-height: 1.6;
+        }
+
+        .viral-message strong {
+            color: var(--text-primary);
+        }
+
+        .cta {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--accent);
+            color: white;
+            padding: 12px 24px;
+            min-height: 44px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9375rem;
+            transition: background 0.3s ease;
+        }
+
+        .cta:hover {
+            background: var(--accent-hover);
+        }
+
+        /* Responsive - Tablet (768px and below) */
+        @media (max-width: 768px) {
+            .card {
+                padding: 28px 24px;
+            }
+
+            .contractor-info {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* Responsive - Mobile (640px and below) */
+        @media (max-width: 640px) {
+            body {
+                padding: 16px;
+            }
+
+            .card {
+                padding: 24px;
+            }
+
+            .invoice-title {
+                font-size: 1.5rem;
+            }
+
+            .total-amount {
+                font-size: 2rem;
+            }
+
+            .contractor-info {
+                grid-template-columns: 1fr;
+            }
+
+            .line-item {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .item-cost {
+                margin-left: 0;
+            }
+
+            .invoice-totals {
+                padding: 20px;
+            }
+        }
+
+        /* Responsive - Mobile (480px and below) */
+        @media (max-width: 480px) {
+            body {
+                padding: 12px;
+            }
+
+            .card {
+                padding: 20px 16px;
+            }
+
+            .invoice-title {
+                font-size: 1.375rem;
+            }
+
+            .total-amount {
+                font-size: 1.75rem;
+            }
+
+            .total-label {
+                font-size: 1.25rem;
+            }
+
+            .customer-info {
+                padding: 16px;
+            }
+
+            .invoice-totals {
+                padding: 16px;
+            }
+        }
+
+        /* Responsive - iPhone SE (375px and below) */
+        @media (max-width: 375px) {
+            body {
+                padding: 10px;
+            }
+
+            .card {
+                padding: 16px 12px;
+            }
+
+            .invoice-title {
+                font-size: 1.25rem;
+            }
+
+            .info-value {
+                font-size: 0.9375rem;
+            }
+
+            .description {
+                font-size: 0.9375rem;
+            }
+
+            .item-name {
+                font-size: 0.9375rem;
+            }
+
+            .item-details {
+                font-size: 0.8125rem;
+            }
+
+            .total-amount {
+                font-size: 1.5rem;
+            }
+
+            .cta {
+                padding: 10px 20px;
+                font-size: 0.875rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <span id="invoiceBadge" class="invoice-badge badge-sent">INVOICE</span>
+
+        <div id="statusBanner" class="status-banner" style="display: none;"></div>
+
+        <div class="card">
+            <div class="invoice-header">
+                <h1 class="invoice-title" id="invoiceTitle">Loading...</h1>
+
+                <div class="contractor-info">
+                    <div class="info-item">
+                        <div class="info-label">From</div>
+                        <div class="info-value" id="contractorName">...</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Phone</div>
+                        <div class="info-value" id="contractorPhone">...</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Invoice Date</div>
+                        <div class="info-value" id="invoiceDate">...</div>
+                    </div>
+                    <div class="info-item" id="dueDateItem">
+                        <div class="info-label">Due Date</div>
+                        <div class="info-value" id="dueDate">...</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="customer-info">
+                <h3>Bill To</h3>
+                <div class="info-value" id="customerName"></div>
+                <div class="info-value" id="customerAddress" style="color: var(--text-secondary); margin-top: 4px;"></div>
+            </div>
+
+            <div class="description" id="description" style="display: none;">
+            </div>
+
+            <div class="line-items" id="lineItems">
+                <!-- Populated via JavaScript -->
+            </div>
+
+            <div class="invoice-totals">
+                <div class="total-row subtotal">
+                    <span>Subtotal</span>
+                    <span id="subtotal">$0.00</span>
+                </div>
+                <div class="total-row tax" id="taxRow" style="display: none;">
+                    <span>Tax</span>
+                    <span id="taxAmount">$0.00</span>
+                </div>
+                <div class="total-row grand-total">
+                    <span class="total-label" id="totalLabel">Amount Due</span>
+                    <span class="total-amount" id="invoiceTotal">$0.00</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <div class="branding">
+                Powered by <span class="branding-logo">quoted<span class="branding-logo-it">.it</span></span>
+            </div>
+            <div class="viral-message">
+                <strong>Create professional invoices in seconds</strong> - Voice-powered invoicing for contractors
+            </div>
+            <a href="/for-customers?utm_source=shared_invoice&utm_medium=viral" class="cta" id="sharedInvoiceCta">
+                Try Demo
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Get token from template variable
+        const shareToken = "{{ token }}";
+
+        // Format currency
+        function formatCurrency(amount) {
+            return '$' + (amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        // Format date
+        function formatDate(dateStr) {
+            if (!dateStr) return 'N/A';
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+
+        // Calculate days until due
+        function getDaysUntilDue(dueDateStr) {
+            if (!dueDateStr) return null;
+            const dueDate = new Date(dueDateStr);
+            const today = new Date();
+            const diffTime = dueDate - today;
+            return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        }
+
+        // Update status badge and banner
+        function updateStatusDisplay(status, dueDate) {
+            const badge = document.getElementById('invoiceBadge');
+            const banner = document.getElementById('statusBanner');
+            const totalAmount = document.getElementById('invoiceTotal');
+            const totalLabel = document.getElementById('totalLabel');
+
+            // Remove all badge classes
+            badge.className = 'invoice-badge';
+
+            if (status === 'paid') {
+                badge.classList.add('badge-paid');
+                badge.textContent = 'PAID';
+                banner.className = 'status-banner paid';
+                banner.textContent = 'This invoice has been paid. Thank you!';
+                banner.style.display = 'block';
+                totalAmount.classList.add('paid');
+                totalLabel.textContent = 'Amount Paid';
+            } else if (status === 'overdue' || (dueDate && getDaysUntilDue(dueDate) < 0)) {
+                badge.classList.add('badge-overdue');
+                badge.textContent = 'OVERDUE';
+                banner.className = 'status-banner overdue';
+                const daysOverdue = Math.abs(getDaysUntilDue(dueDate));
+                banner.textContent = 'Payment was due ' + daysOverdue + ' day' + (daysOverdue === 1 ? '' : 's') + ' ago';
+                banner.style.display = 'block';
+            } else if (dueDate && getDaysUntilDue(dueDate) <= 7) {
+                badge.classList.add('badge-sent');
+                badge.textContent = 'INVOICE';
+                banner.className = 'status-banner due-soon';
+                const daysUntil = getDaysUntilDue(dueDate);
+                banner.textContent = 'Payment due in ' + daysUntil + ' day' + (daysUntil === 1 ? '' : 's');
+                banner.style.display = 'block';
+            } else {
+                badge.classList.add('badge-sent');
+                badge.textContent = 'INVOICE';
+            }
+        }
+
+        // Fetch invoice data from API
+        async function loadInvoiceData() {
+            try {
+                const response = await fetch('/api/invoices/shared/' + shareToken);
+                if (!response.ok) {
+                    throw new Error('Invoice not found');
+                }
+                const invoiceData = await response.json();
+
+                // Update page title
+                document.title = 'Invoice ' + invoiceData.invoice_number + ' from ' + invoiceData.contractor_name + ' | Quoted';
+
+                // Populate the page with data (using textContent for safety)
+                document.getElementById('invoiceTitle').textContent = 'Invoice ' + invoiceData.invoice_number;
+                document.getElementById('contractorName').textContent = invoiceData.contractor_name;
+                document.getElementById('contractorPhone').textContent = invoiceData.contractor_phone || 'N/A';
+                document.getElementById('invoiceDate').textContent = formatDate(invoiceData.created_at);
+
+                // Due date
+                if (invoiceData.due_date) {
+                    document.getElementById('dueDate').textContent = formatDate(invoiceData.due_date);
+                } else {
+                    document.getElementById('dueDateItem').style.display = 'none';
+                }
+
+                // Customer info
+                document.getElementById('customerName').textContent = invoiceData.customer_name || 'Customer';
+                if (invoiceData.customer_address) {
+                    document.getElementById('customerAddress').textContent = invoiceData.customer_address;
+                }
+
+                // Description
+                if (invoiceData.description) {
+                    document.getElementById('description').textContent = invoiceData.description;
+                    document.getElementById('description').style.display = 'block';
+                }
+
+                // Line items (using safe DOM methods)
+                const lineItemsContainer = document.getElementById('lineItems');
+                lineItemsContainer.textContent = '';
+                (invoiceData.line_items || []).forEach(function(item) {
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'line-item';
+
+                    const descDiv = document.createElement('div');
+                    descDiv.className = 'item-description';
+
+                    const nameDiv = document.createElement('div');
+                    nameDiv.className = 'item-name';
+                    nameDiv.textContent = item.name || item.item || 'Item';
+                    descDiv.appendChild(nameDiv);
+
+                    if (item.description) {
+                        const detailsDiv = document.createElement('div');
+                        detailsDiv.className = 'item-details';
+                        detailsDiv.textContent = item.description;
+                        descDiv.appendChild(detailsDiv);
+                    }
+
+                    const costDiv = document.createElement('div');
+                    costDiv.className = 'item-cost';
+                    costDiv.textContent = formatCurrency(item.amount || item.cost || 0);
+
+                    itemDiv.appendChild(descDiv);
+                    itemDiv.appendChild(costDiv);
+                    lineItemsContainer.appendChild(itemDiv);
+                });
+
+                // Totals
+                document.getElementById('subtotal').textContent = formatCurrency(invoiceData.subtotal);
+
+                if (invoiceData.tax_amount && invoiceData.tax_amount > 0) {
+                    document.getElementById('taxAmount').textContent = formatCurrency(invoiceData.tax_amount);
+                    document.getElementById('taxRow').style.display = 'flex';
+                }
+
+                document.getElementById('invoiceTotal').textContent = formatCurrency(invoiceData.total);
+
+                // Update status display
+                updateStatusDisplay(invoiceData.status, invoiceData.due_date);
+
+                // Track PostHog event with invoice details
+                {% if posthog_api_key %}
+                if (window.posthog) {
+                    posthog.capture('shared_invoice_viewed', {
+                        token: shareToken,
+                        invoice_id: invoiceData.id,
+                        invoice_number: invoiceData.invoice_number,
+                        contractor_name: invoiceData.contractor_name,
+                        status: invoiceData.status,
+                        total: invoiceData.total
+                    });
+                }
+                {% endif %}
+
+            } catch (error) {
+                console.error('Error loading invoice:', error);
+                const container = document.querySelector('.container');
+                container.textContent = '';
+
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.style.textAlign = 'center';
+                card.style.padding = '48px';
+
+                const heading = document.createElement('h2');
+                heading.style.color = '#666';
+                heading.style.marginBottom = '16px';
+                heading.textContent = 'Invoice Not Found';
+
+                const message = document.createElement('p');
+                message.style.color = '#999';
+                message.textContent = 'This invoice link may be invalid.';
+
+                card.appendChild(heading);
+                card.appendChild(message);
+                container.appendChild(card);
+            }
+        }
+
+        // Track CTA click
+        document.getElementById('sharedInvoiceCta').addEventListener('click', function() {
+            {% if posthog_api_key %}
+            if (window.posthog) {
+                posthog.capture('shared_invoice_cta_clicked', {
+                    token: shareToken
+                });
+            }
+            {% endif %}
+        });
+
+        // Load data on page load
+        loadInvoiceData();
+    </script>
+</body>
+</html>

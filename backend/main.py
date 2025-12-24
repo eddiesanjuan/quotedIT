@@ -273,6 +273,17 @@ if frontend_path.exists():
             "environment": settings.environment,
         })
 
+    @app.get("/invoice/{token}", response_class=HTMLResponse)
+    async def serve_shared_invoice(request: Request, token: str):
+        """Serve the public shared invoice view with injected config."""
+        return templates.TemplateResponse("invoice-view.html", {
+            "request": request,
+            "token": token,
+            "posthog_api_key": settings.posthog_api_key,
+            "sentry_dsn": settings.sentry_dsn,
+            "environment": settings.environment,
+        })
+
     @app.get("/for-customers", response_class=HTMLResponse)
     async def serve_customer_landing(request: Request):
         """Serve the customer landing page (viral growth from shared quotes)."""

@@ -79,6 +79,10 @@ class SharedQuoteResponse(BaseModel):
     total: float = 0
     estimated_days: Optional[int] = None
     created_at: Optional[str] = None
+    # PROPOSIFY-DOMINATION: Status and signature fields for accept/reject UI
+    status: Optional[str] = None
+    accepted_at: Optional[str] = None
+    signature_name: Optional[str] = None
 
 
 # ============================================================================
@@ -184,12 +188,18 @@ async def share_quote_via_email(
                 detail=f"Failed to send email: {str(email_error)}"
             )
 
-        # Update share tracking
+        # Update share tracking (KI-012 FIX: Also set sent_at and status)
         share_updates = {
             "share_count": (quote.share_count or 0) + 1,
         }
         if not quote.shared_at:
             share_updates["shared_at"] = datetime.utcnow()
+
+        # KI-012 FIX: Set sent_at timestamp and status when emailing
+        if not quote.sent_at:
+            share_updates["sent_at"] = datetime.utcnow()
+        if quote.status == "draft":
+            share_updates["status"] = "sent"
 
         await db.update_quote(quote_id, **share_updates)
 
@@ -325,14 +335,26 @@ async def view_shared_quote(
         # Find quote by share token
         quote = await db.get_quote_by_share_token(token)
         if not quote:
-            raise HTTPException(status_code=404, detail="Quote not found or link expired")
+            # KI-008 FIX: Clear error message (links never expire)
+            raise HTTPException(status_code=404, detail="Quote not found")
 
         # Get contractor info (limited fields)
         contractor = await db.get_contractor_by_id(quote.contractor_id)
         if not contractor:
             raise HTTPException(status_code=404, detail="Contractor not found")
 
-        # Track view event (anonymous)
+        # KI-004 FIX: Track view count in database (not just PostHog)
+        is_first_view = (quote.view_count or 0) == 0
+        quote.view_count = (quote.view_count or 0) + 1
+        quote.last_viewed_at = datetime.utcnow()
+        if is_first_view:
+            quote.first_viewed_at = datetime.utcnow()
+            # Update status to "viewed" if currently "sent"
+            if quote.status == "sent":
+                quote.status = "viewed"
+        await db.save_quote(quote)
+
+        # Track view event in PostHog (for detailed analytics)
         try:
             analytics_service.track_event(
                 user_id=f"shared_{token[:8]}",  # Anonymous ID based on token
@@ -343,12 +365,14 @@ async def view_shared_quote(
                     "contractor_id": str(contractor.id),
                     "job_type": quote.job_type,
                     "total": quote.total or quote.subtotal or 0,
+                    "view_count": quote.view_count,
+                    "is_first_view": is_first_view,
                 }
             )
         except Exception as e:
             print(f"Warning: Failed to track view event: {e}")
 
-        # Return limited public data
+        # Return limited public data (PROPOSIFY-DOMINATION: include status/signature)
         return SharedQuoteResponse(
             id=quote.id,
             contractor_name=contractor.business_name or contractor.owner_name,
@@ -362,10 +386,214 @@ async def view_shared_quote(
             total=quote.total or 0,
             estimated_days=quote.estimated_days,
             created_at=quote.created_at.isoformat() if quote.created_at else None,
+            # PROPOSIFY-DOMINATION: Status and signature for UI
+            status=quote.status,
+            accepted_at=quote.accepted_at.isoformat() if quote.accepted_at else None,
+            signature_name=quote.signature_name,
         )
 
     except HTTPException:
         raise
     except Exception as e:
         print(f"Error viewing shared quote: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============================================================================
+# Quote Accept/Reject (Public Endpoints - PROPOSIFY-DOMINATION)
+# ============================================================================
+
+class AcceptQuoteRequest(BaseModel):
+    """Request to accept a quote."""
+    signature_name: str  # Customer types their name to sign
+    message: Optional[str] = None  # Optional note to contractor
+
+
+class RejectQuoteRequest(BaseModel):
+    """Request to reject a quote."""
+    reason: Optional[str] = None  # Optional reason for rejection
+
+
+@router.post("/shared/{token}/accept")
+@limiter.limit("10/minute")
+async def accept_quote(
+    request: Request,
+    token: str,
+    accept_request: AcceptQuoteRequest,
+):
+    """
+    Customer accepts a quote (public endpoint, no authentication).
+
+    Captures typed-name e-signature and updates quote status.
+    Notifies contractor via email.
+    """
+    try:
+        db = get_db_service()
+
+        # Find quote by share token
+        quote = await db.get_quote_by_share_token(token)
+        if not quote:
+            raise HTTPException(status_code=404, detail="Quote not found")
+
+        # Check if already accepted/rejected
+        if quote.status in ["won", "lost"]:
+            return {
+                "success": False,
+                "message": f"Quote has already been {quote.status}",
+                "status": quote.status
+            }
+
+        # Get contractor for notification
+        contractor = await db.get_contractor_by_id(quote.contractor_id)
+        if not contractor:
+            raise HTTPException(status_code=404, detail="Contractor not found")
+
+        # Update quote with acceptance
+        quote.status = "won"
+        quote.outcome = "won"
+        quote.signature_name = accept_request.signature_name
+        quote.signature_ip = request.client.host if request.client else None
+        quote.signature_at = datetime.utcnow()
+        quote.accepted_at = datetime.utcnow()
+        if accept_request.message:
+            quote.outcome_notes = f"Customer message: {accept_request.message}"
+
+        await db.save_quote(quote)
+
+        # Send notification email to contractor
+        try:
+            await email_service.send_email(
+                to_email=contractor.email,
+                subject=f"Great news! {quote.customer_name} accepted your quote",
+                body=(
+                    f"Your quote has been accepted!\n\n"
+                    f"Customer: {quote.customer_name}\n"
+                    f"Job: {quote.job_description or quote.job_type}\n"
+                    f"Total: ${quote.total:,.2f}\n\n"
+                    f"Signed by: {accept_request.signature_name}\n"
+                    f"Date: {datetime.utcnow().strftime('%B %d, %Y')}\n"
+                    + (f"\nCustomer message: {accept_request.message}\n" if accept_request.message else "")
+                    + f"\nNext steps: Contact the customer to schedule the work.\n"
+                    f"You can convert this quote to an invoice in Quoted.\n\n"
+                    f"View in Quoted: {settings.app_url}/app"
+                )
+            )
+        except Exception as e:
+            print(f"Warning: Failed to send acceptance email: {e}")
+
+        # Track analytics
+        try:
+            analytics_service.track_event(
+                user_id=f"shared_{token[:8]}",
+                event_name="quote_accepted",
+                properties={
+                    "token": token,
+                    "quote_id": str(quote.id),
+                    "contractor_id": str(quote.contractor_id),
+                    "signature_name": accept_request.signature_name,
+                    "total": quote.total or 0,
+                }
+            )
+        except Exception as e:
+            print(f"Warning: Failed to track acceptance event: {e}")
+
+        return {
+            "success": True,
+            "message": "Quote accepted successfully",
+            "status": "won"
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error accepting quote: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/shared/{token}/reject")
+@limiter.limit("10/minute")
+async def reject_quote(
+    request: Request,
+    token: str,
+    reject_request: RejectQuoteRequest,
+):
+    """
+    Customer rejects a quote (public endpoint, no authentication).
+
+    Updates quote status and optionally captures reason.
+    """
+    try:
+        db = get_db_service()
+
+        # Find quote by share token
+        quote = await db.get_quote_by_share_token(token)
+        if not quote:
+            raise HTTPException(status_code=404, detail="Quote not found")
+
+        # Check if already accepted/rejected
+        if quote.status in ["won", "lost"]:
+            return {
+                "success": False,
+                "message": f"Quote has already been {quote.status}",
+                "status": quote.status
+            }
+
+        # Get contractor for potential notification
+        contractor = await db.get_contractor_by_id(quote.contractor_id)
+
+        # Update quote with rejection
+        quote.status = "lost"
+        quote.outcome = "lost"
+        quote.rejected_at = datetime.utcnow()
+        if reject_request.reason:
+            quote.outcome_notes = reject_request.reason
+            quote.rejection_reason = reject_request.reason
+
+        await db.save_quote(quote)
+
+        # Optionally notify contractor (only if reason provided)
+        if reject_request.reason and contractor:
+            try:
+                await email_service.send_email(
+                    to_email=contractor.email,
+                    subject=f"Quote update: {quote.customer_name} declined",
+                    body=(
+                        f"Unfortunately, your quote was declined.\n\n"
+                        f"Customer: {quote.customer_name}\n"
+                        f"Job: {quote.job_description or quote.job_type}\n"
+                        f"Total: ${quote.total:,.2f}\n\n"
+                        f"Reason: {reject_request.reason}\n\n"
+                        f"This feedback can help you improve future quotes.\n\n"
+                        f"View in Quoted: {settings.app_url}/app"
+                    )
+                )
+            except Exception as e:
+                print(f"Warning: Failed to send rejection email: {e}")
+
+        # Track analytics
+        try:
+            analytics_service.track_event(
+                user_id=f"shared_{token[:8]}",
+                event_name="quote_rejected",
+                properties={
+                    "token": token,
+                    "quote_id": str(quote.id),
+                    "contractor_id": str(quote.contractor_id),
+                    "has_reason": bool(reject_request.reason),
+                    "total": quote.total or 0,
+                }
+            )
+        except Exception as e:
+            print(f"Warning: Failed to track rejection event: {e}")
+
+        return {
+            "success": True,
+            "message": "Quote declined",
+            "status": "lost"
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error rejecting quote: {e}")
         raise HTTPException(status_code=500, detail=str(e))
