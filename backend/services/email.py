@@ -30,7 +30,7 @@ if not settings.resend_api_key or settings.resend_api_key == "":
 class EmailService:
     """Service for sending transactional emails via Resend."""
 
-    FROM_EMAIL = "Quoted <hello@quoted.it>"
+    FROM_EMAIL = "Quoted <hello@quoted.it.com>"
 
     @staticmethod
     def _get_base_template() -> str:
