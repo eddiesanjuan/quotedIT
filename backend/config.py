@@ -56,6 +56,12 @@ class Settings(BaseSettings):
             url = url.replace("+aiosqlite", "", 1)
         return url
 
+    # Redis Cache (INFRA-004)
+    redis_url: str = ""  # e.g., redis://localhost:6379 or Railway Redis URL
+    cache_ttl_default: int = 300  # 5 minutes default TTL
+    cache_ttl_contractor: int = 600  # 10 minutes for contractor profiles
+    cache_ttl_pricing: int = 1800  # 30 minutes for pricing categories
+
     # File Storage (S3 or local for MVP)
     storage_type: str = "local"  # "local" or "s3"
     storage_path: str = "./data/uploads"

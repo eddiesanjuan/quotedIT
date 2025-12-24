@@ -10,6 +10,9 @@ from functools import partial
 from datetime import datetime
 
 from ..config import settings
+from .logging import get_email_logger
+
+logger = get_email_logger()
 
 
 # Initialize Resend with API key
@@ -267,7 +270,7 @@ class EmailService:
             })
             return response
         except Exception as e:
-            print(f"Failed to send welcome email to {to_email}: {e}")
+            logger.error(f"Failed to send welcome email to {to_email}", exc_info=True)
             raise
 
     @staticmethod
@@ -328,7 +331,7 @@ class EmailService:
             })
             return response
         except Exception as e:
-            print(f"Failed to send trial starting email to {to_email}: {e}")
+            logger.error(f"Failed to send trial starting email to {to_email}", exc_info=True)
             raise
 
     @staticmethod
@@ -384,7 +387,7 @@ class EmailService:
             })
             return response
         except Exception as e:
-            print(f"Failed to send trial ending reminder to {to_email}: {e}")
+            logger.error(f"Failed to send trial ending reminder to {to_email}", exc_info=True)
             raise
 
     @staticmethod
@@ -452,7 +455,7 @@ class EmailService:
             })
             return response
         except Exception as e:
-            print(f"Failed to send subscription confirmation to {to_email}: {e}")
+            logger.error(f"Failed to send subscription confirmation to {to_email}", exc_info=True)
             raise
 
     @staticmethod
@@ -503,7 +506,7 @@ class EmailService:
             })
             return response
         except Exception as e:
-            print(f"Failed to send payment failed notification to {to_email}: {e}")
+            logger.error(f"Failed to send payment failed notification to {to_email}", exc_info=True)
             raise
 
     @staticmethod
@@ -604,12 +607,10 @@ class EmailService:
                 partial(resend.Emails.send, email_data)
             )
 
-            print(f"Quote email sent successfully to {to_email}. Response: {response}")
+            logger.info(f"Quote email sent successfully to {to_email}")
             return response
         except Exception as e:
-            print(f"Failed to send quote email to {to_email}: {e}")
-            import traceback
-            traceback.print_exc()
+            logger.error(f"Failed to send quote email to {to_email}", exc_info=True)
             raise
 
     @staticmethod
@@ -667,7 +668,7 @@ class EmailService:
             })
             return response
         except Exception as e:
-            print(f"Failed to send post-first-quote email to {to_email}: {e}")
+            logger.error(f"Failed to send post-first-quote email to {to_email}", exc_info=True)
             raise
 
     @staticmethod
@@ -733,7 +734,7 @@ class EmailService:
             })
             return response
         except Exception as e:
-            print(f"Failed to send pro tips email to {to_email}: {e}")
+            logger.error(f"Failed to send pro tips email to {to_email}", exc_info=True)
             raise
 
     @staticmethod
@@ -795,7 +796,7 @@ class EmailService:
             })
             return response
         except Exception as e:
-            print(f"Failed to send feature reminder email to {to_email}: {e}")
+            logger.error(f"Failed to send feature reminder email to {to_email}", exc_info=True)
             raise
 
     @staticmethod
@@ -869,7 +870,7 @@ class EmailService:
             })
             return response
         except Exception as e:
-            print(f"Failed to send milestone email to {to_email}: {e}")
+            logger.error(f"Failed to send milestone email to {to_email}", exc_info=True)
             raise
 
     @staticmethod
@@ -923,7 +924,7 @@ class EmailService:
             })
             return response
         except Exception as e:
-            print(f"Failed to send check-in email to {to_email}: {e}")
+            logger.error(f"Failed to send check-in email to {to_email}", exc_info=True)
             raise
 
     @staticmethod
@@ -984,7 +985,7 @@ class EmailService:
             })
             return response
         except Exception as e:
-            print(f"Failed to send improvements email to {to_email}: {e}")
+            logger.error(f"Failed to send improvements email to {to_email}", exc_info=True)
             raise
 
     @staticmethod
@@ -1044,7 +1045,7 @@ class EmailService:
             })
             return response
         except Exception as e:
-            print(f"Failed to send win-back email to {to_email}: {e}")
+            logger.error(f"Failed to send win-back email to {to_email}", exc_info=True)
             raise
 
 

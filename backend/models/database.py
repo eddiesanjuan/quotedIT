@@ -275,8 +275,10 @@ class Quote(Base):
     __tablename__ = "quotes"
 
     id = Column(String, primary_key=True, default=generate_uuid)
-    contractor_id = Column(String, ForeignKey("contractors.id"), nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    # INFRA-005: Index on contractor_id for frequent queries
+    contractor_id = Column(String, ForeignKey("contractors.id"), nullable=False, index=True)
+    # INFRA-005: Index on created_at for sorting/filtering
+    created_at = Column(DateTime, default=datetime.utcnow, index=True)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Customer info (optional - might not have it for budgetary quotes)
@@ -319,8 +321,8 @@ class Quote(Base):
     timeline_text = Column(Text)  # Free-form timeline description for this quote
     terms_text = Column(Text)  # Free-form terms/conditions for this quote
 
-    # Status
-    status = Column(String(50), default="draft")  # draft, sent, won, lost, expired
+    # Status - INFRA-005: Index for filtering by status
+    status = Column(String(50), default="draft", index=True)  # draft, sent, won, lost, expired
     sent_at = Column(DateTime)
     is_grace_quote = Column(Boolean, default=False)  # DISC-018: True if generated during grace period
 
@@ -442,9 +444,11 @@ class Invoice(Base):
     __tablename__ = "invoices"
 
     id = Column(String, primary_key=True, default=generate_uuid)
-    contractor_id = Column(String, ForeignKey("contractors.id"), nullable=False)
-    quote_id = Column(String, ForeignKey("quotes.id"), nullable=True)  # Can create standalone invoices
-    created_at = Column(DateTime, default=datetime.utcnow)
+    # INFRA-005: Index on contractor_id for frequent queries
+    contractor_id = Column(String, ForeignKey("contractors.id"), nullable=False, index=True)
+    # INFRA-005: Index on quote_id for joins
+    quote_id = Column(String, ForeignKey("quotes.id"), nullable=True, index=True)  # Can create standalone invoices
+    created_at = Column(DateTime, default=datetime.utcnow, index=True)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Invoice number (auto-generated per contractor)
@@ -1099,6 +1103,46 @@ async def run_migrations(engine):
         },
     ]
 
+    # INFRA-005: Index migrations for performance
+    index_migrations = [
+        {
+            "name": "ix_quotes_contractor_id",
+            "table": "quotes",
+            "column": "contractor_id",
+            "create_sql": "CREATE INDEX IF NOT EXISTS ix_quotes_contractor_id ON quotes(contractor_id)"
+        },
+        {
+            "name": "ix_quotes_created_at",
+            "table": "quotes",
+            "column": "created_at",
+            "create_sql": "CREATE INDEX IF NOT EXISTS ix_quotes_created_at ON quotes(created_at)"
+        },
+        {
+            "name": "ix_quotes_status",
+            "table": "quotes",
+            "column": "status",
+            "create_sql": "CREATE INDEX IF NOT EXISTS ix_quotes_status ON quotes(status)"
+        },
+        {
+            "name": "ix_invoices_contractor_id",
+            "table": "invoices",
+            "column": "contractor_id",
+            "create_sql": "CREATE INDEX IF NOT EXISTS ix_invoices_contractor_id ON invoices(contractor_id)"
+        },
+        {
+            "name": "ix_invoices_quote_id",
+            "table": "invoices",
+            "column": "quote_id",
+            "create_sql": "CREATE INDEX IF NOT EXISTS ix_invoices_quote_id ON invoices(quote_id)"
+        },
+        {
+            "name": "ix_invoices_created_at",
+            "table": "invoices",
+            "column": "created_at",
+            "create_sql": "CREATE INDEX IF NOT EXISTS ix_invoices_created_at ON invoices(created_at)"
+        },
+    ]
+
     async with engine.connect() as conn:
         # Run column additions
         for migration in column_migrations:
@@ -1197,6 +1241,16 @@ async def run_migrations(engine):
                 # SQLite doesn't support ALTER COLUMN, skip these migrations
                 if "information_schema" not in str(e).lower():
                     print(f"Migration warning (constraint): {e}")
+
+        # INFRA-005: Run index migrations
+        for migration in index_migrations:
+            try:
+                await conn.execute(text(migration["create_sql"]))
+                await conn.commit()
+            except Exception as e:
+                # Index might already exist or table doesn't exist yet
+                if "already exists" not in str(e).lower():
+                    print(f"Index migration warning ({migration['name']}): {e}")
 
 
 def init_db_sync():
