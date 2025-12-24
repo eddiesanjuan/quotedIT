@@ -214,15 +214,10 @@ if frontend_path.exists():
         """Serve the functional demo page - generate real quotes without signup."""
         return FileResponse(frontend_path / "try.html")
 
-    @app.get("/demo-promo", response_class=HTMLResponse)
-    async def serve_demo_promo(request: Request):
-        """Serve the promotional demo landing page with injected config."""
-        return templates.TemplateResponse("demo-promo.html", {
-            "request": request,
-            "posthog_api_key": settings.posthog_api_key,
-            "sentry_dsn": settings.sentry_dsn,
-            "environment": settings.environment,
-        })
+    @app.get("/demo-promo")
+    async def serve_demo_promo():
+        """Redirect legacy demo-promo to /try."""
+        return RedirectResponse("/try", status_code=301)
 
     @app.get("/terms")
     async def serve_terms():
