@@ -6647,7 +6647,7 @@
             const invoicesNavBtn = document.getElementById('invoicesNavBtn');
             const createInvoiceBtn = document.getElementById('createInvoiceBtn');
 
-            if (isFeatureEnabled('invoicing_enabled', true)) {
+            if (isFeatureEnabled('invoicing_enabled', false)) {
                 // Show invoicing UI
                 if (invoicesNavBtn) invoicesNavBtn.style.display = '';
                 if (createInvoiceBtn) createInvoiceBtn.style.display = '';
@@ -6666,13 +6666,8 @@
             applyInvoicingFeatureFlag();
         }
         {% else %}
-        // No PostHog - default to showing invoicing
-        document.addEventListener('DOMContentLoaded', function() {
-            const invoicesNavBtn = document.getElementById('invoicesNavBtn');
-            const createInvoiceBtn = document.getElementById('createInvoiceBtn');
-            if (invoicesNavBtn) invoicesNavBtn.style.display = '';
-            if (createInvoiceBtn) createInvoiceBtn.style.display = '';
-        });
+        // No PostHog - default to hiding invoicing (feature flag not available)
+        // Invoicing buttons are already hidden via style="display: none;" in HTML
         {% endif %}
 
         /**
