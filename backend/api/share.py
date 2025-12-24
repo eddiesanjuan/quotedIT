@@ -345,14 +345,22 @@ async def view_shared_quote(
 
         # KI-004 FIX: Track view count in database (not just PostHog)
         is_first_view = (quote.view_count or 0) == 0
-        quote.view_count = (quote.view_count or 0) + 1
-        quote.last_viewed_at = datetime.utcnow()
+        new_view_count = (quote.view_count or 0) + 1
+        now = datetime.utcnow()
+
+        # Build update fields
+        update_fields = {
+            "view_count": new_view_count,
+            "last_viewed_at": now,
+        }
         if is_first_view:
-            quote.first_viewed_at = datetime.utcnow()
+            update_fields["first_viewed_at"] = now
             # Update status to "viewed" if currently "sent"
             if quote.status == "sent":
-                quote.status = "viewed"
-        await db.save_quote(quote)
+                update_fields["status"] = "viewed"
+
+        # Update quote in database
+        quote = await db.update_quote(str(quote.id), **update_fields)
 
         # Track view event in PostHog (for detailed analytics)
         try:
@@ -449,16 +457,19 @@ async def accept_quote(
             raise HTTPException(status_code=404, detail="Contractor not found")
 
         # Update quote with acceptance
-        quote.status = "won"
-        quote.outcome = "won"
-        quote.signature_name = accept_request.signature_name
-        quote.signature_ip = request.client.host if request.client else None
-        quote.signature_at = datetime.utcnow()
-        quote.accepted_at = datetime.utcnow()
+        now = datetime.utcnow()
+        update_fields = {
+            "status": "won",
+            "outcome": "won",
+            "signature_name": accept_request.signature_name,
+            "signature_ip": request.client.host if request.client else None,
+            "signature_at": now,
+            "accepted_at": now,
+        }
         if accept_request.message:
-            quote.outcome_notes = f"Customer message: {accept_request.message}"
+            update_fields["outcome_notes"] = f"Customer message: {accept_request.message}"
 
-        await db.save_quote(quote)
+        quote = await db.update_quote(str(quote.id), **update_fields)
 
         # Send notification email to contractor
         try:
@@ -542,14 +553,17 @@ async def reject_quote(
         contractor = await db.get_contractor_by_id(quote.contractor_id)
 
         # Update quote with rejection
-        quote.status = "lost"
-        quote.outcome = "lost"
-        quote.rejected_at = datetime.utcnow()
+        now = datetime.utcnow()
+        update_fields = {
+            "status": "lost",
+            "outcome": "lost",
+            "rejected_at": now,
+        }
         if reject_request.reason:
-            quote.outcome_notes = reject_request.reason
-            quote.rejection_reason = reject_request.reason
+            update_fields["outcome_notes"] = reject_request.reason
+            update_fields["rejection_reason"] = reject_request.reason
 
-        await db.save_quote(quote)
+        quote = await db.update_quote(str(quote.id), **update_fields)
 
         # Optionally notify contractor (only if reason provided)
         if reject_request.reason and contractor:
