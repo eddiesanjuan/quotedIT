@@ -381,6 +381,278 @@
                 font-size: 0.875rem;
             }
         }
+
+        /* ========================================
+           Accept/Reject Actions (PROPOSIFY-DOMINATION)
+           ======================================== */
+        .quote-actions {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 32px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .actions-title {
+            font-family: var(--font-serif);
+            font-size: 1.25rem;
+            margin-bottom: 8px;
+        }
+
+        .actions-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+            margin-bottom: 24px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 14px 32px;
+            min-height: 48px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+        }
+
+        .btn-accept {
+            background: var(--success);
+            color: white;
+            border-color: var(--success);
+        }
+
+        .btn-accept:hover {
+            background: #15803d;
+            border-color: #15803d;
+        }
+
+        .btn-reject {
+            background: white;
+            color: var(--text-secondary);
+            border-color: var(--border);
+        }
+
+        .btn-reject:hover {
+            background: #fef2f2;
+            border-color: #ef4444;
+            color: #ef4444;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* Signature Form */
+        .signature-form {
+            display: none;
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border);
+            text-align: left;
+        }
+
+        .signature-form.visible {
+            display: block;
+        }
+
+        .signature-form label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .signature-form input {
+            width: 100%;
+            padding: 14px 16px;
+            font-size: 1.125rem;
+            font-family: 'Brush Script MT', 'Segoe Script', cursive;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+
+        .signature-form input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .signature-note {
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+        }
+
+        .btn-confirm {
+            background: var(--success);
+            color: white;
+            width: 100%;
+        }
+
+        .btn-confirm:hover {
+            background: #15803d;
+        }
+
+        /* Reject Form */
+        .reject-form {
+            display: none;
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border);
+            text-align: left;
+        }
+
+        .reject-form.visible {
+            display: block;
+        }
+
+        .reject-form label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .reject-form textarea {
+            width: 100%;
+            padding: 14px 16px;
+            font-size: 1rem;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 16px;
+            min-height: 100px;
+            resize: vertical;
+            font-family: var(--font-sans);
+        }
+
+        .reject-form textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .btn-confirm-reject {
+            background: #ef4444;
+            color: white;
+            width: 100%;
+        }
+
+        .btn-confirm-reject:hover {
+            background: #dc2626;
+        }
+
+        .btn-cancel {
+            background: white;
+            color: var(--text-secondary);
+            border-color: var(--border);
+            width: 100%;
+            margin-top: 8px;
+        }
+
+        .btn-cancel:hover {
+            background: var(--bg-primary);
+        }
+
+        /* Status Banners */
+        .status-banner {
+            padding: 24px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .status-banner.accepted {
+            background: #dcfce7;
+            border: 1px solid #86efac;
+        }
+
+        .status-banner.rejected {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+        }
+
+        .status-banner.expired {
+            background: #fef9c3;
+            border: 1px solid #fde047;
+        }
+
+        .status-icon {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+        }
+
+        .status-title {
+            font-family: var(--font-serif);
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .status-banner.accepted .status-title {
+            color: #166534;
+        }
+
+        .status-banner.rejected .status-title {
+            color: #991b1b;
+        }
+
+        .status-banner.expired .status-title {
+            color: #854d0e;
+        }
+
+        .status-details {
+            font-size: 0.9375rem;
+            color: var(--text-secondary);
+        }
+
+        .signature-display {
+            font-family: 'Brush Script MT', 'Segoe Script', cursive;
+            font-size: 1.5rem;
+            margin-top: 12px;
+            color: #166534;
+        }
+
+        /* Responsive adjustments for actions */
+        @media (max-width: 640px) {
+            .quote-actions {
+                padding: 24px;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 375px) {
+            .quote-actions {
+                padding: 20px 16px;
+            }
+
+            .actions-title {
+                font-size: 1.125rem;
+            }
+
+            .signature-form input {
+                font-size: 1rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -423,6 +695,54 @@
             <div class="quote-total">
                 <span class="total-label">Estimated Total</span>
                 <span class="total-amount" id="quoteTotal">$0.00</span>
+            </div>
+        </div>
+
+        <!-- Status Banner (shown for accepted/rejected/expired quotes) -->
+        <div id="statusBanner" class="status-banner" style="display: none;">
+            <div class="status-icon" id="statusIcon"></div>
+            <div class="status-title" id="statusTitle"></div>
+            <div class="status-details" id="statusDetails"></div>
+            <div class="signature-display" id="signatureDisplay" style="display: none;"></div>
+        </div>
+
+        <!-- Accept/Reject Actions (PROPOSIFY-DOMINATION) -->
+        <div id="quoteActions" class="quote-actions" style="display: none;">
+            <h3 class="actions-title">Ready to move forward?</h3>
+            <p class="actions-subtitle">Accept this quote to confirm the project, or let the contractor know if you need changes.</p>
+
+            <div class="action-buttons" id="actionButtons">
+                <button type="button" class="btn btn-accept" id="btnAccept">
+                    ✓ Accept Quote
+                </button>
+                <button type="button" class="btn btn-reject" id="btnReject">
+                    Request Changes
+                </button>
+            </div>
+
+            <!-- Signature Form (shown when Accept is clicked) -->
+            <div id="signatureForm" class="signature-form">
+                <label for="signatureName">Type your full name to accept this quote:</label>
+                <input type="text" id="signatureName" placeholder="Your full name" autocomplete="name" />
+                <p class="signature-note">By typing your name and clicking "Confirm", you agree to the terms of this quote. This creates a legally binding agreement.</p>
+                <button type="button" class="btn btn-confirm" id="btnConfirmAccept">
+                    Confirm & Accept Quote
+                </button>
+                <button type="button" class="btn btn-cancel" id="btnCancelAccept">
+                    Cancel
+                </button>
+            </div>
+
+            <!-- Reject Form (shown when Request Changes is clicked) -->
+            <div id="rejectForm" class="reject-form">
+                <label for="rejectReason">Let us know what changes you'd like (optional):</label>
+                <textarea id="rejectReason" placeholder="e.g., Price is too high, need different timeline, want to add/remove items..."></textarea>
+                <button type="button" class="btn btn-confirm-reject" id="btnConfirmReject">
+                    Send Feedback
+                </button>
+                <button type="button" class="btn btn-cancel" id="btnCancelReject">
+                    Cancel
+                </button>
             </div>
         </div>
 
@@ -529,6 +849,24 @@
                 }
                 {% endif %}
 
+                // Handle quote status - show appropriate UI (PROPOSIFY-DOMINATION)
+                currentQuoteData = quoteData;
+                const status = quoteData.status || 'draft';
+
+                if (status === 'won' || status === 'accepted') {
+                    // Quote was already accepted - show accepted banner
+                    showStatusBanner('won', quoteData);
+                } else if (status === 'lost' || status === 'rejected') {
+                    // Quote was already rejected - show rejected banner
+                    showStatusBanner('lost', quoteData);
+                } else if (status === 'expired') {
+                    // Quote expired - show expired banner
+                    showStatusBanner('expired', quoteData);
+                } else {
+                    // Quote is actionable (draft, sent, viewed) - show accept/reject buttons
+                    showActionButtons();
+                }
+
             } catch (error) {
                 console.error('Error loading quote:', error);
                 const container = document.querySelector('.container');
@@ -564,6 +902,204 @@
             }
             {% endif %}
         });
+
+        // ========================================
+        // Accept/Reject Handlers (PROPOSIFY-DOMINATION)
+        // ========================================
+
+        // Show status banner based on quote status
+        function showStatusBanner(status, quoteData) {
+            const banner = document.getElementById('statusBanner');
+            const icon = document.getElementById('statusIcon');
+            const title = document.getElementById('statusTitle');
+            const details = document.getElementById('statusDetails');
+            const sigDisplay = document.getElementById('signatureDisplay');
+
+            // Hide action buttons
+            document.getElementById('quoteActions').style.display = 'none';
+
+            if (status === 'won' || status === 'accepted') {
+                banner.className = 'status-banner accepted';
+                icon.textContent = '✓';
+                title.textContent = 'Quote Accepted';
+
+                if (quoteData.accepted_at) {
+                    const date = new Date(quoteData.accepted_at);
+                    details.textContent = 'Accepted on ' + date.toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    });
+                } else {
+                    details.textContent = 'This quote has been accepted.';
+                }
+
+                if (quoteData.signature_name) {
+                    sigDisplay.textContent = quoteData.signature_name;
+                    sigDisplay.style.display = 'block';
+                }
+
+                banner.style.display = 'block';
+            } else if (status === 'lost' || status === 'rejected') {
+                banner.className = 'status-banner rejected';
+                icon.textContent = '✗';
+                title.textContent = 'Quote Declined';
+                details.textContent = 'The customer requested changes to this quote.';
+                banner.style.display = 'block';
+            } else if (status === 'expired') {
+                banner.className = 'status-banner expired';
+                icon.textContent = '⏰';
+                title.textContent = 'Quote Expired';
+                details.textContent = 'This quote has expired. Contact the contractor for a new quote.';
+                banner.style.display = 'block';
+            }
+        }
+
+        // Show action buttons for actionable quotes
+        function showActionButtons() {
+            document.getElementById('quoteActions').style.display = 'block';
+        }
+
+        // Hide action buttons and forms
+        function resetActionState() {
+            document.getElementById('actionButtons').style.display = 'flex';
+            document.getElementById('signatureForm').classList.remove('visible');
+            document.getElementById('rejectForm').classList.remove('visible');
+            document.getElementById('signatureName').value = '';
+            document.getElementById('rejectReason').value = '';
+        }
+
+        // Accept button click
+        document.getElementById('btnAccept').addEventListener('click', function() {
+            document.getElementById('actionButtons').style.display = 'none';
+            document.getElementById('signatureForm').classList.add('visible');
+            document.getElementById('signatureName').focus();
+
+            {% if posthog_api_key %}
+            if (window.posthog) {
+                posthog.capture('quote_accept_started', { token: shareToken });
+            }
+            {% endif %}
+        });
+
+        // Reject button click
+        document.getElementById('btnReject').addEventListener('click', function() {
+            document.getElementById('actionButtons').style.display = 'none';
+            document.getElementById('rejectForm').classList.add('visible');
+            document.getElementById('rejectReason').focus();
+
+            {% if posthog_api_key %}
+            if (window.posthog) {
+                posthog.capture('quote_reject_started', { token: shareToken });
+            }
+            {% endif %}
+        });
+
+        // Cancel buttons
+        document.getElementById('btnCancelAccept').addEventListener('click', resetActionState);
+        document.getElementById('btnCancelReject').addEventListener('click', resetActionState);
+
+        // Confirm accept
+        document.getElementById('btnConfirmAccept').addEventListener('click', async function() {
+            const signatureName = document.getElementById('signatureName').value.trim();
+
+            if (!signatureName) {
+                alert('Please type your full name to accept the quote.');
+                document.getElementById('signatureName').focus();
+                return;
+            }
+
+            if (signatureName.length < 2) {
+                alert('Please enter your full name.');
+                document.getElementById('signatureName').focus();
+                return;
+            }
+
+            // Disable button while submitting
+            const btn = document.getElementById('btnConfirmAccept');
+            btn.disabled = true;
+            btn.textContent = 'Submitting...';
+
+            try {
+                const response = await fetch(`/api/quotes/shared/${shareToken}/accept`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ signature_name: signatureName })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Failed to accept quote');
+                }
+
+                const result = await response.json();
+
+                // Show success state
+                showStatusBanner('won', {
+                    accepted_at: new Date().toISOString(),
+                    signature_name: signatureName
+                });
+
+                {% if posthog_api_key %}
+                if (window.posthog) {
+                    posthog.capture('quote_accepted', {
+                        token: shareToken,
+                        signature_name: signatureName
+                    });
+                }
+                {% endif %}
+
+            } catch (error) {
+                console.error('Error accepting quote:', error);
+                alert('Failed to accept quote: ' + error.message);
+                btn.disabled = false;
+                btn.textContent = 'Confirm & Accept Quote';
+            }
+        });
+
+        // Confirm reject
+        document.getElementById('btnConfirmReject').addEventListener('click', async function() {
+            const reason = document.getElementById('rejectReason').value.trim();
+
+            // Disable button while submitting
+            const btn = document.getElementById('btnConfirmReject');
+            btn.disabled = true;
+            btn.textContent = 'Submitting...';
+
+            try {
+                const response = await fetch(`/api/quotes/shared/${shareToken}/reject`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ reason: reason || null })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Failed to submit feedback');
+                }
+
+                // Show rejected state
+                showStatusBanner('lost', {});
+
+                {% if posthog_api_key %}
+                if (window.posthog) {
+                    posthog.capture('quote_rejected', {
+                        token: shareToken,
+                        has_reason: !!reason
+                    });
+                }
+                {% endif %}
+
+            } catch (error) {
+                console.error('Error rejecting quote:', error);
+                alert('Failed to submit feedback: ' + error.message);
+                btn.disabled = false;
+                btn.textContent = 'Send Feedback';
+            }
+        });
+
+        // Store quote data for status handling
+        let currentQuoteData = null;
 
         // Load data on page load
         loadQuoteData();
