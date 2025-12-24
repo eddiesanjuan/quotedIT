@@ -226,8 +226,15 @@ async def get_contractor(contractor_id: str):
 
 
 @router.get("/{contractor_id}/pricing", response_model=PricingModelResponse)
-async def get_pricing_model(contractor_id: str):
+async def get_pricing_model(
+    contractor_id: str,
+    current_contractor: Contractor = Depends(get_current_contractor),
+):
     """Get a contractor's pricing model from database."""
+    # Verify ownership
+    if current_contractor.id != contractor_id:
+        raise HTTPException(status_code=403, detail="Access denied")
+
     db = get_database_service()
     pricing_model = await db.get_pricing_model(contractor_id)
 
@@ -248,8 +255,16 @@ async def get_pricing_model(contractor_id: str):
 
 
 @router.put("/{contractor_id}/pricing", response_model=PricingModelResponse)
-async def update_pricing_model_endpoint(contractor_id: str, update: PricingModelUpdate):
+async def update_pricing_model_endpoint(
+    contractor_id: str,
+    update: PricingModelUpdate,
+    current_contractor: Contractor = Depends(get_current_contractor),
+):
     """Update a contractor's pricing model in database."""
+    # Verify ownership
+    if current_contractor.id != contractor_id:
+        raise HTTPException(status_code=403, detail="Access denied")
+
     db = get_database_service()
     pricing_model = await db.get_pricing_model(contractor_id)
 
@@ -281,8 +296,15 @@ async def update_pricing_model_endpoint(contractor_id: str, update: PricingModel
 
 
 @router.get("/{contractor_id}/terms", response_model=TermsResponse)
-async def get_terms(contractor_id: str):
+async def get_terms(
+    contractor_id: str,
+    current_contractor: Contractor = Depends(get_current_contractor),
+):
     """Get a contractor's terms."""
+    # Verify ownership
+    if current_contractor.id != contractor_id:
+        raise HTTPException(status_code=403, detail="Access denied")
+
     if contractor_id not in _terms:
         raise HTTPException(status_code=404, detail="Contractor not found")
 
@@ -290,8 +312,16 @@ async def get_terms(contractor_id: str):
 
 
 @router.put("/{contractor_id}/terms", response_model=TermsResponse)
-async def update_terms(contractor_id: str, update: TermsUpdate):
+async def update_terms(
+    contractor_id: str,
+    update: TermsUpdate,
+    current_contractor: Contractor = Depends(get_current_contractor),
+):
     """Update a contractor's terms."""
+    # Verify ownership
+    if current_contractor.id != contractor_id:
+        raise HTTPException(status_code=403, detail="Access denied")
+
     if contractor_id not in _terms:
         raise HTTPException(status_code=404, detail="Contractor not found")
 

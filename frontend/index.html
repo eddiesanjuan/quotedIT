@@ -14042,33 +14042,51 @@
         function renderCustomerSuggestions(customers) {
             const dropdown = document.getElementById('customerAutocomplete');
 
+            // Clear existing content safely
+            while (dropdown.firstChild) {
+                dropdown.removeChild(dropdown.firstChild);
+            }
+
             if (customers.length === 0) {
-                dropdown.innerHTML = '<div class="autocomplete-empty">No previous customers found</div>';
+                const emptyDiv = document.createElement('div');
+                emptyDiv.className = 'autocomplete-empty';
+                emptyDiv.textContent = 'No previous customers found';
+                dropdown.appendChild(emptyDiv);
                 dropdown.style.display = 'block';
                 return;
             }
 
-            dropdown.innerHTML = customers.map(customer => {
+            // Create dropdown items using safe DOM methods
+            customers.forEach(customer => {
+                const item = document.createElement('div');
+                item.className = 'autocomplete-item';
+                item.dataset.customer = JSON.stringify(customer);
+
+                const nameDiv = document.createElement('div');
+                nameDiv.className = 'autocomplete-item-name';
+                nameDiv.textContent = customer.name || 'Unnamed Customer';
+                item.appendChild(nameDiv);
+
                 const details = [];
                 if (customer.phone) details.push(customer.phone);
                 if (customer.email) details.push(customer.email);
 
-                return `
-                    <div class="autocomplete-item" data-customer='${JSON.stringify(customer)}'>
-                        <div class="autocomplete-item-name">${customer.name || 'Unnamed Customer'}</div>
-                        ${details.length > 0 ? `<div class="autocomplete-item-details">${details.join(' • ')}</div>` : ''}
-                    </div>
-                `;
-            }).join('');
+                if (details.length > 0) {
+                    const detailsDiv = document.createElement('div');
+                    detailsDiv.className = 'autocomplete-item-details';
+                    detailsDiv.textContent = details.join(' • ');
+                    item.appendChild(detailsDiv);
+                }
 
-            dropdown.style.display = 'block';
-
-            // Add click handlers
-            dropdown.querySelectorAll('.autocomplete-item').forEach(item => {
+                // Add click handler
                 item.addEventListener('click', function() {
                     selectCustomer(JSON.parse(this.dataset.customer));
                 });
+
+                dropdown.appendChild(item);
             });
+
+            dropdown.style.display = 'block';
         }
 
         // Select a customer from autocomplete

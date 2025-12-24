@@ -134,11 +134,11 @@ if settings.environment != "production":
     ])
 
 # CORS middleware with Railway preview environment support (DISC-077)
-# allow_origin_regex enables Railway PR preview URLs: pr-{number}-quoted.up.railway.app
+# allow_origin_regex restricted to Quoted's Railway domains only (pr-XXX-quoted and web-production-*)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
-    allow_origin_regex=r"https://.*\.up\.railway\.app",  # Railway preview environments
+    allow_origin_regex=r"https://(pr-\d+-quoted|web-production-\w+)\.up\.railway\.app",  # Only Quoted's Railway domains
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
