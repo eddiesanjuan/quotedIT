@@ -3,11 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Contractor's Guide to Accurate Estimates That Win Jobs | Quoted Blog</title>
+    <title>The Contractor's Guide to Accurate Estimates That Win Jobs — Quoted</title>
     <meta name="description" content="Master contractor estimating: material takeoffs, labor calculations, markup strategies, and professional quote presentation that wins bids without leaving money on the table.">
     <meta name="keywords" content="contractor estimates, construction quotes, plumber pricing, HVAC quotes, electrician estimates, trade pricing, job costing, contractor bidding">
     <meta name="author" content="Quoted">
     <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://quoted.it.com/blog/contractor-estimating-guide.html">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230a0a0a'/%3E%3Ctext x='16' y='23' font-family='serif' font-size='20' font-weight='600' fill='white' text-anchor='middle'%3EQ%3C/text%3E%3C/svg%3E">
 
     <!-- Open Graph -->
     <meta property="og:title" content="The Contractor's Guide to Accurate Estimates That Win Jobs">
@@ -23,741 +27,582 @@
         "headline": "The Contractor's Guide to Accurate Estimates That Win Jobs",
         "description": "Master contractor estimating: material takeoffs, labor calculations, markup strategies, and professional quote presentation.",
         "author": {"@type": "Organization", "name": "Quoted"},
-        "publisher": {"@type": "Organization", "name": "Quoted"},
+        "publisher": {"@type": "Organization", "name": "Quoted", "url": "https://quoted.it.com"},
         "datePublished": "2025-12-24",
         "dateModified": "2025-12-24"
     }
     </script>
 
-    <link rel="canonical" href="https://quoted.it.com/blog/contractor-estimating-guide.html">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #141414;
+            --bg-card: #1a1a1a;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --text-muted: #666666;
+            --border: rgba(255, 255, 255, 0.1);
+            --border-hover: rgba(255, 255, 255, 0.2);
+            --font-serif: 'Playfair Display', Georgia, serif;
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
         * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { font-size: 16px; scroll-behavior: smooth; }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #0a0a0a;
-            color: #e0e0e0;
-            line-height: 1.8;
-            font-size: 18px;
+            font-family: var(--font-sans);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
         }
-        .header {
-            background: rgba(10, 10, 10, 0.95);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid #222;
-            padding: 16px 24px;
-            position: sticky;
+
+        nav {
+            position: fixed;
             top: 0;
+            left: 0;
+            right: 0;
             z-index: 100;
-        }
-        .header-content {
-            max-width: 800px;
-            margin: 0 auto;
+            padding: 24px 40px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            background: linear-gradient(to bottom, var(--bg-primary) 0%, transparent 100%);
         }
+
         .logo {
+            font-family: var(--font-serif);
             font-size: 1.5rem;
-            font-weight: 700;
-            color: #fff;
-            text-decoration: none;
-        }
-        .logo span {
-            background: linear-gradient(135deg, #6366f1, #8b5cf6);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .header-nav {
-            display: flex;
-            gap: 24px;
-            align-items: center;
-        }
-        .header-nav a {
-            color: #888;
-            text-decoration: none;
-            font-size: 0.95rem;
-            transition: color 0.2s;
-        }
-        .header-nav a:hover { color: #fff; }
-        .btn-demo {
-            background: linear-gradient(135deg, #6366f1, #8b5cf6);
-            color: #fff;
-            padding: 10px 20px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 0.9rem;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .btn-demo:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
-        }
-        .article {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 60px 24px 100px;
-        }
-        .article-category {
-            display: inline-block;
-            background: rgba(245, 158, 11, 0.2);
-            color: #fbbf24;
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-size: 0.85rem;
             font-weight: 500;
-            margin-bottom: 16px;
-        }
-        .article-title {
-            font-size: 2.5rem;
-            font-weight: 800;
-            line-height: 1.2;
-            margin-bottom: 20px;
-            background: linear-gradient(135deg, #fff, #fcd34d);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .article-subtitle {
-            font-size: 1.25rem;
-            color: #888;
-            line-height: 1.6;
-            margin-bottom: 24px;
-        }
-        .article-info {
-            display: flex;
-            gap: 24px;
-            color: #666;
-            font-size: 0.9rem;
-            margin-bottom: 40px;
-        }
-        .article-content h2 {
-            font-size: 1.75rem;
-            font-weight: 700;
-            color: #fff;
-            margin: 48px 0 24px;
-            padding-top: 24px;
-            border-top: 1px solid #222;
-        }
-        .article-content h2:first-of-type {
-            border-top: none;
-            margin-top: 0;
-        }
-        .article-content h3 {
-            font-size: 1.3rem;
-            font-weight: 600;
-            color: #e0e0e0;
-            margin: 32px 0 16px;
-        }
-        .article-content p {
-            margin-bottom: 20px;
-            color: #c0c0c0;
-        }
-        .article-content ul, .article-content ol {
-            margin: 20px 0 20px 24px;
-            color: #c0c0c0;
-        }
-        .article-content li {
-            margin-bottom: 12px;
-            padding-left: 8px;
-        }
-        .article-content strong {
-            color: #fff;
-            font-weight: 600;
-        }
-        .article-content a {
-            color: #fbbf24;
+            letter-spacing: -0.02em;
+            color: var(--text-primary);
             text-decoration: none;
-            border-bottom: 1px solid rgba(251, 191, 36, 0.3);
         }
-        .article-content a:hover {
-            border-color: #fbbf24;
-        }
-        .callout {
-            background: rgba(245, 158, 11, 0.1);
-            border: 1px solid rgba(245, 158, 11, 0.3);
-            border-radius: 12px;
-            padding: 24px;
-            margin: 32px 0;
-        }
-        .callout-title {
-            font-weight: 700;
-            color: #fbbf24;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .callout p { margin-bottom: 0; color: #fcd34d; }
-        .callout.warning {
-            background: rgba(239, 68, 68, 0.1);
-            border-color: rgba(239, 68, 68, 0.3);
-        }
-        .callout.warning .callout-title { color: #f87171; }
-        .callout.warning p { color: #fca5a5; }
-        .callout.success {
-            background: rgba(34, 197, 94, 0.1);
-            border-color: rgba(34, 197, 94, 0.3);
-        }
-        .callout.success .callout-title { color: #4ade80; }
-        .callout.success p { color: #86efac; }
-        .quote-example {
-            background: #151515;
-            border: 1px solid #333;
-            border-radius: 12px;
-            padding: 24px;
-            margin: 24px 0;
-            font-family: 'Courier New', monospace;
-            font-size: 0.9rem;
-        }
-        .quote-example-header {
-            color: #888;
-            font-size: 0.8rem;
-            margin-bottom: 16px;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        .quote-example.bad { border-color: rgba(239, 68, 68, 0.3); }
-        .quote-example.good { border-color: rgba(34, 197, 94, 0.3); }
-        .cta-section {
-            background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(139, 92, 246, 0.2));
-            border: 1px solid rgba(245, 158, 11, 0.3);
-            border-radius: 16px;
-            padding: 40px;
-            margin: 48px 0;
-            text-align: center;
-        }
-        .cta-section h3 {
-            font-size: 1.5rem;
-            color: #fff;
-            margin-bottom: 12px;
-        }
-        .cta-section p {
-            color: #fbbf24;
-            margin-bottom: 24px;
-        }
-        .cta-section .btn-demo {
-            display: inline-block;
-            padding: 14px 32px;
-            font-size: 1rem;
-        }
-        .pricing-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 24px 0;
-        }
-        .pricing-table th, .pricing-table td {
-            padding: 16px;
-            text-align: left;
-            border-bottom: 1px solid #252525;
-        }
-        .pricing-table th {
-            background: #151515;
-            color: #fff;
-            font-weight: 600;
-        }
-        .pricing-table td { color: #c0c0c0; }
-        .pricing-table tr:hover td { background: rgba(245, 158, 11, 0.05); }
-        .stat-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-            margin: 32px 0;
-        }
-        .stat-card {
-            background: #151515;
-            border: 1px solid #252525;
-            border-radius: 12px;
-            padding: 24px;
-            text-align: center;
-        }
-        .stat-value {
-            font-size: 2rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, #f59e0b, #fbbf24);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .stat-label {
-            color: #888;
-            font-size: 0.85rem;
-            margin-top: 8px;
-        }
-        .footer {
-            background: #0a0a0a;
-            border-top: 1px solid #222;
-            padding: 40px 24px;
-            text-align: center;
-        }
-        .footer-links {
-            display: flex;
-            justify-content: center;
-            gap: 32px;
-            margin-bottom: 24px;
-        }
-        .footer-links a {
-            color: #666;
-            text-decoration: none;
-            font-size: 0.9rem;
-        }
-        .footer-links a:hover { color: #fff; }
-        .footer-copy { color: #444; font-size: 0.85rem; }
+        .logo span { font-style: italic; }
+
+        .nav-links { display: flex; gap: 32px; align-items: center; }
+        .nav-links a { color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; transition: color 0.2s; }
+        .nav-links a:hover { color: var(--text-primary); }
+        .nav-cta { padding: 12px 24px; background: transparent; border: 1px solid var(--text-primary); color: var(--text-primary) !important; font-weight: 500; transition: all 0.3s ease; }
+        .nav-cta:hover { background: var(--text-primary); color: var(--bg-primary) !important; }
+
+        .article-header { padding: 160px 40px 60px; max-width: 800px; margin: 0 auto; }
+        .back-link { display: inline-flex; align-items: center; gap: 8px; color: var(--text-muted); text-decoration: none; font-size: 0.875rem; margin-bottom: 40px; transition: color 0.2s; }
+        .back-link:hover { color: var(--text-primary); }
+        .article-category { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.15em; color: var(--text-muted); margin-bottom: 16px; }
+        .article-title { font-family: var(--font-serif); font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 400; line-height: 1.15; letter-spacing: -0.02em; margin-bottom: 24px; }
+        .article-subtitle { font-size: 1.25rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 32px; }
+        .article-meta { display: flex; gap: 32px; color: var(--text-muted); font-size: 0.875rem; padding-top: 24px; border-top: 1px solid var(--border); }
+
+        .article-content { max-width: 680px; margin: 0 auto; padding: 60px 40px 100px; }
+        .article-content p { font-size: 1.125rem; line-height: 1.8; color: var(--text-secondary); margin-bottom: 24px; }
+        .article-content h2 { font-family: var(--font-serif); font-size: 1.75rem; font-weight: 500; color: var(--text-primary); margin: 56px 0 24px; padding-top: 32px; border-top: 1px solid var(--border); }
+        .article-content h2:first-of-type { border-top: none; padding-top: 0; margin-top: 0; }
+        .article-content h3 { font-family: var(--font-serif); font-size: 1.35rem; font-weight: 500; color: var(--text-primary); margin: 40px 0 16px; }
+        .article-content ul, .article-content ol { margin: 0 0 24px 24px; color: var(--text-secondary); }
+        .article-content li { font-size: 1.125rem; line-height: 1.8; margin-bottom: 12px; }
+        .article-content strong { color: var(--text-primary); font-weight: 600; }
+        .article-content a { color: var(--text-primary); text-decoration: underline; text-underline-offset: 3px; transition: opacity 0.2s; }
+        .article-content a:hover { opacity: 0.7; }
+
+        .callout { background: var(--bg-secondary); border: 1px solid var(--border); padding: 24px 28px; margin: 32px 0; }
+        .callout-title { font-weight: 600; color: var(--text-primary); margin-bottom: 8px; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em; }
+        .callout p { margin-bottom: 0; font-size: 1rem; }
+        .callout.tip { border-left: 3px solid var(--text-primary); }
+        .callout.warning { border-left: 3px solid #f59e0b; }
+        .callout.success { border-left: 3px solid #22c55e; }
+
+        .example-box { background: var(--bg-card); border: 1px solid var(--border); padding: 24px; margin: 24px 0; font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace; font-size: 0.9rem; line-height: 1.7; }
+        .example-box.bad { border-color: rgba(239, 68, 68, 0.3); }
+        .example-box.good { border-color: rgba(34, 197, 94, 0.3); }
+        .example-label { font-family: var(--font-sans); font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 16px; }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 32px 0; }
+        .stat-card { background: var(--bg-secondary); border: 1px solid var(--border); padding: 24px; text-align: center; }
+        .stat-value { font-family: var(--font-serif); font-size: 2.5rem; font-weight: 400; color: var(--text-primary); }
+        .stat-label { font-size: 0.8rem; color: var(--text-muted); margin-top: 8px; }
+
+        .content-table { width: 100%; border-collapse: collapse; margin: 24px 0; font-size: 0.95rem; }
+        .content-table th, .content-table td { padding: 16px; text-align: left; border-bottom: 1px solid var(--border); }
+        .content-table th { background: var(--bg-secondary); color: var(--text-primary); font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; }
+        .content-table td { color: var(--text-secondary); }
+
+        .cta-box { background: var(--bg-secondary); border: 1px solid var(--border); padding: 40px; margin: 48px 0; text-align: center; }
+        .cta-box h3 { font-family: var(--font-serif); font-size: 1.5rem; font-weight: 500; margin-bottom: 12px; }
+        .cta-box p { color: var(--text-secondary); margin-bottom: 24px; font-size: 1rem; }
+        .cta-button { display: inline-block; padding: 14px 32px; background: var(--text-primary); color: var(--bg-primary); font-weight: 600; text-decoration: none; transition: all 0.3s; }
+        .cta-button:hover { transform: translateY(-2px); box-shadow: 0 10px 40px rgba(255,255,255,0.1); opacity: 1; }
+
+        footer { border-top: 1px solid var(--border); padding: 48px 40px; display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; }
+        .footer-logo { font-family: var(--font-serif); font-size: 1.25rem; font-weight: 500; color: var(--text-primary); text-decoration: none; }
+        .footer-logo span { font-style: italic; }
+        .footer-links { display: flex; gap: 32px; }
+        .footer-links a { color: var(--text-muted); text-decoration: none; font-size: 0.875rem; transition: color 0.2s; }
+        .footer-links a:hover { color: var(--text-primary); }
+        .footer-copy { color: var(--text-muted); font-size: 0.875rem; }
+
         @media (max-width: 768px) {
-            .article-title { font-size: 2rem; }
-            .stat-grid { grid-template-columns: 1fr; }
-            .header-nav a:not(.btn-demo) { display: none; }
-            .article-info { flex-direction: column; gap: 8px; }
+            nav { padding: 20px 24px; }
+            .nav-links a:not(.nav-cta) { display: none; }
+            .article-header { padding: 140px 24px 40px; }
+            .article-content { padding: 40px 24px 80px; }
+            .stats-grid { grid-template-columns: 1fr; }
+            .article-meta { flex-direction: column; gap: 8px; }
+            footer { flex-direction: column; gap: 24px; text-align: center; }
+            .footer-links { flex-wrap: wrap; justify-content: center; }
         }
     </style>
 </head>
 <body>
-    <header class="header">
-        <div class="header-content">
-            <a href="/" class="logo">Quoted<span>.</span></a>
-            <nav class="header-nav">
-                <a href="/">Home</a>
-                <a href="/blog/">Blog</a>
-                <a href="/demo?utm_source=blog&utm_medium=header&utm_campaign=contractor_guide" class="btn-demo">Try Demo</a>
-            </nav>
+    <nav>
+        <a href="/" class="logo">quoted.<span>it</span></a>
+        <div class="nav-links">
+            <a href="/use-cases">Use Cases</a>
+            <a href="/blog/">Blog</a>
+            <a href="/app" class="nav-cta">Start Quoting</a>
+        </div>
+    </nav>
+
+    <header class="article-header">
+        <a href="/blog/" class="back-link">&larr; Back to Blog</a>
+        <p class="article-category">Contractors</p>
+        <h1 class="article-title">The Contractor's Guide to Accurate Estimates That Win Jobs</h1>
+        <p class="article-subtitle">Stop underbidding and leaving money on the table. Learn how to calculate material costs, labor hours, and markup — then present it professionally so customers choose you.</p>
+        <div class="article-meta">
+            <span>December 2025</span>
+            <span>14 min read</span>
         </div>
     </header>
 
-    <article class="article">
-        <div class="article-meta">
-            <span class="article-category">Contractors</span>
-            <h1 class="article-title">The Contractor's Guide to Accurate Estimates That Win Jobs</h1>
-            <p class="article-subtitle">Stop underbidding and leaving money on the table. Learn how to calculate material costs, labor hours, and markup — then present it professionally so customers choose you.</p>
-            <div class="article-info">
-                <span>📅 December 24, 2025</span>
-                <span>⏱️ 14 min read</span>
-                <span>📚 Complete Guide</span>
+    <article class="article-content">
+        <p>You've been doing this for years. You can look at a job and know roughly what it'll cost. You've got the experience, the skills, and the reputation.</p>
+
+        <p>But here's what happens too often: <strong>you give a price off the top of your head, forget something, and eat the difference.</strong> Or you scribble an estimate on the back of a business card, and the customer goes with the guy who sent a proper PDF.</p>
+
+        <p>Estimating isn't just about knowing your craft — it's about presenting it in a way that wins the job AND protects your profit.</p>
+
+        <p>This guide covers the complete estimating process: from measuring the job to presenting a quote that makes customers confident in choosing you.</p>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">47%</div>
+                <div class="stat-label">of contractors underestimate jobs</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">2.3x</div>
+                <div class="stat-label">higher win rate with professional quotes</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">12%</div>
+                <div class="stat-label">average profit lost to poor estimating</div>
             </div>
         </div>
 
-        <div class="article-content">
-            <p>You've been doing this for years. You can look at a job and know roughly what it'll cost. You've got the experience, the skills, and the reputation.</p>
+        <h2>The True Cost of Bad Estimates</h2>
 
-            <p>But here's what happens too often: <strong>you give a price off the top of your head, forget something, and eat the difference.</strong> Or you scribble an estimate on the back of a business card, and the customer goes with the guy who sent a proper PDF.</p>
+        <p>Every contractor has a story about the job that went sideways. The bathroom remodel where the subfloor was rotted. The electrical panel that turned out to be a nightmare. The "simple" plumbing job that became a re-pipe.</p>
 
-            <p>Estimating isn't just about knowing your craft — it's about presenting it in a way that wins the job AND protects your profit.</p>
+        <p>But here's the thing: some of those surprises could have been anticipated with a better site visit. And the ones that couldn't? They should have been covered by your contingency and markup.</p>
 
-            <p>This guide covers the complete estimating process: from measuring the job to presenting a quote that makes customers confident in choosing you.</p>
+        <p>Bad estimates hurt in two ways:</p>
 
-            <div class="stat-grid">
-                <div class="stat-card">
-                    <div class="stat-value">47%</div>
-                    <div class="stat-label">of contractors underestimate jobs</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value">2.3x</div>
-                    <div class="stat-label">higher win rate with professional quotes</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value">12%</div>
-                    <div class="stat-label">average profit lost to poor estimating</div>
-                </div>
-            </div>
+        <ol>
+            <li><strong>Underbidding</strong> — You win the job but lose money. Or worse, you try to cut corners to stay profitable, hurting your reputation.</li>
+            <li><strong>Overbidding</strong> — You price yourself out and lose to competitors. You never know how many jobs you didn't get because your numbers were too high.</li>
+        </ol>
 
-            <h2>The True Cost of Bad Estimates</h2>
+        <p>The goal is accuracy, not optimism. Let's break down how to get there.</p>
 
-            <p>Every contractor has a story about the job that went sideways. The bathroom remodel where the subfloor was rotted. The electrical panel that turned out to be a nightmare. The "simple" plumbing job that became a re-pipe.</p>
+        <h2>The Estimating Framework: Materials + Labor + Overhead + Profit</h2>
 
-            <p>But here's the thing: some of those surprises could have been anticipated with a better site visit. And the ones that couldn't? They should have been covered by your contingency and markup.</p>
+        <p>Every job estimate follows the same formula:</p>
 
-            <p>Bad estimates hurt in two ways:</p>
-
-            <ol>
-                <li><strong>Underbidding</strong> — You win the job but lose money. Or worse, you try to cut corners to stay profitable, hurting your reputation.</li>
-                <li><strong>Overbidding</strong> — You price yourself out and lose to competitors. You never know how many jobs you didn't get because your numbers were too high.</li>
-            </ol>
-
-            <p>The goal is accuracy, not optimism. Let's break down how to get there.</p>
-
-            <h2>The Estimating Framework: Materials + Labor + Overhead + Profit</h2>
-
-            <p>Every job estimate follows the same formula:</p>
-
-            <div class="quote-example">
-                <div class="quote-example-header">The Basic Formula</div>
-                <p><strong>Direct Materials</strong></p>
-                <p>+ Direct Labor (hours × rate)</p>
-                <p>+ Overhead (typically 15-25% of direct costs)</p>
-                <p>+ Profit (typically 10-20%)</p>
-                <p>= Total Quote Price</p>
-            </div>
-
-            <p>Let's break down each component.</p>
-
-            <h3>1. Direct Materials</h3>
-
-            <p>This is everything you'll buy specifically for this job:</p>
-
-            <ul>
-                <li>Raw materials (pipe, wire, lumber, drywall, etc.)</li>
-                <li>Fixtures and equipment (faucets, outlets, doors, etc.)</li>
-                <li>Consumables (fasteners, tape, caulk, glue, etc.)</li>
-                <li>Specialty items (permit-required materials, custom orders)</li>
-            </ul>
-
-            <p><strong>Pro tips for material estimation:</strong></p>
-
-            <ul>
-                <li><strong>Add 10-15% waste factor</strong> — cuts, mistakes, and damage happen</li>
-                <li><strong>Price at retail, buy at wholesale</strong> — builds in a buffer for price changes</li>
-                <li><strong>Get current prices</strong> — material costs change monthly</li>
-                <li><strong>Don't forget delivery</strong> — especially for bulk materials</li>
-            </ul>
-
-            <div class="callout">
-                <div class="callout-title">💡 Material Markup</div>
-                <p>Many contractors mark up materials 15-30% above their cost. This covers your time sourcing, ordering, receiving, and managing materials. It's not gouging — it's compensation for a real service.</p>
-            </div>
-
-            <h3>2. Direct Labor</h3>
-
-            <p>This is where most estimating errors happen. You need to honestly assess:</p>
-
-            <ul>
-                <li><strong>Your hourly rate</strong> — what you need to pay yourself and crew</li>
-                <li><strong>Actual hours</strong> — not best-case, but realistic hours</li>
-                <li><strong>Productivity factors</strong> — working conditions, complexity, access</li>
-            </ul>
-
-            <p>To calculate labor hours, use production rates. For example:</p>
-
-            <table class="pricing-table">
-                <thead>
-                    <tr>
-                        <th>Task</th>
-                        <th>Unit</th>
-                        <th>Hours (Typical Range)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Drywall installation</td>
-                        <td>per sheet</td>
-                        <td>0.75 - 1.25 hrs</td>
-                    </tr>
-                    <tr>
-                        <td>Interior painting</td>
-                        <td>per 100 sq ft</td>
-                        <td>1.5 - 2.5 hrs</td>
-                    </tr>
-                    <tr>
-                        <td>Electrical outlet install</td>
-                        <td>per outlet</td>
-                        <td>0.5 - 1.0 hr</td>
-                    </tr>
-                    <tr>
-                        <td>PEX re-pipe (per fixture)</td>
-                        <td>per fixture</td>
-                        <td>1.5 - 3.0 hrs</td>
-                    </tr>
-                    <tr>
-                        <td>Tile floor installation</td>
-                        <td>per sq ft</td>
-                        <td>0.1 - 0.2 hrs</td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <p>Build your own production rates based on YOUR crew's actual performance. Track time on every job.</p>
-
-            <div class="callout warning">
-                <div class="callout-title">⚠️ Common Labor Mistakes</div>
-                <p>Don't forget: drive time to the job, supply runs, setup and cleanup, customer walkthroughs, callbacks, and punch list. These are real hours that eat profit if not included.</p>
-            </div>
-
-            <h3>3. Overhead</h3>
-
-            <p>Overhead is everything that keeps your business running but isn't tied to a specific job:</p>
-
-            <ul>
-                <li>Vehicle costs (payment, insurance, fuel, maintenance)</li>
-                <li>Tools and equipment (depreciation, replacement, repair)</li>
-                <li>Insurance (general liability, workers comp, bonding)</li>
-                <li>Licenses and permits (contractor license, trade licenses)</li>
-                <li>Office costs (phone, internet, software, bookkeeping)</li>
-                <li>Marketing and advertising</li>
-                <li>Training and certifications</li>
-            </ul>
-
-            <p>Calculate your total annual overhead, then divide by your annual labor hours to get an hourly overhead rate. Or use a percentage of direct costs (15-25% is typical).</p>
-
-            <div class="quote-example">
-                <div class="quote-example-header">Overhead Calculation Example</div>
-                <p>Annual overhead costs: $48,000</p>
-                <p>÷ Annual billable hours: 1,600 hrs</p>
-                <p>= <strong>$30/hour overhead</strong></p>
-                <p>&nbsp;</p>
-                <p>If your labor rate is $65/hr, your fully-loaded rate is $95/hr</p>
-            </div>
-
-            <h3>4. Profit</h3>
-
-            <p>Profit is not a dirty word. It's:</p>
-
-            <ul>
-                <li>Compensation for your expertise and reputation</li>
-                <li>A buffer for unexpected problems</li>
-                <li>Money to grow and improve your business</li>
-                <li>Savings for slow seasons</li>
-            </ul>
-
-            <p>Typical profit margins in contracting range from 10-20%, depending on the trade, market, and job complexity. Riskier jobs deserve higher margins.</p>
-
-            <h2>The Site Visit: What to Look For</h2>
-
-            <p>A thorough site visit is your best protection against surprises. Here's a checklist:</p>
-
-            <h3>Access and Logistics</h3>
-            <ul>
-                <li>Can you get materials to the work area easily?</li>
-                <li>Where will you stage materials and equipment?</li>
-                <li>Parking for your truck and crew?</li>
-                <li>What hours can you work? (HOA restrictions, noise ordinances)</li>
-                <li>Pets or occupants during work?</li>
-            </ul>
-
-            <h3>Existing Conditions</h3>
-            <ul>
-                <li>Age of the house and when systems were last updated</li>
-                <li>Signs of previous work (was it done properly?)</li>
-                <li>Hidden damage (water stains, soft spots, pest damage)</li>
-                <li>Code compliance issues you'll inherit</li>
-            </ul>
-
-            <h3>Scope Boundaries</h3>
-            <ul>
-                <li>Exactly where does the work start and end?</li>
-                <li>What's the customer keeping vs. replacing?</li>
-                <li>Finish levels and material selections</li>
-                <li>Who's responsible for what (demo, disposal, painting, etc.)?</li>
-            </ul>
-
-            <div class="callout success">
-                <div class="callout-title">✓ Take Photos</div>
-                <p>Photograph everything during your site visit. Existing conditions, access routes, areas of concern. These protect you if there's a dispute later about what was there when you started.</p>
-            </div>
-
-            <h2>Structuring Your Estimate</h2>
-
-            <p>Your estimate document should include:</p>
-
-            <h3>1. Company Information</h3>
-            <ul>
-                <li>Business name and logo</li>
-                <li>License number(s)</li>
-                <li>Insurance information</li>
-                <li>Contact details</li>
-            </ul>
-
-            <h3>2. Customer and Project Information</h3>
-            <ul>
-                <li>Customer name and address</li>
-                <li>Project address (if different)</li>
-                <li>Date of estimate and validity period</li>
-                <li>Reference/quote number</li>
-            </ul>
-
-            <h3>3. Scope of Work</h3>
-            <p>Describe the work in plain language that the customer will understand. Be specific about what's included.</p>
-
-            <div class="quote-example good">
-                <div class="quote-example-header">✓ Good Scope Example</div>
-                <p><strong>Master Bathroom Plumbing Renovation</strong></p>
-                <p>&nbsp;</p>
-                <p>• Remove existing bathtub, toilet, and pedestal sink</p>
-                <p>• Install new 60" alcove bathtub (customer-supplied)</p>
-                <p>• Install new toilet (Kohler Cimarron, included)</p>
-                <p>• Install new vanity with undermount sink (customer-supplied)</p>
-                <p>• Replace all supply lines with PEX</p>
-                <p>• Replace drain lines as needed for new fixtures</p>
-                <p>• Connect to existing vent stack</p>
-                <p>• Pressure test all lines</p>
-                <p>• Includes all required permits and inspections</p>
-            </div>
-
-            <h3>4. Itemized Pricing</h3>
-            <p>Break down pricing into logical categories. You don't have to show your internal costs, but customers appreciate transparency.</p>
-
-            <div class="quote-example good">
-                <div class="quote-example-header">✓ Itemized Format</div>
-                <p><strong>LABOR</strong></p>
-                <p>Demolition and disposal ............ $650</p>
-                <p>Plumbing rough-in .................. $1,800</p>
-                <p>Fixture installation ............... $950</p>
-                <p>&nbsp;</p>
-                <p><strong>MATERIALS</strong></p>
-                <p>Plumbing supplies (pipes, fittings, valves) ... $485</p>
-                <p>Kohler Cimarron toilet ............. $350</p>
-                <p>Miscellaneous (caulk, connectors, etc.) ... $75</p>
-                <p>&nbsp;</p>
-                <p><strong>PERMITS & FEES</strong></p>
-                <p>Plumbing permit .................... $175</p>
-                <p>&nbsp;</p>
-                <p><strong>TOTAL</strong> ........................ <strong>$4,485</strong></p>
-            </div>
-
-            <h3>5. Exclusions</h3>
-            <p>Explicitly state what's NOT included:</p>
-            <ul>
-                <li>Electrical work</li>
-                <li>Tile or flooring</li>
-                <li>Drywall repair</li>
-                <li>Painting</li>
-                <li>Unforeseen conditions (rot, mold, code upgrades)</li>
-            </ul>
-
-            <h3>6. Timeline</h3>
-            <p>Give a realistic duration and any scheduling constraints:</p>
-            <ul>
-                <li>"Estimated duration: 3-4 working days"</li>
-                <li>"Work can begin within 2 weeks of deposit"</li>
-                <li>"Permit approval may add 1-2 weeks"</li>
-            </ul>
-
-            <h3>7. Payment Terms</h3>
-            <p>Be clear about when you expect payment:</p>
-
-            <table class="pricing-table">
-                <thead>
-                    <tr>
-                        <th>Milestone</th>
-                        <th>Amount</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Deposit (to schedule)</td>
-                        <td>$1,500 (33%)</td>
-                    </tr>
-                    <tr>
-                        <td>Upon rough-in completion</td>
-                        <td>$1,500 (33%)</td>
-                    </tr>
-                    <tr>
-                        <td>Upon final completion</td>
-                        <td>$1,485 (34%)</td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <h3>8. Terms and Warranty</h3>
-            <ul>
-                <li>Quote validity (30 days is standard)</li>
-                <li>Warranty on workmanship (1 year typical)</li>
-                <li>Change order policy</li>
-                <li>Dispute resolution process</li>
-            </ul>
-
-            <div class="cta-section">
-                <h3>Describe the Job. Get a Professional Quote.</h3>
-                <p>Quoted turns your walkthrough into a polished PDF estimate in 60 seconds. It learns your pricing, so estimates get faster over time.</p>
-                <a href="/demo?utm_source=blog&utm_medium=cta&utm_campaign=contractor_guide" class="btn-demo">Try the Demo →</a>
-            </div>
-
-            <h2>Handling Change Orders</h2>
-
-            <p>Change orders are inevitable. The question is whether they're profitable opportunities or profit-eating headaches.</p>
-
-            <h3>Prevention: Set Expectations Upfront</h3>
-            <p>Include this language in your estimate:</p>
-
-            <blockquote style="border-left: 3px solid #fbbf24; padding-left: 20px; margin: 24px 0; color: #fcd34d; font-style: italic;">
-                "This estimate is based on visible conditions. If concealed conditions require additional work (such as structural damage, code violations, or hazardous materials), a change order will be presented for approval before proceeding."
-            </blockquote>
-
-            <h3>Process: Document Everything</h3>
-            <ol>
-                <li>Stop work and document the issue (photos, description)</li>
-                <li>Prepare a written change order with additional cost</li>
-                <li>Get customer signature before proceeding</li>
-                <li>Keep copies of all signed change orders</li>
-            </ol>
-
-            <h3>Pricing: Don't Discount Change Orders</h3>
-            <p>Change orders often involve emergency pricing (you're stopped mid-job), research, re-sequencing, and additional trips. Price them fairly — at minimum, your standard rates. Many contractors add a premium for change orders.</p>
-
-            <h2>Competing on Value, Not Price</h2>
-
-            <p>The cheapest estimate doesn't always win. Here's what customers actually care about:</p>
-
-            <h3>1. Professionalism</h3>
-            <p>A clean, detailed estimate signals that you run a legitimate operation. A scribbled price on a notepad doesn't.</p>
-
-            <h3>2. Communication</h3>
-            <p>Customers want to know you'll keep them informed. Your estimate is the first sample of your communication style.</p>
-
-            <h3>3. Confidence</h3>
-            <p>When you explain what you're doing and why, customers feel confident you know your craft.</p>
-
-            <h3>4. Protection</h3>
-            <p>Customers want to know they're protected — by your license, insurance, and warranty.</p>
-
-            <h3>5. Timeline</h3>
-            <p>Customers often care more about when you can start and finish than about the exact price.</p>
-
-            <div class="callout success">
-                <div class="callout-title">✓ The Professional Difference</div>
-                <p>Two contractors bid a kitchen remodel. One sends a one-line text: "Kitchen - $18,500." The other sends a detailed PDF with scope, timeline, payment schedule, warranty, and their license and insurance info. Who do you think wins?</p>
-            </div>
-
-            <h2>Common Estimating Mistakes</h2>
-
-            <ol>
-                <li><strong>Not accounting for travel time</strong> — especially for small jobs, drive time can eat your profit</li>
-                <li><strong>Forgetting permit costs</strong> — permits can add 3-5% to a job</li>
-                <li><strong>Underestimating cleanup</strong> — disposal fees, dump runs, final clean all take time</li>
-                <li><strong>Ignoring the calendar</strong> — material prices change, lead times vary</li>
-                <li><strong>Optimistic labor hours</strong> — jobs take longer than you think</li>
-                <li><strong>No contingency</strong> — always have a buffer for surprises</li>
-                <li><strong>Verbal estimates</strong> — if it's not in writing, it doesn't exist</li>
-            </ol>
-
-            <h2>Tracking Your Performance</h2>
-
-            <p>The best estimators review every job. After completion:</p>
-
-            <ul>
-                <li>Compare actual materials to estimated materials</li>
-                <li>Compare actual hours to estimated hours</li>
-                <li>Note any surprises or lessons learned</li>
-                <li>Update your production rates</li>
-            </ul>
-
-            <p>Over time, you'll build a database of real performance data that makes future estimates more accurate.</p>
-
-            <h2>Key Takeaways</h2>
-
-            <ol>
-                <li><strong>Use a consistent formula</strong> — Materials + Labor + Overhead + Profit</li>
-                <li><strong>Do thorough site visits</strong> — most surprises can be anticipated</li>
-                <li><strong>Be specific about scope</strong> — define inclusions AND exclusions</li>
-                <li><strong>Present professionally</strong> — a proper document builds trust</li>
-                <li><strong>Build in protection</strong> — contingency, change order policy, terms</li>
-                <li><strong>Track your performance</strong> — actual vs. estimated on every job</li>
-            </ol>
-
-            <p>Accurate estimating is a skill that improves with practice. The investment in better estimates pays off in more jobs won, better profit margins, and fewer ugly surprises.</p>
-
-            <hr style="border: none; border-top: 1px solid #333; margin: 48px 0;">
-
-            <p><em>Spending too much time on estimates? <a href="/demo?utm_source=blog&utm_medium=footer&utm_campaign=contractor_guide">Try Quoted</a> — describe the job, get a professional PDF in 60 seconds.</em></p>
+        <div class="example-box">
+            <p class="example-label">The Basic Formula</p>
+            <p><strong>Direct Materials</strong></p>
+            <p>+ Direct Labor (hours × rate)</p>
+            <p>+ Overhead (typically 15-25% of direct costs)</p>
+            <p>+ Profit (typically 10-20%)</p>
+            <p>= Total Quote Price</p>
         </div>
+
+        <p>Let's break down each component.</p>
+
+        <h3>1. Direct Materials</h3>
+
+        <p>This is everything you'll buy specifically for this job:</p>
+
+        <ul>
+            <li>Raw materials (pipe, wire, lumber, drywall, etc.)</li>
+            <li>Fixtures and equipment (faucets, outlets, doors, etc.)</li>
+            <li>Consumables (fasteners, tape, caulk, glue, etc.)</li>
+            <li>Specialty items (permit-required materials, custom orders)</li>
+        </ul>
+
+        <p><strong>Pro tips for material estimation:</strong></p>
+
+        <ul>
+            <li><strong>Add 10-15% waste factor</strong> — cuts, mistakes, and damage happen</li>
+            <li><strong>Price at retail, buy at wholesale</strong> — builds in a buffer for price changes</li>
+            <li><strong>Get current prices</strong> — material costs change monthly</li>
+            <li><strong>Don't forget delivery</strong> — especially for bulk materials</li>
+        </ul>
+
+        <div class="callout tip">
+            <p class="callout-title">Material Markup</p>
+            <p>Many contractors mark up materials 15-30% above their cost. This covers your time sourcing, ordering, receiving, and managing materials. It's not gouging — it's compensation for a real service.</p>
+        </div>
+
+        <h3>2. Direct Labor</h3>
+
+        <p>This is where most estimating errors happen. You need to honestly assess:</p>
+
+        <ul>
+            <li><strong>Your hourly rate</strong> — what you need to pay yourself and crew</li>
+            <li><strong>Actual hours</strong> — not best-case, but realistic hours</li>
+            <li><strong>Productivity factors</strong> — working conditions, complexity, access</li>
+        </ul>
+
+        <p>To calculate labor hours, use production rates. For example:</p>
+
+        <table class="content-table">
+            <thead>
+                <tr>
+                    <th>Task</th>
+                    <th>Unit</th>
+                    <th>Hours (Typical Range)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Drywall installation</td>
+                    <td>per sheet</td>
+                    <td>0.75 - 1.25 hrs</td>
+                </tr>
+                <tr>
+                    <td>Interior painting</td>
+                    <td>per 100 sq ft</td>
+                    <td>1.5 - 2.5 hrs</td>
+                </tr>
+                <tr>
+                    <td>Electrical outlet install</td>
+                    <td>per outlet</td>
+                    <td>0.5 - 1.0 hr</td>
+                </tr>
+                <tr>
+                    <td>PEX re-pipe (per fixture)</td>
+                    <td>per fixture</td>
+                    <td>1.5 - 3.0 hrs</td>
+                </tr>
+                <tr>
+                    <td>Tile floor installation</td>
+                    <td>per sq ft</td>
+                    <td>0.1 - 0.2 hrs</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p>Build your own production rates based on YOUR crew's actual performance. Track time on every job.</p>
+
+        <div class="callout warning">
+            <p class="callout-title">Common Labor Mistakes</p>
+            <p>Don't forget: drive time to the job, supply runs, setup and cleanup, customer walkthroughs, callbacks, and punch list. These are real hours that eat profit if not included.</p>
+        </div>
+
+        <h3>3. Overhead</h3>
+
+        <p>Overhead is everything that keeps your business running but isn't tied to a specific job:</p>
+
+        <ul>
+            <li>Vehicle costs (payment, insurance, fuel, maintenance)</li>
+            <li>Tools and equipment (depreciation, replacement, repair)</li>
+            <li>Insurance (general liability, workers comp, bonding)</li>
+            <li>Licenses and permits (contractor license, trade licenses)</li>
+            <li>Office costs (phone, internet, software, bookkeeping)</li>
+            <li>Marketing and advertising</li>
+            <li>Training and certifications</li>
+        </ul>
+
+        <p>Calculate your total annual overhead, then divide by your annual labor hours to get an hourly overhead rate. Or use a percentage of direct costs (15-25% is typical).</p>
+
+        <div class="example-box">
+            <p class="example-label">Overhead Calculation Example</p>
+            <p>Annual overhead costs: $48,000</p>
+            <p>÷ Annual billable hours: 1,600 hrs</p>
+            <p>= <strong>$30/hour overhead</strong></p>
+            <p>&nbsp;</p>
+            <p>If your labor rate is $65/hr, your fully-loaded rate is $95/hr</p>
+        </div>
+
+        <h3>4. Profit</h3>
+
+        <p>Profit is not a dirty word. It's:</p>
+
+        <ul>
+            <li>Compensation for your expertise and reputation</li>
+            <li>A buffer for unexpected problems</li>
+            <li>Money to grow and improve your business</li>
+            <li>Savings for slow seasons</li>
+        </ul>
+
+        <p>Typical profit margins in contracting range from 10-20%, depending on the trade, market, and job complexity. Riskier jobs deserve higher margins.</p>
+
+        <h2>The Site Visit: What to Look For</h2>
+
+        <p>A thorough site visit is your best protection against surprises. Here's a checklist:</p>
+
+        <h3>Access and Logistics</h3>
+        <ul>
+            <li>Can you get materials to the work area easily?</li>
+            <li>Where will you stage materials and equipment?</li>
+            <li>Parking for your truck and crew?</li>
+            <li>What hours can you work? (HOA restrictions, noise ordinances)</li>
+            <li>Pets or occupants during work?</li>
+        </ul>
+
+        <h3>Existing Conditions</h3>
+        <ul>
+            <li>Age of the house and when systems were last updated</li>
+            <li>Signs of previous work (was it done properly?)</li>
+            <li>Hidden damage (water stains, soft spots, pest damage)</li>
+            <li>Code compliance issues you'll inherit</li>
+        </ul>
+
+        <h3>Scope Boundaries</h3>
+        <ul>
+            <li>Exactly where does the work start and end?</li>
+            <li>What's the customer keeping vs. replacing?</li>
+            <li>Finish levels and material selections</li>
+            <li>Who's responsible for what (demo, disposal, painting, etc.)?</li>
+        </ul>
+
+        <div class="callout success">
+            <p class="callout-title">Take Photos</p>
+            <p>Photograph everything during your site visit. Existing conditions, access routes, areas of concern. These protect you if there's a dispute later about what was there when you started.</p>
+        </div>
+
+        <h2>Structuring Your Estimate</h2>
+
+        <p>Your estimate document should include:</p>
+
+        <h3>1. Company Information</h3>
+        <ul>
+            <li>Business name and logo</li>
+            <li>License number(s)</li>
+            <li>Insurance information</li>
+            <li>Contact details</li>
+        </ul>
+
+        <h3>2. Customer and Project Information</h3>
+        <ul>
+            <li>Customer name and address</li>
+            <li>Project address (if different)</li>
+            <li>Date of estimate and validity period</li>
+            <li>Reference/quote number</li>
+        </ul>
+
+        <h3>3. Scope of Work</h3>
+        <p>Describe the work in plain language that the customer will understand. Be specific about what's included.</p>
+
+        <div class="example-box good">
+            <p class="example-label">Good Scope Example</p>
+            <p><strong>Master Bathroom Plumbing Renovation</strong></p>
+            <p>&nbsp;</p>
+            <p>- Remove existing bathtub, toilet, and pedestal sink</p>
+            <p>- Install new 60" alcove bathtub (customer-supplied)</p>
+            <p>- Install new toilet (Kohler Cimarron, included)</p>
+            <p>- Install new vanity with undermount sink (customer-supplied)</p>
+            <p>- Replace all supply lines with PEX</p>
+            <p>- Replace drain lines as needed for new fixtures</p>
+            <p>- Connect to existing vent stack</p>
+            <p>- Pressure test all lines</p>
+            <p>- Includes all required permits and inspections</p>
+        </div>
+
+        <h3>4. Itemized Pricing</h3>
+        <p>Break down pricing into logical categories. You don't have to show your internal costs, but customers appreciate transparency.</p>
+
+        <div class="example-box good">
+            <p class="example-label">Itemized Format</p>
+            <p><strong>LABOR</strong></p>
+            <p>Demolition and disposal ............ $650</p>
+            <p>Plumbing rough-in .................. $1,800</p>
+            <p>Fixture installation ............... $950</p>
+            <p>&nbsp;</p>
+            <p><strong>MATERIALS</strong></p>
+            <p>Plumbing supplies (pipes, fittings, valves) ... $485</p>
+            <p>Kohler Cimarron toilet ............. $350</p>
+            <p>Miscellaneous (caulk, connectors, etc.) ... $75</p>
+            <p>&nbsp;</p>
+            <p><strong>PERMITS & FEES</strong></p>
+            <p>Plumbing permit .................... $175</p>
+            <p>&nbsp;</p>
+            <p><strong>TOTAL</strong> ........................ <strong>$4,485</strong></p>
+        </div>
+
+        <h3>5. Exclusions</h3>
+        <p>Explicitly state what's NOT included:</p>
+        <ul>
+            <li>Electrical work</li>
+            <li>Tile or flooring</li>
+            <li>Drywall repair</li>
+            <li>Painting</li>
+            <li>Unforeseen conditions (rot, mold, code upgrades)</li>
+        </ul>
+
+        <h3>6. Timeline</h3>
+        <p>Give a realistic duration and any scheduling constraints:</p>
+        <ul>
+            <li>"Estimated duration: 3-4 working days"</li>
+            <li>"Work can begin within 2 weeks of deposit"</li>
+            <li>"Permit approval may add 1-2 weeks"</li>
+        </ul>
+
+        <h3>7. Payment Terms</h3>
+        <p>Be clear about when you expect payment:</p>
+
+        <table class="content-table">
+            <thead>
+                <tr>
+                    <th>Milestone</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Deposit (to schedule)</td>
+                    <td>$1,500 (33%)</td>
+                </tr>
+                <tr>
+                    <td>Upon rough-in completion</td>
+                    <td>$1,500 (33%)</td>
+                </tr>
+                <tr>
+                    <td>Upon final completion</td>
+                    <td>$1,485 (34%)</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>8. Terms and Warranty</h3>
+        <ul>
+            <li>Quote validity (30 days is standard)</li>
+            <li>Warranty on workmanship (1 year typical)</li>
+            <li>Change order policy</li>
+            <li>Dispute resolution process</li>
+        </ul>
+
+        <div class="cta-box">
+            <h3>Describe the Job. Get a Professional Quote.</h3>
+            <p>Quoted turns your walkthrough into a polished PDF estimate in 60 seconds. It even learns your pricing over time.</p>
+            <a href="/demo" class="cta-button">Try the Demo</a>
+        </div>
+
+        <h2>Handling Change Orders</h2>
+
+        <p>Change orders are inevitable. The question is whether they're profitable opportunities or profit-eating headaches.</p>
+
+        <h3>Prevention: Set Expectations Upfront</h3>
+        <p>Include this language in your estimate:</p>
+
+        <div class="callout tip">
+            <p class="callout-title">Change Order Language</p>
+            <p>"This estimate is based on visible conditions. If concealed conditions require additional work (such as structural damage, code violations, or hazardous materials), a change order will be presented for approval before proceeding."</p>
+        </div>
+
+        <h3>Process: Document Everything</h3>
+        <ol>
+            <li>Stop work and document the issue (photos, description)</li>
+            <li>Prepare a written change order with additional cost</li>
+            <li>Get customer signature before proceeding</li>
+            <li>Keep copies of all signed change orders</li>
+        </ol>
+
+        <h3>Pricing: Don't Discount Change Orders</h3>
+        <p>Change orders often involve emergency pricing (you're stopped mid-job), research, re-sequencing, and additional trips. Price them fairly — at minimum, your standard rates. Many contractors add a premium for change orders.</p>
+
+        <h2>Competing on Value, Not Price</h2>
+
+        <p>The cheapest estimate doesn't always win. Here's what customers actually care about:</p>
+
+        <h3>1. Professionalism</h3>
+        <p>A clean, detailed estimate signals that you run a legitimate operation. A scribbled price on a notepad doesn't.</p>
+
+        <h3>2. Communication</h3>
+        <p>Customers want to know you'll keep them informed. Your estimate is the first sample of your communication style.</p>
+
+        <h3>3. Confidence</h3>
+        <p>When you explain what you're doing and why, customers feel confident you know your craft.</p>
+
+        <h3>4. Protection</h3>
+        <p>Customers want to know they're protected — by your license, insurance, and warranty.</p>
+
+        <h3>5. Timeline</h3>
+        <p>Customers often care more about when you can start and finish than about the exact price.</p>
+
+        <div class="callout success">
+            <p class="callout-title">The Professional Difference</p>
+            <p>Two contractors bid a kitchen remodel. One sends a one-line text: "Kitchen - $18,500." The other sends a detailed PDF with scope, timeline, payment schedule, warranty, and their license and insurance info. Who do you think wins?</p>
+        </div>
+
+        <h2>Common Estimating Mistakes</h2>
+
+        <ol>
+            <li><strong>Not accounting for travel time</strong> — especially for small jobs, drive time can eat your profit</li>
+            <li><strong>Forgetting permit costs</strong> — permits can add 3-5% to a job</li>
+            <li><strong>Underestimating cleanup</strong> — disposal fees, dump runs, final clean all take time</li>
+            <li><strong>Ignoring the calendar</strong> — material prices change, lead times vary</li>
+            <li><strong>Optimistic labor hours</strong> — jobs take longer than you think</li>
+            <li><strong>No contingency</strong> — always have a buffer for surprises</li>
+            <li><strong>Verbal estimates</strong> — if it's not in writing, it doesn't exist</li>
+        </ol>
+
+        <h2>Tracking Your Performance</h2>
+
+        <p>The best estimators review every job. After completion:</p>
+
+        <ul>
+            <li>Compare actual materials to estimated materials</li>
+            <li>Compare actual hours to estimated hours</li>
+            <li>Note any surprises or lessons learned</li>
+            <li>Update your production rates</li>
+        </ul>
+
+        <p>Over time, you'll build a database of real performance data that makes future estimates more accurate.</p>
+
+        <h2>Key Takeaways</h2>
+
+        <ol>
+            <li><strong>Use a consistent formula</strong> — Materials + Labor + Overhead + Profit</li>
+            <li><strong>Do thorough site visits</strong> — most surprises can be anticipated</li>
+            <li><strong>Be specific about scope</strong> — define inclusions AND exclusions</li>
+            <li><strong>Present professionally</strong> — a proper document builds trust</li>
+            <li><strong>Build in protection</strong> — contingency, change order policy, terms</li>
+            <li><strong>Track your performance</strong> — actual vs. estimated on every job</li>
+        </ol>
+
+        <p>Accurate estimating is a skill that improves with practice. The investment in better estimates pays off in more jobs won, better profit margins, and fewer ugly surprises.</p>
+
+        <hr style="border: none; border-top: 1px solid var(--border); margin: 48px 0;">
+
+        <p><em>Spending too much time on estimates? <a href="/demo">Try Quoted</a> — describe the job, get a professional PDF in 60 seconds.</em></p>
     </article>
 
-    <footer class="footer">
+    <footer>
+        <a href="/" class="footer-logo">quoted.<span>it</span></a>
         <div class="footer-links">
-            <a href="/">Home</a>
+            <a href="/use-cases">Use Cases</a>
             <a href="/blog/">Blog</a>
-            <a href="/demo">Try Demo</a>
-            <a href="/help.html">Help</a>
-            <a href="/terms.html">Terms</a>
-            <a href="/privacy.html">Privacy</a>
+            <a href="/help">Help</a>
+            <a href="/privacy">Privacy</a>
+            <a href="/terms">Terms</a>
         </div>
-        <p class="footer-copy">&copy; 2025 Quoted, Inc. All rights reserved.</p>
+        <p class="footer-copy">&copy; 2025 Quoted, Inc.</p>
     </footer>
 </body>
 </html>
