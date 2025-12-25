@@ -233,8 +233,14 @@ async def stripe_webhook(
 
     try:
         if event_type == "checkout.session.completed":
-            # Payment successful, subscription created
-            await BillingService.handle_checkout_completed(db, event_data)
+            # Check if this is a deposit payment or subscription checkout
+            metadata = event_data.get("metadata", {})
+            if metadata.get("payment_type") == "quote_deposit":
+                # INNOV-2: Handle deposit payment for quote acceptance
+                await BillingService.handle_deposit_payment_completed(db, event_data)
+            else:
+                # Payment successful, subscription created
+                await BillingService.handle_checkout_completed(db, event_data)
 
         elif event_type == "customer.subscription.updated":
             # Subscription renewed or plan changed

@@ -225,6 +225,94 @@ class QuoteFeedbackResponse(BaseModel):
     created_at: Optional[str] = None
 
 
+# ============================================================================
+# INNOV-7: Confidence Explainer Models
+# ============================================================================
+
+class ConfidenceDimension(BaseModel):
+    """Individual dimension of pricing confidence."""
+    dimension: str  # data, accuracy, recency, coverage
+    score: float  # 0.0-1.0
+    weight: float  # How much this dimension contributes
+    description: str  # Human-readable explanation
+
+
+class PricingConfidenceResponse(BaseModel):
+    """Multi-dimensional pricing confidence breakdown."""
+    quote_id: str
+    job_type: str
+    overall_confidence: float  # 0.0-1.0
+    display_confidence: str  # "High", "Medium", "Low", "Learning"
+    dimensions: List[ConfidenceDimension]
+    # Statistics
+    quote_count: int
+    acceptance_count: int
+    correction_count: int
+    acceptance_rate: float
+    avg_correction_magnitude: float
+    days_since_last_quote: int
+    # Warnings and context
+    warnings: List[str] = []
+    last_updated: Optional[str] = None
+
+
+class PricingComponentResponse(BaseModel):
+    """A component of the pricing breakdown."""
+    type: str  # base_rate, modifier, adjustment, voice_signal
+    label: str  # Human-readable label
+    amount: float  # Dollar amount
+    source: str  # learned, default, dna_transfer, voice_detected
+    confidence: float  # 0.0-1.0
+    learning_ref: Optional[str] = None
+    pattern_id: Optional[str] = None
+    validation_count: Optional[int] = None
+
+
+class AppliedPatternResponse(BaseModel):
+    """A pricing pattern that was applied."""
+    pattern: str
+    source_category: str
+    times_validated: int
+    confidence: float
+
+
+class UncertaintyNoteResponse(BaseModel):
+    """An area of uncertainty in pricing."""
+    area: str
+    reason: str
+    suggestion: Optional[str] = None
+
+
+class DNATransferResponse(BaseModel):
+    """Information about a DNA pattern transfer."""
+    pattern: str
+    from_category: str
+    inherited_confidence: float
+    reason: str
+
+
+class LearningContextResponse(BaseModel):
+    """Context about learning state."""
+    category: str
+    quote_count: int
+    correction_count: int
+    acceptance_rate: float
+    avg_adjustment: float
+
+
+class PricingExplanationResponse(BaseModel):
+    """Complete explanation of how a quote was priced."""
+    quote_id: str
+    summary: str
+    overall_confidence: float
+    confidence_label: str  # "High", "Medium", "Low"
+    components: List[PricingComponentResponse] = []
+    patterns_applied: List[AppliedPatternResponse] = []
+    uncertainties: List[UncertaintyNoteResponse] = []
+    dna_transfers: List[DNATransferResponse] = []
+    learning_context: Optional[LearningContextResponse] = None
+
+
 def quote_to_response(quote, has_invoice: bool = False) -> QuoteResponse:
     """Convert a Quote model to response."""
     return QuoteResponse(
@@ -1150,6 +1238,331 @@ async def get_quote(quote_id: str, current_user: dict = Depends(get_current_user
         raise HTTPException(status_code=403, detail="Not authorized")
 
     return quote_to_response(quote)
+
+
+# ============================================================================
+# INNOV-7: Confidence Explainer Endpoints
+# ============================================================================
+
+CONFIDENCE_DIMENSION_DESCRIPTIONS = {
+    "data": "Based on volume of quotes in this category",
+    "accuracy": "Based on acceptance rate and correction magnitude",
+    "recency": "Based on how recent the data is",
+    "coverage": "Based on job complexity variety",
+}
+
+CONFIDENCE_DIMENSION_WEIGHTS = {
+    "data": 0.20,
+    "accuracy": 0.40,
+    "recency": 0.25,
+    "coverage": 0.15,
+}
+
+
+@router.get("/{quote_id}/confidence", response_model=PricingConfidenceResponse)
+async def get_quote_confidence(
+    quote_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    INNOV-7: Get multi-dimensional pricing confidence for a quote.
+
+    Returns detailed confidence breakdown across 4 dimensions:
+    - Data (20%): Volume of quotes in this category
+    - Accuracy (40%): Acceptance rate and correction patterns
+    - Recency (25%): Freshness of learning data
+    - Coverage (15%): Job complexity variety
+    """
+    from ..services.pricing_confidence import PricingConfidenceService
+
+    db = get_db_service()
+    quote = await db.get_quote(quote_id)
+
+    if not quote:
+        raise HTTPException(status_code=404, detail="Quote not found")
+
+    # Verify ownership
+    contractor = await db.get_contractor_by_user_id(current_user["id"])
+    if not contractor or quote.contractor_id != contractor.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    # Get pricing model for confidence calculation
+    pricing_model = await db.get_pricing_model(contractor.id)
+    if not pricing_model:
+        # Return minimal confidence for new users
+        return PricingConfidenceResponse(
+            quote_id=str(quote.id),
+            job_type=quote.job_type or "unknown",
+            overall_confidence=0.3,
+            display_confidence="Learning",
+            dimensions=[
+                ConfidenceDimension(
+                    dimension=dim,
+                    score=0.3,
+                    weight=CONFIDENCE_DIMENSION_WEIGHTS[dim],
+                    description=CONFIDENCE_DIMENSION_DESCRIPTIONS[dim]
+                )
+                for dim in ["data", "accuracy", "recency", "coverage"]
+            ],
+            quote_count=0,
+            acceptance_count=0,
+            correction_count=0,
+            acceptance_rate=0.0,
+            avg_correction_magnitude=0.0,
+            days_since_last_quote=0,
+            warnings=["New category - learning in progress"],
+            last_updated=datetime.utcnow().isoformat(),
+        )
+
+    # Get all quotes for this category to calculate confidence
+    quotes = await db.get_quotes_by_contractor(contractor.id)
+    category_quotes = [q for q in quotes if q.job_type == quote.job_type]
+
+    # Calculate statistics
+    quote_count = len(category_quotes)
+    acceptance_count = sum(1 for q in category_quotes if q.status == "won")
+    correction_count = sum(1 for q in category_quotes if q.was_edited)
+
+    # Calculate correction magnitudes
+    correction_magnitudes = []
+    for q in category_quotes:
+        if q.was_edited and hasattr(q, 'correction_percent'):
+            correction_magnitudes.append(abs(q.correction_percent or 0))
+
+    # Days since last quote
+    days_since_last = 0
+    if category_quotes:
+        most_recent = max(q.created_at for q in category_quotes if q.created_at)
+        days_since_last = (datetime.utcnow() - most_recent).days
+
+    # Calculate complexity distribution from quote amounts
+    complexity_dist = {"simple": 0, "medium": 0, "complex": 0}
+    for q in category_quotes:
+        if q.total:
+            if q.total < 500:
+                complexity_dist["simple"] += 1
+            elif q.total < 2000:
+                complexity_dist["medium"] += 1
+            else:
+                complexity_dist["complex"] += 1
+
+    # Use PricingConfidenceService for proper calculation
+    service = PricingConfidenceService()
+    confidence = service.calculate(
+        quote_count=quote_count,
+        acceptance_count=acceptance_count,
+        correction_count=correction_count,
+        correction_magnitudes=correction_magnitudes,
+        days_since_last_quote=days_since_last,
+        complexity_distribution=complexity_dist,
+    )
+
+    # Build dimension responses
+    dimensions = [
+        ConfidenceDimension(
+            dimension="data",
+            score=confidence.data_confidence,
+            weight=CONFIDENCE_DIMENSION_WEIGHTS["data"],
+            description=CONFIDENCE_DIMENSION_DESCRIPTIONS["data"],
+        ),
+        ConfidenceDimension(
+            dimension="accuracy",
+            score=confidence.accuracy_confidence,
+            weight=CONFIDENCE_DIMENSION_WEIGHTS["accuracy"],
+            description=CONFIDENCE_DIMENSION_DESCRIPTIONS["accuracy"],
+        ),
+        ConfidenceDimension(
+            dimension="recency",
+            score=confidence.recency_confidence,
+            weight=CONFIDENCE_DIMENSION_WEIGHTS["recency"],
+            description=CONFIDENCE_DIMENSION_DESCRIPTIONS["recency"],
+        ),
+        ConfidenceDimension(
+            dimension="coverage",
+            score=confidence.coverage_confidence,
+            weight=CONFIDENCE_DIMENSION_WEIGHTS["coverage"],
+            description=CONFIDENCE_DIMENSION_DESCRIPTIONS["coverage"],
+        ),
+    ]
+
+    return PricingConfidenceResponse(
+        quote_id=str(quote.id),
+        job_type=quote.job_type or "unknown",
+        overall_confidence=confidence.overall_confidence,
+        display_confidence=confidence.display_confidence,
+        dimensions=dimensions,
+        quote_count=confidence.quote_count,
+        acceptance_count=confidence.acceptance_count,
+        correction_count=confidence.correction_count,
+        acceptance_rate=confidence.acceptance_rate,
+        avg_correction_magnitude=confidence.avg_correction_magnitude,
+        days_since_last_quote=confidence.days_since_last_quote,
+        warnings=confidence.warnings,
+        last_updated=confidence.last_updated,
+    )
+
+
+@router.get("/{quote_id}/explanation", response_model=PricingExplanationResponse)
+async def get_quote_explanation(
+    quote_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    INNOV-7: Get detailed pricing explanation for a quote.
+
+    Shows exactly WHY the quote was priced the way it was:
+    - Component breakdown (base rate, modifiers, voice signals)
+    - Patterns applied (which learnings were used)
+    - Uncertainties (what we don't know)
+    - DNA transfers (patterns borrowed from related categories)
+    """
+    from ..services.pricing_explanation import PricingExplanationService
+    from ..services.pricing_confidence import PricingConfidenceService
+
+    db = get_db_service()
+    quote = await db.get_quote(quote_id)
+
+    if not quote:
+        raise HTTPException(status_code=404, detail="Quote not found")
+
+    # Verify ownership
+    contractor = await db.get_contractor_by_user_id(current_user["id"])
+    if not contractor or quote.contractor_id != contractor.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    # Get pricing model
+    pricing_model = await db.get_pricing_model(contractor.id)
+
+    # Get quotes for learning context
+    quotes = await db.get_quotes_by_contractor(contractor.id)
+    category_quotes = [q for q in quotes if q.job_type == quote.job_type]
+
+    # Calculate learning context
+    quote_count = len(category_quotes)
+    correction_count = sum(1 for q in category_quotes if q.was_edited)
+    acceptance_count = sum(1 for q in category_quotes if q.status == "won")
+    acceptance_rate = acceptance_count / quote_count if quote_count > 0 else 0.0
+
+    # Calculate average adjustment
+    adjustments = []
+    for q in category_quotes:
+        if q.was_edited and hasattr(q, 'correction_percent'):
+            adjustments.append(q.correction_percent or 0)
+    avg_adjustment = sum(adjustments) / len(adjustments) if adjustments else 0.0
+
+    # Get pricing knowledge for this category
+    pricing_knowledge = pricing_model.pricing_knowledge if pricing_model else {}
+    category_knowledge = pricing_knowledge.get("categories", {}).get(quote.job_type, {})
+    learned_adjustments = category_knowledge.get("learned_adjustments", [])
+
+    # Build voice signals from transcription
+    voice_signals = {}
+    if quote.transcription:
+        transcription_lower = quote.transcription.lower()
+        if "rush" in transcription_lower or "asap" in transcription_lower:
+            voice_signals["rush"] = True
+        if "weekend" in transcription_lower:
+            voice_signals["weekend"] = True
+        if "difficult" in transcription_lower or "complex" in transcription_lower:
+            voice_signals["complexity"] = "high"
+
+    # Get contractor DNA patterns
+    contractor_dna = pricing_model.contractor_dna if pricing_model else {}
+
+    # Calculate confidence for context
+    service = PricingConfidenceService()
+    confidence = service.calculate(
+        quote_count=quote_count,
+        acceptance_count=acceptance_count,
+        correction_count=correction_count,
+        correction_magnitudes=[],
+        days_since_last_quote=0,
+        complexity_distribution={},
+    )
+
+    # Generate explanation
+    explanation_service = PricingExplanationService()
+    explanation = explanation_service.generate_explanation(
+        quote={
+            "total": quote.total or 0,
+            "subtotal": quote.subtotal or 0,
+            "line_items": quote.line_items or [],
+            "job_type": quote.job_type,
+            "job_description": quote.job_description,
+        },
+        learned_adjustments=learned_adjustments,
+        contractor_dna=contractor_dna,
+        voice_signals=voice_signals,
+        confidence=confidence,
+        pricing_model=pricing_model.__dict__ if pricing_model else {},
+        detected_category=quote.job_type,
+    )
+
+    # Convert to response format
+    components = [
+        PricingComponentResponse(
+            type=c.type,
+            label=c.label,
+            amount=c.amount,
+            source=c.source,
+            confidence=c.confidence,
+            learning_ref=c.learning_ref,
+            pattern_id=c.pattern_id,
+            validation_count=c.validation_count,
+        )
+        for c in explanation.components
+    ]
+
+    patterns_applied = [
+        AppliedPatternResponse(
+            pattern=p.pattern,
+            source_category=p.source_category,
+            times_validated=p.times_validated,
+            confidence=p.confidence,
+        )
+        for p in explanation.patterns_applied
+    ]
+
+    uncertainties = [
+        UncertaintyNoteResponse(
+            area=u.area,
+            reason=u.reason,
+            suggestion=u.suggestion,
+        )
+        for u in explanation.uncertainties
+    ]
+
+    dna_transfers = [
+        DNATransferResponse(
+            pattern=d.pattern,
+            from_category=d.from_category,
+            inherited_confidence=d.inherited_confidence,
+            reason=d.reason,
+        )
+        for d in explanation.dna_transfers
+    ]
+
+    learning_context = None
+    if explanation.learning_context:
+        learning_context = LearningContextResponse(
+            category=explanation.learning_context.category,
+            quote_count=explanation.learning_context.quote_count,
+            correction_count=explanation.learning_context.correction_count,
+            acceptance_rate=explanation.learning_context.acceptance_rate,
+            avg_adjustment=explanation.learning_context.avg_adjustment,
+        )
+
+    return PricingExplanationResponse(
+        quote_id=str(quote.id),
+        summary=explanation.summary,
+        overall_confidence=explanation.overall_confidence,
+        confidence_label=explanation.confidence_label,
+        components=components,
+        patterns_applied=patterns_applied,
+        uncertainties=uncertainties,
+        dna_transfers=dna_transfers,
+        learning_context=learning_context,
+    )
 
 
 # ============================================================================
@@ -2507,3 +2920,174 @@ async def get_outcome_reasons():
             {"key": k, "label": v} for k, v in WIN_FACTORS.items()
         ],
     }
+
+
+# ============================================================================
+# INNOV-5: Win/Loss Dashboard
+# ============================================================================
+
+@router.get("/analytics/dashboard")
+async def get_win_loss_dashboard(
+    period: str = "this_month",
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get comprehensive win/loss dashboard data.
+
+    Returns:
+    - Overview stats (win rate, totals, averages)
+    - Trend comparison vs previous period
+    - Loss reason analysis
+    - Performance by job type
+    - Recent wins/losses
+    - Monthly trend for charting
+    """
+    from ..services.win_loss_analytics import WinLossAnalyticsService, TimePeriod
+
+    db = get_db_service()
+    contractor = await db.get_contractor_by_user_id(current_user["id"])
+    if not contractor:
+        raise HTTPException(status_code=400, detail="Contractor not found")
+
+    # Parse period
+    try:
+        time_period = TimePeriod(period)
+    except ValueError:
+        time_period = TimePeriod.THIS_MONTH
+
+    async with db.async_session_maker() as session:
+        dashboard = await WinLossAnalyticsService.get_full_dashboard(
+            db=session,
+            contractor_id=contractor.id,
+            period=time_period
+        )
+
+    return dashboard
+
+
+@router.get("/analytics/stats")
+async def get_win_loss_stats(
+    period: str = "this_month",
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get win/loss statistics for a specific period.
+
+    Lighter-weight endpoint for quick stats without full dashboard data.
+    """
+    from ..services.win_loss_analytics import WinLossAnalyticsService, TimePeriod
+    from dataclasses import asdict
+
+    db = get_db_service()
+    contractor = await db.get_contractor_by_user_id(current_user["id"])
+    if not contractor:
+        raise HTTPException(status_code=400, detail="Contractor not found")
+
+    try:
+        time_period = TimePeriod(period)
+    except ValueError:
+        time_period = TimePeriod.THIS_MONTH
+
+    async with db.async_session_maker() as session:
+        stats = await WinLossAnalyticsService.get_win_loss_stats(
+            db=session,
+            contractor_id=contractor.id,
+            period=time_period
+        )
+
+    return asdict(stats)
+
+
+@router.get("/analytics/loss-reasons")
+async def get_loss_reasons_analysis(
+    period: str = "this_year",
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get detailed loss reason analysis.
+
+    Analyzes patterns in lost quotes to help improve win rate.
+    """
+    from ..services.win_loss_analytics import WinLossAnalyticsService, TimePeriod
+    from dataclasses import asdict
+
+    db = get_db_service()
+    contractor = await db.get_contractor_by_user_id(current_user["id"])
+    if not contractor:
+        raise HTTPException(status_code=400, detail="Contractor not found")
+
+    try:
+        time_period = TimePeriod(period)
+    except ValueError:
+        time_period = TimePeriod.THIS_YEAR
+
+    async with db.async_session_maker() as session:
+        analysis = await WinLossAnalyticsService.get_loss_reason_analysis(
+            db=session,
+            contractor_id=contractor.id,
+            period=time_period
+        )
+
+    return {"loss_reasons": [asdict(lr) for lr in analysis]}
+
+
+@router.get("/analytics/trend")
+async def get_monthly_trend(
+    months: int = 6,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get monthly trend data for charting.
+
+    Returns win rate, quote count, and revenue by month.
+    """
+    from ..services.win_loss_analytics import WinLossAnalyticsService
+
+    db = get_db_service()
+    contractor = await db.get_contractor_by_user_id(current_user["id"])
+    if not contractor:
+        raise HTTPException(status_code=400, detail="Contractor not found")
+
+    # Cap at 12 months
+    months = min(max(1, months), 12)
+
+    async with db.async_session_maker() as session:
+        trend = await WinLossAnalyticsService.get_monthly_trend(
+            db=session,
+            contractor_id=contractor.id,
+            months=months
+        )
+
+    return {"monthly_trend": trend}
+
+
+@router.get("/analytics/by-job-type")
+async def get_performance_by_job_type(
+    period: str = "this_year",
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get win/loss performance breakdown by job type.
+
+    Helps identify which job types have best conversion rates.
+    """
+    from ..services.win_loss_analytics import WinLossAnalyticsService, TimePeriod
+
+    db = get_db_service()
+    contractor = await db.get_contractor_by_user_id(current_user["id"])
+    if not contractor:
+        raise HTTPException(status_code=400, detail="Contractor not found")
+
+    try:
+        time_period = TimePeriod(period)
+    except ValueError:
+        time_period = TimePeriod.THIS_YEAR
+
+    async with db.async_session_maker() as session:
+        performance = await WinLossAnalyticsService.get_performance_by_job_type(
+            db=session,
+            contractor_id=contractor.id,
+            period=time_period
+        )
+
+    return {"by_job_type": performance}

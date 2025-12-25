@@ -444,7 +444,7 @@ async def remove_customer_tag(
 
 
 # ================================================================
-# DISC-090: CRM Voice Commands
+# INNOV-4: Enhanced Voice Commands (unified from DISC-090)
 # ================================================================
 
 class VoiceCommandRequest(BaseModel):
@@ -453,12 +453,13 @@ class VoiceCommandRequest(BaseModel):
 
 
 class VoiceCommandResponse(BaseModel):
-    """Voice command response."""
-    intent: str
+    """Voice command response (INNOV-4 enhanced)."""
+    command_type: str  # Full command type (e.g., quote_win, task_create)
     success: bool
-    message: str
+    spoken_response: str  # What to say back to user (optimized for voice)
     data: Optional[dict] = None
-    is_crm_command: bool
+    action_taken: Optional[str] = None
+    is_quote_creation: bool = False  # True if user wants to create a new quote
 
 
 @router.post("/voice-command", response_model=VoiceCommandResponse)
@@ -468,46 +469,49 @@ async def process_voice_command(
     db: AsyncSession = Depends(get_db),
 ):
     """
-    Process a voice command for CRM operations.
+    INNOV-4: Enhanced unified voice command processing.
 
-    Detects intent from voice transcription and executes appropriate CRM action:
-    - Search: "Show me John Smith"
-    - Stats: "How much have I quoted the Hendersons?"
-    - Notes: "Add a note to Mike Wilson: Prefers morning"
-    - Tags: "Tag Sarah's Bakery as VIP"
-    - Dormant: "Which customers haven't had a quote in 6 months?"
-    - Top: "Who are my top customers?"
+    Handles all voice commands:
+    - Quote management: "Mark Johnson quote as won", "Duplicate last quote"
+    - Task management: "Remind me to call Sarah tomorrow", "What's on my list?"
+    - Follow-up control: "Pause follow-ups for Smith quote", "What needs follow-up?"
+    - Dashboard queries: "What's my win rate this month?", "Revenue last week?"
+    - CRM operations: "Show me John Smith", "Tag Baker's as VIP"
 
-    Returns is_crm_command=False if this appears to be a quote request.
+    Returns is_quote_creation=True if user wants to CREATE a new quote
+    (frontend should route to quote generation flow).
     """
-    from ..services.crm_voice import crm_voice_service
+    from ..services.voice_commands import voice_command_service
 
     contractor = await get_contractor(user, db)
 
-    # Detect intent
-    intent_result = await crm_voice_service.detect_intent(request.transcription)
+    # Detect command type and extract parameters
+    command_data = await voice_command_service.detect_command(request.transcription)
 
-    if not intent_result.get("is_crm_command", False):
+    # Check if this is a quote creation request (not a command)
+    if command_data.get("is_quote_creation", False):
         return VoiceCommandResponse(
-            intent="not_crm",
-            success=False,
-            message="This doesn't appear to be a CRM command. Try creating a quote instead.",
-            is_crm_command=False
+            command_type="create_quote",
+            success=True,
+            spoken_response="I'll help you create that quote.",
+            is_quote_creation=True
         )
 
-    # Execute the CRM command
-    result = await crm_voice_service.execute_command(
+    # Execute the voice command
+    result = await voice_command_service.execute(
         db=db,
         contractor_id=contractor.id,
-        intent_result=intent_result
+        user_id=user["id"],
+        command_data=command_data
     )
 
     return VoiceCommandResponse(
-        intent=result.intent.value,
+        command_type=result.command_type.value,
         success=result.success,
-        message=result.message,
+        spoken_response=result.spoken_response,
         data=result.data,
-        is_crm_command=True
+        action_taken=result.action_taken,
+        is_quote_creation=False
     )
 
 
@@ -554,3 +558,221 @@ async def backfill_quotes_to_customers(
         customers_linked=stats["customers_linked"],
         errors=stats["errors"]
     )
+
+
+# ================================================================
+# INNOV-8: Repeat Customer Auto-Quotes
+# ================================================================
+
+class RecentQuoteInfo(BaseModel):
+    """Recent quote info for auto-quote suggestions."""
+    id: str
+    job_type: Optional[str]
+    job_description: Optional[str]
+    total: Optional[float]
+    status: Optional[str]
+    created_at: Optional[str]
+
+
+class CustomerInfo(BaseModel):
+    """Customer info for auto-quote suggestions."""
+    id: str
+    name: str
+    phone: Optional[str]
+    email: Optional[str]
+    address: Optional[str]
+    status: str
+    quote_count: int
+    total_won: float
+
+
+class PrefillData(BaseModel):
+    """Pre-fill data for auto-quote."""
+    customer_name: Optional[str]
+    customer_phone: Optional[str]
+    customer_email: Optional[str]
+    customer_address: Optional[str]
+
+
+class JobTypeCount(BaseModel):
+    """Job type count for pricing suggestions."""
+    job_type: str
+    count: int
+
+
+class PricingSuggestions(BaseModel):
+    """Pricing suggestions based on customer history."""
+    job_type: Optional[str] = None
+    previous_quotes_count: Optional[int] = None
+    avg_quote_amount: Optional[float] = None
+    min_quote_amount: Optional[float] = None
+    max_quote_amount: Optional[float] = None
+    last_quote_amount: Optional[float] = None
+    last_quote_date: Optional[str] = None
+    suggestion: Optional[str] = None
+    most_common_job_types: Optional[List[JobTypeCount]] = None
+
+
+class LoyaltyInfo(BaseModel):
+    """Customer loyalty information."""
+    is_repeat: bool = False
+    is_vip: bool = False
+    total_quotes: int = 0
+    total_won: int = 0
+    total_spent: float = 0
+    win_rate: float = 0
+    first_quote_date: Optional[str] = None
+    last_quote_date: Optional[str] = None
+    customer_since_months: int = 0
+    tier: str = "new"
+    tier_label: str = "New Customer"
+
+
+class AutoQuoteSuggestionsResponse(BaseModel):
+    """
+    INNOV-8: Response with auto-quote suggestions for repeat customers.
+
+    Returns customer recognition, pre-fill data, pricing suggestions,
+    and loyalty tier information.
+    """
+    recognized: bool
+    customer: Optional[CustomerInfo] = None
+    prefill: PrefillData = PrefillData()
+    pricing_suggestions: PricingSuggestions = PricingSuggestions()
+    loyalty_info: LoyaltyInfo = LoyaltyInfo()
+    recent_quotes: List[RecentQuoteInfo] = []
+
+
+@router.get("/auto-quote/suggestions")
+async def get_auto_quote_suggestions(
+    customer: str = Query(..., min_length=1, description="Customer name, phone, or email"),
+    job_type: Optional[str] = Query(None, description="Optional job type for filtering"),
+    user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> AutoQuoteSuggestionsResponse:
+    """
+    INNOV-8: Get auto-quote suggestions for a customer.
+
+    Recognizes repeat customers and returns:
+    - Pre-fill data (name, phone, email, address from history)
+    - Pricing suggestions (avg, min, max from similar jobs)
+    - Loyalty tier (new, bronze, silver, gold, platinum)
+    - Recent quote history for context
+
+    Example:
+        GET /customers/auto-quote/suggestions?customer=John+Smith
+        GET /customers/auto-quote/suggestions?customer=555-1234&job_type=deck
+    """
+    contractor = await get_contractor(user, db)
+
+    suggestions = await CustomerService.get_auto_quote_suggestions(
+        db=db,
+        contractor_id=contractor.id,
+        customer_identifier=customer,
+        job_type=job_type
+    )
+
+    # Convert to response model
+    customer_info = None
+    if suggestions.get("customer"):
+        c = suggestions["customer"]
+        customer_info = CustomerInfo(
+            id=str(c["id"]),
+            name=c["name"],
+            phone=c.get("phone"),
+            email=c.get("email"),
+            address=c.get("address"),
+            status=c.get("status", "active"),
+            quote_count=c.get("quote_count", 0),
+            total_won=c.get("total_won", 0),
+        )
+
+    prefill = PrefillData(**(suggestions.get("prefill", {})))
+
+    # Build pricing suggestions
+    ps = suggestions.get("pricing_suggestions", {})
+    common_types = None
+    if ps.get("most_common_job_types"):
+        common_types = [
+            JobTypeCount(job_type=jt["job_type"], count=jt["count"])
+            for jt in ps["most_common_job_types"]
+        ]
+    pricing_suggestions = PricingSuggestions(
+        job_type=ps.get("job_type"),
+        previous_quotes_count=ps.get("previous_quotes_count"),
+        avg_quote_amount=ps.get("avg_quote_amount"),
+        min_quote_amount=ps.get("min_quote_amount"),
+        max_quote_amount=ps.get("max_quote_amount"),
+        last_quote_amount=ps.get("last_quote_amount"),
+        last_quote_date=ps.get("last_quote_date"),
+        suggestion=ps.get("suggestion"),
+        most_common_job_types=common_types,
+    )
+
+    loyalty = LoyaltyInfo(**(suggestions.get("loyalty_info", {})))
+
+    recent_quotes = [
+        RecentQuoteInfo(
+            id=str(q["id"]),
+            job_type=q.get("job_type"),
+            job_description=q.get("job_description"),
+            total=q.get("total"),
+            status=q.get("status"),
+            created_at=q.get("created_at"),
+        )
+        for q in suggestions.get("recent_quotes", [])
+    ]
+
+    return AutoQuoteSuggestionsResponse(
+        recognized=suggestions["recognized"],
+        customer=customer_info,
+        prefill=prefill,
+        pricing_suggestions=pricing_suggestions,
+        loyalty_info=loyalty,
+        recent_quotes=recent_quotes,
+    )
+
+
+@router.get("/auto-quote/recognize")
+async def recognize_customer(
+    text: str = Query(..., min_length=1, description="Text to search for customer"),
+    user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    INNOV-8: Quick check if customer is recognized (for real-time autocomplete).
+
+    Returns minimal data for fast response during voice recording.
+    """
+    contractor = await get_contractor(user, db)
+
+    customers = await CustomerService.search_customers(
+        db=db,
+        contractor_id=contractor.id,
+        query=text,
+        limit=3
+    )
+
+    if not customers:
+        return {
+            "recognized": False,
+            "suggestions": []
+        }
+
+    return {
+        "recognized": True,
+        "suggestions": [
+            {
+                "id": str(c.id),
+                "name": c.name,
+                "phone": c.phone,
+                "email": c.email,
+                "quote_count": c.quote_count or 0,
+                "is_vip": c.status == "vip",
+                "tier": "vip" if c.status == "vip" else (
+                    "repeat" if (c.quote_count or 0) > 1 else "new"
+                ),
+            }
+            for c in customers
+        ]
+    }

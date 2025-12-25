@@ -632,5 +632,283 @@ class CustomerService:
         }
 
 
+    # =========================================================================
+    # INNOV-8: Repeat Customer Auto-Quote Support
+    # =========================================================================
+
+    @staticmethod
+    async def get_customer_quote_history(
+        db: AsyncSession,
+        contractor_id: str,
+        customer_id: str,
+        limit: int = 20
+    ) -> List[Quote]:
+        """
+        Get quote history for a customer, ordered by most recent.
+
+        INNOV-8: Used to pre-fill data and suggest pricing for repeat customers.
+
+        Args:
+            db: Database session
+            contractor_id: Contractor ID (for authorization)
+            customer_id: Customer ID
+            limit: Max quotes to return
+
+        Returns:
+            List of quotes for this customer
+        """
+        result = await db.execute(
+            select(Quote)
+            .where(
+                and_(
+                    Quote.customer_id == customer_id,
+                    Quote.contractor_id == contractor_id
+                )
+            )
+            .order_by(Quote.created_at.desc())
+            .limit(limit)
+        )
+        return list(result.scalars().all())
+
+    @staticmethod
+    async def get_similar_quotes_for_customer(
+        db: AsyncSession,
+        contractor_id: str,
+        customer_id: str,
+        job_type: Optional[str] = None,
+        limit: int = 5
+    ) -> List[Quote]:
+        """
+        Get similar past quotes for a customer, optionally filtered by job type.
+
+        INNOV-8: Helps suggest pricing based on customer's history.
+
+        Args:
+            db: Database session
+            contractor_id: Contractor ID
+            customer_id: Customer ID
+            job_type: Optional job type to filter by
+            limit: Max results
+
+        Returns:
+            List of similar quotes
+        """
+        query = select(Quote).where(
+            and_(
+                Quote.customer_id == customer_id,
+                Quote.contractor_id == contractor_id
+            )
+        )
+
+        if job_type:
+            query = query.where(Quote.job_type == job_type)
+
+        query = query.order_by(Quote.created_at.desc()).limit(limit)
+
+        result = await db.execute(query)
+        return list(result.scalars().all())
+
+    @staticmethod
+    async def get_auto_quote_suggestions(
+        db: AsyncSession,
+        contractor_id: str,
+        customer_identifier: str,  # Can be name, phone, or email
+        job_type: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        INNOV-8: Get auto-quote suggestions for a repeat customer.
+
+        Returns:
+        - Customer info (if recognized)
+        - Pre-fill data from last quote
+        - Pricing suggestions based on history
+        - VIP/loyalty indicators
+
+        Args:
+            db: Database session
+            contractor_id: Contractor ID
+            customer_identifier: Name, phone, or email to search
+            job_type: Optional job type for filtering
+
+        Returns:
+            Dict with suggestions for auto-quote
+        """
+        # Search for customer
+        customers = await CustomerService.search_customers(
+            db, contractor_id, customer_identifier, limit=5
+        )
+
+        if not customers:
+            return {
+                "recognized": False,
+                "customer": None,
+                "prefill": {},
+                "pricing_suggestions": {},
+                "loyalty_info": {}
+            }
+
+        # Use the best match (first result)
+        customer = customers[0]
+
+        # Get quote history
+        quotes = await CustomerService.get_customer_quote_history(
+            db, contractor_id, customer.id, limit=20
+        )
+
+        if not quotes:
+            return {
+                "recognized": True,
+                "customer": {
+                    "id": customer.id,
+                    "name": customer.name,
+                    "phone": customer.phone,
+                    "email": customer.email,
+                    "address": customer.address,
+                    "status": customer.status,
+                    "quote_count": customer.quote_count or 0,
+                    "total_won": customer.total_won or 0,
+                },
+                "prefill": {
+                    "customer_name": customer.name,
+                    "customer_phone": customer.phone,
+                    "customer_email": customer.email,
+                    "customer_address": customer.address,
+                },
+                "pricing_suggestions": {},
+                "loyalty_info": {
+                    "is_repeat": False,
+                    "total_quotes": 0,
+                    "total_spent": 0,
+                }
+            }
+
+        # Get last quote for pre-fill
+        last_quote = quotes[0]
+
+        # Build prefill data
+        prefill = {
+            "customer_name": customer.name,
+            "customer_phone": customer.phone or last_quote.customer_phone,
+            "customer_email": customer.email or last_quote.customer_email,
+            "customer_address": customer.address or last_quote.customer_address,
+        }
+
+        # Calculate pricing suggestions
+        pricing_suggestions = {}
+        if job_type:
+            # Filter quotes by job type
+            same_type_quotes = [q for q in quotes if q.job_type == job_type]
+            if same_type_quotes:
+                totals = [q.total for q in same_type_quotes if q.total]
+                if totals:
+                    pricing_suggestions = {
+                        "job_type": job_type,
+                        "previous_quotes_count": len(same_type_quotes),
+                        "avg_quote_amount": sum(totals) / len(totals),
+                        "min_quote_amount": min(totals),
+                        "max_quote_amount": max(totals),
+                        "last_quote_amount": same_type_quotes[0].total,
+                        "last_quote_date": same_type_quotes[0].created_at.isoformat() if same_type_quotes[0].created_at else None,
+                        "suggestion": f"Based on {len(same_type_quotes)} previous {job_type} jobs for {customer.name}, suggest starting around ${sum(totals)/len(totals):.0f}",
+                    }
+        else:
+            # General pricing based on all quotes
+            totals = [q.total for q in quotes if q.total]
+            if totals:
+                pricing_suggestions = {
+                    "previous_quotes_count": len(quotes),
+                    "avg_quote_amount": sum(totals) / len(totals),
+                    "min_quote_amount": min(totals),
+                    "max_quote_amount": max(totals),
+                    "last_quote_amount": quotes[0].total,
+                    "last_quote_date": quotes[0].created_at.isoformat() if quotes[0].created_at else None,
+                    "most_common_job_types": CustomerService._get_common_job_types(quotes),
+                }
+
+        # Calculate loyalty info
+        won_quotes = [q for q in quotes if q.status == "won" or q.outcome == "won"]
+        total_spent = sum(q.total for q in won_quotes if q.total)
+
+        loyalty_info = {
+            "is_repeat": len(quotes) > 1,
+            "is_vip": customer.status == "vip" or total_spent > 5000,
+            "total_quotes": len(quotes),
+            "total_won": len(won_quotes),
+            "total_spent": total_spent,
+            "win_rate": len(won_quotes) / len(quotes) if quotes else 0,
+            "first_quote_date": customer.first_quote_at.isoformat() if customer.first_quote_at else None,
+            "last_quote_date": customer.last_quote_at.isoformat() if customer.last_quote_at else None,
+            "customer_since_months": CustomerService._months_since(customer.first_quote_at) if customer.first_quote_at else 0,
+        }
+
+        # Add loyalty tier
+        if total_spent >= 10000:
+            loyalty_info["tier"] = "platinum"
+            loyalty_info["tier_label"] = "Platinum Customer"
+        elif total_spent >= 5000:
+            loyalty_info["tier"] = "gold"
+            loyalty_info["tier_label"] = "Gold Customer"
+        elif total_spent >= 2000:
+            loyalty_info["tier"] = "silver"
+            loyalty_info["tier_label"] = "Silver Customer"
+        elif len(won_quotes) >= 2:
+            loyalty_info["tier"] = "bronze"
+            loyalty_info["tier_label"] = "Repeat Customer"
+        else:
+            loyalty_info["tier"] = "new"
+            loyalty_info["tier_label"] = "New Customer"
+
+        return {
+            "recognized": True,
+            "customer": {
+                "id": customer.id,
+                "name": customer.name,
+                "phone": customer.phone,
+                "email": customer.email,
+                "address": customer.address,
+                "status": customer.status,
+                "quote_count": customer.quote_count or 0,
+                "total_won": customer.total_won or 0,
+            },
+            "prefill": prefill,
+            "pricing_suggestions": pricing_suggestions,
+            "loyalty_info": loyalty_info,
+            "recent_quotes": [
+                {
+                    "id": q.id,
+                    "job_type": q.job_type,
+                    "job_description": q.job_description[:100] if q.job_description else None,
+                    "total": q.total,
+                    "status": q.status,
+                    "created_at": q.created_at.isoformat() if q.created_at else None,
+                }
+                for q in quotes[:5]  # Include last 5 quotes
+            ]
+        }
+
+    @staticmethod
+    def _get_common_job_types(quotes: List[Quote], limit: int = 3) -> List[Dict[str, Any]]:
+        """Get the most common job types from a list of quotes."""
+        job_type_counts = {}
+        for q in quotes:
+            if q.job_type:
+                job_type_counts[q.job_type] = job_type_counts.get(q.job_type, 0) + 1
+
+        sorted_types = sorted(job_type_counts.items(), key=lambda x: x[1], reverse=True)
+        return [
+            {"job_type": jt, "count": count}
+            for jt, count in sorted_types[:limit]
+        ]
+
+    @staticmethod
+    def _months_since(date: Optional[datetime]) -> int:
+        """Calculate months since a given date."""
+        if not date:
+            return 0
+        now = datetime.utcnow()
+        months = (now.year - date.year) * 12 + (now.month - date.month)
+        return max(0, months)
+
+
 # Singleton instance for convenience
 customer_service = CustomerService()

@@ -95,6 +95,62 @@ async def check_task_reminders():
         logger.error(f"Error in check_task_reminders: {e}")
 
 
+async def run_smart_followups():
+    """
+    INNOV-3: Smart Follow-Up Engine.
+
+    Process all active follow-up sequences:
+    - Check for due follow-ups
+    - Analyze customer signals
+    - Send AI-optimized emails
+    - Adjust timing based on behavior
+
+    Runs every 15 minutes.
+    """
+    from .follow_up import FollowUpService
+
+    logger.info("Running smart follow-up engine")
+
+    try:
+        from .database import async_session_factory
+        async with async_session_factory() as db:
+            processed = await FollowUpService.process_due_followups(db)
+            if processed > 0:
+                logger.info(f"Smart follow-up engine: Processed {processed} follow-ups")
+            else:
+                logger.debug("Smart follow-up engine: No follow-ups due")
+
+    except Exception as e:
+        logger.error(f"Error in run_smart_followups: {e}")
+
+
+async def check_invoice_reminders():
+    """
+    INNOV-6: Invoice Automation - Payment Reminders.
+
+    Check for invoices needing payment reminders:
+    - 7 days before due date
+    - 1, 7, 14, 30 days after due (overdue)
+
+    Runs daily at 10am UTC.
+    """
+    from .invoice_automation import InvoiceAutomationService
+
+    logger.info("Running invoice payment reminder check")
+
+    try:
+        from .database import async_session_factory
+        async with async_session_factory() as db:
+            reminders_sent = await InvoiceAutomationService.check_payment_reminders(db)
+            if reminders_sent > 0:
+                logger.info(f"Invoice reminders: Sent {reminders_sent} reminders")
+            else:
+                logger.debug("Invoice reminders: No reminders due")
+
+    except Exception as e:
+        logger.error(f"Error in check_invoice_reminders: {e}")
+
+
 async def check_quote_followups():
     """
     Check for quotes needing follow-up.
@@ -238,8 +294,26 @@ def start_scheduler():
         max_instances=1,
     )
 
+    # INNOV-3: Smart follow-up engine - every 15 minutes
+    scheduler.add_job(
+        run_smart_followups,
+        trigger=IntervalTrigger(minutes=15),
+        id="smart_followups",
+        replace_existing=True,
+        max_instances=1,
+    )
+
+    # INNOV-6: Invoice payment reminders - daily at 10am UTC
+    scheduler.add_job(
+        check_invoice_reminders,
+        trigger=CronTrigger(hour=10, minute=0),
+        id="invoice_reminders",
+        replace_existing=True,
+        max_instances=1,
+    )
+
     scheduler.start()
-    logger.info("Background scheduler started with jobs: task_reminders (5min), quote_followups (daily 9am UTC)")
+    logger.info("Background scheduler started with jobs: task_reminders (5min), quote_followups (daily 9am UTC), smart_followups (15min), invoice_reminders (daily 10am UTC)")
 
 
 def stop_scheduler():

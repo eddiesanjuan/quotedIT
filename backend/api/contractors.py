@@ -644,3 +644,104 @@ async def get_template_settings(
         pdf_template=contractor.pdf_template or "modern",
         pdf_accent_color=contractor.pdf_accent_color,
     )
+
+
+# ============================================================================
+# INNOV-9: Proactive Suggestions
+# ============================================================================
+
+class SuggestionData(BaseModel):
+    """Dynamic data associated with a suggestion."""
+    pass
+
+    class Config:
+        extra = "allow"  # Allow any additional fields
+
+
+class SuggestionResponse(BaseModel):
+    """A single proactive suggestion."""
+    id: str
+    type: str  # re_engagement, pricing_hint, follow_up, revenue_alert, etc.
+    priority: str  # high, medium, low
+    title: str
+    message: str
+    action_label: Optional[str] = None
+    action_url: Optional[str] = None
+    data: dict = {}
+    dismissible: bool = True
+    expires_at: Optional[str] = None
+
+
+class SuggestionsListResponse(BaseModel):
+    """Response containing proactive suggestions."""
+    suggestions: List[SuggestionResponse]
+    generated_at: str
+    count: int
+
+
+@router.get("/suggestions", response_model=SuggestionsListResponse)
+async def get_proactive_suggestions(
+    max_suggestions: int = 5,
+    contractor: Contractor = Depends(get_current_contractor),
+):
+    """
+    INNOV-9: Get proactive suggestions for the contractor.
+
+    Returns personalized, actionable suggestions based on:
+    - Dormant customers (re-engagement opportunities)
+    - Stale quotes (follow-up reminders)
+    - Pricing patterns (win rate analysis)
+    - Revenue trends (alerts on changes)
+    - Learning milestones (system achievements)
+    - Efficiency tips (logo, settings optimization)
+    """
+    from ..services.proactive_suggestions import proactive_suggestions
+    from ..database import get_db_session
+    from datetime import datetime
+
+    async with get_db_session() as db:
+        suggestions = await proactive_suggestions.get_suggestions(
+            db=db,
+            contractor_id=contractor.id,
+            max_suggestions=max_suggestions,
+        )
+
+        return SuggestionsListResponse(
+            suggestions=[
+                SuggestionResponse(
+                    id=s.id,
+                    type=s.type,
+                    priority=s.priority,
+                    title=s.title,
+                    message=s.message,
+                    action_label=s.action_label,
+                    action_url=s.action_url,
+                    data=s.data,
+                    dismissible=s.dismissible,
+                    expires_at=s.expires_at,
+                )
+                for s in suggestions
+            ],
+            generated_at=datetime.utcnow().isoformat(),
+            count=len(suggestions),
+        )
+
+
+@router.post("/suggestions/{suggestion_id}/dismiss")
+async def dismiss_suggestion(
+    suggestion_id: str,
+    contractor: Contractor = Depends(get_current_contractor),
+):
+    """
+    INNOV-9: Dismiss a suggestion so it doesn't appear again.
+
+    In the future, this could track dismissals in the database.
+    For now, the frontend can manage this locally.
+    """
+    # TODO: Store dismissal in database for persistence
+    # For now, just acknowledge the dismissal
+    return {
+        "success": True,
+        "message": f"Suggestion {suggestion_id} dismissed",
+        "suggestion_id": suggestion_id,
+    }

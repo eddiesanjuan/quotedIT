@@ -98,6 +98,12 @@ class Contractor(Base):
     plan = Column(String(50), default="starter")  # starter, team
     is_active = Column(Boolean, default=True)
 
+    # INNOV-6: Invoice Automation Settings
+    auto_generate_invoices = Column(Boolean, default=False)  # Auto-create invoice when quote is won
+    auto_send_invoices = Column(Boolean, default=False)  # Auto-email invoice to customer
+    invoice_due_days = Column(Integer, default=30)  # Days until invoice is due
+    send_invoice_reminders = Column(Boolean, default=True)  # Send payment reminder emails
+
     # Relationships - all scoped to this contractor
     user = relationship("User", back_populates="contractor")
     pricing_model = relationship("PricingModel", back_populates="contractor", uselist=False)
@@ -361,6 +367,13 @@ class Quote(Base):
     rejected_at = Column(DateTime, nullable=True)  # If rejected
     rejection_reason = Column(Text, nullable=True)  # Why they rejected
 
+    # INNOV-2: Deposit and Scheduling (One-Click Acceptance Flow)
+    deposit_paid = Column(Boolean, default=False)  # Has deposit been paid?
+    deposit_amount = Column(Float, nullable=True)  # Amount paid in cents
+    deposit_paid_at = Column(DateTime, nullable=True)  # When deposit was paid
+    stripe_payment_id = Column(String(255), nullable=True)  # Stripe payment intent ID
+    scheduled_start_date = Column(DateTime, nullable=True)  # When work is scheduled to start
+
     # View tracking (PROPOSIFY-DOMINATION)
     view_count = Column(Integer, default=0)  # Number of times viewed
     first_viewed_at = Column(DateTime, nullable=True)  # First view timestamp
@@ -520,6 +533,11 @@ class Invoice(Base):
     # Sharing
     share_token = Column(String(32), unique=True, nullable=True, index=True)
 
+    # INNOV-6: Invoice Automation
+    auto_generated = Column(Boolean, default=False)  # True if auto-created from quote
+    reminder_sent = Column(DateTime, nullable=True)  # When last reminder was sent
+    reminder_count = Column(Integer, default=0)  # Number of reminders sent
+
     # Relationships
     contractor = relationship("Contractor", back_populates="invoices")
     quote = relationship("Quote", back_populates="invoices")
@@ -624,6 +642,113 @@ class Task(Base):
     contractor = relationship("Contractor", back_populates="tasks")
     customer = relationship("Customer", back_populates="tasks")
     quote = relationship("Quote")  # One-way relationship, quote doesn't need back-ref
+
+
+# INNOV-3: Smart Follow-Up Engine Models
+class FollowUpSequence(Base):
+    """
+    Smart follow-up sequence for a quote.
+
+    AI-powered timing based on customer behavior signals.
+    Replaces dumb "3 days, 7 days" static rules with intelligent
+    analysis of viewing patterns, time-of-day, and engagement.
+    """
+    __tablename__ = "follow_up_sequences"
+
+    id = Column(String, primary_key=True, default=generate_uuid)
+    quote_id = Column(String, ForeignKey("quotes.id"), nullable=False, index=True)
+    contractor_id = Column(String, ForeignKey("contractors.id"), nullable=False, index=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Sequence status
+    status = Column(String(50), default="active", index=True)
+    # active: Running normally, sending follow-ups
+    # paused: Temporarily paused by contractor
+    # completed: Quote was accepted/rejected, sequence ended
+    # cancelled: Manually cancelled
+
+    # Current position in sequence
+    current_step = Column(Integer, default=0)  # 0-indexed step number
+    next_follow_up_at = Column(DateTime, nullable=True, index=True)  # When to send next
+
+    # AI-detected signals
+    detected_signal = Column(String(100))  # Most recent signal (e.g., "multiple_views")
+    signal_data = Column(JSON)  # Raw signal data for analysis
+    """
+    Example:
+    {
+        "view_count": 5,
+        "avg_session_duration": 180,
+        "pdf_downloaded": true,
+        "late_night_views": 2,
+        "time_since_last_view_hours": 24
+    }
+    """
+
+    # Outcome
+    completed_at = Column(DateTime, nullable=True)
+    completion_reason = Column(String(100))  # accepted, rejected, manual_stop, max_attempts
+
+    # Stats
+    emails_sent = Column(Integer, default=0)
+    emails_opened = Column(Integer, default=0)  # Future: email tracking
+    emails_clicked = Column(Integer, default=0)
+
+    # Relationships
+    quote = relationship("Quote", backref="follow_up_sequence")
+    contractor = relationship("Contractor")
+    events = relationship("FollowUpEvent", back_populates="sequence", order_by="FollowUpEvent.created_at")
+
+
+class FollowUpEvent(Base):
+    """
+    Individual follow-up event (email sent, viewed, etc.).
+    Audit log for the follow-up sequence.
+    """
+    __tablename__ = "follow_up_events"
+
+    id = Column(String, primary_key=True, default=generate_uuid)
+    sequence_id = Column(String, ForeignKey("follow_up_sequences.id"), nullable=False, index=True)
+    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+
+    # Event type
+    event_type = Column(String(50), nullable=False)
+    # email_sent: Follow-up email was sent
+    # email_opened: Recipient opened email (future)
+    # email_clicked: Recipient clicked link (future)
+    # sequence_paused: Contractor paused sequence
+    # sequence_resumed: Contractor resumed sequence
+    # signal_detected: New customer behavior signal detected
+    # timing_adjusted: AI adjusted follow-up timing
+
+    # Step number when event occurred
+    step_number = Column(Integer)
+
+    # Event data
+    event_data = Column(JSON)
+    """
+    Example for email_sent:
+    {
+        "template": "gentle_nudge",
+        "subject": "Just checking in on your deck project quote",
+        "to_email": "customer@example.com"
+    }
+
+    Example for timing_adjusted:
+    {
+        "original_next_at": "2024-01-15T10:00:00",
+        "adjusted_next_at": "2024-01-14T15:00:00",
+        "reason": "Multiple views detected - customer showing high interest",
+        "signal": "multiple_views"
+    }
+    """
+
+    # Outcome tracking
+    email_message_id = Column(String(255), nullable=True)  # For tracking opens/clicks
+
+    # Relationship
+    sequence = relationship("FollowUpSequence", back_populates="events")
 
 
 class SetupConversation(Base):
@@ -1184,6 +1309,80 @@ async def run_migrations(engine):
                 WHERE table_name = 'quotes' AND column_name = 'last_viewed_at'
             """,
             "alter_sql": "ALTER TABLE quotes ADD COLUMN last_viewed_at TIMESTAMP"
+        },
+        # INNOV-2: Deposit and Scheduling columns
+        {
+            "table": "quotes",
+            "column": "deposit_paid",
+            "check_sql": """
+                SELECT column_name FROM information_schema.columns
+                WHERE table_name = 'quotes' AND column_name = 'deposit_paid'
+            """,
+            "alter_sql": "ALTER TABLE quotes ADD COLUMN deposit_paid BOOLEAN DEFAULT FALSE"
+        },
+        {
+            "table": "quotes",
+            "column": "deposit_amount",
+            "check_sql": """
+                SELECT column_name FROM information_schema.columns
+                WHERE table_name = 'quotes' AND column_name = 'deposit_amount'
+            """,
+            "alter_sql": "ALTER TABLE quotes ADD COLUMN deposit_amount FLOAT"
+        },
+        {
+            "table": "quotes",
+            "column": "deposit_paid_at",
+            "check_sql": """
+                SELECT column_name FROM information_schema.columns
+                WHERE table_name = 'quotes' AND column_name = 'deposit_paid_at'
+            """,
+            "alter_sql": "ALTER TABLE quotes ADD COLUMN deposit_paid_at TIMESTAMP"
+        },
+        {
+            "table": "quotes",
+            "column": "stripe_payment_id",
+            "check_sql": """
+                SELECT column_name FROM information_schema.columns
+                WHERE table_name = 'quotes' AND column_name = 'stripe_payment_id'
+            """,
+            "alter_sql": "ALTER TABLE quotes ADD COLUMN stripe_payment_id VARCHAR(255)"
+        },
+        {
+            "table": "quotes",
+            "column": "scheduled_start_date",
+            "check_sql": """
+                SELECT column_name FROM information_schema.columns
+                WHERE table_name = 'quotes' AND column_name = 'scheduled_start_date'
+            """,
+            "alter_sql": "ALTER TABLE quotes ADD COLUMN scheduled_start_date TIMESTAMP"
+        },
+        # INNOV-6: Invoice Automation columns
+        {
+            "table": "invoices",
+            "column": "auto_generated",
+            "check_sql": """
+                SELECT column_name FROM information_schema.columns
+                WHERE table_name = 'invoices' AND column_name = 'auto_generated'
+            """,
+            "alter_sql": "ALTER TABLE invoices ADD COLUMN auto_generated BOOLEAN DEFAULT FALSE"
+        },
+        {
+            "table": "invoices",
+            "column": "reminder_sent",
+            "check_sql": """
+                SELECT column_name FROM information_schema.columns
+                WHERE table_name = 'invoices' AND column_name = 'reminder_sent'
+            """,
+            "alter_sql": "ALTER TABLE invoices ADD COLUMN reminder_sent TIMESTAMP"
+        },
+        {
+            "table": "invoices",
+            "column": "reminder_count",
+            "check_sql": """
+                SELECT column_name FROM information_schema.columns
+                WHERE table_name = 'invoices' AND column_name = 'reminder_count'
+            """,
+            "alter_sql": "ALTER TABLE invoices ADD COLUMN reminder_count INTEGER DEFAULT 0"
         },
     ]
 

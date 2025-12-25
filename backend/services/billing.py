@@ -556,3 +556,152 @@ class BillingService:
         user.quotes_used = 0
 
         await db.commit()
+
+    # ========================================
+    # INNOV-2: Deposit Payment for Quote Acceptance
+    # ========================================
+
+    @staticmethod
+    async def create_deposit_checkout_session(
+        quote_id: str,
+        amount_cents: int,
+        contractor_name: str,
+        customer_email: str,
+        customer_name: str,
+        job_description: str,
+        success_url: str,
+        cancel_url: str,
+        scheduled_date: Optional[str] = None,
+    ) -> Dict[str, str]:
+        """
+        Create a Stripe checkout session for a quote deposit payment.
+        This is a one-time payment, NOT a subscription.
+
+        INNOV-2: Part of the One-Click Acceptance Flow.
+        Customer can pay deposit + schedule start date in one step.
+
+        Args:
+            quote_id: ID of the quote being accepted
+            amount_cents: Deposit amount in cents
+            contractor_name: Name of the contractor (for description)
+            customer_email: Customer's email for receipt
+            customer_name: Customer's name
+            job_description: Brief description of the job
+            success_url: URL to redirect to after successful payment
+            cancel_url: URL to redirect to if payment is cancelled
+            scheduled_date: Optional scheduled start date (ISO format)
+
+        Returns:
+            Dict with checkout_url and session_id
+        """
+        try:
+            # Create a one-time checkout session for the deposit
+            session = stripe.checkout.Session.create(
+                payment_method_types=["card"],
+                customer_email=customer_email,
+                line_items=[
+                    {
+                        "price_data": {
+                            "currency": "usd",
+                            "product_data": {
+                                "name": f"Deposit for {contractor_name}",
+                                "description": job_description[:200] if job_description else "Quote deposit payment",
+                            },
+                            "unit_amount": amount_cents,
+                        },
+                        "quantity": 1,
+                    }
+                ],
+                mode="payment",  # One-time payment, not subscription
+                success_url=success_url,
+                cancel_url=cancel_url,
+                metadata={
+                    "quote_id": quote_id,
+                    "customer_name": customer_name,
+                    "scheduled_date": scheduled_date or "",
+                    "payment_type": "quote_deposit",
+                },
+            )
+
+            return {
+                "checkout_url": session.url,
+                "session_id": session.id,
+            }
+
+        except stripe.error.StripeError as e:
+            print(f"Stripe error creating deposit checkout: {e}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to create payment session. Please try again."
+            )
+
+    @staticmethod
+    async def handle_deposit_payment_completed(
+        db: AsyncSession,
+        session: dict
+    ) -> Dict[str, Any]:
+        """
+        Handle successful deposit payment completion.
+        Called from Stripe webhook when checkout.session.completed event fires
+        with payment_type=quote_deposit in metadata.
+
+        Returns dict with quote_id, customer_name, scheduled_date for further processing.
+        """
+        from ..models.database import Quote
+
+        metadata = session.get("metadata", {})
+        quote_id = metadata.get("quote_id")
+        customer_name = metadata.get("customer_name")
+        scheduled_date = metadata.get("scheduled_date")
+
+        if not quote_id:
+            print("Warning: Deposit payment completed but no quote_id in metadata")
+            return {}
+
+        # Find the quote
+        result = await db.execute(select(Quote).where(Quote.id == quote_id))
+        quote = result.scalar_one_or_none()
+
+        if not quote:
+            print(f"Warning: Quote {quote_id} not found for deposit payment")
+            return {}
+
+        # Update quote with payment info
+        quote.status = "won"
+        quote.deposit_paid = True
+        quote.deposit_amount = session.get("amount_total", 0)
+        quote.deposit_paid_at = datetime.utcnow()
+        quote.stripe_payment_id = session.get("payment_intent")
+        quote.accepted_at = datetime.utcnow()
+
+        if scheduled_date:
+            try:
+                quote.scheduled_start_date = datetime.fromisoformat(scheduled_date.replace('Z', '+00:00'))
+            except ValueError:
+                pass
+
+        if customer_name:
+            quote.signature_name = customer_name
+
+        await db.commit()
+
+        # Track analytics
+        try:
+            analytics_service.track_event(
+                user_id=str(quote.contractor_id),
+                event_name="quote_deposit_received",
+                properties={
+                    "quote_id": quote_id,
+                    "deposit_amount": session.get("amount_total", 0) / 100,  # Convert to dollars
+                    "has_scheduled_date": bool(scheduled_date),
+                    "customer_email": session.get("customer_email"),
+                }
+            )
+        except Exception as e:
+            print(f"Warning: Failed to track deposit payment event: {e}")
+
+        return {
+            "quote_id": quote_id,
+            "customer_name": customer_name,
+            "scheduled_date": scheduled_date,
+        }

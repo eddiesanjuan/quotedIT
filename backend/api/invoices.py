@@ -724,6 +724,220 @@ class SharedInvoiceResponse(BaseModel):
     contractor_email: Optional[str] = None
 
 
+# ============================================================================
+# INNOV-6: Invoice Automation Settings
+# ============================================================================
+
+class InvoiceAutomationSettingsRequest(BaseModel):
+    """Request to update invoice automation settings."""
+    auto_generate_invoices: Optional[bool] = None
+    auto_send_invoices: Optional[bool] = None
+    default_due_days: Optional[int] = None
+    send_reminders: Optional[bool] = None
+
+
+class InvoiceAutomationSettingsResponse(BaseModel):
+    """Invoice automation settings response."""
+    auto_generate_invoices: bool = False
+    auto_send_invoices: bool = False
+    default_due_days: int = 30
+    send_reminders: bool = True
+
+
+class OutstandingInvoicesResponse(BaseModel):
+    """Outstanding invoices summary."""
+    total_outstanding: float
+    count: int
+    invoices: List[dict]
+
+
+class AutoGenerateInvoiceRequest(BaseModel):
+    """Request to manually trigger invoice auto-generation from a quote."""
+    quote_id: str
+    send_to_customer: bool = False
+    due_days: int = 30
+
+
+class AutoGenerateInvoiceResponse(BaseModel):
+    """Response from invoice auto-generation."""
+    success: bool
+    invoice_id: Optional[str] = None
+    invoice_number: Optional[str] = None
+    message: str
+    sent_to_customer: bool = False
+
+
+@router.get("/automation/settings", response_model=InvoiceAutomationSettingsResponse)
+async def get_automation_settings(
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Get contractor's invoice automation settings.
+
+    INNOV-6: Configure automatic invoice generation and reminders.
+    """
+    contractor = await get_contractor_for_user(current_user["id"])
+    if not contractor:
+        raise HTTPException(status_code=400, detail="Contractor not found")
+
+    return InvoiceAutomationSettingsResponse(
+        auto_generate_invoices=contractor.auto_generate_invoices or False,
+        auto_send_invoices=contractor.auto_send_invoices or False,
+        default_due_days=contractor.invoice_due_days or 30,
+        send_reminders=contractor.send_invoice_reminders if contractor.send_invoice_reminders is not None else True,
+    )
+
+
+@router.put("/automation/settings", response_model=InvoiceAutomationSettingsResponse)
+async def update_automation_settings(
+    settings: InvoiceAutomationSettingsRequest,
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Update contractor's invoice automation settings.
+
+    INNOV-6: Enable/disable automatic invoice generation on quote acceptance.
+    """
+    contractor = await get_contractor_for_user(current_user["id"])
+    if not contractor:
+        raise HTTPException(status_code=400, detail="Contractor not found")
+
+    # Get fresh contractor from session
+    result = await db.execute(
+        select(Contractor).where(Contractor.id == contractor.id)
+    )
+    contractor = result.scalar_one_or_none()
+
+    if not contractor:
+        raise HTTPException(status_code=400, detail="Contractor not found")
+
+    # Update fields
+    if settings.auto_generate_invoices is not None:
+        contractor.auto_generate_invoices = settings.auto_generate_invoices
+    if settings.auto_send_invoices is not None:
+        contractor.auto_send_invoices = settings.auto_send_invoices
+    if settings.default_due_days is not None:
+        contractor.invoice_due_days = settings.default_due_days
+    if settings.send_reminders is not None:
+        contractor.send_invoice_reminders = settings.send_reminders
+
+    await db.commit()
+    await db.refresh(contractor)
+
+    # Track analytics
+    try:
+        analytics_service.track_event(
+            user_id=str(current_user["id"]),
+            event_name="invoice_automation_settings_updated",
+            properties={
+                "contractor_id": str(contractor.id),
+                "auto_generate": contractor.auto_generate_invoices,
+                "auto_send": contractor.auto_send_invoices,
+                "due_days": contractor.invoice_due_days,
+                "send_reminders": contractor.send_invoice_reminders,
+            }
+        )
+    except Exception as e:
+        print(f"Warning: Failed to track automation settings update: {e}")
+
+    return InvoiceAutomationSettingsResponse(
+        auto_generate_invoices=contractor.auto_generate_invoices or False,
+        auto_send_invoices=contractor.auto_send_invoices or False,
+        default_due_days=contractor.invoice_due_days or 30,
+        send_reminders=contractor.send_invoice_reminders if contractor.send_invoice_reminders is not None else True,
+    )
+
+
+@router.get("/automation/outstanding", response_model=OutstandingInvoicesResponse)
+async def get_outstanding_invoices(
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Get all outstanding (unpaid) invoices for the contractor.
+
+    INNOV-6: Dashboard for tracking unpaid invoices.
+    """
+    from ..services.invoice_automation import InvoiceAutomationService
+
+    contractor = await get_contractor_for_user(current_user["id"])
+    if not contractor:
+        raise HTTPException(status_code=400, detail="Contractor not found")
+
+    invoices = await InvoiceAutomationService.get_outstanding_invoices(db, contractor.id)
+
+    total_outstanding = sum(inv.get("total", 0) for inv in invoices)
+
+    return OutstandingInvoicesResponse(
+        total_outstanding=total_outstanding,
+        count=len(invoices),
+        invoices=invoices,
+    )
+
+
+@router.post("/automation/generate", response_model=AutoGenerateInvoiceResponse)
+async def auto_generate_invoice(
+    request: AutoGenerateInvoiceRequest,
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Manually trigger invoice auto-generation from a quote.
+
+    INNOV-6: Create invoice from an accepted quote.
+    """
+    from ..services.invoice_automation import InvoiceAutomationService
+
+    contractor = await get_contractor_for_user(current_user["id"])
+    if not contractor:
+        raise HTTPException(status_code=400, detail="Contractor not found")
+
+    # Verify quote belongs to contractor
+    result = await db.execute(
+        select(Quote).where(Quote.id == request.quote_id)
+    )
+    quote = result.scalar_one_or_none()
+
+    if not quote:
+        raise HTTPException(status_code=404, detail="Quote not found")
+
+    if quote.contractor_id != contractor.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    # Generate invoice
+    gen_result = await InvoiceAutomationService.auto_generate_from_quote(
+        db=db,
+        quote_id=request.quote_id,
+        send_to_customer=request.send_to_customer,
+        due_days=request.due_days,
+    )
+
+    # Track analytics
+    try:
+        analytics_service.track_event(
+            user_id=str(current_user["id"]),
+            event_name="invoice_auto_generated",
+            properties={
+                "contractor_id": str(contractor.id),
+                "quote_id": request.quote_id,
+                "success": gen_result.success,
+                "sent_to_customer": gen_result.sent_to_customer,
+            }
+        )
+    except Exception as e:
+        print(f"Warning: Failed to track auto-generation: {e}")
+
+    return AutoGenerateInvoiceResponse(
+        success=gen_result.success,
+        invoice_id=gen_result.invoice_id,
+        invoice_number=gen_result.invoice_number,
+        message=gen_result.message,
+        sent_to_customer=gen_result.sent_to_customer,
+    )
+
+
 @router.get("/shared/{token}", response_model=SharedInvoiceResponse)
 async def view_shared_invoice(token: str):
     """

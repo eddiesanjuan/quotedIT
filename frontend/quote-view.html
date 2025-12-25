@@ -507,6 +507,177 @@
             background: #15803d;
         }
 
+        /* INNOV-2: One-Click Acceptance Flow Styles */
+        .acceptance-steps {
+            margin-top: 20px;
+        }
+
+        .step-section {
+            margin-bottom: 24px;
+            padding-bottom: 20px;
+            border-bottom: 1px dashed var(--border);
+        }
+
+        .step-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .step-number {
+            width: 28px;
+            height: 28px;
+            background: var(--accent);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.875rem;
+            flex-shrink: 0;
+        }
+
+        .step-title {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .step-optional {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-left: auto;
+        }
+
+        .schedule-input {
+            width: 100%;
+            padding: 14px 16px;
+            font-size: 1rem;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-family: var(--font-sans);
+        }
+
+        .schedule-input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        /* Deposit Payment Option */
+        .deposit-option {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            border: 2px solid #86efac;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 16px;
+        }
+
+        .deposit-option-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .deposit-checkbox {
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+        }
+
+        .deposit-label {
+            font-weight: 600;
+            color: #166534;
+            cursor: pointer;
+        }
+
+        .deposit-amount {
+            margin-left: auto;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #166534;
+        }
+
+        .deposit-benefits {
+            font-size: 0.875rem;
+            color: #15803d;
+            margin-top: 8px;
+            padding-left: 34px;
+        }
+
+        .deposit-benefits ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .deposit-benefits li {
+            padding: 4px 0;
+        }
+
+        .deposit-benefits li::before {
+            content: "✓ ";
+            font-weight: 600;
+        }
+
+        /* Action Summary */
+        .action-summary {
+            background: var(--bg-primary);
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+
+        .summary-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .summary-items {
+            font-size: 0.9375rem;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+        }
+
+        .summary-item.total {
+            border-top: 1px solid var(--border);
+            margin-top: 8px;
+            padding-top: 8px;
+            font-weight: 600;
+        }
+
+        /* Deposit Paid Banner */
+        .status-banner.deposit-paid {
+            background: #dcfce7;
+            border: 1px solid #86efac;
+        }
+
+        .status-banner.deposit-paid .status-title {
+            color: #166534;
+        }
+
+        .scheduled-date {
+            font-size: 1rem;
+            margin-top: 8px;
+            color: #15803d;
+        }
+
         /* Reject Form */
         .reject-form {
             display: none;
@@ -761,11 +932,74 @@
                 </button>
             </div>
 
-            <!-- Signature Form (shown when Accept is clicked) -->
+            <!-- Signature Form (shown when Accept is clicked) - INNOV-2: Enhanced One-Click Flow -->
             <div id="signatureForm" class="signature-form">
-                <label for="signatureName">Type your full name to accept this quote:</label>
-                <input type="text" id="signatureName" placeholder="Your full name" autocomplete="name" />
+                <div class="acceptance-steps">
+                    <!-- Step 1: Signature -->
+                    <div class="step-section">
+                        <div class="step-header">
+                            <span class="step-number">1</span>
+                            <span class="step-title">Sign to Accept</span>
+                        </div>
+                        <label for="signatureName">Type your full name:</label>
+                        <input type="text" id="signatureName" placeholder="Your full name" autocomplete="name" />
+                    </div>
+
+                    <!-- Step 2: Schedule (Optional) -->
+                    <div class="step-section">
+                        <div class="step-header">
+                            <span class="step-number">2</span>
+                            <span class="step-title">Choose a Start Date</span>
+                            <span class="step-optional">Optional</span>
+                        </div>
+                        <input type="date" id="scheduledDate" class="schedule-input" />
+                    </div>
+
+                    <!-- Step 3: Deposit Payment (Optional but highlighted) -->
+                    <div class="step-section" id="depositSection" style="display: none;">
+                        <div class="step-header">
+                            <span class="step-number">3</span>
+                            <span class="step-title">Secure Your Spot</span>
+                            <span class="step-optional">Recommended</span>
+                        </div>
+                        <div class="deposit-option">
+                            <div class="deposit-option-header">
+                                <input type="checkbox" id="payDeposit" class="deposit-checkbox" checked />
+                                <label for="payDeposit" class="deposit-label">Pay deposit now</label>
+                                <span class="deposit-amount" id="depositAmountDisplay">$0</span>
+                            </div>
+                            <div class="deposit-benefits">
+                                <ul>
+                                    <li>Lock in your scheduled date</li>
+                                    <li>Priority scheduling</li>
+                                    <li>Secure payment via Stripe</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Summary -->
+                <div class="action-summary" id="actionSummary">
+                    <div class="summary-title">Summary</div>
+                    <div class="summary-items">
+                        <div class="summary-item">
+                            <span>Quote Total</span>
+                            <span id="summaryTotal">$0</span>
+                        </div>
+                        <div class="summary-item" id="summaryDepositRow" style="display: none;">
+                            <span>Deposit Due Now</span>
+                            <span id="summaryDeposit">$0</span>
+                        </div>
+                        <div class="summary-item" id="summaryRemainingRow" style="display: none;">
+                            <span>Remaining Balance</span>
+                            <span id="summaryRemaining">$0</span>
+                        </div>
+                    </div>
+                </div>
+
                 <p class="signature-note">By typing your name and clicking "Confirm", you agree to the terms of this quote. This creates a legally binding agreement.</p>
+
                 <button type="button" class="btn btn-confirm" id="btnConfirmAccept">
                     Confirm & Accept Quote
                 </button>
@@ -894,6 +1128,9 @@
                 currentQuoteData = quoteData;
                 const status = quoteData.status || 'draft';
 
+                // INNOV-2: Initialize deposit info
+                initializeDepositInfo(quoteData);
+
                 // Wave 2: Check for expiration from API response
                 const expiration = quoteData.expiration;
                 if (expiration && expiration.expired) {
@@ -905,6 +1142,9 @@
                 } else if (status === 'lost' || status === 'rejected') {
                     // Quote was already rejected - show rejected banner
                     showStatusBanner('lost', quoteData);
+                } else if (quoteData.deposit_paid) {
+                    // INNOV-2: Deposit already paid - show deposit paid banner
+                    showStatusBanner('deposit_paid', quoteData);
                 } else {
                     // Quote is actionable (draft, sent, viewed) - show accept/reject buttons
                     showActionButtons();
@@ -914,6 +1154,9 @@
                         showExpirationWarning(expiration.days_remaining);
                     }
                 }
+
+                // INNOV-2: Handle payment URL params
+                handlePaymentCallback();
 
             } catch (error) {
                 console.error('Error loading quote:', error);
@@ -1000,6 +1243,30 @@
                 title.textContent = 'Quote Expired';
                 details.textContent = 'This quote has expired. Contact the contractor for a new quote.';
                 banner.style.display = 'block';
+            } else if (status === 'deposit_paid') {
+                // INNOV-2: Deposit paid but work not yet completed
+                banner.className = 'status-banner deposit-paid';
+                icon.textContent = '✓';
+                title.textContent = 'Quote Accepted & Deposit Paid';
+
+                let detailText = 'Your deposit has been received.';
+                if (quoteData.scheduled_start_date) {
+                    const schedDate = new Date(quoteData.scheduled_start_date);
+                    detailText += ' Scheduled for ' + schedDate.toLocaleDateString('en-US', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    }) + '.';
+                }
+                details.textContent = detailText;
+
+                if (quoteData.signature_name) {
+                    sigDisplay.textContent = quoteData.signature_name;
+                    sigDisplay.style.display = 'block';
+                }
+
+                banner.style.display = 'block';
             }
         }
 
@@ -1052,7 +1319,87 @@
             document.getElementById('rejectForm').classList.remove('visible');
             document.getElementById('signatureName').value = '';
             document.getElementById('rejectReason').value = '';
+            document.getElementById('scheduledDate').value = '';
+            document.getElementById('payDeposit').checked = true;
+            updateSummary();
         }
+
+        // INNOV-2: Initialize deposit info from quote data
+        function initializeDepositInfo(quoteData) {
+            const depositSection = document.getElementById('depositSection');
+            const depositAmountDisplay = document.getElementById('depositAmountDisplay');
+            const summaryTotal = document.getElementById('summaryTotal');
+
+            // Set summary total
+            const total = quoteData.total || 0;
+            summaryTotal.textContent = formatCurrency(total);
+
+            // Check if deposit info is available
+            if (quoteData.deposit_info && quoteData.deposit_info.deposit_enabled) {
+                depositSection.style.display = 'block';
+                depositAmountDisplay.textContent = formatCurrency(quoteData.deposit_info.deposit_amount);
+
+                // Store deposit info globally
+                window.depositInfo = quoteData.deposit_info;
+            } else {
+                // No deposit configured - hide deposit section
+                depositSection.style.display = 'none';
+                window.depositInfo = null;
+            }
+
+            updateSummary();
+        }
+
+        // INNOV-2: Update action summary based on deposit checkbox
+        function updateSummary() {
+            const depositRow = document.getElementById('summaryDepositRow');
+            const remainingRow = document.getElementById('summaryRemainingRow');
+            const summaryDeposit = document.getElementById('summaryDeposit');
+            const summaryRemaining = document.getElementById('summaryRemaining');
+            const confirmBtn = document.getElementById('btnConfirmAccept');
+
+            const payDeposit = document.getElementById('payDeposit').checked;
+            const total = currentQuoteData ? currentQuoteData.total : 0;
+
+            if (payDeposit && window.depositInfo) {
+                const depositAmount = window.depositInfo.deposit_amount;
+                const remaining = total - depositAmount;
+
+                depositRow.style.display = 'flex';
+                remainingRow.style.display = 'flex';
+                summaryDeposit.textContent = formatCurrency(depositAmount);
+                summaryRemaining.textContent = formatCurrency(remaining);
+                confirmBtn.textContent = 'Continue to Payment';
+            } else {
+                depositRow.style.display = 'none';
+                remainingRow.style.display = 'none';
+                confirmBtn.textContent = 'Confirm & Accept Quote';
+            }
+        }
+
+        // INNOV-2: Handle payment callback (success/cancelled from Stripe)
+        function handlePaymentCallback() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const paymentStatus = urlParams.get('payment');
+
+            if (paymentStatus === 'success') {
+                // Reload quote data to show updated status
+                setTimeout(() => {
+                    window.location.href = window.location.pathname; // Remove query params and reload
+                }, 100);
+            } else if (paymentStatus === 'cancelled') {
+                // Show cancellation message but keep quote actionable
+                console.log('Payment was cancelled');
+            }
+        }
+
+        // Helper: Format currency
+        function formatCurrency(amount) {
+            return '$' + (amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        // INNOV-2: Deposit checkbox change handler
+        document.getElementById('payDeposit').addEventListener('change', updateSummary);
 
         // Accept button click
         document.getElementById('btnAccept').addEventListener('click', function() {
@@ -1084,9 +1431,11 @@
         document.getElementById('btnCancelAccept').addEventListener('click', resetActionState);
         document.getElementById('btnCancelReject').addEventListener('click', resetActionState);
 
-        // Confirm accept
+        // Confirm accept - INNOV-2: Enhanced with deposit checkout flow
         document.getElementById('btnConfirmAccept').addEventListener('click', async function() {
             const signatureName = document.getElementById('signatureName').value.trim();
+            const scheduledDate = document.getElementById('scheduledDate').value;
+            const payDeposit = document.getElementById('payDeposit').checked && window.depositInfo;
 
             if (!signatureName) {
                 alert('Please type your full name to accept the quote.');
@@ -1103,42 +1452,80 @@
             // Disable button while submitting
             const btn = document.getElementById('btnConfirmAccept');
             btn.disabled = true;
-            btn.textContent = 'Submitting...';
+            btn.textContent = payDeposit ? 'Redirecting to payment...' : 'Submitting...';
 
             try {
-                const response = await fetch(`/api/quotes/shared/${shareToken}/accept`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ signature_name: signatureName })
-                });
+                if (payDeposit) {
+                    // INNOV-2: Create deposit checkout and redirect to Stripe
+                    const response = await fetch(`/api/quotes/shared/${shareToken}/deposit-checkout`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            signature_name: signatureName,
+                            scheduled_date: scheduledDate || null,
+                            pay_deposit: true,
+                            message: null
+                        })
+                    });
 
-                if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(error.detail || 'Failed to accept quote');
-                }
+                    if (!response.ok) {
+                        const error = await response.json();
+                        throw new Error(error.detail || 'Failed to create payment session');
+                    }
 
-                const result = await response.json();
+                    const result = await response.json();
 
-                // Show success state
-                showStatusBanner('won', {
-                    accepted_at: new Date().toISOString(),
-                    signature_name: signatureName
-                });
+                    {% if posthog_api_key %}
+                    if (window.posthog) {
+                        posthog.capture('quote_deposit_checkout_started', {
+                            token: shareToken,
+                            signature_name: signatureName,
+                            deposit_amount: result.deposit_amount,
+                            has_scheduled_date: !!scheduledDate
+                        });
+                    }
+                    {% endif %}
 
-                {% if posthog_api_key %}
-                if (window.posthog) {
-                    posthog.capture('quote_accepted', {
-                        token: shareToken,
+                    // Redirect to Stripe checkout
+                    window.location.href = result.checkout_url;
+
+                } else {
+                    // Regular acceptance without deposit
+                    const response = await fetch(`/api/quotes/shared/${shareToken}/accept`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ signature_name: signatureName })
+                    });
+
+                    if (!response.ok) {
+                        const error = await response.json();
+                        throw new Error(error.detail || 'Failed to accept quote');
+                    }
+
+                    const result = await response.json();
+
+                    // Show success state
+                    showStatusBanner('won', {
+                        accepted_at: new Date().toISOString(),
                         signature_name: signatureName
                     });
+
+                    {% if posthog_api_key %}
+                    if (window.posthog) {
+                        posthog.capture('quote_accepted', {
+                            token: shareToken,
+                            signature_name: signatureName,
+                            has_scheduled_date: !!scheduledDate
+                        });
+                    }
+                    {% endif %}
                 }
-                {% endif %}
 
             } catch (error) {
                 console.error('Error accepting quote:', error);
                 alert('Failed to accept quote: ' + error.message);
                 btn.disabled = false;
-                btn.textContent = 'Confirm & Accept Quote';
+                btn.textContent = payDeposit ? 'Continue to Payment' : 'Confirm & Accept Quote';
             }
         });
 

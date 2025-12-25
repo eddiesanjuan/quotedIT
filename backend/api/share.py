@@ -24,6 +24,7 @@ from ..services.auth import get_current_user
 from ..services import get_db_service, get_pdf_service
 from ..services.email import email_service
 from ..services.analytics import analytics_service
+from ..services.billing import BillingService  # INNOV-2: Deposit checkout
 from ..config import settings
 
 
@@ -78,6 +79,7 @@ class SharedQuoteResponse(BaseModel):
     contractor_name: str
     contractor_phone: Optional[str] = None
     customer_name: Optional[str] = None
+    customer_email: Optional[str] = None  # INNOV-2: For Stripe checkout
     customer_address: Optional[str] = None
     job_type: Optional[str] = None
     job_description: Optional[str] = None
@@ -92,6 +94,10 @@ class SharedQuoteResponse(BaseModel):
     signature_name: Optional[str] = None
     # Wave 2: Expiration info
     expiration: Optional[ExpirationInfo] = None
+    # INNOV-2: Deposit and scheduling info
+    deposit_info: Optional[dict] = None
+    scheduled_start_date: Optional[str] = None
+    deposit_paid: bool = False
 
 
 # ============================================================================
@@ -432,12 +438,26 @@ async def view_shared_quote(
                 days_remaining=days_remaining,
             )
 
+        # INNOV-2: Build deposit info from contractor terms
+        deposit_info = None
+        if terms:
+            deposit_percent = terms.deposit_percent or 50.0
+            quote_total = quote.total or quote.subtotal or 0
+            deposit_amount = (quote_total * deposit_percent) / 100
+            deposit_info = {
+                "deposit_enabled": deposit_percent > 0,
+                "deposit_percent": deposit_percent,
+                "deposit_amount": round(deposit_amount, 2),
+                "deposit_description": terms.deposit_description or f"{int(deposit_percent)}% deposit to schedule",
+            }
+
         # Return limited public data (PROPOSIFY-DOMINATION: include status/signature)
         return SharedQuoteResponse(
             id=quote.id,
             contractor_name=contractor.business_name or contractor.owner_name,
             contractor_phone=contractor.phone,
             customer_name=quote.customer_name,
+            customer_email=quote.customer_email,  # INNOV-2: For Stripe checkout
             customer_address=quote.customer_address,
             job_type=quote.job_type,
             job_description=quote.job_description,
@@ -452,6 +472,10 @@ async def view_shared_quote(
             signature_name=quote.signature_name,
             # Wave 2: Expiration info
             expiration=expiration_info,
+            # INNOV-2: Deposit and scheduling info
+            deposit_info=deposit_info,
+            scheduled_start_date=quote.scheduled_start_date.isoformat() if hasattr(quote, 'scheduled_start_date') and quote.scheduled_start_date else None,
+            deposit_paid=quote.deposit_paid if hasattr(quote, 'deposit_paid') else False,
         )
 
     except HTTPException:
@@ -474,6 +498,31 @@ class AcceptQuoteRequest(BaseModel):
 class RejectQuoteRequest(BaseModel):
     """Request to reject a quote."""
     reason: Optional[str] = None  # Optional reason for rejection
+
+
+# INNOV-2: One-Click Acceptance Flow Models
+class AcceptWithDepositRequest(BaseModel):
+    """Request to accept a quote with optional deposit payment and scheduling."""
+    signature_name: str  # Customer types their name to sign
+    scheduled_date: Optional[str] = None  # ISO date string for scheduled start
+    pay_deposit: bool = False  # Whether to pay deposit now
+    message: Optional[str] = None  # Optional note to contractor
+
+
+class DepositCheckoutResponse(BaseModel):
+    """Response with Stripe checkout URL for deposit payment."""
+    checkout_url: str
+    session_id: str
+    deposit_amount: float
+    deposit_percent: float
+
+
+class QuoteDepositInfo(BaseModel):
+    """Deposit configuration for a quote."""
+    deposit_enabled: bool = True
+    deposit_percent: float = 50.0
+    deposit_amount: float = 0
+    deposit_description: str = "50% deposit to schedule"
 
 
 @router.post("/shared/{token}/accept")
@@ -538,6 +587,30 @@ async def accept_quote(
                     print(f"[ACCEPTANCE] Quote {quote.id} accepted by customer: {acceptance_result}")
             except Exception as e:
                 print(f"Warning: Failed to process acceptance learning on accept: {e}")
+
+        # INNOV-6: Auto-generate invoice when quote is accepted
+        try:
+            from ..services.invoice_automation import InvoiceAutomationService
+            from ..services.database import async_session_factory
+
+            async with async_session_factory() as invoice_db:
+                # Check if contractor has auto-invoicing enabled
+                settings = await InvoiceAutomationService.get_contractor_invoice_settings(
+                    invoice_db, str(quote.contractor_id)
+                )
+                if settings.get("auto_generate_invoices", False):
+                    result = await InvoiceAutomationService.auto_generate_from_quote(
+                        db=invoice_db,
+                        quote_id=str(quote.id),
+                        send_to_customer=settings.get("auto_send_invoices", False),
+                        due_days=settings.get("default_due_days", 30),
+                    )
+                    if result.success:
+                        print(f"[INVOICE-AUTO] Generated invoice {result.invoice_number} from accepted quote {quote.id}")
+                    else:
+                        print(f"[INVOICE-AUTO] Could not generate invoice: {result.message}")
+        except Exception as e:
+            print(f"Warning: Failed to auto-generate invoice: {e}")
 
         # Send notification email to contractor
         try:
@@ -678,4 +751,120 @@ async def reject_quote(
         raise
     except Exception as e:
         print(f"Error rejecting quote: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# INNOV-2: Deposit Checkout Endpoint
+@router.post("/shared/{token}/deposit-checkout", response_model=DepositCheckoutResponse)
+async def create_deposit_checkout(
+    token: str,
+    request: AcceptWithDepositRequest,
+    db: DatabaseService = Depends(get_db),
+):
+    """
+    Create a Stripe checkout session for deposit payment.
+
+    INNOV-2: One-Click Acceptance Flow
+    - Customer accepts quote with signature
+    - Optionally schedules a start date
+    - Redirected to Stripe for deposit payment
+    - On success, quote is marked as accepted + deposit paid + scheduled
+    """
+    try:
+        # Validate share token
+        quote = await db.get_quote_by_share_token(token)
+        if not quote:
+            raise HTTPException(status_code=404, detail="Quote not found")
+
+        # Get contractor info
+        contractor = await db.get_contractor(str(quote.contractor_id))
+        if not contractor:
+            raise HTTPException(status_code=404, detail="Contractor not found")
+
+        # Get contractor terms for deposit info
+        terms = await db.get_contractor_terms(str(contractor.id))
+        deposit_percent = 50.0  # Default
+        if terms and terms.deposit_percent:
+            deposit_percent = terms.deposit_percent
+
+        # Calculate deposit amount
+        quote_total = quote.total or quote.subtotal or 0
+        deposit_amount = (quote_total * deposit_percent) / 100
+        deposit_cents = int(deposit_amount * 100)
+
+        if deposit_cents < 50:  # Stripe minimum is $0.50
+            raise HTTPException(
+                status_code=400,
+                detail="Deposit amount too small for payment processing"
+            )
+
+        # Get customer email (required for Stripe checkout)
+        customer_email = quote.customer_email
+        if not customer_email:
+            raise HTTPException(
+                status_code=400,
+                detail="Customer email required for payment"
+            )
+
+        # Store the acceptance info first (signature, scheduled date)
+        update_fields = {
+            "status": "pending_payment",  # Intermediate status
+            "signature_name": request.signature_name,
+        }
+        if request.scheduled_date:
+            from datetime import datetime
+            try:
+                scheduled_dt = datetime.fromisoformat(request.scheduled_date.replace('Z', '+00:00'))
+                update_fields["scheduled_start_date"] = scheduled_dt
+            except ValueError:
+                pass  # Invalid date format, skip
+
+        await db.update_quote(str(quote.id), **update_fields)
+
+        # Build success/cancel URLs
+        base_url = settings.app_url.rstrip("/")
+        success_url = f"{base_url}/quote/{token}?payment=success"
+        cancel_url = f"{base_url}/quote/{token}?payment=cancelled"
+
+        # Create Stripe checkout session
+        checkout_result = await BillingService.create_deposit_checkout_session(
+            quote_id=str(quote.id),
+            amount_cents=deposit_cents,
+            contractor_name=contractor.business_name or contractor.name,
+            customer_email=customer_email,
+            customer_name=quote.customer_name or "Customer",
+            job_description=quote.job_description or quote.job_type or "Project",
+            success_url=success_url,
+            cancel_url=cancel_url,
+            scheduled_date=request.scheduled_date,
+        )
+
+        # Track analytics
+        try:
+            analytics_service.track_event(
+                user_id=f"shared_{token[:8]}",
+                event_name="deposit_checkout_started",
+                properties={
+                    "token": token,
+                    "quote_id": str(quote.id),
+                    "contractor_id": str(quote.contractor_id),
+                    "deposit_amount": deposit_amount,
+                    "deposit_percent": deposit_percent,
+                    "has_scheduled_date": bool(request.scheduled_date),
+                }
+            )
+        except Exception as e:
+            print(f"Warning: Failed to track deposit_checkout_started: {e}")
+
+        return DepositCheckoutResponse(
+            checkout_url=checkout_result["checkout_url"],
+            session_id=checkout_result["session_id"],
+            deposit_amount=round(deposit_amount, 2),
+            deposit_percent=deposit_percent,
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error creating deposit checkout: {e}")
         raise HTTPException(status_code=500, detail=str(e))
