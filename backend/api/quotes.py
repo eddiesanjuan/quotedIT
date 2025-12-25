@@ -2048,3 +2048,462 @@ async def duplicate_quote(
         print(f"Warning: Failed to track quote duplication: {e}")
 
     return quote_to_response(new_quote)
+
+
+# ============================================================================
+# INNOV-1: Outcome Intelligence Engine
+# ============================================================================
+
+# Structured loss reasons for pattern analysis
+LOSS_REASONS = {
+    "price_too_high": "Price was too high",
+    "went_with_competitor": "Went with a competitor",
+    "project_cancelled": "Project was cancelled/postponed",
+    "no_response": "Customer never responded",
+    "scope_changed": "Job scope changed significantly",
+    "timing_issue": "Timing/scheduling didn't work",
+    "budget_constraint": "Customer budget constraints",
+    "quality_concerns": "Concerns about quality/experience",
+    "other": "Other reason",
+}
+
+# Structured win factors for learning what works
+WIN_FACTORS = {
+    "best_price": "Had the best price",
+    "best_value": "Best overall value",
+    "reputation": "Reputation/reviews",
+    "quick_response": "Fast response time",
+    "relationship": "Existing relationship",
+    "referral": "Referral from past customer",
+    "availability": "Best availability/timing",
+    "other": "Other factor",
+}
+
+
+class MarkOutcomeRequest(BaseModel):
+    """Request to mark a quote outcome (win/loss)."""
+    outcome: str  # "won" or "lost"
+    reason: Optional[str] = None  # Key from LOSS_REASONS or WIN_FACTORS
+    notes: Optional[str] = None  # Free-form notes
+    final_price: Optional[float] = None  # Actual price if different from quote
+
+
+class MarkOutcomeResponse(BaseModel):
+    """Response from marking outcome."""
+    success: bool
+    quote_id: str
+    outcome: str
+    message: str
+
+
+class OutcomeStatsResponse(BaseModel):
+    """Outcome statistics for a contractor."""
+    total_quotes: int
+    quotes_with_outcome: int
+    won_count: int
+    lost_count: int
+    pending_count: int
+    overall_win_rate: Optional[float] = None
+    by_category: dict = {}
+    by_price_range: dict = {}
+    top_loss_reasons: list = []
+    top_win_factors: list = []
+    average_winning_price: Optional[float] = None
+    average_losing_price: Optional[float] = None
+
+
+class CategoryOutcomeInsight(BaseModel):
+    """Pricing intelligence for a specific category."""
+    category: str
+    total_quotes: int
+    won_count: int
+    lost_count: int
+    win_rate: Optional[float] = None
+    avg_won_price: Optional[float] = None
+    avg_lost_price: Optional[float] = None
+    price_sweet_spot: Optional[dict] = None  # {min: X, max: Y, optimal: Z}
+    confidence: str = "low"  # low, medium, high based on sample size
+
+
+@router.post("/{quote_id}/outcome", response_model=MarkOutcomeResponse)
+async def mark_quote_outcome(
+    quote_id: str,
+    outcome_request: MarkOutcomeRequest,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Mark a quote as won or lost (contractor-side).
+
+    INNOV-1: Outcome Intelligence Engine - Enables contractors to record
+    outcomes when customers respond outside the app (phone, in-person, etc.).
+
+    This data feeds into the learning system to:
+    1. Track win/loss rates by category
+    2. Identify optimal price points
+    3. Learn what factors lead to success
+    """
+    if outcome_request.outcome not in ["won", "lost"]:
+        raise HTTPException(
+            status_code=400,
+            detail="Outcome must be 'won' or 'lost'"
+        )
+
+    db = get_db_service()
+
+    # Get the quote
+    quote = await db.get_quote(quote_id)
+    if not quote:
+        raise HTTPException(status_code=404, detail="Quote not found")
+
+    # Verify ownership
+    contractor = await db.get_contractor_by_user_id(current_user["id"])
+    if not contractor or quote.contractor_id != contractor.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    # Check if already has outcome
+    if quote.outcome in ["won", "lost"]:
+        return MarkOutcomeResponse(
+            success=False,
+            quote_id=quote_id,
+            outcome=quote.outcome,
+            message=f"Quote already marked as {quote.outcome}"
+        )
+
+    # Build update fields
+    now = datetime.utcnow()
+    update_fields = {
+        "outcome": outcome_request.outcome,
+        "status": outcome_request.outcome,
+    }
+
+    if outcome_request.outcome == "won":
+        update_fields["accepted_at"] = now
+    else:
+        update_fields["rejected_at"] = now
+
+    # Build outcome notes with structured reason
+    notes_parts = []
+    if outcome_request.reason:
+        if outcome_request.outcome == "lost":
+            reason_text = LOSS_REASONS.get(outcome_request.reason, outcome_request.reason)
+        else:
+            reason_text = WIN_FACTORS.get(outcome_request.reason, outcome_request.reason)
+        notes_parts.append(f"Reason: {reason_text}")
+        update_fields["rejection_reason"] = outcome_request.reason  # Store structured key
+
+    if outcome_request.notes:
+        notes_parts.append(outcome_request.notes)
+
+    if notes_parts:
+        update_fields["outcome_notes"] = " | ".join(notes_parts)
+
+    # Store final price if provided (for learning actual vs quoted)
+    if outcome_request.final_price:
+        current_notes = quote.outcome_notes or ""
+        price_note = f"Final price: ${outcome_request.final_price:,.2f} (quoted: ${quote.subtotal:,.2f})"
+        update_fields["outcome_notes"] = f"{current_notes} | {price_note}" if current_notes else price_note
+
+    # Update the quote
+    await db.update_quote(quote_id, **update_fields)
+
+    # Process outcome for learning
+    if quote.job_type:
+        try:
+            if outcome_request.outcome == "won":
+                # Successful quote - boost confidence in pricing
+                await db.apply_acceptance_to_pricing_model(
+                    contractor_id=str(contractor.id),
+                    category=quote.job_type,
+                    signal_type="won",
+                )
+            # For losses, we track the data but don't immediately adjust pricing
+            # The aggregated stats will inform future pricing decisions
+        except Exception as e:
+            print(f"Warning: Failed to process outcome learning: {e}")
+
+    # Track analytics
+    try:
+        analytics_service.track_event(
+            user_id=str(current_user["id"]),
+            event_name="quote_outcome_marked",
+            properties={
+                "contractor_id": str(contractor.id),
+                "quote_id": quote_id,
+                "outcome": outcome_request.outcome,
+                "reason": outcome_request.reason,
+                "job_type": quote.job_type,
+                "quote_total": quote.subtotal,
+                "final_price": outcome_request.final_price,
+                "price_difference": (
+                    outcome_request.final_price - quote.subtotal
+                    if outcome_request.final_price else None
+                ),
+            }
+        )
+    except Exception as e:
+        print(f"Warning: Failed to track outcome event: {e}")
+
+    return MarkOutcomeResponse(
+        success=True,
+        quote_id=quote_id,
+        outcome=outcome_request.outcome,
+        message=f"Quote marked as {outcome_request.outcome}"
+    )
+
+
+@router.get("/outcome/stats", response_model=OutcomeStatsResponse)
+async def get_outcome_stats(
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get aggregated outcome statistics for the contractor.
+
+    INNOV-1: Outcome Intelligence Engine - Provides insights into:
+    - Overall win/loss rates
+    - Win rates by job category
+    - Win rates by price range
+    - Top reasons for wins and losses
+    - Optimal price points
+    """
+    db = get_db_service()
+
+    contractor = await db.get_contractor_by_user_id(current_user["id"])
+    if not contractor:
+        raise HTTPException(status_code=400, detail="Contractor not found")
+
+    # Get all quotes for this contractor
+    quotes = await db.get_quotes_by_contractor(contractor.id)
+
+    if not quotes:
+        return OutcomeStatsResponse(
+            total_quotes=0,
+            quotes_with_outcome=0,
+            won_count=0,
+            lost_count=0,
+            pending_count=0,
+        )
+
+    # Calculate overall stats
+    total_quotes = len(quotes)
+    won_quotes = [q for q in quotes if q.outcome == "won"]
+    lost_quotes = [q for q in quotes if q.outcome == "lost"]
+    pending_quotes = [q for q in quotes if q.outcome not in ["won", "lost"]]
+
+    won_count = len(won_quotes)
+    lost_count = len(lost_quotes)
+    pending_count = len(pending_quotes)
+    quotes_with_outcome = won_count + lost_count
+
+    overall_win_rate = None
+    if quotes_with_outcome > 0:
+        overall_win_rate = round(won_count / quotes_with_outcome * 100, 1)
+
+    # Calculate by category
+    by_category = {}
+    for q in quotes:
+        if q.job_type:
+            if q.job_type not in by_category:
+                by_category[q.job_type] = {
+                    "total": 0, "won": 0, "lost": 0, "pending": 0,
+                    "won_total": 0, "lost_total": 0
+                }
+            by_category[q.job_type]["total"] += 1
+            if q.outcome == "won":
+                by_category[q.job_type]["won"] += 1
+                by_category[q.job_type]["won_total"] += q.subtotal or 0
+            elif q.outcome == "lost":
+                by_category[q.job_type]["lost"] += 1
+                by_category[q.job_type]["lost_total"] += q.subtotal or 0
+            else:
+                by_category[q.job_type]["pending"] += 1
+
+    # Calculate win rates and averages per category
+    for cat_name, cat_data in by_category.items():
+        decided = cat_data["won"] + cat_data["lost"]
+        if decided > 0:
+            cat_data["win_rate"] = round(cat_data["won"] / decided * 100, 1)
+            if cat_data["won"] > 0:
+                cat_data["avg_won_price"] = round(cat_data["won_total"] / cat_data["won"], 2)
+            if cat_data["lost"] > 0:
+                cat_data["avg_lost_price"] = round(cat_data["lost_total"] / cat_data["lost"], 2)
+
+    # Calculate by price range
+    price_ranges = [
+        (0, 500, "Under $500"),
+        (500, 1000, "$500-$1,000"),
+        (1000, 2500, "$1,000-$2,500"),
+        (2500, 5000, "$2,500-$5,000"),
+        (5000, 10000, "$5,000-$10,000"),
+        (10000, float('inf'), "$10,000+"),
+    ]
+
+    by_price_range = {}
+    for min_price, max_price, label in price_ranges:
+        range_quotes = [
+            q for q in quotes
+            if q.subtotal and min_price <= q.subtotal < max_price
+        ]
+        if range_quotes:
+            won_in_range = len([q for q in range_quotes if q.outcome == "won"])
+            lost_in_range = len([q for q in range_quotes if q.outcome == "lost"])
+            decided_in_range = won_in_range + lost_in_range
+            by_price_range[label] = {
+                "total": len(range_quotes),
+                "won": won_in_range,
+                "lost": lost_in_range,
+                "win_rate": round(won_in_range / decided_in_range * 100, 1) if decided_in_range > 0 else None,
+            }
+
+    # Top loss reasons
+    loss_reason_counts = {}
+    for q in lost_quotes:
+        reason = q.rejection_reason or "unknown"
+        loss_reason_counts[reason] = loss_reason_counts.get(reason, 0) + 1
+
+    top_loss_reasons = sorted(
+        [{"reason": k, "count": v, "label": LOSS_REASONS.get(k, k)}
+         for k, v in loss_reason_counts.items()],
+        key=lambda x: x["count"],
+        reverse=True
+    )[:5]
+
+    # Average prices
+    avg_winning_price = None
+    if won_quotes:
+        won_totals = [q.subtotal for q in won_quotes if q.subtotal]
+        if won_totals:
+            avg_winning_price = round(sum(won_totals) / len(won_totals), 2)
+
+    avg_losing_price = None
+    if lost_quotes:
+        lost_totals = [q.subtotal for q in lost_quotes if q.subtotal]
+        if lost_totals:
+            avg_losing_price = round(sum(lost_totals) / len(lost_totals), 2)
+
+    return OutcomeStatsResponse(
+        total_quotes=total_quotes,
+        quotes_with_outcome=quotes_with_outcome,
+        won_count=won_count,
+        lost_count=lost_count,
+        pending_count=pending_count,
+        overall_win_rate=overall_win_rate,
+        by_category=by_category,
+        by_price_range=by_price_range,
+        top_loss_reasons=top_loss_reasons,
+        top_win_factors=[],  # TODO: Track win factors
+        average_winning_price=avg_winning_price,
+        average_losing_price=avg_losing_price,
+    )
+
+
+@router.get("/outcome/category/{category}", response_model=CategoryOutcomeInsight)
+async def get_category_outcome_insight(
+    category: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get pricing intelligence for a specific job category.
+
+    INNOV-1: Outcome Intelligence Engine - Returns:
+    - Win rate for this category
+    - Average prices for won vs lost quotes
+    - Price sweet spot (optimal pricing range)
+    - Confidence level based on sample size
+    """
+    db = get_db_service()
+
+    contractor = await db.get_contractor_by_user_id(current_user["id"])
+    if not contractor:
+        raise HTTPException(status_code=400, detail="Contractor not found")
+
+    # Get quotes for this category
+    all_quotes = await db.get_quotes_by_contractor(contractor.id)
+    category_quotes = [q for q in all_quotes if q.job_type == category]
+
+    if not category_quotes:
+        return CategoryOutcomeInsight(
+            category=category,
+            total_quotes=0,
+            won_count=0,
+            lost_count=0,
+        )
+
+    total_quotes = len(category_quotes)
+    won_quotes = [q for q in category_quotes if q.outcome == "won"]
+    lost_quotes = [q for q in category_quotes if q.outcome == "lost"]
+
+    won_count = len(won_quotes)
+    lost_count = len(lost_quotes)
+    decided = won_count + lost_count
+
+    win_rate = None
+    if decided > 0:
+        win_rate = round(won_count / decided * 100, 1)
+
+    # Calculate average prices
+    avg_won_price = None
+    if won_quotes:
+        won_totals = [q.subtotal for q in won_quotes if q.subtotal]
+        if won_totals:
+            avg_won_price = round(sum(won_totals) / len(won_totals), 2)
+
+    avg_lost_price = None
+    if lost_quotes:
+        lost_totals = [q.subtotal for q in lost_quotes if q.subtotal]
+        if lost_totals:
+            avg_lost_price = round(sum(lost_totals) / len(lost_totals), 2)
+
+    # Calculate price sweet spot
+    price_sweet_spot = None
+    if won_count >= 3:  # Need at least 3 won quotes to calculate
+        won_prices = sorted([q.subtotal for q in won_quotes if q.subtotal])
+        if won_prices:
+            price_sweet_spot = {
+                "min": round(won_prices[0], 2),
+                "max": round(won_prices[-1], 2),
+                "optimal": round(sum(won_prices) / len(won_prices), 2),  # Average of wins
+            }
+            # If we have lost quotes that were higher, cap the max
+            if lost_quotes:
+                lost_prices = [q.subtotal for q in lost_quotes if q.subtotal]
+                avg_loss = sum(lost_prices) / len(lost_prices) if lost_prices else 0
+                if avg_loss > price_sweet_spot["optimal"]:
+                    price_sweet_spot["ceiling_warning"] = round(avg_loss, 2)
+
+    # Determine confidence level
+    if decided >= 20:
+        confidence = "high"
+    elif decided >= 10:
+        confidence = "medium"
+    else:
+        confidence = "low"
+
+    return CategoryOutcomeInsight(
+        category=category,
+        total_quotes=total_quotes,
+        won_count=won_count,
+        lost_count=lost_count,
+        win_rate=win_rate,
+        avg_won_price=avg_won_price,
+        avg_lost_price=avg_lost_price,
+        price_sweet_spot=price_sweet_spot,
+        confidence=confidence,
+    )
+
+
+@router.get("/outcome/reasons")
+async def get_outcome_reasons():
+    """
+    Get available outcome reason options.
+
+    Returns structured lists of loss reasons and win factors
+    for frontend dropdown population.
+    """
+    return {
+        "loss_reasons": [
+            {"key": k, "label": v} for k, v in LOSS_REASONS.items()
+        ],
+        "win_factors": [
+            {"key": k, "label": v} for k, v in WIN_FACTORS.items()
+        ],
+    }

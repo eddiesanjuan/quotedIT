@@ -1148,6 +1148,141 @@
             color: var(--text-muted);
         }
 
+        /* INNOV-1: Outcome Tracking Section */
+        .outcome-tracking-section {
+            margin-top: 24px;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid var(--border);
+        }
+
+        .outcome-tracking-section .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .outcome-tracking-section h4 {
+            font-size: 0.9375rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .outcome-tracking-section .hint-text {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .outcome-status-display {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+            padding: 12px 16px;
+            background: var(--bg-primary);
+            border-radius: 8px;
+        }
+
+        .outcome-status-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .outcome-status-value {
+            font-size: 0.875rem;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 6px;
+            background: var(--bg-elevated);
+        }
+
+        .outcome-status-value.won {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .outcome-status-value.lost {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+
+        .outcome-status-value.pending {
+            background: var(--bg-elevated);
+            color: var(--text-secondary);
+        }
+
+        .outcome-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn-outcome-won {
+            flex: 1;
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-outcome-won:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-outcome-lost {
+            flex: 1;
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #6b7280, #4b5563);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-outcome-lost:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3);
+        }
+
+        .outcome-details {
+            padding: 16px;
+            background: var(--bg-primary);
+            border-radius: 8px;
+        }
+
+        .outcome-reason {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .outcome-notes {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            font-style: italic;
+            margin-bottom: 12px;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.8125rem;
+        }
+
+        @media (max-width: 480px) {
+            .outcome-buttons {
+                flex-direction: column;
+            }
+        }
+
         /* Transcription */
         .transcription {
             margin-top: 32px;
@@ -5023,6 +5158,37 @@
                     </div>
                 </div>
 
+                <!-- INNOV-1: Outcome Tracking Section -->
+                <div class="outcome-tracking-section" id="outcomeTrackingSection">
+                    <div class="section-header">
+                        <h4>📊 Outcome Tracking</h4>
+                        <span class="hint-text">Did the customer accept this quote?</span>
+                    </div>
+
+                    <!-- Current outcome status display -->
+                    <div class="outcome-status-display" id="outcomeStatusDisplay">
+                        <span class="outcome-status-label">Status:</span>
+                        <span class="outcome-status-value" id="outcomeStatusValue">Pending</span>
+                    </div>
+
+                    <!-- Outcome buttons (show when no outcome set) -->
+                    <div class="outcome-buttons" id="outcomeButtons">
+                        <button class="btn btn-outcome-won" onclick="openOutcomeModal('won')">
+                            ✓ Mark as Won
+                        </button>
+                        <button class="btn btn-outcome-lost" onclick="openOutcomeModal('lost')">
+                            ✗ Mark as Lost
+                        </button>
+                    </div>
+
+                    <!-- Outcome details (show when outcome is set) -->
+                    <div class="outcome-details" id="outcomeDetails" style="display: none;">
+                        <div class="outcome-reason" id="outcomeReasonDisplay"></div>
+                        <div class="outcome-notes" id="outcomeNotesDisplay"></div>
+                        <button class="btn btn-secondary btn-sm" onclick="clearOutcome()">Change Outcome</button>
+                    </div>
+                </div>
+
                 <!-- Save Changes Section -->
                 <div class="save-changes-section" id="saveChangesSection">
                     <div class="changes-summary" id="changesSummary">
@@ -6621,6 +6787,54 @@
         </div>
     </div>
 
+    <!-- INNOV-1: Outcome Modal -->
+    <div id="outcomeModal" class="modal-overlay" style="display: none;">
+        <div class="modal-backdrop" onclick="closeOutcomeModal()"></div>
+        <div class="modal-content" style="max-width: 500px;">
+            <button class="modal-close" onclick="closeOutcomeModal()">&times;</button>
+
+            <div style="text-align: center; margin-bottom: 24px;">
+                <div id="outcomeModalIcon" style="font-size: 3rem; margin-bottom: 16px;">🎯</div>
+                <h2 id="outcomeModalTitle" class="modal-title" style="margin-bottom: 8px;">Mark Quote Outcome</h2>
+                <p id="outcomeModalSubtitle" class="modal-subtitle">Help your AI learn what works</p>
+            </div>
+
+            <!-- Reason Selection -->
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: 500;">Reason (optional)</label>
+                <select id="outcomeReasonSelect" style="width: 100%; padding: 12px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-elevated); color: var(--text-primary); font-size: 0.9375rem;">
+                    <option value="">Select a reason...</option>
+                    <!-- Options populated dynamically -->
+                </select>
+            </div>
+
+            <!-- Final Price (for won quotes) -->
+            <div id="finalPriceContainer" style="margin-bottom: 20px; display: none;">
+                <label style="display: block; margin-bottom: 8px; font-weight: 500;">Final Price (if different from quote)</label>
+                <div style="position: relative;">
+                    <span style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--text-secondary);">$</span>
+                    <input type="number" id="outcomeFinalPrice" placeholder="Leave blank if same" style="width: 100%; padding: 12px 16px 12px 32px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-elevated); color: var(--text-primary); font-size: 0.9375rem; box-sizing: border-box;">
+                </div>
+            </div>
+
+            <!-- Notes -->
+            <div style="margin-bottom: 24px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: 500;">Additional Notes (optional)</label>
+                <textarea id="outcomeNotes" placeholder="Any context that might help your AI improve future quotes..." style="width: 100%; padding: 12px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-elevated); color: var(--text-primary); font-size: 0.9375rem; resize: vertical; min-height: 80px; box-sizing: border-box;"></textarea>
+            </div>
+
+            <!-- Actions -->
+            <div style="display: flex; gap: 12px;">
+                <button class="btn btn-secondary" onclick="closeOutcomeModal()" style="flex: 1;">
+                    Cancel
+                </button>
+                <button id="confirmOutcomeBtn" class="btn btn-primary" onclick="confirmOutcome()" style="flex: 2;">
+                    Confirm
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Configuration
         const API_BASE = window.location.hostname === 'localhost'
@@ -7648,6 +7862,9 @@
 
             // Check if we should show first quote activation modal
             checkFirstQuoteActivation();
+
+            // INNOV-1: Load outcome reasons for outcome tracking
+            loadOutcomeReasons();
         }
 
         // Auth message
@@ -10922,6 +11139,9 @@
             document.getElementById('saveChangesBtn').disabled = true;
             document.getElementById('correctionNotes').value = '';
             document.getElementById('changesSummary').textContent = 'No changes made';
+
+            // INNOV-1: Update outcome tracking section
+            updateOutcomeTracking(quote);
         }
 
         // Render editable line items using safe DOM methods
@@ -11313,6 +11533,220 @@
 
             document.getElementById('quoteDetailView').style.display = 'none';
             document.getElementById('myQuotesSection').style.display = 'block';
+        }
+
+        // ========================================
+        // INNOV-1: Outcome Intelligence Engine
+        // ========================================
+
+        // Outcome tracking state
+        let outcomeReasons = { loss_reasons: {}, win_factors: {} };
+        let currentOutcomeType = null;
+
+        // Fetch outcome reasons from API on init
+        async function loadOutcomeReasons() {
+            try {
+                const response = await fetch(`${API_BASE}/quotes/outcome/reasons`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                if (response.ok) {
+                    outcomeReasons = await response.json();
+                }
+            } catch (err) {
+                console.error('Failed to load outcome reasons:', err);
+            }
+        }
+
+        // Update outcome tracking section based on quote status
+        function updateOutcomeTracking(quote) {
+            const statusDisplay = document.getElementById('outcomeStatusValue');
+            const buttonsDiv = document.getElementById('outcomeButtons');
+            const detailsDiv = document.getElementById('outcomeDetails');
+
+            // Reset
+            statusDisplay.className = 'outcome-status-value';
+            buttonsDiv.style.display = 'flex';
+            detailsDiv.style.display = 'none';
+
+            if (quote.status === 'won') {
+                statusDisplay.textContent = '✓ Won';
+                statusDisplay.classList.add('won');
+                buttonsDiv.style.display = 'none';
+                detailsDiv.style.display = 'block';
+
+                // Show reason and notes
+                const reasonDisplay = document.getElementById('outcomeReasonDisplay');
+                const notesDisplay = document.getElementById('outcomeNotesDisplay');
+
+                if (quote.outcome_notes) {
+                    const reasonLabel = outcomeReasons.win_factors[quote.rejection_reason] || quote.rejection_reason || '';
+                    reasonDisplay.textContent = reasonLabel ? `Win factor: ${reasonLabel}` : '';
+                    notesDisplay.textContent = quote.outcome_notes || '';
+                } else {
+                    reasonDisplay.textContent = '';
+                    notesDisplay.textContent = '';
+                }
+            } else if (quote.status === 'lost') {
+                statusDisplay.textContent = '✗ Lost';
+                statusDisplay.classList.add('lost');
+                buttonsDiv.style.display = 'none';
+                detailsDiv.style.display = 'block';
+
+                // Show reason and notes
+                const reasonDisplay = document.getElementById('outcomeReasonDisplay');
+                const notesDisplay = document.getElementById('outcomeNotesDisplay');
+
+                const reasonLabel = outcomeReasons.loss_reasons[quote.rejection_reason] || quote.rejection_reason || '';
+                reasonDisplay.textContent = reasonLabel ? `Loss reason: ${reasonLabel}` : '';
+                notesDisplay.textContent = quote.outcome_notes || '';
+            } else {
+                statusDisplay.textContent = 'Pending';
+                statusDisplay.classList.add('pending');
+            }
+        }
+
+        // Open outcome modal
+        function openOutcomeModal(outcomeType) {
+            currentOutcomeType = outcomeType;
+            const modal = document.getElementById('outcomeModal');
+            const select = document.getElementById('outcomeReasonSelect');
+            const icon = document.getElementById('outcomeModalIcon');
+            const title = document.getElementById('outcomeModalTitle');
+            const subtitle = document.getElementById('outcomeModalSubtitle');
+            const confirmBtn = document.getElementById('confirmOutcomeBtn');
+            const finalPriceContainer = document.getElementById('finalPriceContainer');
+
+            // Clear previous values
+            select.innerHTML = '<option value="">Select a reason...</option>';
+            document.getElementById('outcomeNotes').value = '';
+            document.getElementById('outcomeFinalPrice').value = '';
+
+            if (outcomeType === 'won') {
+                icon.textContent = '🎉';
+                title.textContent = 'Mark Quote as Won!';
+                subtitle.textContent = 'Congratulations! Help your AI learn what works.';
+                confirmBtn.className = 'btn btn-primary';
+                confirmBtn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+                finalPriceContainer.style.display = 'block';
+
+                // Populate win factors
+                Object.entries(outcomeReasons.win_factors || {}).forEach(([key, label]) => {
+                    const option = document.createElement('option');
+                    option.value = key;
+                    option.textContent = label;
+                    select.appendChild(option);
+                });
+            } else {
+                icon.textContent = '📊';
+                title.textContent = 'Mark Quote as Lost';
+                subtitle.textContent = 'Understanding why helps improve future quotes.';
+                confirmBtn.className = 'btn btn-primary';
+                confirmBtn.style.background = '';
+                finalPriceContainer.style.display = 'none';
+
+                // Populate loss reasons
+                Object.entries(outcomeReasons.loss_reasons || {}).forEach(([key, label]) => {
+                    const option = document.createElement('option');
+                    option.value = key;
+                    option.textContent = label;
+                    select.appendChild(option);
+                });
+            }
+
+            modal.style.display = 'flex';
+        }
+
+        // Close outcome modal
+        function closeOutcomeModal() {
+            document.getElementById('outcomeModal').style.display = 'none';
+            currentOutcomeType = null;
+        }
+
+        // Confirm outcome selection
+        async function confirmOutcome() {
+            if (!currentDetailQuote || !currentOutcomeType) return;
+
+            const reason = document.getElementById('outcomeReasonSelect').value;
+            const notes = document.getElementById('outcomeNotes').value;
+            const finalPriceInput = document.getElementById('outcomeFinalPrice').value;
+            const finalPrice = finalPriceInput ? parseFloat(finalPriceInput) : null;
+
+            const confirmBtn = document.getElementById('confirmOutcomeBtn');
+            const originalText = confirmBtn.textContent;
+            confirmBtn.disabled = true;
+            confirmBtn.textContent = 'Saving...';
+
+            try {
+                const response = await fetch(`${API_BASE}/quotes/${currentDetailQuote.id}/outcome`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        outcome: currentOutcomeType,
+                        reason: reason || null,
+                        notes: notes || null,
+                        final_price: finalPrice
+                    })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Failed to update outcome');
+                }
+
+                const result = await response.json();
+
+                // Update local quote data
+                currentDetailQuote.status = currentOutcomeType;
+                currentDetailQuote.outcome = currentOutcomeType;
+                currentDetailQuote.rejection_reason = reason;
+                currentDetailQuote.outcome_notes = notes;
+
+                // Update UI
+                updateOutcomeTracking(currentDetailQuote);
+                closeOutcomeModal();
+
+                // Show success message
+                if (currentOutcomeType === 'won') {
+                    showToast('🎉 Quote marked as won! Your AI will learn from this.', 'success');
+                } else {
+                    showToast('📊 Quote marked as lost. This helps improve future pricing.', 'success');
+                }
+
+                // Track analytics
+                if (typeof posthog !== 'undefined') {
+                    posthog.capture('quote_outcome_marked', {
+                        quote_id: currentDetailQuote.id,
+                        outcome: currentOutcomeType,
+                        has_reason: !!reason,
+                        has_notes: !!notes,
+                        category: currentDetailQuote.job_type
+                    });
+                }
+
+                // Refresh quotes list to show updated status
+                loadQuotes();
+
+            } catch (err) {
+                console.error('Error marking outcome:', err);
+                showError(err.message || 'Failed to update outcome. Please try again.');
+            } finally {
+                confirmBtn.disabled = false;
+                confirmBtn.textContent = originalText;
+            }
+        }
+
+        // Clear outcome (to change it)
+        async function clearOutcome() {
+            if (!currentDetailQuote) return;
+
+            // Just reset the UI to show buttons again
+            document.getElementById('outcomeButtons').style.display = 'flex';
+            document.getElementById('outcomeDetails').style.display = 'none';
+            document.getElementById('outcomeStatusValue').textContent = 'Pending';
+            document.getElementById('outcomeStatusValue').className = 'outcome-status-value pending';
         }
 
         // LF-001: Added loading state, CP-006: Replaced alert with showError
