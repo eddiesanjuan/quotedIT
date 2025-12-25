@@ -2326,6 +2326,17 @@
             transform: scale(1.05);
         }
 
+        /* Mobile: move issue FAB above mobile nav and floating support button */
+        @media (max-width: 480px) {
+            .issue-fab {
+                bottom: 144px; /* Above mobile nav (70px) + floating-support-btn (80px + 48px padding) */
+                right: 16px;
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
+            }
+        }
+
         .issue-modal {
             display: none;
             position: fixed;
