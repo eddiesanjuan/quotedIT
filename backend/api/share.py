@@ -22,6 +22,7 @@ from slowapi.util import get_remote_address
 
 from ..services.auth import get_current_user
 from ..services import get_db_service, get_pdf_service
+from ..services.database import DatabaseService
 from ..services.email import email_service
 from ..services.analytics import analytics_service
 from ..services.billing import BillingService  # INNOV-2: Deposit checkout
