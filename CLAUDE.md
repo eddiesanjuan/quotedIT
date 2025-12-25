@@ -51,6 +51,9 @@ quoted/
 | `/add-ticket <description>` | Add ticket to backlog as READY (auto-approved). Does NOT start implementation. |
 | `/quoted-discover` | Generate new tasks/opportunities for backlog |
 | `/run-qa` | Run QA test fleet (requires browser profile) |
+| `/orchestrate-proposify-domination` | Multi-phase competitive feature orchestrator (see Strategic Commands section) |
+| `/orchestrate-prod-ready` | Production readiness checklist orchestrator |
+| `/orchestrate-learning-excellence` | Transform learning system to Anthropic showcase quality (see Strategic Commands section) |
 
 **Quick ticket examples**:
 - `/add-ticket voice command to duplicate a quote`
@@ -108,13 +111,9 @@ Always read these before making changes:
 | PostHog | Analytics | posthog.com |
 | Cloudflare | DNS/SSL | cloudflare.com |
 
-## Stripe Products (Production)
+## Pricing (Production)
 
-| Plan | Product ID | Price |
-|------|------------|-------|
-| Starter | `prod_TXB6SKP96LAlcM` | $19/mo (75 quotes, $0.50 overage) |
-| Pro | `prod_TXB6du0ylntvVV` | $39/mo (200 quotes, $0.35 overage) |
-| Team | `prod_TXB6aO5kvAD4uV` | $79/mo (Unlimited, no overage) |
+**Single-tier pricing** (DISC-098): $9/month or $59/year - unlimited quotes
 
 ## Key Conventions
 
@@ -199,6 +198,142 @@ See `docs/EMERGENCY_RUNBOOK.md` for full rollback procedures.
 5. Monitor PostHog/Sentry for 5 min
 
 For incidents, see `docs/EMERGENCY_RUNBOOK.md`.
+
+## Railway CLI Access
+
+**Full production access is available via Railway CLI.** Use this for diagnostics, viewing logs, and checking environment variables.
+
+### Quick Commands
+
+```bash
+# View production logs (real-time streaming)
+railway logs
+
+# View last 100 lines (no streaming)
+railway logs -n 100
+
+# Filter for errors only
+railway logs -n 100 --filter "@level:error"
+
+# Check environment variables
+railway variables
+
+# Check deployment status
+railway status
+
+# Open Railway dashboard
+railway open
+
+# Run a command in production environment
+railway run python -c "from backend.config import settings; print(settings.environment)"
+```
+
+### Common Diagnostics
+
+**"Quotes not visible" / Auth issues:**
+```bash
+# Check if JWT_SECRET_KEY is set
+railway variables | grep JWT
+
+# View recent auth-related logs
+railway logs -n 200 --filter "jwt OR auth OR token"
+```
+
+**Database connection issues:**
+```bash
+# Check DATABASE_URL is set
+railway variables | grep DATABASE
+
+# View database errors
+railway logs -n 200 --filter "database OR postgres OR sql"
+```
+
+**API errors:**
+```bash
+# View errors
+railway logs -n 500 --filter "@level:error"
+```
+
+### Linked Project
+
+The CLI is linked to:
+- **Workspace**: eddiesanjuan's Projects
+- **Project**: quoted.It
+- **Environment**: production
+- **Service**: web (FastAPI app)
+
+---
+
+## Strategic Commands
+
+### `/orchestrate-proposify-domination`
+
+Multi-phase competitive feature development orchestrator. Builds features that make Quoted superior to Proposify.
+
+**Current State**: Phase 1 Complete (Audits done, awaiting founder review)
+**State File**: `.claude/proposify-domination-state.md`
+
+```bash
+# Check status and continue
+/orchestrate-proposify-domination
+
+# Run specific phase
+/orchestrate-proposify-domination --phase=2
+
+# Status only
+/orchestrate-proposify-domination --status
+```
+
+**Phases**:
+1. **Context Loading** - Baseline understanding
+2. **Deep Audit** - Verify technical reality (COMPLETE)
+3. **10x Design** - Design superior features
+4. **Technical Specs** - Detailed implementation specs
+5. **Implementation** - Build in waves
+6. **QA** - Test all features
+7. **Release** - Staged rollout
+
+**Key Findings from Phase 1**:
+- Invoice share link returns 404 (CRITICAL)
+- Quote accept/reject workflow missing (CRITICAL)
+- Task reminders are dead code
+- CRM system is fully functional (GREEN)
+
+### `/orchestrate-learning-excellence`
+
+Transform Quoted's learning system into an Anthropic showcase example of human-AI collaboration. Creates an impassable competitive moat through intelligent, transparent, outcome-aware learning.
+
+**Current State**: Ready to Begin
+**State File**: `.claude/learning-excellence-state.md`
+
+```bash
+# Check status and continue
+/orchestrate-learning-excellence
+
+# Run specific phase
+/orchestrate-learning-excellence --phase=2
+
+# Status only
+/orchestrate-learning-excellence --status
+```
+
+**Phases**:
+1. **Context Loading** - Architecture deep dive
+2. **Reality Audit** - Analyze production learning quality
+3. **Quality Framework** - Statement quality scoring
+4. **Smart Injection** - Relevance-based selection (replace "last 7")
+5. **Outcome Loop** - Learn from quote wins/losses
+6. **Cross-Category** - Transfer patterns across job types
+7. **Confidence & Explanation** - Transparent AI reasoning
+
+**Anthropic Showcase Principles**:
+- Human-AI collaboration (enhance, never replace)
+- Interpretable AI (explainable pricing)
+- Honest uncertainty (confidence scores)
+- Aligned incentives (optimizes for contractor success)
+- Privacy-preserving intelligence (network effects without exposure)
+
+---
 
 ## MCP Profiles
 

@@ -1,6 +1,6 @@
 # Engineering State
 
-**Last Updated**: 2025-12-12 (auto)
+**Last Updated**: 2025-12-24 (E2E verified)
 **Updated By**: Autonomous AI (CEO)
 
 ---
@@ -34,37 +34,72 @@
 
 ## ⚠️ Current Product Reality (AGENTS MUST READ)
 
-**Last verified**: 2025-12-05
+**Last verified**: 2025-12-24 (Full E2E test completed)
 
 This section is the **authoritative source** for what features actually exist in production. Some planning documents contain aspirational specs that were never built. Always check here first.
 
+### Core Features (Original)
 | Feature | Status | Reality |
 |---------|--------|---------|
 | **Demo mode** | ANIMATION ONLY | `demo.html` shows animated walkthrough. Does NOT generate quotes. Users must sign up to use product. |
-| **Demo promo page** | ✅ WORKING | `/demo-promo` landing page with UTM tracking for distribution (DISC-013) |
 | **Quote generation** | ✅ WORKING | Voice → AI → PDF quote generation is fully functional |
 | **Magic link auth** | ✅ WORKING | Email-based passwordless login |
-| **Stripe billing** | ✅ WORKING | Starter/Pro/Team plans, trial tracking |
+| **Stripe billing** | ✅ WORKING | $9/mo or $59/year unlimited, trial tracking |
 | **Referral system** | ✅ WORKING | Referral codes, share link, rewards |
 | **Pricing brain** | ✅ WORKING | Category management, AI analysis, learning |
-| **PostHog analytics** | ✅ WORKING | Event tracking, funnels |
+| **PostHog analytics** | ✅ WORKING | Event tracking, funnels, feature flags |
 | **First quote celebration** | ✅ WORKING | Confetti modal on first quote |
 | **PDF download** | ✅ WORKING | Professional PDF generation |
-| **PDF templates** | ✅ WORKING | 8 templates (classic, modern, bold, elegant, technical, friendly, craftsman, corporate) + accent colors, tier-gated (DISC-028) |
-| **Pricing sanity check** | ✅ WORKING | Statistical bounds on quote generation, flags/blocks hallucinations |
+| **PDF templates** | ✅ WORKING | 8 templates + accent colors, tier-gated (DISC-028) |
+| **Pricing sanity check** | ✅ WORKING | Statistical bounds on quote generation |
+
+### Wave 1-3 Features (Proposify Domination - Dec 2024)
+| Feature | Status | Reality |
+|---------|--------|---------|
+| **Quote sharing** | ✅ E2E VERIFIED | Share link generation, public view, email sharing |
+| **Quote accept/reject** | ✅ E2E VERIFIED | Customer acceptance with typed e-signature (name, IP, timestamp) |
+| **Quote-to-Invoice** | ✅ E2E VERIFIED | One-click conversion from won quotes |
+| **Invoice emailing** | ⚠️ CODE WORKS | Email template ready, Resend domain `quoted.it.com` needs verification |
+| **Shared invoice view** | ✅ E2E VERIFIED | Public `/invoice/{token}` page works |
+| **Mark invoice paid** | ✅ E2E VERIFIED | Payment method + reference number tracked |
+| **Invoice PDF download** | ✅ E2E VERIFIED | Professional invoice PDF generation |
+| **View count tracking** | ✅ WORKING | View count badge on quote cards, persisted in DB |
+| **Expiration banners** | ✅ WORKING | Soft expiration warnings on shared quotes |
+| **Background scheduler** | ✅ WORKING | APScheduler running (task reminders, quote follow-ups) |
+| **Task creation** | ✅ E2E VERIFIED | Full CRUD with title, type, priority, due date, customer linking |
+| **Task completion** | ✅ E2E VERIFIED | Checkbox completion, status updates |
+| **CRM system** | ✅ E2E VERIFIED | Customer create/view/edit, tags, notes, quote history |
+
+### Production Infrastructure (Dec 2024)
+| Feature | Status | PR |
+|---------|--------|-----|
+| **Database connection pooling** | ✅ DEPLOYED | PR #9 |
+| **Multi-worker Uvicorn** | ✅ DEPLOYED | PR #9 |
+| **XSS fix in customer autocomplete** | ✅ DEPLOYED | PR #9 |
+| **Auth fix on contractor endpoints** | ✅ DEPLOYED | PR #9 |
+| **CORS regex tightening** | ✅ DEPLOYED | PR #9 |
+| **Stripe webhook error handling** | ✅ DEPLOYED | PR #9 |
+| **JWT refresh token security** | ✅ DEPLOYED | PR #10 |
+| **S3 file storage** | ✅ DEPLOYED | PR #11 |
+| **Redis caching** | ✅ DEPLOYED | PR #12 |
+| **Rate limiting** | ✅ DEPLOYED | PR #12 |
+| **Health checks** | ✅ DEPLOYED | PR #12 |
+| **Audit logging** | ✅ DEPLOYED | PR #13 |
 
 **Common misunderstandings**:
 - "Demo mode" ≠ "try before signup". The demo is an animation showing how the product works, NOT functional quote generation without auth.
-- Some specs in `BETA_SPRINT.md` describe planned features that were never fully implemented.
+- Invoice email sending requires Resend domain verification for `quoted.it.com` - the code works.
 
 ---
 
 ## Current Sprint
 
-**Sprint**: 2 (100 Users)
-**Goal**: 100 active beta testers by December 16
-**Dates**: 2025-12-02 to 2025-12-16
-**Strategy Doc**: `BETA_SPRINT.md`
+**Sprint**: 3 (Product Polish & Infrastructure)
+**Goal**: Production-ready with complete feature set
+**Dates**: 2025-12-17 to 2025-12-31
+**Focus**: Wave 1-3 Proposify Domination features DEPLOYED
+
+**Sprint 2 Outcome** (Dec 2-16): Core infrastructure completed. Sprint 3 focus shifted to competitive feature parity (Proposify Domination initiative).
 
 ---
 
@@ -81,28 +116,42 @@ This section is the **authoritative source** for what features actually exist in
 
 | Ticket | Description | Status | Assignee |
 |--------|-------------|--------|----------|
-| MOBILE-001 | Mobile App Strategy (iOS + Android) | **QUEUED** | Strategic |
-| QA-001 | QA Fleet Implementation | **READY** | Autonomous |
-| DISC-014 | Buildxact Competitive Defense | **READY** | Strategy |
+| CONFIG-001 | Resend domain verification for `quoted.it.com` | **🔴 FOUNDER ACTION** | Eddie |
 | DISC-033 | Reddit Contractor Launch Post | **READY** | 🔴 FOUNDER ACTION |
+| MOBILE-001 | Mobile App Strategy (iOS + Android) | **QUEUED** | Strategic |
 
-### Recently Deployed (2025-12-12)
+### Recently Deployed (2025-12-24) - E2E Verified
 
 | Ticket | Description | Commits |
 |--------|-------------|---------|
-| DISC-093 | Codex UX Review - 3 high-impact fixes (row click, demo CTA, learning toast) | e4f2f6c |
+| WAVE-3 | Background jobs, task reminders, first-view notifications | 1852885 |
+| WAVE-2 | Quote analytics, expiration banners, view tracking | 8eac322 |
+| WAVE-1 | Invoice public view, quote accept/reject with e-signatures | 737ea24 |
+| HOTFIX | Email FROM address corrected to `quoted.it.com` | 1d5d8d8 |
+| HOTFIX | Invoice email sending - fixed import + added method | af56d8a |
+| HOTFIX | Invoicing feature flag default set to TRUE | c71d131 |
+
+### Previously Deployed (2025-12-23)
+
+| Ticket | Description | Commits |
+|--------|-------------|---------|
+| PR #13 | Production governance layer (audit logging) | df7f072 |
+| PR #12 | Production resilience (rate limiting, health checks, caching) | aa69e36 |
+| PR #11 | Production data layer (S3, Redis) | 20196eb |
+| PR #10 | JWT refresh token security hardening | 836d80e |
+| PR #9 | Foundation & Critical Security (connection pooling, XSS fix, CORS) | a41e2da |
+| DISC-112 | Remove beta slots scarcity | 2aa08e5 |
+
+### Previously Deployed (2025-12-12)
+
+| Ticket | Description | Commits |
+|--------|-------------|---------|
+| DISC-093 | Codex UX Review - 3 high-impact fixes | e4f2f6c |
 | DISC-084 | Trade Type List UX (popular at top, alphabetical) | 9dae270 |
-| DISC-085 | Voice CRM Design Document + 6 implementation tickets | 047b897 |
+| DISC-085-092 | Voice CRM System (full implementation) | multiple |
 | DISC-082 | Referral Links 404 Fix (CRITICAL) | 2620866 |
 | DISC-083 | Line Item Quantity/Cost UX Fix | 2a5ba8b |
 | DISC-080 | Account Default Timeline & Terms Settings | d641e45 |
-
-### Previously Deployed (2025-12-05)
-
-| Ticket | Description | Commits |
-|--------|-------------|---------|
-| DISC-013 | Animation Distribution Strategy | 856f051, 889556c |
-| DISC-028 | PDF Template Library | 2e88a94, 2c94a7c (migration fix) |
 
 ---
 
