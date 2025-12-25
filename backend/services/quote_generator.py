@@ -26,6 +26,7 @@ from pydantic import BaseModel, Field, validator
 
 from ..config import settings
 from ..prompts import get_quote_generation_prompt
+from .voice_signal_extractor import extract_voice_signals
 
 
 # ============================================================================
@@ -231,9 +232,16 @@ class QuoteGenerationService:
             - subtotal, total
             - estimated_days, estimated_crew_size
             - confidence, questions
+            - voice_signals (Learning Excellence)
         """
+        # Learning Excellence: Extract voice signals from transcription
+        # Detects difficulty, relationship, timeline, quality, and correction signals
+        voice_signals_result = extract_voice_signals(transcription)
+        voice_signals_dict = voice_signals_result.to_dict() if voice_signals_result else None
+
         # Build the prompt with correction examples for learning
         # AND category-specific learned adjustments
+        # AND voice signals (Learning Excellence Layer 4)
         prompt = get_quote_generation_prompt(
             transcription=transcription,
             contractor_name=contractor.get("business_name", "Contractor"),
@@ -243,6 +251,7 @@ class QuoteGenerationService:
             terms=terms,
             correction_examples=correction_examples,
             detected_category=detected_category,
+            voice_signals=voice_signals_dict,
         )
 
         # Call Claude with tool calling for structured output
@@ -255,6 +264,10 @@ class QuoteGenerationService:
         quote_data["generated_at"] = datetime.utcnow().isoformat()
         quote_data["transcription"] = transcription
         quote_data["ai_generated_total"] = quote_data.get("subtotal", 0)
+
+        # Learning Excellence: Store voice signals for transparency
+        if voice_signals_dict:
+            quote_data["voice_signals"] = voice_signals_dict
 
         return quote_data
 
@@ -578,7 +591,11 @@ Return JSON only:
         Returns:
             Tuple of (median_quote, variance_confidence_metrics)
         """
-        # Build the prompt once
+        # Learning Excellence: Extract voice signals from transcription
+        voice_signals_result = extract_voice_signals(transcription)
+        voice_signals_dict = voice_signals_result.to_dict() if voice_signals_result else None
+
+        # Build the prompt once (with voice signals)
         prompt = get_quote_generation_prompt(
             transcription=transcription,
             contractor_name=contractor.get("business_name", "Contractor"),
@@ -588,6 +605,7 @@ Return JSON only:
             terms=terms,
             correction_examples=correction_examples,
             detected_category=detected_category,
+            voice_signals=voice_signals_dict,
         )
 
         # Generate multiple samples concurrently
@@ -627,6 +645,10 @@ Return JSON only:
         median_quote["transcription"] = transcription
         median_quote["ai_generated_total"] = median_quote.get("subtotal", 0)
         median_quote["num_samples"] = num_samples
+
+        # Learning Excellence: Store voice signals for transparency
+        if voice_signals_dict:
+            median_quote["voice_signals"] = voice_signals_dict
 
         return median_quote, confidence_metrics
 

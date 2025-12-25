@@ -212,6 +212,20 @@ async def share_quote_via_email(
 
         await db.update_quote(quote_id, **share_updates)
 
+        # Learning Excellence: Process acceptance signal if quote was NOT edited
+        # Acceptance learning boosts confidence without creating new statements
+        if not quote.was_edited and quote.job_type:
+            try:
+                acceptance_result = await db.apply_acceptance_to_pricing_model(
+                    contractor_id=str(contractor.id),
+                    category=quote.job_type,
+                    signal_type="sent",
+                )
+                if acceptance_result:
+                    print(f"[ACCEPTANCE] Quote {quote_id} sent without edit: {acceptance_result}")
+            except Exception as e:
+                print(f"Warning: Failed to process acceptance learning: {e}")
+
         # Track analytics event
         try:
             analytics_service.track_event(
@@ -225,6 +239,7 @@ async def share_quote_via_email(
                     "has_message": bool(share_request.message),
                     "job_type": quote.job_type,
                     "total": quote.total or quote.subtotal or 0,
+                    "was_edited": quote.was_edited,  # Learning Excellence: track for analytics
                 }
             )
         except Exception as e:
@@ -509,6 +524,20 @@ async def accept_quote(
             update_fields["outcome_notes"] = f"Customer message: {accept_request.message}"
 
         quote = await db.update_quote(str(quote.id), **update_fields)
+
+        # Learning Excellence: Process acceptance signal when customer accepts
+        # This is a STRONG signal that AI pricing was correct
+        if quote.job_type:
+            try:
+                acceptance_result = await db.apply_acceptance_to_pricing_model(
+                    contractor_id=str(quote.contractor_id),
+                    category=quote.job_type,
+                    signal_type="accepted",
+                )
+                if acceptance_result:
+                    print(f"[ACCEPTANCE] Quote {quote.id} accepted by customer: {acceptance_result}")
+            except Exception as e:
+                print(f"Warning: Failed to process acceptance learning on accept: {e}")
 
         # Send notification email to contractor
         try:

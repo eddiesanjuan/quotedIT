@@ -20,6 +20,7 @@ from ..models.database import (
     Quote, JobType, SetupConversation, UserIssue, QuoteFeedback
 )
 from .analytics import analytics_service
+from .contractor_dna import get_dna_service
 
 
 # Create async engine and session factory
@@ -437,6 +438,43 @@ class DatabaseService:
             # All learnings now go to category-specific learned_adjustments via learning_statements
             # The overall_tendency field is deprecated in favor of learning_statements
 
+            # Learning Excellence: Update contractor DNA for cross-category intelligence
+            # Extract transferable patterns and update DNA profile
+            if category and cat_data.get("learned_adjustments"):
+                try:
+                    dna_service = get_dna_service()
+                    current_dna = pricing_knowledge.get("contractor_dna", dna_service._empty_dna(contractor_id))
+
+                    updated_dna = dna_service.update_dna_from_correction(
+                        contractor_dna=current_dna,
+                        category=category,
+                        new_learnings=cat_data.get("learned_adjustments", []),
+                        category_confidence=cat_data.get("confidence", 0.5),
+                        category_quote_count=cat_data.get("samples", 0),
+                    )
+
+                    pricing_knowledge["contractor_dna"] = updated_dna
+                    print(f"[DNA] Updated contractor DNA: {updated_dna.get('total_categories', 0)} categories, confidence {updated_dna.get('dna_confidence', 0):.2f}")
+
+                    # Track DNA update in analytics
+                    try:
+                        analytics_service.track_event(
+                            user_id=contractor_id,
+                            event_name="contractor_dna_updated",
+                            properties={
+                                "category": category,
+                                "universal_patterns": len(updated_dna.get("universal_patterns", [])),
+                                "partial_patterns": len(updated_dna.get("partial_patterns", [])),
+                                "dna_confidence": updated_dna.get("dna_confidence", 0),
+                                "total_categories": updated_dna.get("total_categories", 0),
+                            }
+                        )
+                    except Exception as e:
+                        print(f"Warning: Failed to track DNA update: {e}")
+
+                except Exception as e:
+                    print(f"Warning: Failed to update contractor DNA: {e}")
+
             # Update model - must flag_modified for SQLAlchemy to detect JSON mutation
             pricing_model.pricing_knowledge = pricing_knowledge
             pricing_model.updated_at = datetime.utcnow()
@@ -595,6 +633,123 @@ class DatabaseService:
 
             await session.commit()
             return True
+
+    async def apply_acceptance_to_pricing_model(
+        self,
+        contractor_id: str,
+        category: str,
+        signal_type: str = "sent",  # "sent" or "accepted"
+    ) -> Optional[dict]:
+        """
+        Apply acceptance learning when quote is sent/accepted WITHOUT edits.
+
+        Key difference from apply_learnings_to_pricing_model:
+        - Acceptances boost confidence WITHOUT new learning statements
+        - Corrections create NEW learning statements
+
+        Confidence boost: +0.05 for acceptance (vs +0.02 for corrections)
+
+        Args:
+            contractor_id: The contractor's ID
+            category: The job_type category
+            signal_type: "sent" (quote sent without edit) or "accepted" (customer accepted)
+
+        Returns:
+            Dict with processing results, or None if failed
+        """
+        # Constants matching AcceptanceLearningService
+        ACCEPTANCE_CONFIDENCE_BOOST = 0.05
+        MAX_CONFIDENCE = 0.95
+        MIN_SIGNALS_FOR_CALIBRATION = 5
+
+        async with async_session_factory() as session:
+            result = await session.execute(
+                select(PricingModel).where(PricingModel.contractor_id == contractor_id)
+            )
+            pricing_model = result.scalar_one_or_none()
+            if not pricing_model:
+                return None
+
+            pricing_knowledge = dict(pricing_model.pricing_knowledge) if pricing_model.pricing_knowledge else {}
+
+            # Ensure categories structure exists
+            if "categories" not in pricing_knowledge:
+                pricing_knowledge["categories"] = {}
+
+            # Initialize category if doesn't exist
+            if category not in pricing_knowledge["categories"]:
+                pricing_knowledge["categories"][category] = {
+                    "display_name": category.replace("_", " ").title(),
+                    "tailored_prompt": None,
+                    "learned_adjustments": [],
+                    "samples": 0,
+                    "quote_count": 0,
+                    "confidence": 0.5,
+                    "correction_count": 0,
+                    "acceptance_count": 0,
+                }
+
+            cat_data = pricing_knowledge["categories"][category]
+
+            # Store old confidence
+            old_confidence = cat_data.get("confidence", 0.5)
+
+            # Ensure acceptance_count exists (backward compatibility)
+            if "acceptance_count" not in cat_data:
+                cat_data["acceptance_count"] = 0
+
+            # Apply confidence boost
+            new_confidence = min(MAX_CONFIDENCE, old_confidence + ACCEPTANCE_CONFIDENCE_BOOST)
+
+            # Apply calibration if enough signals
+            acceptance_count = cat_data["acceptance_count"] + 1
+            correction_count = cat_data.get("correction_count", 0)
+            total_signals = acceptance_count + correction_count
+
+            if total_signals >= MIN_SIGNALS_FOR_CALIBRATION:
+                actual_accuracy = acceptance_count / total_signals
+                confidence_ceiling = min(MAX_CONFIDENCE, actual_accuracy + 0.15)
+                new_confidence = min(new_confidence, confidence_ceiling)
+
+            # Update category data
+            cat_data["confidence"] = new_confidence
+            cat_data["acceptance_count"] = acceptance_count
+            cat_data["last_acceptance_at"] = datetime.utcnow().isoformat()
+
+            pricing_knowledge["categories"][category] = cat_data
+            pricing_model.pricing_knowledge = pricing_knowledge
+            pricing_model.updated_at = datetime.utcnow()
+            attributes.flag_modified(pricing_model, 'pricing_knowledge')
+
+            await session.commit()
+
+            # Track analytics
+            try:
+                analytics_service.track_event(
+                    user_id=contractor_id,
+                    event_name="acceptance_learning_applied",
+                    properties={
+                        "category": category,
+                        "signal_type": signal_type,
+                        "old_confidence": old_confidence,
+                        "new_confidence": new_confidence,
+                        "acceptance_count": acceptance_count,
+                        "correction_count": correction_count,
+                    }
+                )
+            except Exception as e:
+                print(f"Warning: Failed to track acceptance learning: {e}")
+
+            print(f"[ACCEPTANCE] Category '{category}': Confidence {old_confidence:.2f} -> {new_confidence:.2f} ({signal_type})")
+
+            return {
+                "processed": True,
+                "category": category,
+                "signal_type": signal_type,
+                "old_confidence": old_confidence,
+                "new_confidence": new_confidence,
+                "acceptance_count": acceptance_count,
+            }
 
     # ============== TERMS OPERATIONS ==============
 
