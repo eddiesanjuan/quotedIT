@@ -2474,7 +2474,8 @@
         }
 
         .mobile-nav-label {
-            font-size: 0.625rem;
+            /* MOB-001: Increased from 0.625rem (10px) to 0.75rem (12px) for iOS accessibility */
+            font-size: 0.75rem;
             font-weight: 500;
             text-transform: uppercase;
             letter-spacing: 0.05em;
@@ -4453,7 +4454,7 @@
                     <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 16px;">
                         Speak to create quotes, find customers, or add tasks
                     </p>
-                    <button class="record-btn" id="dashboardRecordBtn" onclick="dashboardToggleRecording()" style="margin: 0 auto 12px;">
+                    <button class="record-btn" id="dashboardRecordBtn" onclick="dashboardToggleRecording()" style="margin: 0 auto 12px;" aria-label="Start voice recording for dashboard commands">
                         <span id="dashboardRecordBtnText">Record</span>
                     </button>
                     <p class="record-instructions" id="dashboardRecordInstructions" style="font-size: 0.8rem; color: var(--text-muted);">
@@ -4509,9 +4510,12 @@
                     </div>
                     <div id="dashboardTasks">
                         <!-- Tasks will be loaded here via JS -->
-                        <div style="text-align: center; padding: 24px; color: var(--text-secondary);">
-                            <div style="font-size: 1.5rem; margin-bottom: 8px;">✓</div>
-                            <p>No tasks for today</p>
+                        <!-- ES-002: Enhanced empty state with icon and CTA -->
+                        <div style="text-align: center; padding: 32px; color: var(--text-secondary);">
+                            <div style="font-size: 2rem; margin-bottom: 8px;">📋</div>
+                            <p style="margin-bottom: 4px;">All caught up!</p>
+                            <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 16px;">No tasks for today</p>
+                            <a href="#" onclick="showAppSection('tasks'); return false;" style="font-size: 0.875rem; color: var(--accent); text-decoration: none;">Manage all tasks →</a>
                         </div>
                     </div>
                 </div>
@@ -4684,7 +4688,7 @@
                             onkeydown="handleChatKeydown(event)"
                         ></textarea>
                         <div class="chat-actions">
-                            <button class="chat-btn" id="chatVoiceBtn" onclick="toggleChatVoice()" title="Voice input">
+                            <button class="chat-btn" id="chatVoiceBtn" onclick="toggleChatVoice()" title="Voice input" aria-label="Voice input for chat">
                                 <span>🎤</span>
                             </button>
                             <button class="chat-btn send" id="chatSendBtn" onclick="sendChatMessage()" title="Send">
@@ -4724,7 +4728,7 @@
                     Voice recording works best on Chrome or Edge. You can also type your job description below.
                 </div>
 
-                <button class="record-btn" id="recordBtn" onclick="toggleRecording()">
+                <button class="record-btn" id="recordBtn" onclick="toggleRecording()" aria-label="Start voice recording for quote generation">
                     <span id="recordBtnText">Record</span>
                 </button>
                 <p class="record-instructions" id="recordInstructions">
@@ -4823,7 +4827,7 @@
                 <div class="transcription" id="transcriptionDisplay" style="display: none;"></div>
 
                 <div class="quote-actions">
-                    <button class="btn btn-primary" onclick="downloadPdf()">Download PDF</button>
+                    <button class="btn btn-primary" id="downloadPdfBtn" onclick="downloadPdf()">Download PDF</button>
                     <button class="btn btn-secondary" onclick="editCurrentQuote()">Edit Quote</button>
                     <button class="btn btn-secondary" onclick="newQuote()">New Quote</button>
                 </div>
@@ -5035,7 +5039,7 @@
                 </div>
 
                 <div class="quote-actions" id="detailQuoteActions">
-                    <button class="btn btn-primary" onclick="downloadDetailPdf()">Download PDF</button>
+                    <button class="btn btn-primary" id="downloadDetailPdfBtn" onclick="downloadDetailPdf()">Download PDF</button>
                     <button class="btn btn-primary" onclick="openShareModal()">📤 Share</button>
                     <button class="btn btn-success" id="createInvoiceBtn" onclick="createInvoiceFromQuote()" style="display: none;">📄 Create Invoice</button>
                     <button class="btn btn-secondary" onclick="duplicateQuote()">📋 Duplicate</button>
@@ -8517,12 +8521,17 @@
             {% endif %}
         }
 
-        // Download PDF
+        // Download PDF (LF-001: Added loading state)
         async function downloadPdf() {
             if (!currentQuoteId) {
                 showError('No quote to download');
                 return;
             }
+
+            const btn = document.getElementById('downloadPdfBtn');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = 'Generating PDF...';
 
             try {
                 const response = await fetch(`${API_BASE}/quotes/${currentQuoteId}/pdf`, {
@@ -8548,7 +8557,10 @@
                 clearDraft();
             } catch (err) {
                 console.error('Error:', err);
-                showError(err.message);
+                showError('Failed to generate PDF. Please try again.');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
             }
         }
 
@@ -8722,7 +8734,7 @@
                         } else {
                             // Fallback: copy to clipboard
                             await navigator.clipboard.writeText(shareText);
-                            alert('Quote details copied to clipboard! Share it with your network.');
+                            showLearningToast('Quote details copied to clipboard!', '📋');
                             {% if posthog_api_key %}
                             if (window.posthog) {
                                 posthog.capture('celebration_share_completed', {
@@ -8736,7 +8748,7 @@
                 }
             } catch (error) {
                 console.error('Error sharing quote:', error);
-                alert('Unable to share quote. Please try again.');
+                showError('Unable to share quote. Please try again.');
             }
         }
 
@@ -9090,7 +9102,7 @@
             if (selectedIndustry.key === 'other') {
                 const customIndustry = document.getElementById('industryOtherText').value.trim();
                 if (!customIndustry) {
-                    alert('Please enter your trade or industry');
+                    showError('Please enter your trade or industry');
                     return;
                 }
                 industryToSave = customIndustry;
@@ -10075,7 +10087,7 @@
 
             } catch (err) {
                 console.error('Issue submit error:', err);
-                alert('Failed to submit. Please try again.');
+                showError('Failed to submit. Please try again.');
             }
         }
 
@@ -11237,7 +11249,7 @@
                 console.error('Error saving changes:', err);
                 saveBtn.textContent = 'Save Changes';
                 saveBtn.disabled = false;
-                alert('Failed to save changes: ' + err.message);
+                showError('Failed to save changes. Please try again.');
             }
         }
 
@@ -11280,7 +11292,8 @@
             toast.appendChild(textContainer);
             toast.style.opacity = '1';
 
-            setTimeout(() => { toast.style.opacity = '0'; }, 4000);
+            // LF-004: Extended duration from 4s to 6s for clickable toast
+            setTimeout(() => { toast.style.opacity = '0'; }, 6000);
         }
 
         function cancelQuoteEdit() {
@@ -11302,6 +11315,7 @@
             document.getElementById('myQuotesSection').style.display = 'block';
         }
 
+        // LF-001: Added loading state, CP-006: Replaced alert with showError
         async function downloadDetailPdf() {
             if (!currentDetailQuote) return;
 
@@ -11310,6 +11324,11 @@
                     await saveQuoteChanges();
                 }
             }
+
+            const btn = document.getElementById('downloadDetailPdfBtn');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = 'Generating PDF...';
 
             try {
                 const response = await fetch(`${API_BASE}/quotes/${currentDetailQuote.id}/pdf`, {
@@ -11333,7 +11352,10 @@
 
             } catch (err) {
                 console.error('PDF download error:', err);
-                alert('Failed to download PDF: ' + err.message);
+                showError('Failed to download PDF. Please try again.');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
             }
         }
 
@@ -12672,7 +12694,39 @@
                 loadingEl.style.display = 'none';
 
                 if (customersCache.length === 0) {
-                    emptyEl.style.display = 'block';
+                    // ES-001: Differentiate between no customers vs no search results
+                    if (search) {
+                        // Search returned no results - show search-specific empty state
+                        const searchEmptyDiv = document.createElement('div');
+                        searchEmptyDiv.className = 'empty-state';
+                        searchEmptyDiv.style.display = 'block';
+
+                        const icon = document.createElement('div');
+                        icon.className = 'empty-icon';
+                        icon.textContent = '🔍';
+
+                        const heading = document.createElement('h3');
+                        heading.textContent = 'No customers found';
+
+                        const desc = document.createElement('p');
+                        desc.textContent = `No customers match "${search}". Try a different search term.`;
+
+                        const clearBtn = document.createElement('button');
+                        clearBtn.className = 'cta-button';
+                        clearBtn.textContent = 'Clear Search';
+                        clearBtn.onclick = () => {
+                            document.getElementById('customerSearchInput').value = '';
+                            loadCustomers();
+                        };
+
+                        searchEmptyDiv.appendChild(icon);
+                        searchEmptyDiv.appendChild(heading);
+                        searchEmptyDiv.appendChild(desc);
+                        searchEmptyDiv.appendChild(clearBtn);
+                        listEl.appendChild(searchEmptyDiv);
+                    } else {
+                        emptyEl.style.display = 'block';
+                    }
                 } else {
                     renderCustomerList(customersCache);
                 }
@@ -12856,7 +12910,28 @@
 
             const quotes = currentCustomer.quotes || [];
             if (quotes.length === 0) {
-                container.innerHTML = '<div style="color: var(--text-muted); padding: 12px;">No quotes yet</div>';
+                // ES-003: Enhanced empty state with context and CTA (using safe DOM methods)
+                const emptyState = document.createElement('div');
+                emptyState.style.cssText = 'text-align: center; padding: 24px; color: var(--text-secondary);';
+
+                const icon = document.createElement('div');
+                icon.style.cssText = 'font-size: 1.5rem; margin-bottom: 8px;';
+                icon.textContent = '📝';
+
+                const message = document.createElement('p');
+                message.style.marginBottom = '8px';
+                message.textContent = 'No quotes for this customer yet';
+
+                const ctaBtn = document.createElement('button');
+                ctaBtn.className = 'btn btn-primary btn-sm';
+                ctaBtn.style.cssText = 'font-size: 0.875rem; padding: 8px 16px;';
+                ctaBtn.textContent = 'Create First Quote';
+                ctaBtn.onclick = () => showAppSection('newQuote');
+
+                emptyState.appendChild(icon);
+                emptyState.appendChild(message);
+                emptyState.appendChild(ctaBtn);
+                container.appendChild(emptyState);
                 return;
             }
 
@@ -14376,11 +14451,11 @@
                     closeEditCustomerModal();
                 } else {
                     const error = await response.json();
-                    alert('Failed to update customer info: ' + (error.detail || 'Unknown error'));
+                    showError('Failed to update customer info: ' + (error.detail || 'Unknown error'));
                 }
             } catch (err) {
                 console.error('Error saving customer info:', err);
-                alert('Network error. Please try again.');
+                showError('Network error. Please try again.');
             } finally {
                 saveBtn.disabled = false;
                 saveBtn.textContent = 'Save Changes';
@@ -14465,14 +14540,14 @@
             const message = document.getElementById('shareMessage').value.trim();
 
             if (!recipientEmail) {
-                alert('Please enter a customer email address');
+                showError('Please enter a customer email address');
                 return;
             }
 
             // Basic email validation
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(recipientEmail)) {
-                alert('Please enter a valid email address');
+                showError('Please enter a valid email address');
                 return;
             }
 
@@ -14503,15 +14578,15 @@
                     }
                     {% endif %}
 
-                    alert('Quote sent successfully!');
+                    showLearningToast('Quote sent successfully!', '✉️');
                     closeShareModal();
                 } else {
                     const error = await response.json();
-                    alert('Failed to send email: ' + (error.detail || 'Unknown error'));
+                    showError('Failed to send email: ' + (error.detail || 'Unknown error'));
                 }
             } catch (err) {
                 console.error('Error sending share email:', err);
-                alert('Network error. Please try again.');
+                showError('Network error. Please try again.');
             } finally {
                 sendBtn.disabled = false;
                 sendBtn.textContent = 'Send Email';
@@ -14520,7 +14595,7 @@
 
         async function copyShareLink() {
             if (!currentShareUrl) {
-                alert('Share link not available');
+                showError('Share link not available');
                 return;
             }
 
