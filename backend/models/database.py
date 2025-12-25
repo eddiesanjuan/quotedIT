@@ -1356,7 +1356,44 @@ async def run_migrations(engine):
             """,
             "alter_sql": "ALTER TABLE quotes ADD COLUMN scheduled_start_date TIMESTAMP"
         },
-        # INNOV-6: Invoice Automation columns
+        # INNOV-6: Invoice Automation columns on contractors table
+        {
+            "table": "contractors",
+            "column": "auto_generate_invoices",
+            "check_sql": """
+                SELECT column_name FROM information_schema.columns
+                WHERE table_name = 'contractors' AND column_name = 'auto_generate_invoices'
+            """,
+            "alter_sql": "ALTER TABLE contractors ADD COLUMN auto_generate_invoices BOOLEAN DEFAULT FALSE"
+        },
+        {
+            "table": "contractors",
+            "column": "auto_send_invoices",
+            "check_sql": """
+                SELECT column_name FROM information_schema.columns
+                WHERE table_name = 'contractors' AND column_name = 'auto_send_invoices'
+            """,
+            "alter_sql": "ALTER TABLE contractors ADD COLUMN auto_send_invoices BOOLEAN DEFAULT FALSE"
+        },
+        {
+            "table": "contractors",
+            "column": "invoice_due_days",
+            "check_sql": """
+                SELECT column_name FROM information_schema.columns
+                WHERE table_name = 'contractors' AND column_name = 'invoice_due_days'
+            """,
+            "alter_sql": "ALTER TABLE contractors ADD COLUMN invoice_due_days INTEGER DEFAULT 30"
+        },
+        {
+            "table": "contractors",
+            "column": "send_invoice_reminders",
+            "check_sql": """
+                SELECT column_name FROM information_schema.columns
+                WHERE table_name = 'contractors' AND column_name = 'send_invoice_reminders'
+            """,
+            "alter_sql": "ALTER TABLE contractors ADD COLUMN send_invoice_reminders BOOLEAN DEFAULT TRUE"
+        },
+        # INNOV-6: Invoice Automation columns on invoices table
         {
             "table": "invoices",
             "column": "auto_generated",
