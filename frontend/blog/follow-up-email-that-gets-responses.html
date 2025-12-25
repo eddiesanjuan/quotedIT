@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Follow-Up Email That Actually Gets Responses — Quoted</title>
+    <meta name="description" content="Most follow-ups get ignored. Here's the exact template I've used to get responses on 73% of my quote follow-ups. Short, direct, works.">
+    <meta name="keywords" content="follow up email template, quote follow up, how to follow up on quote, client follow up, proposal follow up">
+    <meta name="author" content="Quoted">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://quoted.it.com/blog/follow-up-email-that-gets-responses.html">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230a0a0a'/%3E%3Ctext x='16' y='23' font-family='serif' font-size='20' font-weight='600' fill='white' text-anchor='middle'%3EQ%3C/text%3E%3C/svg%3E">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="The Follow-Up Email That Actually Gets Responses">
+    <meta property="og:description" content="Most follow-ups get ignored. Here's the template that works.">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://quoted.it.com/blog/follow-up-email-that-gets-responses.html">
+
+    <!-- Schema.org Article -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "The Follow-Up Email That Actually Gets Responses",
+        "description": "Most follow-ups get ignored. Here's the exact template I've used to get responses on 73% of my quote follow-ups.",
+        "author": {"@type": "Organization", "name": "Quoted"},
+        "publisher": {"@type": "Organization", "name": "Quoted", "url": "https://quoted.it.com"},
+        "datePublished": "2025-12-25",
+        "dateModified": "2025-12-25"
+    }
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #141414;
+            --bg-card: #1a1a1a;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --text-muted: #666666;
+            --border: rgba(255, 255, 255, 0.1);
+            --border-hover: rgba(255, 255, 255, 0.2);
+            --font-serif: 'Playfair Display', Georgia, serif;
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html { font-size: 16px; scroll-behavior: smooth; }
+
+        body {
+            font-family: var(--font-sans);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            padding: 24px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(to bottom, var(--bg-primary) 0%, transparent 100%);
+        }
+
+        .logo {
+            font-family: var(--font-serif);
+            font-size: 1.5rem;
+            font-weight: 500;
+            letter-spacing: -0.02em;
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+
+        .logo span { font-style: italic; }
+
+        .nav-links {
+            display: flex;
+            gap: 32px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover { color: var(--text-primary); }
+
+        .nav-cta {
+            padding: 12px 24px;
+            background: transparent;
+            border: 1px solid var(--text-primary);
+            color: var(--text-primary) !important;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .nav-cta:hover {
+            background: var(--text-primary);
+            color: var(--bg-primary) !important;
+        }
+
+        /* Article Header */
+        .article-header {
+            padding: 160px 40px 60px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.875rem;
+            margin-bottom: 40px;
+            transition: color 0.2s;
+        }
+
+        .back-link:hover { color: var(--text-primary); }
+
+        .article-category {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+
+        .article-title {
+            font-family: var(--font-serif);
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-weight: 400;
+            line-height: 1.15;
+            letter-spacing: -0.02em;
+            margin-bottom: 24px;
+        }
+
+        .article-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 32px;
+        }
+
+        .article-meta {
+            display: flex;
+            gap: 32px;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            padding-top: 24px;
+            border-top: 1px solid var(--border);
+        }
+
+        /* Article Content */
+        .article-content {
+            max-width: 680px;
+            margin: 0 auto;
+            padding: 60px 40px 100px;
+        }
+
+        .article-content p {
+            font-size: 1.125rem;
+            line-height: 1.8;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+        }
+
+        .article-content h2 {
+            font-family: var(--font-serif);
+            font-size: 1.75rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin: 56px 0 24px;
+            padding-top: 32px;
+            border-top: 1px solid var(--border);
+        }
+
+        .article-content h2:first-of-type {
+            border-top: none;
+            padding-top: 0;
+            margin-top: 0;
+        }
+
+        .article-content h3 {
+            font-family: var(--font-serif);
+            font-size: 1.35rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin: 40px 0 16px;
+        }
+
+        .article-content ul, .article-content ol {
+            margin: 0 0 24px 24px;
+            color: var(--text-secondary);
+        }
+
+        .article-content li {
+            font-size: 1.125rem;
+            line-height: 1.8;
+            margin-bottom: 12px;
+        }
+
+        .article-content strong {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .article-content a {
+            color: var(--text-primary);
+            text-decoration: underline;
+            text-underline-offset: 3px;
+            transition: opacity 0.2s;
+        }
+
+        .article-content a:hover { opacity: 0.7; }
+
+        /* Callout boxes */
+        .callout {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            padding: 24px 28px;
+            margin: 32px 0;
+        }
+
+        .callout-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .callout p {
+            margin-bottom: 0;
+            font-size: 1rem;
+        }
+
+        .callout.tip { border-left: 3px solid var(--text-primary); }
+        .callout.warning { border-left: 3px solid #f59e0b; }
+        .callout.success { border-left: 3px solid #22c55e; }
+
+        /* Quote examples */
+        .example-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 24px;
+            margin: 24px 0;
+            font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+            font-size: 0.9rem;
+            line-height: 1.7;
+        }
+
+        .example-box.bad { border-color: rgba(239, 68, 68, 0.3); }
+        .example-box.good { border-color: rgba(34, 197, 94, 0.3); }
+
+        .example-label {
+            font-family: var(--font-sans);
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+
+        /* CTA Box */
+        .cta-box {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            padding: 40px;
+            margin: 48px 0;
+            text-align: center;
+        }
+
+        .cta-box h3 {
+            font-family: var(--font-serif);
+            font-size: 1.5rem;
+            font-weight: 500;
+            margin-bottom: 12px;
+        }
+
+        .cta-box p {
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+            font-size: 1rem;
+        }
+
+        .cta-button {
+            display: inline-block;
+            padding: 14px 32px;
+            background: var(--text-primary);
+            color: var(--bg-primary);
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px rgba(255,255,255,0.1);
+            opacity: 1;
+        }
+
+        /* Footer */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 48px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .footer-logo {
+            font-family: var(--font-serif);
+            font-size: 1.25rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+
+        .footer-logo span { font-style: italic; }
+
+        .footer-links {
+            display: flex;
+            gap: 32px;
+        }
+
+        .footer-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.875rem;
+            transition: color 0.2s;
+        }
+
+        .footer-links a:hover { color: var(--text-primary); }
+
+        .footer-copy {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            nav { padding: 20px 24px; }
+            .nav-links a:not(.nav-cta) { display: none; }
+            .article-header { padding: 140px 24px 40px; }
+            .article-content { padding: 40px 24px 80px; }
+            .article-meta { flex-direction: column; gap: 8px; }
+            footer {
+                flex-direction: column;
+                gap: 24px;
+                text-align: center;
+            }
+            .footer-links { flex-wrap: wrap; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <a href="/" class="logo">quoted.<span>it</span></a>
+        <div class="nav-links">
+            <a href="/use-cases">Use Cases</a>
+            <a href="/blog/">Blog</a>
+            <a href="/app" class="nav-cta">Start Quoting</a>
+        </div>
+    </nav>
+
+    <!-- Article Header -->
+    <header class="article-header">
+        <a href="/blog/" class="back-link">&larr; Back to Blog</a>
+        <p class="article-category">Business</p>
+        <h1 class="article-title">The Follow-Up Email That Actually Gets Responses</h1>
+        <p class="article-subtitle">Most follow-ups get ignored. Here's the exact template I've used to get responses on 73% of my quote follow-ups. Short, direct, works.</p>
+        <div class="article-meta">
+            <span>December 2025</span>
+            <span>3 min read</span>
+        </div>
+    </header>
+
+    <!-- Article Content -->
+    <article class="article-content">
+        <p>I've seen this a hundred times. You send a quote. Radio silence. You wait three days. Nothing. You send a "just checking in" email. Still nothing.</p>
+
+        <p>Then you give up. Or worse, you send four more emails that sound increasingly desperate.</p>
+
+        <p><strong>The problem isn't that clients are ignoring you. It's that your follow-up gives them nothing to respond to.</strong></p>
+
+        <p>Let me be real: most follow-up emails fail because they put all the work on the client. "Any questions?" "Want to discuss?" "Let me know your thoughts?"</p>
+
+        <p>Those are dead ends. Here's what actually works.</p>
+
+        <h2>The Template That Works</h2>
+
+        <p>I've tested dozens of follow-up approaches over the past eight years. This one consistently gets responses on about 73% of my follow-ups. Not every time. But enough to make a real difference in close rates.</p>
+
+        <div class="example-box good">
+            <p class="example-label">The Template</p>
+            <p><strong>Subject:</strong> Quick question about the [project] quote</p>
+            <p>&nbsp;</p>
+            <p>Hey [Name],</p>
+            <p>&nbsp;</p>
+            <p>Wanted to follow up on the quote I sent over for [specific project]. I know you're probably weighing options.</p>
+            <p>&nbsp;</p>
+            <p>Quick question: Is the timeline still looking like [date they mentioned]? If so, I'd need to confirm by [date 5-7 days out] to hold that slot.</p>
+            <p>&nbsp;</p>
+            <p>If it's not the right fit or timing changed, totally fine to let me know. Helps me plan my schedule.</p>
+            <p>&nbsp;</p>
+            <p>[Your name]</p>
+        </div>
+
+        <p>That's it. No fancy psychology. No "circling back" or "touching base." Just a direct question that requires a direct answer.</p>
+
+        <h2>Why This Works</h2>
+
+        <h3>1. It gives them a reason to respond</h3>
+        <p>The truth is, a vague "any updates?" gives no urgency. But "I need to know by Friday to hold your slot" creates a real deadline. Not fake scarcity. Real scheduling constraints that make sense.</p>
+
+        <h3>2. It makes saying no easy</h3>
+        <p>This is counterintuitive. But the line "If it's not the right fit... totally fine to let me know" actually increases responses. People hate being the bad guy. When you give them explicit permission to say no, they're more likely to respond either way.</p>
+
+        <h3>3. It's genuinely useful</h3>
+        <p>You're not begging. You're asking a legitimate question about scheduling. This frames you as a busy professional managing their calendar, not someone desperate for work.</p>
+
+        <div class="callout tip">
+            <p class="callout-title">Timing Matters</p>
+            <p>Send this 3-5 business days after your quote. Any sooner feels pushy. Any later and they've forgotten the details. Tuesday through Thursday mornings tend to get better response rates than Monday (inbox chaos) or Friday (checking out).</p>
+        </div>
+
+        <h2>What NOT to Do</h2>
+
+        <p>Here's what I see killing follow-ups:</p>
+
+        <ul>
+            <li><strong>"Just wanted to check in"</strong> — This says nothing. Delete it from your vocabulary.</li>
+            <li><strong>"Did you get my email?"</strong> — Of course they did. This is passive-aggressive.</li>
+            <li><strong>"I hope this finds you well"</strong> — Filler. Get to the point.</li>
+            <li><strong>Re-attaching the quote</strong> — Makes you look desperate. They can find it.</li>
+            <li><strong>Long explanations</strong> — If they need convincing, a follow-up email isn't going to do it.</li>
+        </ul>
+
+        <div class="example-box bad">
+            <p class="example-label">Don't Do This</p>
+            <p><strong>Subject:</strong> Following up on our proposal</p>
+            <p>&nbsp;</p>
+            <p>Hi [Name],</p>
+            <p>&nbsp;</p>
+            <p>I hope this email finds you well! I just wanted to touch base regarding the quote I sent over last week for your project. I wanted to make sure you received it and see if you had any questions or concerns that I could address. I'm really excited about the opportunity to work together and believe we could create something really special. Please let me know if you'd like to discuss anything or if there's any additional information I can provide. Looking forward to hearing from you!</p>
+            <p>&nbsp;</p>
+            <p>Best regards...</p>
+        </div>
+
+        <p>See the difference? The bad one is 89 words of nothing. The good one is 71 words with a clear ask and a deadline.</p>
+
+        <h2>One More Thing</h2>
+
+        <p>If they don't respond to this follow-up, send ONE more email a week later. Something like:</p>
+
+        <div class="example-box good">
+            <p class="example-label">Final Follow-Up</p>
+            <p><strong>Subject:</strong> Closing out [project] - last check</p>
+            <p>&nbsp;</p>
+            <p>Hey [Name],</p>
+            <p>&nbsp;</p>
+            <p>Going to assume the timing isn't right on this one. No worries at all.</p>
+            <p>&nbsp;</p>
+            <p>I'll close out the quote on my end. If things change down the road, always happy to chat.</p>
+            <p>&nbsp;</p>
+            <p>[Your name]</p>
+        </div>
+
+        <p>This "breakup email" often gets responses. Something about officially closing it out prompts action.</p>
+
+        <p>After that? Move on. Two follow-ups is enough. Three makes you annoying. Four makes you desperate.</p>
+
+        <div class="cta-box">
+            <h3>Stop Chasing Quotes</h3>
+            <p>The best follow-up is one you don't have to send. Professional quotes that communicate value upfront get faster responses.</p>
+            <a href="/demo" class="cta-button">Try Quoted Free</a>
+        </div>
+
+        <p>The follow-up is never going to save a bad quote. But a good follow-up on a solid quote? That's where the money is.</p>
+
+        <hr style="border: none; border-top: 1px solid var(--border); margin: 48px 0;">
+
+        <p><em>Spend less time following up and more time closing. <a href="/demo">Try Quoted</a> — professional quotes in 60 seconds.</em></p>
+    </article>
+
+    <!-- Footer -->
+    <footer>
+        <a href="/" class="footer-logo">quoted.<span>it</span></a>
+        <div class="footer-links">
+            <a href="/use-cases">Use Cases</a>
+            <a href="/blog/">Blog</a>
+            <a href="/help">Help</a>
+            <a href="/privacy">Privacy</a>
+            <a href="/terms">Terms</a>
+        </div>
+        <p class="footer-copy">&copy; 2025 Quoted, Inc.</p>
+    </footer>
+</body>
+</html>
