@@ -4,7 +4,9 @@ These prompts synthesize voice transcriptions into structured quotes
 using the contractor's learned pricing model.
 """
 
-from typing import Optional
+from typing import Optional, Dict, Any
+
+from ..services.learning_relevance import select_relevant_learnings
 
 
 def get_quote_generation_prompt(
@@ -16,6 +18,7 @@ def get_quote_generation_prompt(
     terms: Optional[dict] = None,
     correction_examples: Optional[list] = None,
     detected_category: Optional[str] = None,
+    voice_signals: Optional[Dict[str, Any]] = None,
 ) -> str:
     """
     Generate the main quote generation prompt.
@@ -78,8 +81,18 @@ def get_quote_generation_prompt(
             # Layer 3: Specific learned adjustments (injections)
             adjustments_str = ""
             if learned_adjustments:
-                # Priority selection - inject only top 7 most recent learnings
-                top_learnings = learned_adjustments[-7:]
+                # Intelligent relevance-based selection (Learning Excellence)
+                # Replaces naive [-7:] with multi-dimensional scoring:
+                # - Keyword Match (40%): Terms from current job
+                # - Recency (30%): 30-day half-life decay
+                # - Specificity (20%): Quality score from learning
+                # - Foundational (10%): Universal rules bonus
+                top_learnings = select_relevant_learnings(
+                    learned_adjustments=learned_adjustments,
+                    transcription=transcription,
+                    category=detected_category,
+                    max_learnings=7,
+                )
 
                 # Calculate learning pattern summary
                 increase_pattern = sum(1 for adj in top_learnings if "increase" in adj.lower() or "higher" in adj.lower())
@@ -109,6 +122,50 @@ def get_quote_generation_prompt(
 ## 🎯 Category-Specific Context: "{display_name}"
 {tailored_str}{adjustments_str}
 IMPORTANT: Apply these category-specific learnings to match your actual pricing.
+"""
+
+    # ============================================================
+    # LAYER 4: VOICE SIGNALS (Learning Excellence)
+    # ============================================================
+    # Extract pricing signals from the way the contractor spoke
+    voice_signals_str = ""
+    if voice_signals:
+        signal_hints = []
+
+        # Difficulty signal
+        difficulty = voice_signals.get("difficulty_signal", {})
+        if difficulty.get("detected") and difficulty.get("adjustment_hint"):
+            signal_hints.append(f"- **Difficulty**: {difficulty.get('adjustment_hint')}")
+
+        # Relationship signal
+        relationship = voice_signals.get("relationship_signal", {})
+        if relationship.get("detected") and relationship.get("adjustment_hint"):
+            signal_hints.append(f"- **Relationship**: {relationship.get('adjustment_hint')}")
+
+        # Timeline signal
+        timeline = voice_signals.get("timeline_signal", {})
+        if timeline.get("detected") and timeline.get("adjustment_hint"):
+            signal_hints.append(f"- **Timeline**: {timeline.get('adjustment_hint')}")
+
+        # Quality signal
+        quality = voice_signals.get("quality_signal", {})
+        if quality.get("detected") and quality.get("adjustment_hint"):
+            signal_hints.append(f"- **Quality**: {quality.get('adjustment_hint')}")
+
+        # Correction signal (most important - explicit pricing direction)
+        correction = voice_signals.get("correction_signal", {})
+        if correction.get("detected") and correction.get("adjustment_hint"):
+            signal_hints.append(f"- **⚠️ Explicit Direction**: {correction.get('adjustment_hint')}")
+
+        if signal_hints:
+            voice_signals_str = f"""
+## 🎤 Voice Signal Analysis (Learning Excellence)
+
+The contractor's tone and word choice suggest these pricing adjustments:
+
+{chr(10).join(signal_hints)}
+
+Consider these signals when setting line item prices.
 """
 
     # Format pricing knowledge for the prompt
@@ -180,7 +237,7 @@ IMPORTANT: This is a BUDGETARY quote - a ballpark estimate to help the customer 
 "{transcription}"
 {philosophy_str}
 {category_context_str}
-
+{voice_signals_str}
 ## Contractor's Base Pricing Information
 
 Labor Rate: ${labor_rate}/hour

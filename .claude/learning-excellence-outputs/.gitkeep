@@ -1,0 +1,19 @@
+# Learning Excellence Outputs
+
+This directory contains agent outputs from the Learning Excellence Orchestrator.
+
+Files are named by phase and agent:
+- phase0-architecture.md
+- phase0-competitive.md
+- phase1-database.md
+- phase1-effectiveness.md
+- phase1-acceptance.md
+- phase2-quality-scoring.md
+- phase2-enhanced-prompt.md
+- phase3-relevance.md
+- phase3-voice.md
+- phase4-acceptance.md
+- phase4-outcomes.md
+- phase5-contractor-dna.md
+- phase6-confidence.md
+- phase6-explanation.md
