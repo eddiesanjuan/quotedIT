@@ -759,7 +759,7 @@ async def reject_quote(
 async def create_deposit_checkout(
     token: str,
     request: AcceptWithDepositRequest,
-    db: DatabaseService = Depends(get_db),
+    db: DatabaseService = Depends(get_db_service),
 ):
     """
     Create a Stripe checkout session for deposit payment.
