@@ -4252,13 +4252,20 @@
 
         @media (max-width: 480px) {
             .floating-support-btn {
-                bottom: 16px;
+                bottom: 80px; /* Above mobile nav (70px tall) */
                 right: 16px;
             }
 
             .floating-support-btn a {
                 padding: 10px 16px;
                 font-size: 0.8125rem;
+            }
+
+            /* Move PostHog survey widget above mobile nav */
+            .PostHogSurvey__button,
+            [class*="PostHog"][class*="button"],
+            div[style*="position: fixed"][style*="bottom"]:not(.floating-support-btn):not(.mobile-nav):not(.toast-container) {
+                bottom: 80px !important;
             }
         }
     </style>
@@ -15597,6 +15604,42 @@
             } catch (error) {
                 console.error('Error checking quotes for testimonial trigger:', error);
             }
+        }
+
+        // Reposition PostHog survey widgets on mobile to avoid overlapping with bottom nav
+        function repositionPostHogWidgets() {
+            if (window.innerWidth > 480) return;
+
+            // Target PostHog survey button and any fixed-position elements at bottom-right
+            const postHogSelectors = [
+                '[class*="PostHog"]',
+                '[id*="posthog"]',
+                'div[style*="position: fixed"][style*="bottom"][style*="right"]'
+            ];
+
+            postHogSelectors.forEach(selector => {
+                try {
+                    document.querySelectorAll(selector).forEach(el => {
+                        // Skip our own elements
+                        if (el.classList.contains('floating-support-btn') ||
+                            el.classList.contains('mobile-nav') ||
+                            el.classList.contains('toast-container')) return;
+
+                        const style = window.getComputedStyle(el);
+                        if (style.position === 'fixed' && parseInt(style.bottom) < 80) {
+                            el.style.setProperty('bottom', '80px', 'important');
+                        }
+                    });
+                } catch (e) {}
+            });
+        }
+
+        // Run on load and periodically (PostHog widgets may load async)
+        if (window.innerWidth <= 480) {
+            setTimeout(repositionPostHogWidgets, 1000);
+            setTimeout(repositionPostHogWidgets, 3000);
+            setTimeout(repositionPostHogWidgets, 5000);
+            window.addEventListener('resize', repositionPostHogWidgets);
         }
     </script>
 
