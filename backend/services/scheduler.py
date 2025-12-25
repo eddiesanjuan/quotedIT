@@ -32,7 +32,8 @@ async def check_task_reminders():
     Check for tasks with reminder_time in the past and notification_sent=False.
     Runs every 5 minutes.
     """
-    from ..models.database import get_async_session, Task, Contractor
+    from ..models.database import Task, Contractor
+    from .database import async_session_factory
     from .email import EmailService
     from .logging import get_logger
     job_logger = get_logger("quoted.scheduler.task_reminders")
@@ -40,7 +41,7 @@ async def check_task_reminders():
     logger.info("Running task reminder check")
 
     try:
-        async with get_async_session() as db:
+        async with async_session_factory() as db:
             # Find tasks with due reminders
             now = datetime.utcnow()
             result = await db.execute(
@@ -103,12 +104,13 @@ async def check_quote_followups():
 
     Runs daily at 9am UTC.
     """
-    from ..models.database import get_async_session, Quote, Task, Customer
+    from ..models.database import Quote, Task, Customer
+    from .database import async_session_factory
 
     logger.info("Running quote follow-up check")
 
     try:
-        async with get_async_session() as db:
+        async with async_session_factory() as db:
             now = datetime.utcnow()
             three_days_ago = now - timedelta(days=3)
             seven_days_ago = now - timedelta(days=7)
