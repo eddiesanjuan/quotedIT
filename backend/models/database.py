@@ -393,7 +393,8 @@ class QuoteFeedback(Base):
     __tablename__ = "quote_feedback"
 
     id = Column(String, primary_key=True, default=generate_uuid)
-    quote_id = Column(String, ForeignKey("quotes.id"), unique=True, nullable=False)
+    # DB-005: Added index for frequent joins from quotes
+    quote_id = Column(String, ForeignKey("quotes.id"), unique=True, nullable=False, index=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -599,7 +600,8 @@ class Task(Base):
     completed_at = Column(DateTime)  # When task was completed
 
     # Status
-    status = Column(String(50), default="pending")  # pending, completed, snoozed, cancelled
+    # DB-004: Added index for frequent task status queries
+    status = Column(String(50), default="pending", index=True)  # pending, completed, snoozed, cancelled
 
     # Recurrence (optional)
     recurrence = Column(String(50))  # one_time, daily, weekly, monthly
