@@ -6,11 +6,12 @@ Handles user registration and login.
 from datetime import timedelta
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from ..services.logging import get_auth_logger
+from ..services.rate_limiting import ip_limiter, RateLimits
 
 logger = get_auth_logger()
 
@@ -40,7 +41,9 @@ router = APIRouter()
 
 
 @router.post("/register", response_model=Token)
+@ip_limiter.limit(RateLimits.AUTH_REGISTER)
 async def register(
+    request: Request,
     user_data: UserCreate,
     db: AsyncSession = Depends(get_db),
 ):
@@ -120,7 +123,9 @@ async def register(
 
 
 @router.post("/login", response_model=Token)
+@ip_limiter.limit(RateLimits.AUTH_LOGIN)
 async def login(
+    request: Request,
     credentials: UserLogin,
     db: AsyncSession = Depends(get_db),
 ):
@@ -207,7 +212,9 @@ async def get_me(
 
 
 @router.post("/refresh", response_model=Token)
+@ip_limiter.limit(RateLimits.AUTH_LOGIN)  # Same limit as login to prevent brute force
 async def refresh_token(
+    http_request: Request,
     request: RefreshTokenRequest,
     db: AsyncSession = Depends(get_db),
 ):
