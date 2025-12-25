@@ -588,10 +588,10 @@ class CustomerInfo(BaseModel):
 
 class PrefillData(BaseModel):
     """Pre-fill data for auto-quote."""
-    customer_name: Optional[str]
-    customer_phone: Optional[str]
-    customer_email: Optional[str]
-    customer_address: Optional[str]
+    customer_name: Optional[str] = None
+    customer_phone: Optional[str] = None
+    customer_email: Optional[str] = None
+    customer_address: Optional[str] = None
 
 
 class JobTypeCount(BaseModel):
