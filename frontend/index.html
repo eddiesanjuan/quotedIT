@@ -5474,7 +5474,7 @@
                 <!-- Usage Widget -->
                 <div class="usage-widget">
                     <div class="usage-header">
-                        <div class="usage-plan" id="currentPlan">Starter Plan</div>
+                        <div class="usage-plan" id="currentPlan">TRIAL PLAN</div>
                         <div class="usage-stats" id="usageStats">0 / 75</div>
                     </div>
                     <div class="usage-bar">
@@ -11524,7 +11524,9 @@
             const quotesRemaining = Math.max(0, quotesLimit - quotesUsed);
             const usagePercent = Math.min(100, (quotesUsed / quotesLimit) * 100);
 
-            document.getElementById('currentPlan').textContent = `${status.plan_tier || 'Starter'} Plan`.toUpperCase();
+            // CP-001: Updated to reflect new single-tier pricing (trial or unlimited)
+            const planDisplay = status.plan_tier === 'unlimited' ? 'PRO' : (status.plan_tier || 'TRIAL').toUpperCase();
+            document.getElementById('currentPlan').textContent = `${planDisplay} PLAN`;
             document.getElementById('usageStats').textContent = `${quotesUsed} / ${quotesLimit}`;
             document.getElementById('usageDetails').textContent = `${quotesRemaining} quote${quotesRemaining !== 1 ? 's' : ''} remaining this month`;
 

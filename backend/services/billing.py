@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from typing import Optional, Dict, Any
 import stripe
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, update
 from fastapi import HTTPException, status
 
 from ..config import settings
@@ -170,8 +170,26 @@ class BillingService:
         Increment the quote usage counter for a user.
 
         DISC-018: If is_grace_quote=True, increment grace_quotes_used instead of quotes_used.
+        DB-001: Uses atomic UPDATE to prevent race conditions in concurrent quote generation.
         """
-        result = await db.execute(select(User).where(User.id == user_id))
+        # DB-001 FIX: Use atomic UPDATE instead of read-modify-write
+        if is_grace_quote:
+            # DISC-018: Track grace quotes separately with atomic update
+            stmt = (
+                update(User)
+                .where(User.id == user_id)
+                .values(grace_quotes_used=User.grace_quotes_used + 1)
+                .returning(User)
+            )
+        else:
+            stmt = (
+                update(User)
+                .where(User.id == user_id)
+                .values(quotes_used=User.quotes_used + 1)
+                .returning(User)
+            )
+
+        result = await db.execute(stmt)
         user = result.scalar_one_or_none()
 
         if not user:
@@ -179,12 +197,6 @@ class BillingService:
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="User not found"
             )
-
-        # DISC-018: Track grace quotes separately
-        if is_grace_quote:
-            user.grace_quotes_used = (user.grace_quotes_used or 0) + 1
-        else:
-            user.quotes_used += 1
 
         await db.commit()
 

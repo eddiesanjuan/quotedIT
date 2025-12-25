@@ -648,6 +648,7 @@ async def generate_quote_with_clarifications(
     request: Request,
     clarified_request: QuoteWithClarificationsRequest,
     current_user: dict = Depends(get_current_user),
+    auth_db: AsyncSession = Depends(get_db),
 ):
     """
     Generate a quote using the original transcription plus clarification answers.

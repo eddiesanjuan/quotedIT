@@ -8,7 +8,7 @@ import string
 from datetime import datetime, timedelta
 from typing import Optional, Dict, Any
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, update
 from fastapi import HTTPException, status
 
 from ..models.database import User
@@ -164,13 +164,23 @@ class ReferralService:
             print(f"Warning: Referrer not found for code {referee_user.referred_by_code}")
             return
 
-        # Award credit (1 month = 1 credit)
-        referrer.referral_credits += 1
-        referrer.referral_count += 1
+        # DB-002 FIX: Award credit using atomic UPDATE to prevent race conditions
+        # This ensures concurrent referral events don't lose credits
+        stmt = (
+            update(User)
+            .where(User.id == referrer.id)
+            .values(
+                referral_credits=User.referral_credits + 1,
+                referral_count=User.referral_count + 1
+            )
+            .returning(User)
+        )
+        result = await db.execute(stmt)
+        updated_referrer = result.scalar_one_or_none()
 
         await db.commit()
 
-        # Track analytics event
+        # Track analytics event (use updated values)
         try:
             analytics_service.track_event(
                 user_id=str(referrer.id),
@@ -179,8 +189,8 @@ class ReferralService:
                     "referee_id": str(referee_user.id),
                     "referee_email": referee_user.email,
                     "credits_earned": 1,
-                    "total_referrals": referrer.referral_count,
-                    "total_credits": referrer.referral_credits,
+                    "total_referrals": updated_referrer.referral_count if updated_referrer else 0,
+                    "total_credits": updated_referrer.referral_credits if updated_referrer else 0,
                 }
             )
         except Exception as e:
