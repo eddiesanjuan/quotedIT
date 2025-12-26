@@ -16783,7 +16783,7 @@
         window.openTourMenu = function() {
             const modal = document.getElementById('tourMenuModal');
             if (modal) {
-                modal.classList.add('active');
+                modal.classList.add('show');
                 // Update completed badges
                 updateTourCompletionBadges();
             }
@@ -16793,7 +16793,7 @@
         window.closeTourMenu = function() {
             const modal = document.getElementById('tourMenuModal');
             if (modal) {
-                modal.classList.remove('active');
+                modal.classList.remove('show');
             }
         };
 
