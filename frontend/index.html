@@ -4417,9 +4417,18 @@
         }
     </style>
 
-    <!-- Shepherd.js Tour Library (using cdnjs for reliability) -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shepherd.js/13.0.0/css/shepherd.min.css" crossorigin="anonymous"/>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/shepherd.js/13.0.0/js/shepherd.min.js" crossorigin="anonymous"></script>
+    <!-- Shepherd.js Tour Library v11.2.0 (stable release with multiple CDN fallbacks) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js@11.2.0/dist/css/shepherd.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/shepherd.js@11.2.0/dist/js/shepherd.min.js"></script>
+    <script>
+        // Fallback loader if primary CDN fails
+        if (typeof Shepherd === 'undefined') {
+            console.log('Primary CDN failed, trying fallback...');
+            var s = document.createElement('script');
+            s.src = 'https://unpkg.com/shepherd.js@11.2.0/dist/js/shepherd.min.js';
+            document.head.appendChild(s);
+        }
+    </script>
 
     <!-- Tour System Styles -->
     <style>
