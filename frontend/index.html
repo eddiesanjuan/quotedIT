@@ -1284,15 +1284,81 @@
         }
 
         /* Transcription */
-        .transcription {
-            margin-top: 32px;
-            padding: 24px;
+        /* Transcription Section with Edit & Regenerate */
+        .transcription-section {
+            margin-top: 24px;
+            padding: 16px 20px;
             background: var(--bg-secondary);
             border-radius: 12px;
-            font-style: italic;
+            border: 1px solid var(--border-color);
+        }
+
+        .transcription-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .transcription-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
             color: var(--text-muted);
-            font-size: 0.875rem;
-            line-height: 1.7;
+        }
+
+        .btn-text {
+            background: none;
+            border: none;
+            color: var(--primary);
+            padding: 4px 8px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .btn-text:hover {
+            background: rgba(244, 126, 52, 0.1);
+        }
+
+        .transcription {
+            font-style: italic;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .transcription-edit {
+            margin-top: 12px;
+        }
+
+        .transcription-edit textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            resize: vertical;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        .transcription-edit textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .transcription-edit-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+            margin-top: 12px;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.85rem;
         }
 
         .transcription::before {
@@ -5440,7 +5506,22 @@
                     <p id="notesContent"></p>
                 </div>
 
-                <div class="transcription" id="transcriptionDisplay" style="display: none;"></div>
+                <!-- Transcription with Edit & Regenerate (Immediate with Escape Hatch) -->
+                <div class="transcription-section" id="transcriptionSection" style="display: none;">
+                    <div class="transcription-header">
+                        <span class="transcription-label">What I heard:</span>
+                        <button class="btn btn-sm btn-text" onclick="showEditTranscription()">Edit & Regenerate</button>
+                    </div>
+                    <div class="transcription" id="transcriptionDisplay"></div>
+                    <!-- Edit mode (hidden by default) -->
+                    <div class="transcription-edit" id="transcriptionEditMode" style="display: none;">
+                        <textarea id="transcriptionEditText" class="form-textarea" rows="3" placeholder="Edit your job description..."></textarea>
+                        <div class="transcription-edit-actions">
+                            <button class="btn btn-secondary btn-sm" onclick="cancelEditTranscription()">Cancel</button>
+                            <button class="btn btn-primary btn-sm" onclick="regenerateFromEdit()">Regenerate Quote</button>
+                        </div>
+                    </div>
+                </div>
 
                 <div class="quote-actions">
                     <button class="btn btn-primary" id="downloadPdfBtn" onclick="downloadPdf()">Download PDF</button>
@@ -8563,7 +8644,7 @@
             }
         }
 
-        // Send audio for transcription only (step 1 of voice flow)
+        // Send audio for transcription and immediately generate quote (Immediate with Escape Hatch)
         async function sendAudioForTranscription(audioBlob) {
             showLoading(true, 'Transcribing...');
 
@@ -8583,7 +8664,6 @@
                 }
 
                 const result = await response.json();
-                showTranscriptionPreview(result.text);
 
                 // Track transcription complete
                 {% if posthog_api_key %}
@@ -8594,6 +8674,16 @@
                     });
                 }
                 {% endif %}
+
+                // IMMEDIATE GENERATION: Skip preview, generate quote directly
+                // User can edit via "Edit & Regenerate" on the result screen
+                document.getElementById('jobDescription').value = result.text;
+                lastInputMethod = 'voice';
+
+                // Update loading message and generate
+                showLoading(true, 'Generating quote...');
+                await generateQuote();
+
             } catch (err) {
                 console.error('Error:', err);
                 showError(err.message);
@@ -8628,7 +8718,7 @@
             {% endif %}
         }
 
-        // Generate quote from reviewed/edited transcription
+        // Generate quote from reviewed/edited transcription (legacy - kept for fallback)
         async function generateFromTranscription() {
             const transcription = document.getElementById('transcriptionText').value.trim();
 
@@ -8642,6 +8732,75 @@
             document.getElementById('jobDescription').value = transcription;
 
             // Use existing generateQuote function
+            await generateQuote();
+        }
+
+        // ============================================
+        // Edit & Regenerate Functions (Escape Hatch)
+        // ============================================
+
+        // Show edit mode in the transcription section
+        function showEditTranscription() {
+            const transcriptionDisplay = document.getElementById('transcriptionDisplay');
+            const transcriptionEditMode = document.getElementById('transcriptionEditMode');
+            const transcriptionEditText = document.getElementById('transcriptionEditText');
+
+            // Copy current transcription to edit textarea
+            transcriptionEditText.value = transcriptionDisplay.textContent;
+
+            // Show edit mode, hide display
+            transcriptionDisplay.style.display = 'none';
+            transcriptionEditMode.style.display = 'block';
+            transcriptionEditText.focus();
+
+            // Track edit initiated
+            {% if posthog_api_key %}
+            if (window.posthog) {
+                posthog.capture('transcription_edit_initiated');
+            }
+            {% endif %}
+        }
+
+        // Cancel edit mode
+        function cancelEditTranscription() {
+            const transcriptionDisplay = document.getElementById('transcriptionDisplay');
+            const transcriptionEditMode = document.getElementById('transcriptionEditMode');
+
+            // Hide edit mode, show display
+            transcriptionEditMode.style.display = 'none';
+            transcriptionDisplay.style.display = 'block';
+        }
+
+        // Regenerate quote from edited transcription
+        async function regenerateFromEdit() {
+            const transcription = document.getElementById('transcriptionEditText').value.trim();
+
+            if (!transcription) {
+                showError('Please enter a job description');
+                return;
+            }
+
+            // Track regeneration
+            {% if posthog_api_key %}
+            if (window.posthog) {
+                posthog.capture('quote_regenerated_from_edit', {
+                    original_length: document.getElementById('transcriptionDisplay').textContent.length,
+                    edited_length: transcription.length
+                });
+            }
+            {% endif %}
+
+            // Set the job description and regenerate
+            document.getElementById('jobDescription').value = transcription;
+
+            // Keep input method as 'voice' since this is still from the voice flow
+            lastInputMethod = 'voice';
+
+            // Hide the quote result to show loading
+            document.getElementById('quoteResult').style.display = 'none';
+            document.getElementById('quoteResult').classList.remove('active');
+
+            // Generate new quote
             await generateQuote();
         }
 
@@ -8719,6 +8878,7 @@
             }
         }
 
+        // Dashboard: Send audio for transcription and immediately process (Immediate with Escape Hatch)
         async function dashboardSendAudioForTranscription(audioBlob) {
             const instructions = document.getElementById('dashboardRecordInstructions');
             instructions.textContent = 'Transcribing...';
@@ -8740,7 +8900,11 @@
                 }
 
                 const result = await response.json();
-                dashboardShowTranscription(result.text);
+
+                // IMMEDIATE PROCESSING: Skip preview, process intent directly
+                // For quotes, user can edit via "Edit & Regenerate" on result screen
+                instructions.textContent = 'Processing...';
+                await dashboardProcessTranscription(result.text);
 
             } catch (err) {
                 console.error('Dashboard transcription error:', err);
@@ -8749,6 +8913,7 @@
             }
         }
 
+        // Legacy: Show transcription preview (kept for reference, no longer primary flow)
         function dashboardShowTranscription(text) {
             const instructions = document.getElementById('dashboardRecordInstructions');
             const transcriptionArea = document.getElementById('dashboardTranscriptionArea');
@@ -8770,11 +8935,11 @@
             instructions.textContent = 'Tap to speak';
         }
 
-        async function dashboardSubmitVoice() {
-            const transcription = document.getElementById('dashboardTranscriptionText').value.trim();
-
-            if (!transcription) {
-                showError('Please enter or record something first');
+        // Process transcription immediately (Immediate with Escape Hatch)
+        async function dashboardProcessTranscription(transcription) {
+            if (!transcription || !transcription.trim()) {
+                showDashboardError('Could not understand. Please try again.');
+                document.getElementById('dashboardRecordInstructions').textContent = 'Tap to speak';
                 return;
             }
 
@@ -8877,13 +9042,24 @@
                 }, 100);
                 showSuccess('Creating task...');
             } else {
-                // Default: treat as quote request
+                // Default: treat as quote request - generate immediately
                 showAppSection('newQuote');
                 setTimeout(() => {
                     document.getElementById('jobDescription').value = transcription;
+                    lastInputMethod = 'voice'; // Set voice method so transcription shows on result
                     generateQuote();
                 }, 100);
             }
+        }
+
+        // Legacy: Manual dashboard submit (kept for fallback)
+        async function dashboardSubmitVoice() {
+            const transcription = document.getElementById('dashboardTranscriptionText').value.trim();
+            if (!transcription) {
+                showDashboardError('Please enter or record something first');
+                return;
+            }
+            await dashboardProcessTranscription(transcription);
         }
 
         // Generate quote from text
@@ -9054,11 +9230,18 @@
                 document.getElementById('quoteNotes').style.display = 'none';
             }
 
-            if (quote.transcription) {
-                document.getElementById('transcriptionDisplay').textContent = quote.transcription;
-                document.getElementById('transcriptionDisplay').style.display = 'block';
+            // Show transcription section with Edit & Regenerate option (voice input only)
+            const transcriptionSection = document.getElementById('transcriptionSection');
+            const transcriptionDisplay = document.getElementById('transcriptionDisplay');
+            const transcriptionEditMode = document.getElementById('transcriptionEditMode');
+
+            if (quote.transcription && lastInputMethod === 'voice') {
+                transcriptionDisplay.textContent = quote.transcription;
+                transcriptionDisplay.style.display = 'block';
+                transcriptionEditMode.style.display = 'none';
+                transcriptionSection.style.display = 'block';
             } else {
-                document.getElementById('transcriptionDisplay').style.display = 'none';
+                transcriptionSection.style.display = 'none';
             }
 
             document.getElementById('inputSection').style.display = 'none';
