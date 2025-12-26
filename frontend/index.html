@@ -4416,6 +4416,474 @@
             }
         }
     </style>
+
+    <!-- Shepherd.js Tour Library -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js@13.0.0/dist/css/shepherd.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/shepherd.js@13.0.0/dist/js/shepherd.min.js"></script>
+
+    <!-- Tour System Styles -->
+    <style>
+        /* Shepherd.js Custom Theme - Matches Quoted Dark Theme */
+        .shepherd-element {
+            background: var(--bg-secondary, #1a1a2e);
+            border: 1px solid var(--border, #2a2a4a);
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            max-width: 420px;
+            z-index: 10001;
+        }
+
+        .shepherd-element .shepherd-content {
+            padding: 0;
+        }
+
+        .shepherd-element .shepherd-header {
+            background: linear-gradient(135deg, var(--accent, #6366f1) 0%, #8b5cf6 100%);
+            padding: 16px 20px;
+            border-radius: 15px 15px 0 0;
+        }
+
+        .shepherd-element .shepherd-title {
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .shepherd-element .shepherd-cancel-icon {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1.5rem;
+            font-weight: 300;
+            transition: color 0.2s;
+        }
+
+        .shepherd-element .shepherd-cancel-icon:hover {
+            color: white;
+        }
+
+        .shepherd-element .shepherd-text {
+            color: var(--text-primary, #e2e8f0);
+            padding: 20px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .shepherd-element .shepherd-text p {
+            margin: 0 0 12px 0;
+        }
+
+        .shepherd-element .shepherd-text p:last-child {
+            margin-bottom: 0;
+        }
+
+        .shepherd-element .shepherd-footer {
+            padding: 16px 20px;
+            border-top: 1px solid var(--border, #2a2a4a);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .shepherd-element .shepherd-button {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .shepherd-element .shepherd-button-secondary {
+            background: transparent;
+            color: var(--text-muted, #94a3b8);
+            border: 1px solid var(--border, #2a2a4a);
+        }
+
+        .shepherd-element .shepherd-button-secondary:hover {
+            background: var(--bg-primary, #0f0f1a);
+            color: var(--text-primary, #e2e8f0);
+        }
+
+        .shepherd-element .shepherd-button:not(.shepherd-button-secondary) {
+            background: linear-gradient(135deg, var(--accent, #6366f1) 0%, #8b5cf6 100%);
+            color: white;
+        }
+
+        .shepherd-element .shepherd-button:not(.shepherd-button-secondary):hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+        }
+
+        /* Tour Progress Indicator */
+        .tour-progress {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            color: var(--text-muted, #94a3b8);
+        }
+
+        .tour-progress-bar {
+            width: 100px;
+            height: 4px;
+            background: var(--bg-primary, #0f0f1a);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .tour-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent, #6366f1), #8b5cf6);
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
+        /* Highlight overlay */
+        .shepherd-modal-overlay-container {
+            z-index: 10000;
+        }
+
+        .shepherd-target-click-disabled.shepherd-enabled.shepherd-target {
+            pointer-events: auto !important;
+        }
+
+        /* Tour highlight pulse animation */
+        .shepherd-enabled.shepherd-target {
+            animation: tour-pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes tour-pulse {
+            0%, 100% { box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.3); }
+            50% { box-shadow: 0 0 0 8px rgba(99, 102, 241, 0.1); }
+        }
+
+        /* Tour Launcher Button */
+        .tour-launcher-btn {
+            position: fixed;
+            bottom: 140px;
+            right: 24px;
+            background: linear-gradient(135deg, var(--accent, #6366f1) 0%, #8b5cf6 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 50px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+            transition: all 0.3s ease;
+            z-index: 999;
+        }
+
+        .tour-launcher-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 30px rgba(99, 102, 241, 0.5);
+        }
+
+        .tour-launcher-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* Tour Menu Modal */
+        .tour-menu-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 10002;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(4px);
+        }
+
+        .tour-menu-modal.show {
+            display: flex;
+        }
+
+        .tour-menu-content {
+            background: var(--bg-secondary, #1a1a2e);
+            border: 1px solid var(--border, #2a2a4a);
+            border-radius: 20px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            animation: tour-menu-appear 0.3s ease;
+        }
+
+        @keyframes tour-menu-appear {
+            from {
+                opacity: 0;
+                transform: scale(0.95) translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .tour-menu-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--border, #2a2a4a);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .tour-menu-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: var(--text-primary, #e2e8f0);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .tour-menu-close {
+            background: none;
+            border: none;
+            color: var(--text-muted, #94a3b8);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 4px;
+            line-height: 1;
+        }
+
+        .tour-menu-close:hover {
+            color: var(--text-primary, #e2e8f0);
+        }
+
+        .tour-menu-body {
+            padding: 24px;
+        }
+
+        .tour-menu-section {
+            margin-bottom: 24px;
+        }
+
+        .tour-menu-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .tour-menu-section-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted, #94a3b8);
+            margin-bottom: 12px;
+        }
+
+        .tour-option {
+            background: var(--bg-primary, #0f0f1a);
+            border: 1px solid var(--border, #2a2a4a);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+        }
+
+        .tour-option:hover {
+            border-color: var(--accent, #6366f1);
+            transform: translateX(4px);
+        }
+
+        .tour-option:last-child {
+            margin-bottom: 0;
+        }
+
+        .tour-option-icon {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, var(--accent, #6366f1) 0%, #8b5cf6 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        .tour-option-content h3 {
+            margin: 0 0 4px 0;
+            font-size: 1rem;
+            color: var(--text-primary, #e2e8f0);
+        }
+
+        .tour-option-content p {
+            margin: 0;
+            font-size: 0.85rem;
+            color: var(--text-muted, #94a3b8);
+            line-height: 1.4;
+        }
+
+        .tour-option-badge {
+            background: var(--success, #10b981);
+            color: white;
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-left: 8px;
+        }
+
+        .tour-option-badge.new {
+            background: var(--accent, #6366f1);
+        }
+
+        .tour-option-duration {
+            font-size: 0.75rem;
+            color: var(--text-muted, #94a3b8);
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* First-time Tour Prompt */
+        .first-tour-prompt {
+            display: none;
+            position: fixed;
+            bottom: 100px;
+            right: 24px;
+            background: var(--bg-secondary, #1a1a2e);
+            border: 1px solid var(--accent, #6366f1);
+            border-radius: 16px;
+            padding: 20px;
+            max-width: 340px;
+            z-index: 1000;
+            animation: prompt-appear 0.5s ease;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .first-tour-prompt.show {
+            display: block;
+        }
+
+        @keyframes prompt-appear {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .first-tour-prompt h4 {
+            margin: 0 0 8px 0;
+            color: var(--text-primary, #e2e8f0);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .first-tour-prompt p {
+            margin: 0 0 16px 0;
+            color: var(--text-muted, #94a3b8);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .first-tour-prompt-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .first-tour-prompt-actions button {
+            flex: 1;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .first-tour-prompt-actions .btn-tour {
+            background: linear-gradient(135deg, var(--accent, #6366f1) 0%, #8b5cf6 100%);
+            color: white;
+            border: none;
+        }
+
+        .first-tour-prompt-actions .btn-tour:hover {
+            transform: translateY(-1px);
+        }
+
+        .first-tour-prompt-actions .btn-skip {
+            background: transparent;
+            color: var(--text-muted, #94a3b8);
+            border: 1px solid var(--border, #2a2a4a);
+        }
+
+        .first-tour-prompt-close {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: none;
+            border: none;
+            color: var(--text-muted, #94a3b8);
+            cursor: pointer;
+            font-size: 1.2rem;
+            line-height: 1;
+        }
+
+        /* Mobile adjustments for tours */
+        @media (max-width: 768px) {
+            .tour-launcher-btn {
+                bottom: 90px;
+                right: 16px;
+                padding: 10px 16px;
+                font-size: 0.8rem;
+            }
+
+            .shepherd-element {
+                max-width: 90vw;
+                margin: 0 16px;
+            }
+
+            .first-tour-prompt {
+                left: 16px;
+                right: 16px;
+                bottom: 90px;
+                max-width: none;
+            }
+
+            .tour-menu-content {
+                margin: 16px;
+                max-height: 80vh;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .tour-launcher-btn {
+                bottom: 85px;
+            }
+
+            .first-tour-prompt {
+                bottom: 85px;
+            }
+
+            .tour-progress-bar {
+                width: 60px;
+            }
+        }
+    </style>
 </head>
 <body>
     <!-- Toast Notification Container -->
@@ -16163,6 +16631,1129 @@
             setTimeout(repositionPostHogWidgets, 5000);
             window.addEventListener('resize', repositionPostHogWidgets);
         }
+    </script>
+
+    <!-- Tour System UI Elements -->
+    <!-- Tour Launcher Button -->
+    <button class="tour-launcher-btn" id="tourLauncherBtn" onclick="openTourMenu()" style="display: none;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+        Take a Tour
+    </button>
+
+    <!-- Tour Menu Modal -->
+    <div class="tour-menu-modal" id="tourMenuModal">
+        <div class="tour-menu-content">
+            <div class="tour-menu-header">
+                <h2>🎓 Learn Quoted</h2>
+                <button class="tour-menu-close" onclick="closeTourMenu()">&times;</button>
+            </div>
+            <div class="tour-menu-body">
+                <!-- Main Tour -->
+                <div class="tour-menu-section">
+                    <div class="tour-menu-section-title">Complete Workflow</div>
+                    <div class="tour-option" onclick="startTour('mainWorkflow')">
+                        <div class="tour-option-icon">🚀</div>
+                        <div class="tour-option-content">
+                            <h3>Full Quote Workflow <span class="tour-option-badge">Recommended</span></h3>
+                            <p>Learn the complete journey from creating a quote to getting paid. Covers voice input, editing, sharing, customer acceptance, and invoicing.</p>
+                            <div class="tour-option-duration">⏱️ ~5 minutes • 20 steps</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Feature Spotlights -->
+                <div class="tour-menu-section">
+                    <div class="tour-menu-section-title">Feature Spotlights</div>
+
+                    <div class="tour-option" onclick="startTour('voiceCommands')">
+                        <div class="tour-option-icon">🎤</div>
+                        <div class="tour-option-content">
+                            <h3>Voice Commands <span class="tour-option-badge new">New</span></h3>
+                            <p>Control Quoted with your voice. Create quotes, find customers, add tasks - all hands-free.</p>
+                            <div class="tour-option-duration">⏱️ ~2 minutes • 6 steps</div>
+                        </div>
+                    </div>
+
+                    <div class="tour-option" onclick="startTour('customerCRM')">
+                        <div class="tour-option-icon">👥</div>
+                        <div class="tour-option-content">
+                            <h3>Customer CRM</h3>
+                            <p>Manage customers, view quote history, and get automatic pre-fills for repeat customers.</p>
+                            <div class="tour-option-duration">⏱️ ~2 minutes • 5 steps</div>
+                        </div>
+                    </div>
+
+                    <div class="tour-option" onclick="startTour('analytics')">
+                        <div class="tour-option-icon">📊</div>
+                        <div class="tour-option-content">
+                            <h3>Win/Loss Analytics</h3>
+                            <p>Track your performance, see win rates, and get AI suggestions to improve your quoting.</p>
+                            <div class="tour-option-duration">⏱️ ~2 minutes • 5 steps</div>
+                        </div>
+                    </div>
+
+                    <div class="tour-option" onclick="startTour('invoicing')">
+                        <div class="tour-option-icon">📄</div>
+                        <div class="tour-option-content">
+                            <h3>Quote to Invoice</h3>
+                            <p>Convert won quotes to invoices with one click. Track payments and send reminders.</p>
+                            <div class="tour-option-duration">⏱️ ~1 minute • 4 steps</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reset Option -->
+                <div class="tour-menu-section" style="text-align: center; padding-top: 12px; border-top: 1px solid var(--border);">
+                    <button onclick="resetTourProgress()" style="background: none; border: none; color: var(--text-muted); font-size: 0.8rem; cursor: pointer; text-decoration: underline;">
+                        Reset all tour progress
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- First-time Tour Prompt -->
+    <div class="first-tour-prompt" id="firstTourPrompt">
+        <button class="first-tour-prompt-close" onclick="dismissFirstTourPrompt()">&times;</button>
+        <h4>👋 Welcome to Quoted!</h4>
+        <p>Want a quick tour? We'll show you how to create quotes, manage customers, and get paid faster.</p>
+        <div class="first-tour-prompt-actions">
+            <button class="btn-skip" onclick="dismissFirstTourPrompt()">Maybe Later</button>
+            <button class="btn-tour" onclick="dismissFirstTourPrompt(); startTour('mainWorkflow');">Show Me Around</button>
+        </div>
+    </div>
+
+    <!-- Tour System JavaScript -->
+    <script>
+    (function() {
+        'use strict';
+
+        // ============================================================
+        // QUOTED TOUR SYSTEM
+        // Comprehensive walkthrough for all Quoted features
+        // ============================================================
+
+        // Tour progress tracking
+        const TOUR_STORAGE_KEY = 'quoted_tour_progress';
+        const FIRST_VISIT_KEY = 'quoted_first_visit_shown';
+
+        // Get tour progress from localStorage
+        function getTourProgress() {
+            try {
+                const data = localStorage.getItem(TOUR_STORAGE_KEY);
+                return data ? JSON.parse(data) : {};
+            } catch (e) {
+                return {};
+            }
+        }
+
+        // Save tour progress
+        function saveTourProgress(tourName, completed = true) {
+            try {
+                const progress = getTourProgress();
+                progress[tourName] = { completed, completedAt: new Date().toISOString() };
+                localStorage.setItem(TOUR_STORAGE_KEY, JSON.stringify(progress));
+            } catch (e) {
+                console.error('Failed to save tour progress:', e);
+            }
+        }
+
+        // Reset all tour progress
+        window.resetTourProgress = function() {
+            localStorage.removeItem(TOUR_STORAGE_KEY);
+            localStorage.removeItem(FIRST_VISIT_KEY);
+            showToast('Tour progress reset. You can take tours again!', 'success');
+            closeTourMenu();
+        };
+
+        // Open tour menu modal
+        window.openTourMenu = function() {
+            const modal = document.getElementById('tourMenuModal');
+            if (modal) {
+                modal.classList.add('active');
+                // Update completed badges
+                updateTourCompletionBadges();
+            }
+        };
+
+        // Close tour menu modal
+        window.closeTourMenu = function() {
+            const modal = document.getElementById('tourMenuModal');
+            if (modal) {
+                modal.classList.remove('active');
+            }
+        };
+
+        // Update completion badges in tour menu
+        function updateTourCompletionBadges() {
+            const progress = getTourProgress();
+            const tours = ['mainWorkflow', 'voiceCommands', 'customerCRM', 'analytics', 'invoicing'];
+
+            tours.forEach(tourName => {
+                const option = document.querySelector(`[onclick="startTour('${tourName}')"]`);
+                if (option && progress[tourName]?.completed) {
+                    const badge = option.querySelector('.tour-option-badge');
+                    if (badge) {
+                        badge.textContent = '✓ Completed';
+                        badge.className = 'tour-option-badge completed';
+                    } else {
+                        const content = option.querySelector('.tour-option-content h3');
+                        if (content) {
+                            const newBadge = document.createElement('span');
+                            newBadge.className = 'tour-option-badge completed';
+                            newBadge.textContent = '✓ Completed';
+                            content.appendChild(newBadge);
+                        }
+                    }
+                }
+            });
+        }
+
+        // Dismiss first-time tour prompt
+        window.dismissFirstTourPrompt = function() {
+            const prompt = document.getElementById('firstTourPrompt');
+            if (prompt) {
+                prompt.classList.remove('active');
+            }
+            localStorage.setItem(FIRST_VISIT_KEY, 'true');
+        };
+
+        // Show first-time prompt if applicable
+        function maybeShowFirstTimePrompt() {
+            const hasSeenPrompt = localStorage.getItem(FIRST_VISIT_KEY);
+            const progress = getTourProgress();
+
+            // Show if: never seen prompt AND haven't completed main tour
+            if (!hasSeenPrompt && !progress.mainWorkflow?.completed) {
+                setTimeout(() => {
+                    const prompt = document.getElementById('firstTourPrompt');
+                    if (prompt) {
+                        prompt.classList.add('active');
+                    }
+                }, 2000); // Wait 2 seconds after page load
+            }
+        }
+
+        // Show tour launcher button when logged in
+        function showTourLauncher() {
+            const launcher = document.getElementById('tourLauncherBtn');
+            if (launcher && typeof getAuthToken === 'function' && getAuthToken()) {
+                launcher.style.display = 'flex';
+            }
+        }
+
+        // ============================================================
+        // TOUR DEFINITIONS
+        // ============================================================
+
+        // Main Workflow Tour - Complete quote lifecycle
+        const mainWorkflowTour = {
+            name: 'mainWorkflow',
+            steps: [
+                // Step 1: Welcome
+                {
+                    id: 'welcome',
+                    text: `
+                        <h3>🎉 Welcome to Quoted!</h3>
+                        <p>This tour will walk you through the complete quote workflow - from describing a job to getting paid.</p>
+                        <p class="tour-tip"><strong>Tip:</strong> You can exit anytime by pressing Escape or clicking outside.</p>
+                    `,
+                    buttons: [
+                        { text: 'Skip Tour', action: 'cancel', secondary: true },
+                        { text: "Let's Go! →", action: 'next' }
+                    ]
+                },
+                // Step 2: Dashboard Overview
+                {
+                    id: 'dashboard',
+                    attachTo: { element: '.main-container', on: 'bottom' },
+                    text: `
+                        <h3>📊 Your Dashboard</h3>
+                        <p>This is your command center. From here you can:</p>
+                        <ul>
+                            <li>Create new quotes using voice or text</li>
+                            <li>View and manage existing quotes</li>
+                            <li>Track your win/loss performance</li>
+                        </ul>
+                    `,
+                    buttons: [
+                        { text: '← Back', action: 'back', secondary: true },
+                        { text: 'Next →', action: 'next' }
+                    ]
+                },
+                // Step 3: Voice Recording Button
+                {
+                    id: 'voice-button',
+                    attachTo: { element: '#startButton', on: 'top' },
+                    text: `
+                        <h3>🎤 Voice-to-Quote Magic</h3>
+                        <p>This is where the magic happens! Tap this button and describe the job in your own words.</p>
+                        <p><strong>Example:</strong> "Kitchen remodel for the Johnson residence, about 200 square feet, including new cabinets, countertops, and backsplash."</p>
+                        <p class="tour-tip">Our AI will generate a professional quote with accurate pricing based on your pricing history.</p>
+                    `,
+                    buttons: [
+                        { text: '← Back', action: 'back', secondary: true },
+                        { text: 'Next →', action: 'next' }
+                    ]
+                },
+                // Step 4: Text Alternative
+                {
+                    id: 'text-input',
+                    attachTo: { element: '.text-input-wrapper', on: 'top' },
+                    text: `
+                        <h3>⌨️ Prefer Typing?</h3>
+                        <p>No problem! You can also type or paste your job description here.</p>
+                        <p>Great for:</p>
+                        <ul>
+                            <li>Copying from emails or messages</li>
+                            <li>Quiet environments</li>
+                            <li>Detailed specifications</li>
+                        </ul>
+                    `,
+                    buttons: [
+                        { text: '← Back', action: 'back', secondary: true },
+                        { text: 'Next →', action: 'next' }
+                    ]
+                },
+                // Step 5: Quote Generation
+                {
+                    id: 'quote-generation',
+                    text: `
+                        <h3>⚡ AI-Powered Quote Generation</h3>
+                        <p>When you submit a description, Quoted's AI will:</p>
+                        <ol>
+                            <li>Analyze the job scope and requirements</li>
+                            <li>Reference your pricing history and preferences</li>
+                            <li>Generate itemized line items with quantities</li>
+                            <li>Calculate accurate totals</li>
+                        </ol>
+                        <p class="tour-tip"><strong>Pro Tip:</strong> The more quotes you complete, the smarter your pricing becomes!</p>
+                    `,
+                    buttons: [
+                        { text: '← Back', action: 'back', secondary: true },
+                        { text: 'Next →', action: 'next' }
+                    ]
+                },
+                // Step 6: Quote Preview
+                {
+                    id: 'quote-preview',
+                    attachTo: { element: '#resultContainer', on: 'top' },
+                    text: `
+                        <h3>📝 Quote Preview</h3>
+                        <p>Your generated quote appears here with:</p>
+                        <ul>
+                            <li><strong>Customer info</strong> - Name, address, contact</li>
+                            <li><strong>Line items</strong> - Each part of the job</li>
+                            <li><strong>Pricing</strong> - Quantities, rates, totals</li>
+                        </ul>
+                        <p>Everything is editable before saving!</p>
+                    `,
+                    beforeShowPromise: function() {
+                        return new Promise(resolve => {
+                            // Ensure result container is visible for demo
+                            const container = document.getElementById('resultContainer');
+                            if (container && container.style.display === 'none') {
+                                // Just continue, user will see it when they create a quote
+                            }
+                            resolve();
+                        });
+                    },
+                    buttons: [
+                        { text: '← Back', action: 'back', secondary: true },
+                        { text: 'Next →', action: 'next' }
+                    ]
+                },
+                // Step 7: Editing Line Items
+                {
+                    id: 'editing',
+                    text: `
+                        <h3>✏️ Edit Anything</h3>
+                        <p>Click on any field to edit:</p>
+                        <ul>
+                            <li><strong>Descriptions</strong> - Clarify scope</li>
+                            <li><strong>Quantities</strong> - Adjust amounts</li>
+                            <li><strong>Prices</strong> - Tweak pricing</li>
+                            <li><strong>Add/Remove</strong> - Customize line items</li>
+                        </ul>
+                        <p class="tour-tip">Your edits help the AI learn your preferences for future quotes!</p>
+                    `,
+                    buttons: [
+                        { text: '← Back', action: 'back', secondary: true },
+                        { text: 'Next →', action: 'next' }
+                    ]
+                },
+                // Step 8: Customer Information
+                {
+                    id: 'customer-info',
+                    text: `
+                        <h3>👤 Customer Details</h3>
+                        <p>Add customer information to personalize quotes:</p>
+                        <ul>
+                            <li><strong>Name</strong> - For addressing the quote</li>
+                            <li><strong>Email</strong> - For sharing and notifications</li>
+                            <li><strong>Phone</strong> - For follow-ups</li>
+                            <li><strong>Address</strong> - Job location</li>
+                        </ul>
+                        <p class="tour-tip"><strong>Pro Tip:</strong> For repeat customers, their info auto-fills!</p>
+                    `,
+                    buttons: [
+                        { text: '← Back', action: 'back', secondary: true },
+                        { text: 'Next →', action: 'next' }
+                    ]
+                },
+                // Step 9: Save Quote
+                {
+                    id: 'save-quote',
+                    text: `
+                        <h3>💾 Save Your Quote</h3>
+                        <p>Once you're happy with the quote, save it to:</p>
+                        <ul>
+                            <li>Add it to your quote history</li>
+                            <li>Enable sharing with customers</li>
+                            <li>Track its outcome (won/lost)</li>
+                            <li>Convert to invoice later</li>
+                        </ul>
+                    `,
+                    buttons: [
+                        { text: '← Back', action: 'back', secondary: true },
+                        { text: 'Next →', action: 'next' }
+                    ]
+                },
+                // Step 10: PDF Download
+                {
+                    id: 'pdf-download',
+                    text: `
+                        <h3>📄 Professional PDF</h3>
+                        <p>Download a beautifully formatted PDF with:</p>
+                        <ul>
+                            <li>Your business logo and branding</li>
+                            <li>Professional layout</li>
+                            <li>All quote details</li>
+                            <li>Your terms and conditions</li>
+                        </ul>
+                        <p>Perfect for emailing or printing!</p>
+                    `,
+                    buttons: [
+                        { text: '← Back', action: 'back', secondary: true },
+                        { text: 'Next →', action: 'next' }
+                    ]
+                },
+                // Step 11: Share Link
+                {
+                    id: 'share-link',
+                    text: `
+                        <h3>🔗 Share with Customers</h3>
+                        <p>Generate a unique shareable link that:</p>
+                        <ul>
+                            <li>Displays a professional web view</li>
+                            <li>Lets customers accept or request changes</li>
+                            <li>Works on any device</li>
+                            <li>Tracks when they view it</li>
+                        </ul>
+                        <p class="tour-tip">Customers can accept quotes directly from the link!</p>
+                    `,
+                    buttons: [
+                        { text: '← Back', action: 'back', secondary: true },
+                        { text: 'Next →', action: 'next' }
+                    ]
+                },
+                // Step 12: Customer Acceptance
+                {
+                    id: 'customer-acceptance',
+                    text: `
+                        <h3>✅ Customer Acceptance</h3>
+                        <p>When customers click your share link, they can:</p>
+                        <ul>
+                            <li><strong>Accept Quote</strong> - Indicates they want to proceed</li>
+                            <li><strong>Request Changes</strong> - Send feedback to you</li>
+                            <li><strong>Download PDF</strong> - Save for their records</li>
+                        </ul>
+                        <p>You'll see acceptance status on your dashboard!</p>
+                    `,
+                    buttons: [
+                        { text: '← Back', action: 'back', secondary: true },
+                        { text: 'Next →', action: 'next' }
+                    ]
+                },
+                // Step 13: Quote History Tab
+                {
+                    id: 'quote-history',
+                    attachTo: { element: '[data-tab="history"]', on: 'bottom' },
+                    text: `
+                        <h3>📚 Quote History</h3>
+                        <p>Click here to see all your quotes:</p>
+                        <ul>
+                            <li>Search and filter by customer or job</li>
+                            <li>See status at a glance</li>
+                            <li>Access any past quote</li>
+                            <li>Track win/loss outcomes</li>
+                        </ul>
+                    `,
+                    buttons: [
+                        { text: '← Back', action: 'back', secondary: true },
+                        { text: 'Next →', action: 'next' }
+                    ]
+                },
+                // Step 14: Mark Won/Lost
+                {
+                    id: 'outcome-tracking',
+                    text: `
+                        <h3>🏆 Win/Loss Tracking</h3>
+                        <p>After a customer decides, mark the outcome:</p>
+                        <ul>
+                            <li><strong>Mark Won</strong> - Customer accepted, job confirmed</li>
+                            <li><strong>Mark Lost</strong> - Customer declined (optionally add reason)</li>
+                        </ul>
+                        <p class="tour-tip">This data powers your analytics and helps AI improve pricing suggestions!</p>
+                    `,
+                    buttons: [
+                        { text: '← Back', action: 'back', secondary: true },
+                        { text: 'Next →', action: 'next' }
+                    ]
+                },
+                // Step 15: Quote to Invoice
+                {
+                    id: 'quote-to-invoice',
+                    text: `
+                        <h3>📄 One-Click Invoicing</h3>
+                        <p>When a quote is marked as "Won", you can:</p>
+                        <ul>
+                            <li>Convert it to an invoice instantly</li>
+                            <li>All details carry over automatically</li>
+                            <li>Send invoice link to customer</li>
+                            <li>Track payment status</li>
+                        </ul>
+                        <p class="tour-tip">No more re-typing quote details into invoices!</p>
+                    `,
+                    buttons: [
+                        { text: '← Back', action: 'back', secondary: true },
+                        { text: 'Next →', action: 'next' }
+                    ]
+                },
+                // Step 16: Customers Tab
+                {
+                    id: 'customers-tab',
+                    attachTo: { element: '[data-tab="customers"]', on: 'bottom' },
+                    text: `
+                        <h3>👥 Customer CRM</h3>
+                        <p>Your built-in customer database:</p>
+                        <ul>
+                            <li>Auto-populated from your quotes</li>
+                            <li>View complete quote history per customer</li>
+                            <li>Quick-create new quotes for repeat customers</li>
+                            <li>Smart auto-fill for returning clients</li>
+                        </ul>
+                    `,
+                    buttons: [
+                        { text: '← Back', action: 'back', secondary: true },
+                        { text: 'Next →', action: 'next' }
+                    ]
+                },
+                // Step 17: Tasks Tab
+                {
+                    id: 'tasks-tab',
+                    attachTo: { element: '[data-tab="tasks"]', on: 'bottom' },
+                    text: `
+                        <h3>✓ Task Management</h3>
+                        <p>Keep track of follow-ups and action items:</p>
+                        <ul>
+                            <li>Create tasks linked to quotes</li>
+                            <li>Set due dates and priorities</li>
+                            <li>Mark complete when done</li>
+                            <li>Stay organized across all jobs</li>
+                        </ul>
+                    `,
+                    buttons: [
+                        { text: '← Back', action: 'back', secondary: true },
+                        { text: 'Next →', action: 'next' }
+                    ]
+                },
+                // Step 18: Analytics
+                {
+                    id: 'analytics',
+                    attachTo: { element: '[data-tab="analytics"]', on: 'bottom' },
+                    text: `
+                        <h3>📈 Business Analytics</h3>
+                        <p>Track your quoting performance:</p>
+                        <ul>
+                            <li><strong>Win Rate</strong> - Your success percentage</li>
+                            <li><strong>Revenue</strong> - Total value of won quotes</li>
+                            <li><strong>By Job Type</strong> - See what jobs you win most</li>
+                            <li><strong>Trends</strong> - Performance over time</li>
+                        </ul>
+                    `,
+                    buttons: [
+                        { text: '← Back', action: 'back', secondary: true },
+                        { text: 'Next →', action: 'next' }
+                    ]
+                },
+                // Step 19: Settings
+                {
+                    id: 'settings',
+                    attachTo: { element: '[data-tab="settings"]', on: 'bottom' },
+                    text: `
+                        <h3>⚙️ Settings</h3>
+                        <p>Customize Quoted for your business:</p>
+                        <ul>
+                            <li><strong>Business Info</strong> - Logo, name, contact</li>
+                            <li><strong>Terms</strong> - Default payment terms</li>
+                            <li><strong>Pricing Model</strong> - Refine AI suggestions</li>
+                            <li><strong>Account</strong> - Subscription and billing</li>
+                        </ul>
+                    `,
+                    buttons: [
+                        { text: '← Back', action: 'back', secondary: true },
+                        { text: 'Next →', action: 'next' }
+                    ]
+                },
+                // Step 20: Completion
+                {
+                    id: 'complete',
+                    text: `
+                        <h3>🎉 You're All Set!</h3>
+                        <p>You now know the complete Quoted workflow:</p>
+                        <ol>
+                            <li>Describe jobs with voice or text</li>
+                            <li>Review and customize AI-generated quotes</li>
+                            <li>Share with customers for approval</li>
+                            <li>Track outcomes and convert to invoices</li>
+                        </ol>
+                        <p><strong>Ready to create your first quote?</strong></p>
+                        <p class="tour-tip">💡 Check out the other tours to learn about voice commands, customer CRM, and more!</p>
+                    `,
+                    buttons: [
+                        { text: 'Explore More Tours', action: () => { window.openTourMenu(); }, secondary: true },
+                        { text: 'Start Quoting! ✓', action: 'complete' }
+                    ]
+                }
+            ]
+        };
+
+        // Voice Commands Tour
+        const voiceCommandsTour = {
+            name: 'voiceCommands',
+            steps: [
+                {
+                    id: 'voice-intro',
+                    text: `
+                        <h3>🎤 Voice Commands</h3>
+                        <p>Quoted understands natural language voice commands. Speak naturally, and we'll figure out what you need!</p>
+                        <p>Let's explore what you can do with your voice.</p>
+                    `,
+                    buttons: [
+                        { text: 'Skip', action: 'cancel', secondary: true },
+                        { text: 'Next →', action: 'next' }
+                    ]
+                },
+                {
+                    id: 'voice-create-quote',
+                    attachTo: { element: '#startButton', on: 'top' },
+                    text: `
+                        <h3>🗣️ Create Quotes by Voice</h3>
+                        <p>The most powerful feature! Just describe the job:</p>
+                        <p><em>"New quote for bathroom renovation at 123 Main Street, about 80 square feet, including tile work, new vanity, and fixtures."</em></p>
+                        <p class="tour-tip">Include as much or as little detail as you want - AI fills in the rest!</p>
+                    `,
+                    buttons: [
+                        { text: '← Back', action: 'back', secondary: true },
+                        { text: 'Next →', action: 'next' }
+                    ]
+                },
+                {
+                    id: 'voice-find-quote',
+                    text: `
+                        <h3>🔍 Find Quotes</h3>
+                        <p>Use voice to search your history:</p>
+                        <ul>
+                            <li><em>"Find my quote for Johnson"</em></li>
+                            <li><em>"Show kitchen remodel quotes"</em></li>
+                            <li><em>"What was my last quote?"</em></li>
+                        </ul>
+                    `,
+                    buttons: [
+                        { text: '← Back', action: 'back', secondary: true },
+                        { text: 'Next →', action: 'next' }
+                    ]
+                },
+                {
+                    id: 'voice-create-task',
+                    text: `
+                        <h3>✓ Create Tasks</h3>
+                        <p>Add follow-up tasks hands-free:</p>
+                        <ul>
+                            <li><em>"Remind me to call Mike tomorrow about the deck quote"</em></li>
+                            <li><em>"Add task: follow up on Johnson kitchen quote"</em></li>
+                            <li><em>"Create a task to send invoice for the Smith job"</em></li>
+                        </ul>
+                    `,
+                    buttons: [
+                        { text: '← Back', action: 'back', secondary: true },
+                        { text: 'Next →', action: 'next' }
+                    ]
+                },
+                {
+                    id: 'voice-navigate',
+                    text: `
+                        <h3>📱 Navigate the App</h3>
+                        <p>Move around Quoted with your voice:</p>
+                        <ul>
+                            <li><em>"Show my customers"</em></li>
+                            <li><em>"Go to analytics"</em></li>
+                            <li><em>"Open settings"</em></li>
+                            <li><em>"Show quote history"</em></li>
+                        </ul>
+                    `,
+                    buttons: [
+                        { text: '← Back', action: 'back', secondary: true },
+                        { text: 'Next →', action: 'next' }
+                    ]
+                },
+                {
+                    id: 'voice-complete',
+                    text: `
+                        <h3>🎉 Voice Power Unlocked!</h3>
+                        <p>You can now control Quoted entirely by voice:</p>
+                        <ul>
+                            <li>✓ Create quotes from descriptions</li>
+                            <li>✓ Search your history</li>
+                            <li>✓ Add tasks and reminders</li>
+                            <li>✓ Navigate between sections</li>
+                        </ul>
+                        <p class="tour-tip">Works great on mobile - quote while on-site!</p>
+                    `,
+                    buttons: [
+                        { text: 'More Tours', action: () => { window.openTourMenu(); }, secondary: true },
+                        { text: 'Done ✓', action: 'complete' }
+                    ]
+                }
+            ]
+        };
+
+        // Customer CRM Tour
+        const customerCRMTour = {
+            name: 'customerCRM',
+            steps: [
+                {
+                    id: 'crm-intro',
+                    text: `
+                        <h3>👥 Customer CRM</h3>
+                        <p>Quoted automatically builds your customer database from every quote you create.</p>
+                        <p>Let's explore how to leverage your customer relationships!</p>
+                    `,
+                    buttons: [
+                        { text: 'Skip', action: 'cancel', secondary: true },
+                        { text: 'Next →', action: 'next' }
+                    ]
+                },
+                {
+                    id: 'crm-auto-build',
+                    attachTo: { element: '[data-tab="customers"]', on: 'bottom' },
+                    text: `
+                        <h3>🔄 Auto-Built Database</h3>
+                        <p>Every time you create a quote with customer info, that customer is automatically added to your CRM.</p>
+                        <p>No manual data entry needed!</p>
+                    `,
+                    beforeShowPromise: function() {
+                        return new Promise(resolve => {
+                            // Try to activate customers tab
+                            const tab = document.querySelector('[data-tab="customers"]');
+                            if (tab) tab.click();
+                            setTimeout(resolve, 300);
+                        });
+                    },
+                    buttons: [
+                        { text: '← Back', action: 'back', secondary: true },
+                        { text: 'Next →', action: 'next' }
+                    ]
+                },
+                {
+                    id: 'crm-history',
+                    text: `
+                        <h3>📋 Quote History</h3>
+                        <p>Click on any customer to see:</p>
+                        <ul>
+                            <li>All quotes created for them</li>
+                            <li>Total value and win rate</li>
+                            <li>Last contact date</li>
+                            <li>Job types they've requested</li>
+                        </ul>
+                    `,
+                    buttons: [
+                        { text: '← Back', action: 'back', secondary: true },
+                        { text: 'Next →', action: 'next' }
+                    ]
+                },
+                {
+                    id: 'crm-quick-quote',
+                    text: `
+                        <h3>⚡ Quick Quote for Repeat Customers</h3>
+                        <p>From a customer's profile, click "+ New Quote" to:</p>
+                        <ul>
+                            <li>Auto-fill their name, email, phone</li>
+                            <li>Pre-populate their address</li>
+                            <li>Get pricing suggestions based on history</li>
+                        </ul>
+                        <p class="tour-tip">Perfect for returning customers - saves time and ensures consistency!</p>
+                    `,
+                    buttons: [
+                        { text: '← Back', action: 'back', secondary: true },
+                        { text: 'Next →', action: 'next' }
+                    ]
+                },
+                {
+                    id: 'crm-complete',
+                    text: `
+                        <h3>🎉 CRM Mastered!</h3>
+                        <p>Your customer database will grow automatically:</p>
+                        <ul>
+                            <li>✓ Auto-populated from quotes</li>
+                            <li>✓ Complete quote history per customer</li>
+                            <li>✓ One-click new quotes for repeats</li>
+                            <li>✓ Smart auto-fill saves time</li>
+                        </ul>
+                    `,
+                    beforeShowPromise: function() {
+                        return new Promise(resolve => {
+                            // Return to quote tab
+                            const tab = document.querySelector('[data-tab="quote"]');
+                            if (tab) tab.click();
+                            setTimeout(resolve, 300);
+                        });
+                    },
+                    buttons: [
+                        { text: 'More Tours', action: () => { window.openTourMenu(); }, secondary: true },
+                        { text: 'Done ✓', action: 'complete' }
+                    ]
+                }
+            ]
+        };
+
+        // Analytics Tour
+        const analyticsTour = {
+            name: 'analytics',
+            steps: [
+                {
+                    id: 'analytics-intro',
+                    text: `
+                        <h3>📊 Win/Loss Analytics</h3>
+                        <p>Understanding your quoting performance is key to growing your business.</p>
+                        <p>Let's explore your analytics dashboard!</p>
+                    `,
+                    buttons: [
+                        { text: 'Skip', action: 'cancel', secondary: true },
+                        { text: 'Next →', action: 'next' }
+                    ]
+                },
+                {
+                    id: 'analytics-dashboard',
+                    attachTo: { element: '[data-tab="analytics"]', on: 'bottom' },
+                    text: `
+                        <h3>📈 Performance Dashboard</h3>
+                        <p>Click the Analytics tab to see:</p>
+                        <ul>
+                            <li><strong>Win Rate</strong> - Percentage of quotes you win</li>
+                            <li><strong>Total Revenue</strong> - Value of won quotes</li>
+                            <li><strong>Quote Volume</strong> - Quotes sent over time</li>
+                        </ul>
+                    `,
+                    beforeShowPromise: function() {
+                        return new Promise(resolve => {
+                            const tab = document.querySelector('[data-tab="analytics"]');
+                            if (tab) tab.click();
+                            setTimeout(resolve, 300);
+                        });
+                    },
+                    buttons: [
+                        { text: '← Back', action: 'back', secondary: true },
+                        { text: 'Next →', action: 'next' }
+                    ]
+                },
+                {
+                    id: 'analytics-job-types',
+                    text: `
+                        <h3>🔍 By Job Type</h3>
+                        <p>See which types of jobs you win most:</p>
+                        <ul>
+                            <li>Which categories have highest win rates?</li>
+                            <li>Where should you focus marketing?</li>
+                            <li>What jobs are you underpricing or overpricing?</li>
+                        </ul>
+                        <p class="tour-tip">Focus on job types where you consistently win!</p>
+                    `,
+                    buttons: [
+                        { text: '← Back', action: 'back', secondary: true },
+                        { text: 'Next →', action: 'next' }
+                    ]
+                },
+                {
+                    id: 'analytics-loss-reasons',
+                    text: `
+                        <h3>📉 Loss Analysis</h3>
+                        <p>When marking quotes as lost, adding a reason helps identify patterns:</p>
+                        <ul>
+                            <li>"Price too high" - Consider adjusting</li>
+                            <li>"Went with competitor" - Research competition</li>
+                            <li>"Project cancelled" - External factors</li>
+                            <li>"No response" - Improve follow-up</li>
+                        </ul>
+                    `,
+                    buttons: [
+                        { text: '← Back', action: 'back', secondary: true },
+                        { text: 'Next →', action: 'next' }
+                    ]
+                },
+                {
+                    id: 'analytics-complete',
+                    text: `
+                        <h3>🎉 Analytics Pro!</h3>
+                        <p>Use your analytics to:</p>
+                        <ul>
+                            <li>✓ Track win rate over time</li>
+                            <li>✓ Identify your best job types</li>
+                            <li>✓ Understand why you lose quotes</li>
+                            <li>✓ Make data-driven pricing decisions</li>
+                        </ul>
+                    `,
+                    beforeShowPromise: function() {
+                        return new Promise(resolve => {
+                            const tab = document.querySelector('[data-tab="quote"]');
+                            if (tab) tab.click();
+                            setTimeout(resolve, 300);
+                        });
+                    },
+                    buttons: [
+                        { text: 'More Tours', action: () => { window.openTourMenu(); }, secondary: true },
+                        { text: 'Done ✓', action: 'complete' }
+                    ]
+                }
+            ]
+        };
+
+        // Invoicing Tour
+        const invoicingTour = {
+            name: 'invoicing',
+            steps: [
+                {
+                    id: 'invoice-intro',
+                    text: `
+                        <h3>📄 Quote to Invoice</h3>
+                        <p>Turn won quotes into invoices with one click - no re-typing required!</p>
+                    `,
+                    buttons: [
+                        { text: 'Skip', action: 'cancel', secondary: true },
+                        { text: 'Next →', action: 'next' }
+                    ]
+                },
+                {
+                    id: 'invoice-convert',
+                    text: `
+                        <h3>⚡ One-Click Conversion</h3>
+                        <p>When a quote is marked "Won":</p>
+                        <ol>
+                            <li>Click "Create Invoice" on the quote</li>
+                            <li>All details transfer automatically</li>
+                            <li>Review and adjust if needed</li>
+                            <li>Send to customer instantly</li>
+                        </ol>
+                        <p class="tour-tip">Customer info, line items, and totals all carry over!</p>
+                    `,
+                    buttons: [
+                        { text: '← Back', action: 'back', secondary: true },
+                        { text: 'Next →', action: 'next' }
+                    ]
+                },
+                {
+                    id: 'invoice-share',
+                    text: `
+                        <h3>🔗 Share & Track</h3>
+                        <p>Each invoice gets a unique shareable link:</p>
+                        <ul>
+                            <li>Send link to customer via email/text</li>
+                            <li>Track when they view it</li>
+                            <li>See payment status at a glance</li>
+                            <li>Send payment reminders</li>
+                        </ul>
+                    `,
+                    buttons: [
+                        { text: '← Back', action: 'back', secondary: true },
+                        { text: 'Next →', action: 'next' }
+                    ]
+                },
+                {
+                    id: 'invoice-complete',
+                    text: `
+                        <h3>🎉 Invoicing Made Easy!</h3>
+                        <p>Your quote-to-cash workflow:</p>
+                        <ol>
+                            <li>✓ Create quote (voice or text)</li>
+                            <li>✓ Share with customer</li>
+                            <li>✓ Mark won when accepted</li>
+                            <li>✓ Convert to invoice instantly</li>
+                            <li>✓ Get paid faster!</li>
+                        </ol>
+                    `,
+                    buttons: [
+                        { text: 'More Tours', action: () => { window.openTourMenu(); }, secondary: true },
+                        { text: 'Done ✓', action: 'complete' }
+                    ]
+                }
+            ]
+        };
+
+        // Tour registry
+        const tours = {
+            mainWorkflow: mainWorkflowTour,
+            voiceCommands: voiceCommandsTour,
+            customerCRM: customerCRMTour,
+            analytics: analyticsTour,
+            invoicing: invoicingTour
+        };
+
+        // Active tour instance
+        let activeTour = null;
+
+        // Start a tour by name
+        window.startTour = function(tourName) {
+            closeTourMenu();
+
+            const tourConfig = tours[tourName];
+            if (!tourConfig) {
+                console.error('Tour not found:', tourName);
+                return;
+            }
+
+            // Cancel any existing tour
+            if (activeTour) {
+                activeTour.cancel();
+            }
+
+            // Check if Shepherd is loaded
+            if (typeof Shepherd === 'undefined') {
+                showToast('Tour system is loading, please try again', 'error');
+                return;
+            }
+
+            // Create new Shepherd tour
+            activeTour = new Shepherd.Tour({
+                useModalOverlay: true,
+                defaultStepOptions: {
+                    classes: 'quoted-tour-step',
+                    scrollTo: { behavior: 'smooth', block: 'center' },
+                    cancelIcon: { enabled: true },
+                    modalOverlayOpeningPadding: 8,
+                    modalOverlayOpeningRadius: 8
+                }
+            });
+
+            // Add steps
+            tourConfig.steps.forEach((stepConfig, index) => {
+                const step = {
+                    id: stepConfig.id,
+                    text: stepConfig.text,
+                    buttons: stepConfig.buttons.map(btn => {
+                        const button = {
+                            text: btn.text,
+                            classes: btn.secondary ? 'shepherd-button-secondary' : 'shepherd-button-primary'
+                        };
+
+                        if (btn.action === 'next') {
+                            button.action = function() { activeTour.next(); };
+                        } else if (btn.action === 'back') {
+                            button.action = function() { activeTour.back(); };
+                        } else if (btn.action === 'cancel') {
+                            button.action = function() { activeTour.cancel(); };
+                        } else if (btn.action === 'complete') {
+                            button.action = function() { activeTour.complete(); };
+                        } else if (typeof btn.action === 'function') {
+                            button.action = btn.action;
+                        }
+
+                        return button;
+                    })
+                };
+
+                if (stepConfig.attachTo) {
+                    step.attachTo = stepConfig.attachTo;
+                }
+
+                if (stepConfig.beforeShowPromise) {
+                    step.beforeShowPromise = stepConfig.beforeShowPromise;
+                }
+
+                activeTour.addStep(step);
+            });
+
+            // Track completion
+            activeTour.on('complete', () => {
+                saveTourProgress(tourName, true);
+                showToast(`🎉 "${tourConfig.name}" tour completed!`, 'success');
+                activeTour = null;
+            });
+
+            activeTour.on('cancel', () => {
+                activeTour = null;
+            });
+
+            // Start the tour
+            activeTour.start();
+
+            // Track in PostHog
+            if (typeof posthog !== 'undefined') {
+                posthog.capture('tour_started', { tour_name: tourName });
+            }
+        };
+
+        // Initialize tour system when DOM is ready
+        function initTourSystem() {
+            // Show launcher button for logged-in users
+            showTourLauncher();
+
+            // Check if we should show first-time prompt
+            maybeShowFirstTimePrompt();
+
+            // Close tour menu when clicking outside
+            document.addEventListener('click', function(e) {
+                const modal = document.getElementById('tourMenuModal');
+                if (modal && modal.classList.contains('active')) {
+                    if (e.target === modal) {
+                        closeTourMenu();
+                    }
+                }
+            });
+
+            // Close on escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    const modal = document.getElementById('tourMenuModal');
+                    if (modal && modal.classList.contains('active')) {
+                        closeTourMenu();
+                    }
+
+                    const prompt = document.getElementById('firstTourPrompt');
+                    if (prompt && prompt.classList.contains('active')) {
+                        dismissFirstTourPrompt();
+                    }
+                }
+            });
+        }
+
+        // Wait for DOM and auth
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                setTimeout(initTourSystem, 500);
+            });
+        } else {
+            setTimeout(initTourSystem, 500);
+        }
+
+        // Also initialize after login
+        window.addEventListener('quoted:login', initTourSystem);
+
+    })();
     </script>
 
     <!-- Floating Support Button (DISC-099) -->
