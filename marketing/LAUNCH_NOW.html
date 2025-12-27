@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quoted - LAUNCH NOW</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a0a2e 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+            color: #fff;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #22c55e, #4ade80);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 16px;
+        }
+        .timer {
+            text-align: center;
+            font-size: 0.9rem;
+            color: #888;
+            margin-bottom: 40px;
+        }
+        .timer span {
+            color: #22c55e;
+            font-weight: 600;
+        }
+        .progress-bar {
+            background: #1a1a2e;
+            border-radius: 20px;
+            height: 12px;
+            margin-bottom: 40px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            background: linear-gradient(90deg, #22c55e, #4ade80);
+            height: 100%;
+            border-radius: 20px;
+            transition: width 0.5s ease;
+        }
+        .progress-text {
+            text-align: center;
+            color: #666;
+            font-size: 0.85rem;
+            margin-top: -32px;
+            margin-bottom: 40px;
+            position: relative;
+            z-index: 1;
+        }
+        .step {
+            background: #151520;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 16px;
+            border: 2px solid #252535;
+            transition: all 0.3s ease;
+        }
+        .step.active {
+            border-color: #22c55e;
+            box-shadow: 0 0 20px rgba(34, 197, 94, 0.2);
+        }
+        .step.done {
+            opacity: 0.5;
+            border-color: #333;
+        }
+        .step.done .step-title::after {
+            content: ' ✓';
+            color: #22c55e;
+        }
+        .step-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        .step-number {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+        .step.done .step-number {
+            background: #22c55e;
+        }
+        .step-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        .step-time {
+            color: #888;
+            font-size: 0.85rem;
+        }
+        .step-content {
+            background: #0a0a15;
+            border-radius: 8px;
+            padding: 16px;
+            font-size: 0.9rem;
+            color: #aaa;
+            line-height: 1.6;
+            margin-bottom: 16px;
+            max-height: 150px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        .step-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            text-decoration: none;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        .btn-launch {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: white;
+            flex: 1;
+            justify-content: center;
+        }
+        .btn-launch:hover {
+            background: linear-gradient(135deg, #4ade80, #22c55e);
+        }
+        .btn-done {
+            background: #252535;
+            color: #888;
+            padding: 14px 20px;
+        }
+        .btn-done:hover {
+            background: #333;
+            color: #fff;
+        }
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #22c55e;
+            color: white;
+            padding: 16px 32px;
+            border-radius: 8px;
+            font-weight: 600;
+            display: none;
+            z-index: 1000;
+            animation: slideUp 0.3s ease;
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translate(-50%, 20px); }
+            to { opacity: 1; transform: translate(-50%, 0); }
+        }
+        .celebration {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            z-index: 2000;
+        }
+        .celebration h2 {
+            font-size: 3rem;
+            margin-bottom: 16px;
+        }
+        .celebration p {
+            color: #888;
+            margin-bottom: 24px;
+        }
+        .footer-links {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 24px;
+            border-top: 1px solid #252535;
+        }
+        .footer-links a {
+            color: #6366f1;
+            text-decoration: none;
+            margin: 0 12px;
+            font-size: 0.9rem;
+        }
+        .footer-links a:hover {
+            text-decoration: underline;
+        }
+        .note {
+            background: #1a1a2e;
+            border-left: 4px solid #f59e0b;
+            padding: 16px;
+            margin-bottom: 24px;
+            border-radius: 0 8px 8px 0;
+            font-size: 0.9rem;
+            color: #ccc;
+        }
+        .note strong {
+            color: #f59e0b;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>LAUNCH NOW</h1>
+        <p class="subtitle">4 steps to get Quoted in front of real users</p>
+        <p class="timer">Estimated time: <span>~15 minutes</span></p>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+        </div>
+        <p class="progress-text" id="progressText">0 of 4 complete</p>
+
+        <div class="note">
+            <strong>How this works:</strong> Click the green button to copy the post AND open the target site. Paste, submit, mark done. That's it.
+        </div>
+
+        <!-- STEP 1: r/smallbusiness -->
+        <div class="step active" id="step1">
+            <div class="step-header">
+                <div class="step-number">1</div>
+                <div>
+                    <div class="step-title">Post to r/smallbusiness</div>
+                    <div class="step-time">~2 min - Weekly promo thread</div>
+                </div>
+            </div>
+            <div class="step-content">I run a $30-50M contracting business. After years of watching my team struggle with quoting tools that are either way too complex (Buildxact, Jobber) or way too basic (Excel spreadsheets), I built something in between.
+
+Quoted.it.com - speak your estimate out loud, get a professional PDF in 60 seconds.
+
+It learns your pricing over time. No 47-tab setup wizards. No enterprise sales calls.
+
+$9/mo. Built it for contractors like the ones I work with every day.
+
+Happy to answer questions about either the tool or running a trades business.</div>
+            <div class="step-actions">
+                <button class="btn btn-launch" onclick="launchStep(1, 'https://www.reddit.com/r/smallbusiness/search?q=promote+your+business&restrict_sr=on&sort=new&t=week')">
+                    Copy & Open r/smallbusiness
+                </button>
+                <button class="btn btn-done" onclick="markDone(1)">Mark Done</button>
+            </div>
+        </div>
+
+        <!-- STEP 2: r/SaaS -->
+        <div class="step" id="step2">
+            <div class="step-header">
+                <div class="step-number">2</div>
+                <div>
+                    <div class="step-title">Post to r/SaaS</div>
+                    <div class="step-time">~2 min - Weekly feedback thread</div>
+                </div>
+            </div>
+            <div class="step-content">**Name**: Quoted
+**URL**: quoted.it.com
+**Pitch**: Voice-to-quote for contractors
+
+**My background**: I operate a $30-50M contracting business. Built this because every quoting tool I tried was either designed for enterprise (Buildxact) or was just a glorified spreadsheet.
+
+**The gap I saw**: Contractors making $50-500K/year need professional quotes but don't need (or want) complex software. They want to describe a job and get a PDF.
+
+**Looking for feedback on**:
+- Demo flow at /demo (try without signup)
+- Is $9/mo positioned right for this market?
+- Landing page - does it speak to blue-collar users?
+
+**Stage**: Just launched, first users in trial, bootstrapped</div>
+            <div class="step-actions">
+                <button class="btn btn-launch" onclick="launchStep(2, 'https://www.reddit.com/r/SaaS/search?q=weekly+feedback+OR+share&restrict_sr=on&sort=new&t=week')">
+                    Copy & Open r/SaaS
+                </button>
+                <button class="btn btn-done" onclick="markDone(2)">Mark Done</button>
+            </div>
+        </div>
+
+        <!-- STEP 3: r/Entrepreneur -->
+        <div class="step" id="step3">
+            <div class="step-header">
+                <div class="step-number">3</div>
+                <div>
+                    <div class="step-title">Post to r/Entrepreneur</div>
+                    <div class="step-time">~3 min - Founder story post</div>
+                </div>
+            </div>
+            <div class="step-content">Not a success story. Just sharing what I'm building and why.
+
+**Background**: I operate a contracting business that does $30-50M annually. I've used every quoting tool out there - Jobber, Housecall Pro, Buildxact, ServiceTitan. They all have the same problem:
+
+They're either built for enterprise (complex setup, features you'll never use, sales calls to get pricing) or they're basically spreadsheets with a logo.
+
+**The gap I kept seeing**:
+
+The solo contractor or small crew doing $50K-$500K/year. They need to look professional to win jobs, but they don't need a $200/mo platform with CRM, scheduling, invoicing, dispatch, and 47 other features.
+
+They need to describe a job and get a PDF. That's it.
+
+**What I built**:
+
+Quoted.it.com - speak your estimate out loud (like you would to a helper), and AI generates a professional PDF quote.
+
+- Learns your pricing over time
+- No complex setup
+- $9/mo flat
+
+**Where I'm at**:
+- First users in trial
+- Solo on the product side, still running my main business
+- Just launched a demo where you can try it without signup
+
+**What I've learned so far**:
+
+1. Contractors don't want "AI" - they want less time doing paperwork
+2. The "learning" feature (AI remembers your prices) resonates way more than I expected
+3. Blue-collar users are skeptical of software. The demo-before-signup approach helps.
+
+Building in public. Happy to answer questions about the tool or about running a trades business.</div>
+            <div class="step-actions">
+                <button class="btn btn-launch" onclick="launchStep(3, 'https://www.reddit.com/r/Entrepreneur/submit?selftext=true&title=I%20run%20a%20%2430-50M%20contracting%20business.%20Built%20a%20quoting%20tool%20because%20everything%20else%20sucked.')">
+                    Copy & Open r/Entrepreneur
+                </button>
+                <button class="btn btn-done" onclick="markDone(3)">Mark Done</button>
+            </div>
+        </div>
+
+        <!-- STEP 4: Apollo Cold Email -->
+        <div class="step" id="step4">
+            <div class="step-header">
+                <div class="step-number">4</div>
+                <div>
+                    <div class="step-title">Send First Cold Emails (Apollo)</div>
+                    <div class="step-time">~8 min - 25 emails</div>
+                </div>
+            </div>
+            <div class="step-content">Hey {{first_name}},
+
+I run a $30-50M contracting business. After years of clunky quoting processes, I built a simpler tool.
+
+Quoted.it.com - speak your estimate, get a professional PDF in 60 seconds.
+
+It learns your pricing over time. No complex setup.
+
+30-second demo: quoted.it.com/demo
+
+$9/mo if you like it. No contracts.
+
+- Eddie</div>
+            <div class="step-actions">
+                <button class="btn btn-launch" onclick="launchStep(4, 'https://app.apollo.io/sequences')">
+                    Copy & Open Apollo
+                </button>
+                <button class="btn btn-done" onclick="markDone(4)">Mark Done</button>
+            </div>
+        </div>
+
+        <div class="footer-links">
+            <a href="MARKETING_HQ.html">Full Marketing HQ</a>
+            <a href="ONE_CLICK_REDDIT.html">More Reddit Posts</a>
+            <a href="https://quoted.it.com" target="_blank">Live Site</a>
+            <a href="https://app.posthog.com" target="_blank">Analytics</a>
+        </div>
+    </div>
+
+    <div class="toast" id="toast">Copied to clipboard!</div>
+
+    <div class="celebration" id="celebration">
+        <h2>You Did It!</h2>
+        <p>Quoted is now out in the world. Go check your Reddit posts for comments.</p>
+        <a href="https://www.reddit.com/message/inbox" target="_blank" class="btn btn-launch" style="flex: none;">
+            Check Reddit Inbox
+        </a>
+    </div>
+
+    <script>
+        var steps = {
+            1: { done: false, content: document.getElementById('step1').querySelector('.step-content').textContent },
+            2: { done: false, content: document.getElementById('step2').querySelector('.step-content').textContent },
+            3: { done: false, content: document.getElementById('step3').querySelector('.step-content').textContent },
+            4: { done: false, content: document.getElementById('step4').querySelector('.step-content').textContent }
+        };
+
+        // Load saved state
+        var saved = localStorage.getItem('quoted_launch_state');
+        if (saved) {
+            var savedSteps = JSON.parse(saved);
+            for (var key in savedSteps) {
+                if (steps[key]) {
+                    steps[key].done = savedSteps[key];
+                }
+            }
+        }
+
+        function saveState() {
+            var state = {};
+            for (var key in steps) {
+                state[key] = steps[key].done;
+            }
+            localStorage.setItem('quoted_launch_state', JSON.stringify(state));
+        }
+
+        function updateUI() {
+            var completed = 0;
+            var foundActive = false;
+
+            for (var i = 1; i <= 4; i++) {
+                var el = document.getElementById('step' + i);
+                el.classList.remove('active', 'done');
+
+                if (steps[i].done) {
+                    el.classList.add('done');
+                    completed++;
+                } else if (!foundActive) {
+                    el.classList.add('active');
+                    foundActive = true;
+                }
+            }
+
+            // Update progress
+            var percent = (completed / 4) * 100;
+            document.getElementById('progressFill').style.width = percent + '%';
+            document.getElementById('progressText').textContent = completed + ' of 4 complete';
+
+            // Show celebration
+            if (completed === 4) {
+                document.getElementById('celebration').style.display = 'flex';
+            }
+        }
+
+        function copyToClipboard(text) {
+            var textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.left = '-9999px';
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+        }
+
+        function showToast(message) {
+            var toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.style.display = 'block';
+            setTimeout(function() {
+                toast.style.display = 'none';
+            }, 2000);
+        }
+
+        function launchStep(stepNum, url) {
+            // Copy content
+            copyToClipboard(steps[stepNum].content);
+            showToast('Copied! Opening ' + (stepNum === 4 ? 'Apollo' : 'Reddit') + '...');
+
+            // Open URL after short delay so user sees the toast
+            setTimeout(function() {
+                window.open(url, '_blank');
+            }, 500);
+        }
+
+        function markDone(stepNum) {
+            steps[stepNum].done = true;
+            saveState();
+            updateUI();
+        }
+
+        // Reset function (for testing)
+        function resetLaunch() {
+            localStorage.removeItem('quoted_launch_state');
+            for (var key in steps) {
+                steps[key].done = false;
+            }
+            updateUI();
+            document.getElementById('celebration').style.display = 'none';
+        }
+
+        // Initialize
+        updateUI();
+    </script>
+</body>
+</html>
