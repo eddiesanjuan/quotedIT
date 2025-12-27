@@ -751,6 +751,37 @@ async def generate_quote_with_clarifications(
     4. This endpoint generates improved quote with that context
     """
     try:
+        # SECURITY FIX (P0-03): Add billing check matching main quote generation flow
+        # Previously this endpoint bypassed billing, allowing unlimited quotes
+        billing_check = await BillingService.check_quote_limit(auth_db, current_user["id"])
+
+        if not billing_check["can_generate"]:
+            if billing_check["reason"] == "trial_expired":
+                raise HTTPException(
+                    status_code=402,
+                    detail={
+                        "error": "trial_expired",
+                        "message": "Your trial has expired. Please upgrade to continue generating quotes.",
+                        "trial_ends_at": billing_check.get("trial_ends_at"),
+                    }
+                )
+            elif billing_check["reason"] == "trial_limit_reached":
+                raise HTTPException(
+                    status_code=402,
+                    detail={
+                        "error": "trial_limit_reached",
+                        "message": f"You've reached your trial limit of {billing_check.get('quotes_used', 0)} quotes. Please upgrade to continue.",
+                    }
+                )
+            else:
+                raise HTTPException(
+                    status_code=402,
+                    detail={
+                        "error": "quota_exceeded",
+                        "message": "Unable to generate quote. Please check your subscription status.",
+                    }
+                )
+
         db = get_db_service()
         quote_service = get_quote_service()
 
