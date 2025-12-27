@@ -106,14 +106,24 @@ async def lifespan(app: FastAPI):
     logger.info("Database initialized")
 
     # Start background scheduler (Wave 3)
+    # SECURITY FIX (P0-02): Only start scheduler in ONE worker to prevent duplicate jobs
+    # With --workers 4, each worker runs lifespan, so we use an env var guard
     from .services.scheduler import start_scheduler, stop_scheduler
-    start_scheduler()
+    scheduler_started = False
+    if os.environ.get("SCHEDULER_STARTED") != "1":
+        os.environ["SCHEDULER_STARTED"] = "1"
+        start_scheduler()
+        scheduler_started = True
+        logger.info("Scheduler started (this worker is the scheduler leader)")
+    else:
+        logger.info("Scheduler skipped (another worker is the scheduler leader)")
 
     yield
 
     # Shutdown
     logger.info("Shutting down...")
-    stop_scheduler()
+    if scheduler_started:
+        stop_scheduler()
 
 
 # Create application
@@ -196,8 +206,12 @@ async def health():
 
 
 @app.get("/health/full")
-async def health_full():
-    """Comprehensive health check including all external services."""
+@limiter.limit("2/minute")  # SECURITY FIX (P0-08): Rate limit to prevent API cost burn attacks
+async def health_full(request: Request):
+    """Comprehensive health check including all external services.
+
+    Rate limited to 2/minute to prevent abuse (external API calls cost money).
+    """
     from .services.health import check_all_health
     return await check_all_health(include_external=True)
 

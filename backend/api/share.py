@@ -628,7 +628,7 @@ async def accept_quote(
                     + (f"\nCustomer message: {accept_request.message}\n" if accept_request.message else "")
                     + f"\nNext steps: Contact the customer to schedule the work.\n"
                     f"You can convert this quote to an invoice in Quoted.\n\n"
-                    f"View in Quoted: {settings.app_url}/app"
+                    f"View in Quoted: {settings.frontend_url}/app"
                 )
             )
         except Exception as e:
@@ -720,7 +720,7 @@ async def reject_quote(
                         f"Total: ${quote.total:,.2f}\n\n"
                         f"Reason: {reject_request.reason}\n\n"
                         f"This feedback can help you improve future quotes.\n\n"
-                        f"View in Quoted: {settings.app_url}/app"
+                        f"View in Quoted: {settings.frontend_url}/app"
                     )
                 )
             except Exception as e:
@@ -778,12 +778,14 @@ async def create_deposit_checkout(
             raise HTTPException(status_code=404, detail="Quote not found")
 
         # Get contractor info
-        contractor = await db.get_contractor(str(quote.contractor_id))
+        # SECURITY FIX (P0-04): Use correct method name get_contractor_by_id
+        contractor = await db.get_contractor_by_id(str(quote.contractor_id))
         if not contractor:
             raise HTTPException(status_code=404, detail="Contractor not found")
 
         # Get contractor terms for deposit info
-        terms = await db.get_contractor_terms(str(contractor.id))
+        # SECURITY FIX (P0-04): Use correct method name get_terms
+        terms = await db.get_terms(str(contractor.id))
         deposit_percent = 50.0  # Default
         if terms and terms.deposit_percent:
             deposit_percent = terms.deposit_percent
@@ -823,9 +825,10 @@ async def create_deposit_checkout(
         await db.update_quote(str(quote.id), **update_fields)
 
         # Build success/cancel URLs
-        base_url = settings.app_url.rstrip("/")
-        success_url = f"{base_url}/quote/{token}?payment=success"
-        cancel_url = f"{base_url}/quote/{token}?payment=cancelled"
+        # SECURITY FIX (P0-04): Use frontend_url (app_url doesn't exist) and correct route /shared/
+        base_url = settings.frontend_url.rstrip("/")
+        success_url = f"{base_url}/shared/{token}?payment=success"
+        cancel_url = f"{base_url}/shared/{token}?payment=cancelled"
 
         # Create Stripe checkout session
         checkout_result = await BillingService.create_deposit_checkout_session(
