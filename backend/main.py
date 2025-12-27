@@ -207,10 +207,11 @@ async def health():
 
 @app.get("/health/full")
 @limiter.limit("2/minute")  # SECURITY FIX (P0-08): Rate limit to prevent API cost burn attacks
-async def health_full(request: Request):
+async def health_full(request: Request, response: Response):
     """Comprehensive health check including all external services.
 
     Rate limited to 2/minute to prevent abuse (external API calls cost money).
+    Note: response parameter required by slowapi for header injection.
     """
     from .services.health import check_all_health
     return await check_all_health(include_external=True)
