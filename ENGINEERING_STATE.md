@@ -1,6 +1,6 @@
 # Engineering State
 
-**Last Updated**: 2025-12-24 (E2E verified)
+**Last Updated**: 2025-12-26
 **Updated By**: Autonomous AI (CEO)
 
 ---
@@ -34,7 +34,7 @@
 
 ## ⚠️ Current Product Reality (AGENTS MUST READ)
 
-**Last verified**: 2025-12-24 (Full E2E test completed)
+**Last verified**: 2025-12-26 (State files sync)
 
 This section is the **authoritative source** for what features actually exist in production. Some planning documents contain aspirational specs that were never built. Always check here first.
 
@@ -53,7 +53,7 @@ This section is the **authoritative source** for what features actually exist in
 | **PDF templates** | ✅ WORKING | 8 templates + accent colors, tier-gated (DISC-028) |
 | **Pricing sanity check** | ✅ WORKING | Statistical bounds on quote generation |
 
-### Wave 1-3 Features (Proposify Domination - Dec 2024)
+### Wave 1-3 Features (Proposify Domination - Dec 2025)
 | Feature | Status | Reality |
 |---------|--------|---------|
 | **Quote sharing** | ✅ E2E VERIFIED | Share link generation, public view, email sharing |
@@ -70,7 +70,20 @@ This section is the **authoritative source** for what features actually exist in
 | **Task completion** | ✅ E2E VERIFIED | Checkbox completion, status updates |
 | **CRM system** | ✅ E2E VERIFIED | Customer create/view/edit, tags, notes, quote history |
 
-### Production Infrastructure (Dec 2024)
+### Innovation Features (Dec 2025)
+| Feature | Status | Reality |
+|---------|--------|---------|
+| **Immediate with Escape Hatch** | ✅ DEPLOYED | Voice quotes generate instantly, transcription shown with Edit & Regenerate option |
+| **Interactive tour** | ✅ DEPLOYED | Shepherd.js v11.2.0 tour for new users |
+| **Outcome Intelligence** | ✅ DEPLOYED | Track quote wins/losses, learn from outcomes |
+| **Invoice automation** | ✅ DEPLOYED | Auto-generate invoices from accepted quotes |
+| **Smart reminders** | ✅ DEPLOYED | Follow-up reminders for pending quotes |
+| **Quick prefill** | ✅ DEPLOYED | Prefill quote from recent customer data |
+| **Quote duplication** | ✅ DEPLOYED | One-click duplicate existing quotes |
+| **Learning Excellence** | ✅ DEPLOYED | Anthropic showcase quality learning system |
+| **SEO blog** | ✅ DEPLOYED | 7 industry-specific quoting guides |
+
+### Production Infrastructure (Dec 2025)
 | Feature | Status | PR |
 |---------|--------|-----|
 | **Database connection pooling** | ✅ DEPLOYED | PR #9 |
@@ -87,7 +100,6 @@ This section is the **authoritative source** for what features actually exist in
 | **Audit logging** | ✅ DEPLOYED | PR #13 |
 
 **Common misunderstandings**:
-- "Demo mode" ≠ "try before signup". The demo is an animation showing how the product works, NOT functional quote generation without auth.
 - Invoice email sending requires Resend domain verification for `quoted.it.com` - the code works.
 
 ---
@@ -120,16 +132,39 @@ This section is the **authoritative source** for what features actually exist in
 | DISC-033 | Reddit Contractor Launch Post | **READY** | 🔴 FOUNDER ACTION |
 | MOBILE-001 | Mobile App Strategy (iOS + Android) | **QUEUED** | Strategic |
 
-### Recently Deployed (2025-12-24) - E2E Verified
+### Recently Deployed (2025-12-26)
 
 | Ticket | Description | Commits |
 |--------|-------------|---------|
+| UX-001 | Immediate with Escape Hatch - voice quotes generate instantly, show transcription with Edit & Regenerate | 4c39911 |
+| BUG-001 | Dashboard voice recording error visibility on mobile | 97803ee |
+| BUG-002 | Tour menu CSS class mismatch (show vs active) | d40df37 |
+| FEAT-001 | Interactive tour system with Shepherd.js v11.2.0 | 8e46beb, 0029245, 495f0ac |
+
+### Previously Deployed (2025-12-25)
+
+| Ticket | Description | Commits |
+|--------|-------------|---------|
+| INNOV-1-9 | 9 Innovation Features (Outcome Intelligence, Invoice Automation, Smart Reminders, etc.) | 9db3010 |
+| INNOV-1 | Outcome Intelligence Engine - track quote wins/losses, learn from outcomes | bb7e903 |
+| AUDIT-2 | Phase 4-7 audit fixes (loading states, accessibility, alerts, empty states) | 1ebcb15 |
+| AUDIT-1 | Phase 1-3 audit fixes (Security, Database, Copy) | 31b3cef |
+| HOTFIX | INNOV-6 migrations for contractors table columns | 0533e58 |
+| HOTFIX | PrefillData Pydantic v2 compatibility | 122f69b |
+| HOTFIX | Share.py deposit checkout fixes | f8e362c, b50c7bd |
+
+### Previously Deployed (2025-12-24)
+
+| Ticket | Description | Commits |
+|--------|-------------|---------|
+| LEARNING | Learning Excellence system - Anthropic showcase quality | c4aa4b6, 57f9c07 |
+| SEO | Blog with 7 industry-specific quoting guides + sitemap | 8239a80, 21b8a26 |
+| PRICING | $9/mo pricing model update | f2cc958, 2665e19 |
 | WAVE-3 | Background jobs, task reminders, first-view notifications | 1852885 |
 | WAVE-2 | Quote analytics, expiration banners, view tracking | 8eac322 |
 | WAVE-1 | Invoice public view, quote accept/reject with e-signatures | 737ea24 |
 | HOTFIX | Email FROM address corrected to `quoted.it.com` | 1d5d8d8 |
 | HOTFIX | Invoice email sending - fixed import + added method | af56d8a |
-| HOTFIX | Invoicing feature flag default set to TRUE | c71d131 |
 
 ### Previously Deployed (2025-12-23)
 
@@ -187,7 +222,15 @@ This section is the **authoritative source** for what features actually exist in
 
 | Issue | Severity | Status |
 |-------|----------|--------|
+| ~~**BUG-003**: Auth signup form missing Terms/Privacy links~~ | ~~CRITICAL~~ | ✅ FIXED 2025-12-26 |
 | No automated tests | MEDIUM | Planned post-beta |
+
+### BUG-003: Auth Signup Form Missing Terms/Privacy Links
+**Detected**: 2025-12-26 (QA Fleet)
+**Fixed**: 2025-12-26
+**Severity**: CRITICAL (Legal Compliance)
+
+**Fix Applied**: Added "By creating an account, you agree to our Terms of Service and Privacy Policy" text with working links above the Create Account button in `frontend/index.html`.
 
 ---
 

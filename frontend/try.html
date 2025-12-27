@@ -405,6 +405,96 @@
             to { transform: rotate(360deg); }
         }
 
+        /* Progress Indicator - Enhanced UX for ~15s quote generation */
+        .progress-container {
+            display: none;
+            margin-top: 24px;
+            padding: 24px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .progress-container.visible {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 6px;
+            background: var(--bg-card);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--accent), #a855f7);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+
+        .progress-step {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .progress-spinner {
+            width: 24px;
+            height: 24px;
+            border: 2px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        .progress-message {
+            font-size: 1rem;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .progress-estimate {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .progress-steps-list {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        .progress-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--border);
+            transition: all 0.3s ease;
+        }
+
+        .progress-dot.active {
+            background: var(--accent);
+            transform: scale(1.3);
+        }
+
+        .progress-dot.completed {
+            background: var(--success);
+        }
+
         /* Results Section */
         .results-section {
             display: none;
@@ -1302,6 +1392,24 @@
                         <div class="spinner"></div>
                         <span>Generate Quote</span>
                     </button>
+
+                    <!-- Progress Indicator - Enhanced UX for ~15s generation -->
+                    <div class="progress-container" id="progressContainer">
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" id="progressBar"></div>
+                        </div>
+                        <div class="progress-step">
+                            <div class="progress-spinner"></div>
+                            <span class="progress-message" id="progressMessage">Analyzing your job description...</span>
+                        </div>
+                        <p class="progress-estimate">Usually takes about 10-15 seconds</p>
+                        <div class="progress-steps-list">
+                            <div class="progress-dot active" id="dot1"></div>
+                            <div class="progress-dot" id="dot2"></div>
+                            <div class="progress-dot" id="dot3"></div>
+                            <div class="progress-dot" id="dot4"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1918,9 +2026,118 @@
         }
 
         // Helper functions
+        var progressInterval = null;
+        var progressBarInterval = null;
+        var progressStartTime = null;
+
+        // Progress steps with timing (total ~15s)
+        var progressSteps = [
+            { message: "Analyzing your job description...", duration: 3000 },
+            { message: "Identifying line items...", duration: 4000 },
+            { message: "Calculating pricing...", duration: 4000 },
+            { message: "Generating professional quote...", duration: 4000 }
+        ];
+
         function showLoading(show) {
             generateBtn.classList.toggle('loading', show);
             generateBtn.disabled = show;
+
+            var progressContainer = document.getElementById('progressContainer');
+            var progressBar = document.getElementById('progressBar');
+            var progressMessage = document.getElementById('progressMessage');
+
+            if (show) {
+                // Show progress container
+                progressContainer.classList.add('visible');
+                progressStartTime = Date.now();
+
+                // Reset progress
+                progressBar.style.width = '0%';
+                resetProgressDots();
+
+                // Start cycling through progress steps
+                var currentStep = 0;
+                updateProgressStep(currentStep);
+
+                progressInterval = setInterval(function() {
+                    currentStep++;
+                    if (currentStep < progressSteps.length) {
+                        updateProgressStep(currentStep);
+                    }
+                }, progressSteps[0].duration);
+
+                // Smooth progress bar animation
+                var totalDuration = 15000; // 15 seconds expected
+                var updateFrequency = 100; // Update every 100ms
+                progressBarInterval = setInterval(function() {
+                    var elapsed = Date.now() - progressStartTime;
+                    var progress = Math.min((elapsed / totalDuration) * 95, 95); // Cap at 95% until done
+                    progressBar.style.width = progress + '%';
+                }, updateFrequency);
+
+            } else {
+                // Complete the progress bar
+                progressBar.style.width = '100%';
+
+                // Mark all steps as completed
+                for (var i = 1; i <= 4; i++) {
+                    var dot = document.getElementById('dot' + i);
+                    if (dot) {
+                        dot.classList.remove('active');
+                        dot.classList.add('completed');
+                    }
+                }
+
+                // Clear intervals
+                if (progressInterval) {
+                    clearInterval(progressInterval);
+                    progressInterval = null;
+                }
+                if (progressBarInterval) {
+                    clearInterval(progressBarInterval);
+                    progressBarInterval = null;
+                }
+
+                // Hide progress container after a brief delay
+                setTimeout(function() {
+                    progressContainer.classList.remove('visible');
+                    progressBar.style.width = '0%';
+                    resetProgressDots();
+                }, 500);
+            }
+        }
+
+        function updateProgressStep(stepIndex) {
+            var progressMessage = document.getElementById('progressMessage');
+            if (stepIndex < progressSteps.length) {
+                progressMessage.textContent = progressSteps[stepIndex].message;
+
+                // Update dots
+                for (var i = 0; i < 4; i++) {
+                    var dot = document.getElementById('dot' + (i + 1));
+                    if (dot) {
+                        if (i < stepIndex) {
+                            dot.classList.remove('active');
+                            dot.classList.add('completed');
+                        } else if (i === stepIndex) {
+                            dot.classList.add('active');
+                            dot.classList.remove('completed');
+                        } else {
+                            dot.classList.remove('active', 'completed');
+                        }
+                    }
+                }
+            }
+        }
+
+        function resetProgressDots() {
+            for (var i = 1; i <= 4; i++) {
+                var dot = document.getElementById('dot' + i);
+                if (dot) {
+                    dot.classList.remove('active', 'completed');
+                    if (i === 1) dot.classList.add('active');
+                }
+            }
         }
 
         function showError(message) {
