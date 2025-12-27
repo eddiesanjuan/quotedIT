@@ -222,6 +222,51 @@ class EmailService:
 """
 
     @staticmethod
+    async def send_email(
+        to_email: str,
+        subject: str,
+        body: str,
+        reply_to: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """
+        Generic email sending method for any HTML content.
+        Used by follow-up service and other features that generate custom emails.
+        (P0-05 fix)
+
+        Args:
+            to_email: Recipient email address
+            subject: Email subject line
+            body: HTML body content (will be wrapped in base template)
+            reply_to: Optional reply-to email address
+
+        Returns:
+            Resend API response
+        """
+        html = EmailService._get_base_template().format(content=body)
+
+        try:
+            email_params = {
+                "from": EmailService.FROM_EMAIL,
+                "to": to_email,
+                "subject": subject,
+                "html": html,
+            }
+            if reply_to:
+                email_params["reply_to"] = reply_to
+
+            # Use run_in_executor to avoid blocking event loop (P1-04 pattern)
+            loop = asyncio.get_event_loop()
+            response = await loop.run_in_executor(
+                None,
+                partial(resend.Emails.send, email_params)
+            )
+            logger.info(f"Sent email to {to_email}: {subject}")
+            return response
+        except Exception as e:
+            logger.error(f"Failed to send email to {to_email}: {subject}", exc_info=True)
+            raise
+
+    @staticmethod
     async def send_welcome_email(
         to_email: str,
         business_name: str,

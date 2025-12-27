@@ -14,9 +14,17 @@ from pydantic import BaseModel, EmailStr
 from ..services import get_learning_service, get_database_service
 from ..services.auth import get_current_contractor
 from ..models.database import Contractor
+from ..config import settings
 
 
 router = APIRouter()
+
+
+# P0-06/P0-10 FIX: Demo endpoints are only available in non-production
+# This prevents route shadowing and memory DoS attacks in production
+def _is_demo_enabled():
+    """Check if demo endpoints should be enabled (non-production only)."""
+    return settings.environment != "production"
 
 
 # Request/Response models
@@ -182,7 +190,11 @@ _terms = {
 
 @router.post("/", response_model=ContractorResponse)
 async def create_contractor(contractor: ContractorCreate):
-    """Create a new contractor account."""
+    """Create a new contractor account (demo only - disabled in production)."""
+    # P0-06/P0-10: Gate demo endpoint in production
+    if not _is_demo_enabled():
+        raise HTTPException(status_code=404, detail="Not found")
+
     contractor_id = f"contractor_{datetime.utcnow().strftime('%Y%m%d%H%M%S')}"
 
     contractor_data = {
@@ -216,9 +228,17 @@ async def create_contractor(contractor: ContractorCreate):
     return ContractorResponse(**contractor_data)
 
 
-@router.get("/{contractor_id}", response_model=ContractorResponse)
+@router.get("/demo/{contractor_id}", response_model=ContractorResponse)
 async def get_contractor(contractor_id: str):
-    """Get a contractor by ID."""
+    """Get a demo contractor by ID (demo only - disabled in production).
+
+    P0-06 FIX: Changed from /{contractor_id} to /demo/{contractor_id} to prevent
+    route shadowing of static routes like /logo, /me/terms, /suggestions.
+    """
+    # P0-06/P0-10: Gate demo endpoint in production
+    if not _is_demo_enabled():
+        raise HTTPException(status_code=404, detail="Not found")
+
     if contractor_id not in _contractors:
         raise HTTPException(status_code=404, detail="Contractor not found")
 
@@ -466,7 +486,11 @@ async def set_industry(
 
 @router.get("/")
 async def list_contractors():
-    """List all contractors (admin/demo only)."""
+    """List all contractors (demo only - disabled in production)."""
+    # P0-06/P0-10: Gate demo endpoint in production
+    if not _is_demo_enabled():
+        raise HTTPException(status_code=404, detail="Not found")
+
     return {
         "contractors": list(_contractors.values()),
         "count": len(_contractors),

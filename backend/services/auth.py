@@ -515,12 +515,20 @@ async def get_current_user(
             detail="User account is disabled"
         )
 
+    # Also fetch contractor_id for endpoints that need it (P0-05 fix)
+    result = await db.execute(
+        select(Contractor).where(Contractor.user_id == user.id)
+    )
+    contractor = result.scalar_one_or_none()
+    contractor_id = str(contractor.id) if contractor else None
+
     # Return as dict for easier access in endpoints
     return {
         "id": user.id,
         "email": user.email,
         "is_active": user.is_active,
         "is_verified": user.is_verified,
+        "contractor_id": contractor_id,  # P0-05: Include for follow-up and other endpoints
     }
 
 
@@ -552,11 +560,19 @@ async def get_current_user_optional(
     if not user.is_active:
         return None
 
+    # Also fetch contractor_id for consistency with get_current_user (P0-05 fix)
+    result = await db.execute(
+        select(Contractor).where(Contractor.user_id == user.id)
+    )
+    contractor = result.scalar_one_or_none()
+    contractor_id = str(contractor.id) if contractor else None
+
     return {
         "id": user.id,
         "email": user.email,
         "is_active": user.is_active,
         "is_verified": user.is_verified,
+        "contractor_id": contractor_id,
     }
 
 
