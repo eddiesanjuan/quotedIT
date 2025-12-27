@@ -229,6 +229,84 @@
         .note strong {
             color: #f59e0b;
         }
+        .prep-section {
+            background: #1a1a2e;
+            border: 2px solid #ef4444;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+        .prep-section h3 {
+            color: #ef4444;
+            margin-bottom: 12px;
+            font-size: 1.1rem;
+        }
+        .prep-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 0;
+            border-bottom: 1px solid #252535;
+        }
+        .prep-item:last-child {
+            border-bottom: none;
+        }
+        .prep-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: #22c55e;
+        }
+        .prep-item a {
+            color: #6366f1;
+            text-decoration: none;
+        }
+        .prep-item a:hover {
+            text-decoration: underline;
+        }
+        .prep-item .wait-time {
+            color: #f59e0b;
+            font-size: 0.8rem;
+            margin-left: auto;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-left: 8px;
+            text-transform: uppercase;
+        }
+        .status-ready {
+            background: #22c55e;
+            color: #000;
+        }
+        .status-wait {
+            background: #f59e0b;
+            color: #000;
+        }
+        .status-prep {
+            background: #ef4444;
+            color: #fff;
+        }
+        .section-divider {
+            text-align: center;
+            color: #666;
+            font-size: 0.9rem;
+            margin: 32px 0 24px;
+            position: relative;
+        }
+        .section-divider::before,
+        .section-divider::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 30%;
+            height: 1px;
+            background: #333;
+        }
+        .section-divider::before { left: 0; }
+        .section-divider::after { right: 0; }
     </style>
 </head>
 <body>
@@ -246,12 +324,34 @@
             <strong>How this works:</strong> Click the green button to copy the post AND open the target site. Paste, submit, mark done. That's it.
         </div>
 
+        <!-- PREP SECTION -->
+        <div class="prep-section">
+            <h3>⚠️ Account Prep Required (Do This First)</h3>
+            <div class="prep-item">
+                <input type="checkbox" id="prep1" onchange="savePrep()">
+                <label for="prep1"><a href="https://www.producthunt.com/join" target="_blank">Create Product Hunt account</a></label>
+                <span class="wait-time">7-day wait</span>
+            </div>
+            <div class="prep-item">
+                <input type="checkbox" id="prep2" onchange="savePrep()">
+                <label for="prep2"><a href="https://www.indiehackers.com/start" target="_blank">Create Indie Hackers account</a> + leave 2-3 comments</label>
+                <span class="wait-time">~10 points needed</span>
+            </div>
+            <div class="prep-item">
+                <input type="checkbox" id="prep3" onchange="savePrep()">
+                <label for="prep3">Verify Reddit account is 7+ days old with some karma</label>
+                <span class="wait-time">Check age</span>
+            </div>
+        </div>
+
+        <div class="section-divider">Ready Now</div>
+
         <!-- STEP 1: r/smallbusiness -->
         <div class="step active" id="step1">
             <div class="step-header">
                 <div class="step-number">1</div>
                 <div>
-                    <div class="step-title">Post to r/smallbusiness</div>
+                    <div class="step-title">Post to r/smallbusiness <span class="status-badge status-wait">Check Account</span></div>
                     <div class="step-time">~2 min - Weekly promo thread</div>
                 </div>
             </div>
@@ -277,7 +377,7 @@ $9/mo flat or $59/yr. Happy to answer questions.</div>
             <div class="step-header">
                 <div class="step-number">2</div>
                 <div>
-                    <div class="step-title">Post to r/SaaS Feedback Friday</div>
+                    <div class="step-title">Post to r/SaaS Feedback Friday <span class="status-badge status-wait">Check Account</span></div>
                     <div class="step-time">~2 min - Weekly feedback thread only</div>
                 </div>
             </div>
@@ -310,7 +410,7 @@ $9/mo flat or $59/yr. Happy to answer questions.</div>
             <div class="step-header">
                 <div class="step-number">3</div>
                 <div>
-                    <div class="step-title">Post to r/Entrepreneur Marketplace Tuesday</div>
+                    <div class="step-title">Post to r/Entrepreneur Marketplace Tuesday <span class="status-badge status-wait">Check Account</span></div>
                     <div class="step-time">~3 min - Weekly promo thread only</div>
                 </div>
             </div>
@@ -345,7 +445,7 @@ Happy to answer questions!
             <div class="step-header">
                 <div class="step-number">4</div>
                 <div>
-                    <div class="step-title">Send First Cold Emails (Apollo)</div>
+                    <div class="step-title">Send First Cold Emails (Apollo) <span class="status-badge status-ready">Ready</span></div>
                     <div class="step-time">~8 min - 25 emails</div>
                 </div>
             </div>
@@ -370,12 +470,14 @@ $9/mo or $59/yr. No contracts.
             </div>
         </div>
 
+        <div class="section-divider">Needs Account Prep First</div>
+
         <!-- STEP 5: Product Hunt -->
         <div class="step" id="step5">
             <div class="step-header">
                 <div class="step-number">5</div>
                 <div>
-                    <div class="step-title">Submit to Product Hunt</div>
+                    <div class="step-title">Submit to Product Hunt <span class="status-badge status-prep">7-Day Wait</span></div>
                     <div class="step-time">~5 min - Ship page or launch</div>
                 </div>
             </div>
@@ -412,7 +514,7 @@ Hey PH! I run a $30-50M business and kept watching small business owners struggl
             <div class="step-header">
                 <div class="step-number">6</div>
                 <div>
-                    <div class="step-title">Post to Indie Hackers</div>
+                    <div class="step-title">Post to Indie Hackers <span class="status-badge status-prep">Need Points</span></div>
                     <div class="step-time">~3 min - Product + intro post</div>
                 </div>
             </div>
@@ -455,12 +557,14 @@ Happy to share more about the build if anyone's interested!</div>
             </div>
         </div>
 
+        <div class="section-divider">Ready Anytime</div>
+
         <!-- STEP 7: Twitter/X Launch Thread -->
         <div class="step" id="step7">
             <div class="step-header">
                 <div class="step-number">7</div>
                 <div>
-                    <div class="step-title">Twitter/X Launch Thread</div>
+                    <div class="step-title">Twitter/X Launch Thread <span class="status-badge status-ready">Ready</span></div>
                     <div class="step-time">~5 min - Multi-tweet thread</div>
                 </div>
             </div>
@@ -537,7 +641,7 @@ Questions? Reply here 👇</div>
             <div class="step-header">
                 <div class="step-number">8</div>
                 <div>
-                    <div class="step-title">Set Up Paid Ads</div>
+                    <div class="step-title">Set Up Paid Ads <span class="status-badge status-ready">Ready</span></div>
                     <div class="step-time">~15 min - Google + Facebook setup</div>
                 </div>
             </div>
@@ -721,8 +825,29 @@ $9/mo flat. Try free: quoted.it.com/demo</div>
             document.getElementById('celebration').style.display = 'none';
         }
 
+        // Prep checkbox persistence
+        function savePrep() {
+            var prepState = {
+                prep1: document.getElementById('prep1').checked,
+                prep2: document.getElementById('prep2').checked,
+                prep3: document.getElementById('prep3').checked
+            };
+            localStorage.setItem('quoted_prep_state', JSON.stringify(prepState));
+        }
+
+        function loadPrep() {
+            var saved = localStorage.getItem('quoted_prep_state');
+            if (saved) {
+                var prepState = JSON.parse(saved);
+                document.getElementById('prep1').checked = prepState.prep1 || false;
+                document.getElementById('prep2').checked = prepState.prep2 || false;
+                document.getElementById('prep3').checked = prepState.prep3 || false;
+            }
+        }
+
         // Initialize
         updateUI();
+        loadPrep();
     </script>
 </body>
 </html>
