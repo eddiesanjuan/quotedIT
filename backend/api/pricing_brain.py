@@ -29,6 +29,10 @@ class CategorySummary(BaseModel):
     confidence: float
     samples: int
     learned_adjustments_count: int
+    # DISC-121: Outcome tracking
+    won_count: int = 0
+    lost_count: int = 0
+    win_rate: Optional[float] = None  # Percentage (0-100) or None if no outcomes
 
 
 class CategoryDetail(BaseModel):

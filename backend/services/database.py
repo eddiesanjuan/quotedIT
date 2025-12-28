@@ -21,6 +21,7 @@ from ..models.database import (
 )
 from .analytics import analytics_service
 from .contractor_dna import get_dna_service
+from .learning_quality import LearningQualityScorer, QualityTier
 
 
 # Create async engine and session factory
@@ -286,41 +287,91 @@ class DatabaseService:
                     print(f"[LEARNING DEBUG] Claude summary: {learnings.get('summary')[:200]}...")
 
                 if learning_statements:
-                    # Filter and validate statements
-                    valid_statements = [
-                        stmt for stmt in learning_statements
-                        if stmt and isinstance(stmt, str) and len(stmt) >= 15
-                    ]
-                    if valid_statements:
-                        # REPLACE the list (Claude has already optimized it)
-                        cat_data["learned_adjustments"] = valid_statements
+                    # Filter, validate, and score statements
+                    quality_scorer = LearningQualityScorer()
+                    scored_statements = []
+
+                    for stmt in learning_statements:
+                        if stmt and isinstance(stmt, str) and len(stmt) >= 15:
+                            # Score the learning for quality
+                            quality_score = quality_scorer.score(stmt)
+
+                            # Only store if not REJECT quality
+                            if quality_score.tier != QualityTier.REJECT:
+                                scored_statements.append({
+                                    "text": stmt,
+                                    "quality_score": quality_score.overall_score,
+                                    "created_at": datetime.utcnow().isoformat(),
+                                    "source": "correction",
+                                    "outcome_boost": 0.0,
+                                })
+                            else:
+                                print(f"[LEARNING QUALITY] Rejected low-quality statement: {stmt[:50]}... (score: {quality_score.overall_score})")
+
+                    if scored_statements:
+                        # REPLACE the list with quality-scored metadata
+                        cat_data["learned_adjustments"] = scored_statements
                         learning_added_this_correction = True
-                        print(f"[LEARNING] Category '{category}': Replaced with {len(valid_statements)} valid statements")
+                        print(f"[LEARNING] Category '{category}': Replaced with {len(scored_statements)} quality-scored statements")
 
                     # Log what changed for debugging
                     changes_made = learnings.get("changes_made", "")
                     if changes_made:
                         print(f"[LEARNING] Category '{category}': {changes_made}")
 
+                # Helper to create metadata entry with quality scoring
+                def create_learning_metadata(text: str, source: str = "correction") -> Optional[dict]:
+                    """Create a learning metadata dict with quality scoring."""
+                    if not text or len(text) < 15:
+                        return None
+                    quality_scorer = LearningQualityScorer()
+                    score = quality_scorer.score(text)
+                    if score.tier == QualityTier.REJECT:
+                        return None
+                    return {
+                        "text": text,
+                        "quality_score": score.overall_score,
+                        "created_at": datetime.utcnow().isoformat(),
+                        "source": source,
+                        "outcome_boost": 0.0,
+                    }
+
+                # Helper to check if text already exists in adjustments (handles both formats)
+                def text_in_adjustments(text: str, adjustments: list) -> bool:
+                    """Check if text already exists, handling both string and dict formats."""
+                    for adj in adjustments:
+                        if isinstance(adj, dict):
+                            if adj.get("text") == text:
+                                return True
+                        elif adj == text:
+                            return True
+                    return False
+
                 # LEGACY FORMAT: Fall back to append approach if no learning_statements
                 # This handles old format responses during transition
                 if not learning_added_this_correction:
                     for adjustment in learnings.get("pricing_adjustments", []):
                         learning = adjustment.get("learning", "")
-                        if learning and learning not in cat_data["learned_adjustments"]:
-                            cat_data["learned_adjustments"].append(learning)
-                            learning_added_this_correction = True
+                        if learning and not text_in_adjustments(learning, cat_data["learned_adjustments"]):
+                            metadata = create_learning_metadata(learning)
+                            if metadata:
+                                cat_data["learned_adjustments"].append(metadata)
+                                learning_added_this_correction = True
 
                     for rule in learnings.get("new_pricing_rules", []):
                         rule_text = rule.get("rule", "")
-                        if rule_text and rule_text not in cat_data["learned_adjustments"]:
-                            cat_data["learned_adjustments"].append(rule_text)
-                            learning_added_this_correction = True
+                        if rule_text and not text_in_adjustments(rule_text, cat_data["learned_adjustments"]):
+                            metadata = create_learning_metadata(rule_text)
+                            if metadata:
+                                cat_data["learned_adjustments"].append(metadata)
+                                learning_added_this_correction = True
 
                     tendency = learnings.get("overall_tendency", "")
-                    if tendency and len(tendency) > 15 and tendency not in cat_data["learned_adjustments"]:
-                        cat_data["learned_adjustments"].append(tendency)
-                        learning_added_this_correction = True
+                    if tendency and len(tendency) > 15 and not text_in_adjustments(tendency, cat_data["learned_adjustments"]):
+                        metadata = create_learning_metadata(tendency)
+                        if metadata:
+                            cat_data["learned_adjustments"].append(metadata)
+                            learning_added_this_correction = True
 
                 # MANDATORY FALLBACK: EVERY correction MUST produce at least one learning
                 # This ensures rules are never "0" after a correction
@@ -329,17 +380,28 @@ class DatabaseService:
                     pricing_direction = learnings.get("pricing_direction", "")
 
                     # Try to create a basic learning from what we know
+                    fallback_text = None
                     if summary and len(summary) >= 15:
-                        cat_data["learned_adjustments"].append(summary)
+                        fallback_text = summary
                         print(f"[LEARNING FALLBACK] Created learning from summary for category '{category}'")
                     elif pricing_direction in ("higher", "lower"):
                         direction_text = "Contractor typically prices higher than AI estimates" if pricing_direction == "higher" else "Contractor typically prices lower than AI estimates"
-                        cat_data["learned_adjustments"].append(f"{direction_text} for {category.replace('_', ' ')}")
+                        fallback_text = f"{direction_text} for {category.replace('_', ' ')}"
                         print(f"[LEARNING FALLBACK] Created learning from pricing_direction for category '{category}'")
                     else:
                         # Absolute fallback: at least record that corrections were made
-                        cat_data["learned_adjustments"].append(f"Review pricing carefully for {category.replace('_', ' ')} jobs - corrections have been made")
+                        fallback_text = f"Review pricing carefully for {category.replace('_', ' ')} jobs - corrections have been made"
                         print(f"[LEARNING FALLBACK] Created minimal learning for category '{category}'")
+
+                    if fallback_text:
+                        # Fallback learnings get stored with lower quality score (don't filter)
+                        cat_data["learned_adjustments"].append({
+                            "text": fallback_text,
+                            "quality_score": 45.0,  # Low but not rejected
+                            "created_at": datetime.utcnow().isoformat(),
+                            "source": "fallback",
+                            "outcome_boost": 0.0,
+                        })
 
                 # Update samples and correction count
                 cat_data["samples"] = cat_data.get("samples", 0) + 1
@@ -380,8 +442,18 @@ class DatabaseService:
 
                 # Keep learned_adjustments manageable (max 20 per category)
                 if len(cat_data["learned_adjustments"]) > 20:
-                    # Keep most recent 20
-                    cat_data["learned_adjustments"] = cat_data["learned_adjustments"][-20:]
+                    # Sort by created_at (newest first) and keep top 20
+                    # Handles both string (legacy) and dict (new) formats
+                    def get_created_at(adj):
+                        if isinstance(adj, dict):
+                            return adj.get("created_at", "1970-01-01")
+                        return "1970-01-01"  # Legacy strings are treated as oldest
+                    sorted_adjustments = sorted(
+                        cat_data["learned_adjustments"],
+                        key=get_created_at,
+                        reverse=True
+                    )
+                    cat_data["learned_adjustments"] = sorted_adjustments[:20]
 
                 # LEVEL 2: Update tailored_prompt if Claude recommends it (~10% of corrections)
                 tailored_prompt_update = learnings.get("tailored_prompt_update")
@@ -749,6 +821,116 @@ class DatabaseService:
                 "old_confidence": old_confidence,
                 "new_confidence": new_confidence,
                 "acceptance_count": acceptance_count,
+            }
+
+    async def apply_loss_to_pricing_model(
+        self,
+        contractor_id: str,
+        category: str,
+        loss_reason: str = None,
+    ) -> Optional[dict]:
+        """
+        DISC-121: Apply loss learning when quote is lost.
+
+        Reduces confidence in pricing for this category. Uses a smaller
+        penalty than the win boost to avoid over-penalizing occasional losses.
+
+        Confidence penalty: -0.03 for loss (vs +0.05 for win)
+
+        Args:
+            contractor_id: The contractor's ID
+            category: The job_type category
+            loss_reason: Key from LOSS_REASONS (optional)
+
+        Returns:
+            Dict with processing results, or None if failed
+        """
+        # Constants - smaller penalty than win boost to be conservative
+        LOSS_CONFIDENCE_PENALTY = 0.03
+        MIN_CONFIDENCE = 0.20  # Don't drop below 20%
+
+        async with async_session_factory() as session:
+            result = await session.execute(
+                select(PricingModel).where(PricingModel.contractor_id == contractor_id)
+            )
+            pricing_model = result.scalar_one_or_none()
+            if not pricing_model:
+                return None
+
+            pricing_knowledge = dict(pricing_model.pricing_knowledge) if pricing_model.pricing_knowledge else {}
+
+            # Ensure categories structure exists
+            if "categories" not in pricing_knowledge:
+                pricing_knowledge["categories"] = {}
+
+            # Initialize category if doesn't exist
+            if category not in pricing_knowledge["categories"]:
+                pricing_knowledge["categories"][category] = {
+                    "display_name": category.replace("_", " ").title(),
+                    "tailored_prompt": None,
+                    "learned_adjustments": [],
+                    "samples": 0,
+                    "quote_count": 0,
+                    "confidence": 0.5,
+                    "correction_count": 0,
+                    "acceptance_count": 0,
+                    "loss_count": 0,
+                }
+
+            cat_data = pricing_knowledge["categories"][category]
+
+            # Store old confidence
+            old_confidence = cat_data.get("confidence", 0.5)
+
+            # Ensure loss_count exists (backward compatibility)
+            if "loss_count" not in cat_data:
+                cat_data["loss_count"] = 0
+
+            # Apply confidence penalty (don't go below minimum)
+            new_confidence = max(MIN_CONFIDENCE, old_confidence - LOSS_CONFIDENCE_PENALTY)
+
+            # Update category data
+            cat_data["confidence"] = new_confidence
+            cat_data["loss_count"] = cat_data.get("loss_count", 0) + 1
+            cat_data["last_loss_at"] = datetime.utcnow().isoformat()
+            if loss_reason:
+                # Track loss reason distribution
+                if "loss_reasons" not in cat_data:
+                    cat_data["loss_reasons"] = {}
+                cat_data["loss_reasons"][loss_reason] = cat_data["loss_reasons"].get(loss_reason, 0) + 1
+
+            pricing_knowledge["categories"][category] = cat_data
+            pricing_model.pricing_knowledge = pricing_knowledge
+            pricing_model.updated_at = datetime.utcnow()
+            attributes.flag_modified(pricing_model, 'pricing_knowledge')
+
+            await session.commit()
+
+            # Track analytics
+            try:
+                analytics_service.track_event(
+                    user_id=contractor_id,
+                    event_name="loss_learning_applied",
+                    properties={
+                        "category": category,
+                        "loss_reason": loss_reason,
+                        "old_confidence": old_confidence,
+                        "new_confidence": new_confidence,
+                        "loss_count": cat_data["loss_count"],
+                    }
+                )
+            except Exception as e:
+                print(f"Warning: Failed to track loss learning: {e}")
+
+            print(f"[LOSS] Category '{category}': Confidence {old_confidence:.2f} -> {new_confidence:.2f} (loss)")
+
+            return {
+                "processed": True,
+                "category": category,
+                "old_confidence": old_confidence,
+                "new_confidence": new_confidence,
+                "loss_count": cat_data["loss_count"],
+                "loss_reason": loss_reason,
             }
 
     # ============== TERMS OPERATIONS ==============

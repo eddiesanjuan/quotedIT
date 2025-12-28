@@ -9,6 +9,15 @@
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230a0a0a'/%3E%3Ctext x='16' y='23' font-family='serif' font-size='20' font-weight='600' fill='white' text-anchor='middle'%3EQ%3C/text%3E%3C/svg%3E">
     <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%230a0a0a'/%3E%3Ctext x='90' y='125' font-family='serif' font-size='110' font-weight='600' fill='white' text-anchor='middle'%3EQ%3C/text%3E%3C/svg%3E">
 
+    <!-- Google Ads Conversion Tracking -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-17836503504"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'AW-17836503504');
+    </script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -2411,6 +2420,7 @@
             gap: 16px;
             align-items: start;
             padding: 20px 0;
+            position: relative;  /* DISC-122: For delete button positioning */
         }
 
         .line-item-edit-group {
@@ -2553,6 +2563,33 @@
         .line-item-total-display .total-value {
             color: var(--text-primary);
             font-weight: 500;
+        }
+
+        /* DISC-122: Delete button for line items */
+        .line-item-delete-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 24px;
+            height: 24px;
+            border: none;
+            border-radius: 50%;
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            font-size: 1.2rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            opacity: 0.6;
+        }
+
+        .line-item-delete-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+            opacity: 1;
+            transform: scale(1.1);
         }
 
         /* Edit Mode Indicator */
@@ -2982,6 +3019,50 @@
             .app-nav-btn {
                 padding: 10px 16px;
                 font-size: 0.75rem;
+            }
+        }
+
+        /* DISC-119: WCAG 2.5.5 Touch Target Compliance - 44x44px minimum */
+        @media (max-width: 480px) {
+            /* All interactive elements must be at least 44x44px */
+            button, .btn, a.btn, .nav-link, .tab-btn, .action-btn,
+            input[type="submit"], input[type="button"],
+            .dropdown-toggle, .menu-item, .nav-cta {
+                min-height: 44px;
+                min-width: 44px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            /* Nav links need proper tap targets */
+            nav a {
+                min-height: 44px;
+                display: inline-flex;
+                align-items: center;
+                padding: 8px 12px;
+            }
+
+            /* Tab buttons */
+            .tab-btn {
+                min-height: 44px;
+                padding: 12px 16px;
+            }
+
+            /* Action buttons in lists/cards */
+            .customer-card, .quote-card {
+                min-height: 48px;
+            }
+
+            /* Close buttons and icons */
+            .close-btn, .icon-btn {
+                min-width: 44px;
+                min-height: 44px;
+            }
+
+            /* Form inputs */
+            input, select, textarea {
+                min-height: 44px;
             }
         }
 
@@ -5330,7 +5411,12 @@
                     </div>
                     <div class="form-group">
                         <label>Password</label>
-                        <input type="password" id="registerPassword" placeholder="Create a password" required minlength="8">
+                        <input type="password" id="registerPassword" placeholder="Create a password" required minlength="8" oninput="updatePasswordStrength(this.value)">
+                        <!-- DISC-120: Password strength indicator -->
+                        <div id="passwordStrength" style="margin-top: 8px; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden;">
+                            <div id="passwordStrengthBar" style="height: 100%; width: 0; transition: all 0.3s ease;"></div>
+                        </div>
+                        <div id="passwordStrengthText" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;"></div>
                     </div>
 
                     <!-- BUG-003 FIX: Legal compliance - Terms/Privacy links -->
@@ -5382,6 +5468,12 @@
                     <div class="card" style="padding: 20px; text-align: center;">
                         <div style="font-size: 2rem; font-weight: 600; color: #fbbf24;" id="statPendingQuotes">0</div>
                         <div style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em;">Pending</div>
+                    </div>
+                    <!-- DISC-116: Outstanding Invoices Widget -->
+                    <div class="card" style="padding: 20px; text-align: center; cursor: pointer;" onclick="showAppSection('invoices')">
+                        <div style="font-size: 2rem; font-weight: 600; color: #f87171;" id="statOutstandingInvoices">$0</div>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em;">Unpaid Invoices</div>
+                        <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px;" id="statOutstandingCount">0 invoices</div>
                     </div>
                     <div class="card" style="padding: 20px; text-align: center;">
                         <div style="font-size: 2rem; font-weight: 600; color: #4ade80;" id="statTimeSaved">0h</div>
@@ -6185,7 +6277,11 @@
             <div class="card quote-result" id="customerDetailView" style="display: none;">
                 <div class="quote-header">
                     <h2 id="customerDetailName">Customer Details</h2>
-                    <span class="confidence-badge" id="customerStatusBadge">Active</span>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <span class="confidence-badge" id="customerStatusBadge">Active</span>
+                        <!-- DISC-115: Loyalty tier badge in detail view -->
+                        <span class="confidence-badge" id="customerTierBadge" style="display: none;"></span>
+                    </div>
                 </div>
 
                 <div class="customer-info-section">
@@ -8659,6 +8755,52 @@
                 btn.disabled = false;
                 btn.textContent = 'Sign In';
             }
+        }
+
+        // DISC-120: Password strength indicator
+        function updatePasswordStrength(password) {
+            const bar = document.getElementById('passwordStrengthBar');
+            const text = document.getElementById('passwordStrengthText');
+            if (!bar || !text) return;
+
+            let strength = 0;
+            let label = '';
+            let color = '';
+
+            // Length check
+            if (password.length >= 8) strength += 25;
+            if (password.length >= 12) strength += 15;
+
+            // Lowercase check
+            if (/[a-z]/.test(password)) strength += 15;
+
+            // Uppercase check
+            if (/[A-Z]/.test(password)) strength += 15;
+
+            // Number check
+            if (/[0-9]/.test(password)) strength += 15;
+
+            // Special char check
+            if (/[^a-zA-Z0-9]/.test(password)) strength += 15;
+
+            if (strength < 30) {
+                label = 'Weak';
+                color = '#ef4444';
+            } else if (strength < 60) {
+                label = 'Fair';
+                color = '#f59e0b';
+            } else if (strength < 80) {
+                label = 'Good';
+                color = '#10b981';
+            } else {
+                label = 'Strong';
+                color = '#22c55e';
+            }
+
+            bar.style.width = Math.min(strength, 100) + '%';
+            bar.style.background = color;
+            text.textContent = password ? label : '';
+            text.style.color = color;
         }
 
         // Handle registration
@@ -12028,6 +12170,27 @@
                 // Render recent quotes (last 5)
                 renderDashboardRecentQuotes(quotes.slice(0, 5));
 
+                // DISC-116: Fetch outstanding invoices for dashboard widget
+                try {
+                    const invoiceResponse = await fetch(`${API_BASE}/invoices/automation/outstanding`, {
+                        headers: { 'Authorization': `Bearer ${authToken}` },
+                    });
+                    if (invoiceResponse.ok) {
+                        const invoiceData = await invoiceResponse.json();
+                        const outstandingEl = document.getElementById('statOutstandingInvoices');
+                        const countEl = document.getElementById('statOutstandingCount');
+                        if (outstandingEl) {
+                            outstandingEl.textContent = '$' + (invoiceData.total_outstanding || 0).toLocaleString();
+                        }
+                        if (countEl) {
+                            const count = invoiceData.count || 0;
+                            countEl.textContent = count + ' invoice' + (count !== 1 ? 's' : '');
+                        }
+                    }
+                } catch (invoiceErr) {
+                    console.error('Error loading outstanding invoices:', invoiceErr);
+                }
+
             } catch (err) {
                 console.error('Error loading dashboard:', err);
                 // Still show empty state
@@ -12641,10 +12804,53 @@
                 pricingGroup.appendChild(unitCostRow);
                 pricingGroup.appendChild(totalDisplay);
 
+                // DISC-122: Delete button for line item
+                const deleteBtn = document.createElement('button');
+                deleteBtn.type = 'button';
+                deleteBtn.className = 'line-item-delete-btn';
+                deleteBtn.title = 'Remove this item';
+                deleteBtn.textContent = '×';
+                deleteBtn.onclick = function() { deleteLineItem(index); };
+
                 lineItemEl.appendChild(editGroup);
                 lineItemEl.appendChild(pricingGroup);
+                lineItemEl.appendChild(deleteBtn);
                 container.appendChild(lineItemEl);
             });
+        }
+
+        // DISC-122: Delete a line item and track as correction
+        function deleteLineItem(index) {
+            if (editedLineItems.length <= 1) {
+                showLearningToast('Cannot delete the last item', '⚠️');
+                return;
+            }
+
+            const deletedItem = editedLineItems[index];
+            const deletedName = deletedItem.name || deletedItem.description || `Item ${index + 1}`;
+            const deletedAmount = deletedItem.amount || 0;
+
+            // Track deletion for learning
+            if (!currentQuote.deletedItems) {
+                currentQuote.deletedItems = [];
+            }
+            currentQuote.deletedItems.push({
+                name: deletedName,
+                amount: deletedAmount,
+                reason: 'user_deleted'
+            });
+
+            // Remove from array
+            editedLineItems.splice(index, 1);
+
+            // Re-render
+            renderEditableLineItems(editedLineItems);
+            updateEditTotal();
+
+            // Mark as having changes
+            currentQuote.hasEdits = true;
+
+            showLearningToast(`Removed: ${deletedName}`, '🗑️');
         }
 
         // Track changes to line items
@@ -12805,7 +13011,9 @@
                         correction_notes: correctionNotes || null,
                         // DISC-067: Include timeline/terms in update
                         timeline_text: document.getElementById('detailTimelineText').value || null,
-                        terms_text: document.getElementById('detailTermsText').value || null
+                        terms_text: document.getElementById('detailTermsText').value || null,
+                        // DISC-122: Include deleted items for learning
+                        deleted_items: currentQuote.deletedItems || []
                     })
                 });
 
@@ -14608,6 +14816,32 @@
                     titleWrapper.appendChild(statusBadge);
                 }
 
+                // DISC-115: Loyalty tier badge
+                const tier = customer.tier || 'new';
+                if (tier && tier !== 'new') {
+                    const tierBadge = document.createElement('span');
+                    const tierColors = {
+                        platinum: { bg: 'linear-gradient(135deg, #7c3aed, #6d28d9)', text: 'white' },
+                        gold: { bg: 'linear-gradient(135deg, #fbbf24, #d97706)', text: 'white' },
+                        silver: { bg: 'linear-gradient(135deg, #9ca3af, #6b7280)', text: 'white' },
+                        bronze: { bg: 'linear-gradient(135deg, #d97706, #b45309)', text: 'white' },
+                        repeat: { bg: 'linear-gradient(135deg, #3b82f6, #2563eb)', text: 'white' }
+                    };
+                    const colors = tierColors[tier] || tierColors.repeat;
+                    tierBadge.style.cssText = `
+                        font-size: 0.65rem;
+                        padding: 2px 6px;
+                        background: ${colors.bg};
+                        color: ${colors.text};
+                        border-radius: 4px;
+                        font-weight: 500;
+                        text-transform: uppercase;
+                        letter-spacing: 0.02em;
+                    `;
+                    tierBadge.textContent = tier;
+                    titleWrapper.appendChild(tierBadge);
+                }
+
                 const amount = document.createElement('div');
                 amount.className = 'quote-list-item-amount';
                 amount.textContent = '$' + (customer.total_quoted || 0).toLocaleString();
@@ -14676,6 +14910,33 @@
                 document.getElementById('customerDetailName').textContent = currentCustomer.name;
                 document.getElementById('customerStatusBadge').textContent = currentCustomer.status || 'active';
                 document.getElementById('customerStatusBadge').className = `confidence-badge status-${currentCustomer.status || 'active'}`;
+
+                // DISC-115: Show loyalty tier badge in detail view
+                const tier = currentCustomer.tier || 'new';
+                const tierBadgeEl = document.getElementById('customerTierBadge');
+                if (tier && tier !== 'new') {
+                    const tierColors = {
+                        platinum: { bg: 'linear-gradient(135deg, #7c3aed, #6d28d9)' },
+                        gold: { bg: 'linear-gradient(135deg, #fbbf24, #d97706)' },
+                        silver: { bg: 'linear-gradient(135deg, #9ca3af, #6b7280)' },
+                        bronze: { bg: 'linear-gradient(135deg, #d97706, #b45309)' },
+                        repeat: { bg: 'linear-gradient(135deg, #3b82f6, #2563eb)' }
+                    };
+                    const colors = tierColors[tier] || tierColors.repeat;
+                    tierBadgeEl.textContent = tier.toUpperCase();
+                    tierBadgeEl.style.cssText = `
+                        display: inline-block;
+                        font-size: 0.7rem;
+                        padding: 4px 8px;
+                        background: ${colors.bg};
+                        color: white;
+                        border-radius: 4px;
+                        font-weight: 500;
+                        text-transform: uppercase;
+                    `;
+                } else {
+                    tierBadgeEl.style.display = 'none';
+                }
 
                 document.getElementById('customerDetailPhone').textContent = currentCustomer.phone || 'No phone';
                 document.getElementById('customerDetailEmail').textContent = currentCustomer.email || 'No email';
@@ -16873,6 +17134,41 @@
             rulesStat.appendChild(rulesLabel);
 
             stats.appendChild(rulesStat);
+
+            // DISC-121: Win rate stat (if outcome data exists)
+            const winRate = category.win_rate;
+            const wonCount = category.won_count || 0;
+            const lostCount = category.lost_count || 0;
+            const hasOutcomes = wonCount > 0 || lostCount > 0;
+
+            if (hasOutcomes) {
+                const winStat = document.createElement('div');
+                winStat.className = 'category-stat';
+
+                const winValue = document.createElement('div');
+                winValue.className = 'category-stat-value';
+                // Color code based on win rate
+                if (winRate !== null) {
+                    if (winRate >= 60) {
+                        winValue.style.color = '#22c55e'; // Green
+                    } else if (winRate >= 40) {
+                        winValue.style.color = '#f59e0b'; // Amber
+                    } else {
+                        winValue.style.color = '#ef4444'; // Red
+                    }
+                    winValue.textContent = winRate + '%';
+                } else {
+                    winValue.textContent = '-';
+                }
+                winStat.appendChild(winValue);
+
+                const winLabel = document.createElement('div');
+                winLabel.className = 'category-stat-label';
+                winLabel.textContent = `Win Rate (${wonCount}W/${lostCount}L)`;
+                winStat.appendChild(winLabel);
+
+                stats.appendChild(winStat);
+            }
 
             card.appendChild(stats);
 

@@ -9,6 +9,15 @@
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230a0a0a'/%3E%3Ctext x='16' y='23' font-family='serif' font-size='20' font-weight='600' fill='white' text-anchor='middle'%3EQ%3C/text%3E%3C/svg%3E">
 
+    <!-- Google Ads Conversion Tracking -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-17836503504"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'AW-17836503504');
+    </script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -279,8 +288,24 @@
             text-decoration: underline;
         }
 
-        /* Mobile */
+        /* Mobile - DISC-119: WCAG 2.5.5 Touch Target Compliance */
         @media (max-width: 480px) {
+            /* All interactive elements must be at least 44x44px */
+            button, .submit-btn, a, input[type="submit"] {
+                min-height: 44px;
+            }
+
+            nav a {
+                min-height: 44px;
+                display: inline-flex;
+                align-items: center;
+                padding: 8px 12px;
+            }
+
+            input[type="email"], input[type="password"] {
+                min-height: 44px;
+            }
+
             nav {
                 padding: 16px 20px;
             }
@@ -341,8 +366,21 @@
 
                 <div class="form-group">
                     <label for="password">Password</label>
-                    <input type="password" id="password" name="password" placeholder="Create a password" required minlength="8" autocomplete="new-password">
+                    <input type="password" id="password" name="password" placeholder="Create a password" required minlength="8" autocomplete="new-password" oninput="updatePasswordStrength(this.value)">
+                    <!-- DISC-120: Password strength indicator -->
+                    <div id="passwordStrength" style="margin-top: 8px; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden;">
+                        <div id="passwordStrengthBar" style="height: 100%; width: 0; transition: all 0.3s ease;"></div>
+                    </div>
+                    <div id="passwordStrengthText" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;"></div>
                 </div>
+
+                <!-- DISC-114: Legal compliance - Terms/Privacy links -->
+                <p style="font-size: 0.75rem; color: var(--text-secondary); text-align: center; margin: 16px 0 12px 0; line-height: 1.5;">
+                    By creating an account, you agree to our
+                    <a href="/terms" target="_blank" style="color: var(--accent); text-decoration: underline;">Terms of Service</a>
+                    and
+                    <a href="/privacy" target="_blank" style="color: var(--accent); text-decoration: underline;">Privacy Policy</a>.
+                </p>
 
                 <button type="submit" class="submit-btn" id="submit-btn">
                     Start Free
@@ -377,6 +415,34 @@
 
         // API base URL
         const API_BASE = window.location.origin + '/api';
+
+        // DISC-120: Password strength indicator
+        function updatePasswordStrength(password) {
+            const bar = document.getElementById('passwordStrengthBar');
+            const text = document.getElementById('passwordStrengthText');
+            if (!bar || !text) return;
+
+            let strength = 0;
+            let label = '';
+            let color = '';
+
+            if (password.length >= 8) strength += 25;
+            if (password.length >= 12) strength += 15;
+            if (/[a-z]/.test(password)) strength += 15;
+            if (/[A-Z]/.test(password)) strength += 15;
+            if (/[0-9]/.test(password)) strength += 15;
+            if (/[^a-zA-Z0-9]/.test(password)) strength += 15;
+
+            if (strength < 30) { label = 'Weak'; color = '#ef4444'; }
+            else if (strength < 60) { label = 'Fair'; color = '#f59e0b'; }
+            else if (strength < 80) { label = 'Good'; color = '#10b981'; }
+            else { label = 'Strong'; color = '#22c55e'; }
+
+            bar.style.width = Math.min(strength, 100) + '%';
+            bar.style.background = color;
+            text.textContent = password ? label : '';
+            text.style.color = color;
+        }
 
         // Handle form submission
         const form = document.getElementById('signup-form');

@@ -158,15 +158,34 @@ class LearningService:
                 orig_amount = orig_item.get("amount", 0)
                 final_amount = final_item.get("amount", 0)
 
-                if orig_amount != final_amount:
+                # DISC-123: Also track quantity and unit changes
+                orig_qty = orig_item.get("quantity", 1)
+                final_qty = final_item.get("quantity", 1)
+                orig_unit = orig_item.get("unit", "")
+                final_unit = final_item.get("unit", "")
+
+                # Check if any field changed
+                amount_changed = orig_amount != final_amount
+                qty_changed = orig_qty != final_qty
+                unit_changed = orig_unit != final_unit
+
+                if amount_changed or qty_changed or unit_changed:
                     corrections["has_changes"] = True
-                    corrections["line_item_changes"].append({
+                    change_entry = {
                         "item": name,
                         "original": orig_amount,
                         "final": final_amount,
                         "change": final_amount - orig_amount,
                         "change_type": "modified",
-                    })
+                    }
+                    # DISC-123: Include quantity/unit changes in learning
+                    if qty_changed:
+                        change_entry["quantity_original"] = orig_qty
+                        change_entry["quantity_final"] = final_qty
+                    if unit_changed:
+                        change_entry["unit_original"] = orig_unit
+                        change_entry["unit_final"] = final_unit
+                    corrections["line_item_changes"].append(change_entry)
             else:
                 # Item was removed
                 corrections["has_changes"] = True
