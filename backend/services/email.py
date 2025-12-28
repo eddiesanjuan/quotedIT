@@ -3,6 +3,7 @@ Email service for Quoted using Resend.
 Handles all transactional emails with branded dark premium design.
 """
 
+import re
 from typing import Optional, Dict, Any
 import resend
 import asyncio
@@ -13,6 +14,39 @@ from ..config import settings
 from .logging import get_email_logger
 
 logger = get_email_logger()
+
+
+def format_phone_number(phone: Optional[str]) -> str:
+    """
+    Format a phone number to a clean (XXX) XXX-XXXX format.
+
+    Handles various input formats:
+    - 5551234567 -> (555) 123-4567
+    - 15551234567 -> (555) 123-4567
+    - +15551234567 -> (555) 123-4567
+    - 555-123-4567 -> (555) 123-4567
+    - (555) 123-4567 -> (555) 123-4567 (already formatted)
+
+    Returns "N/A" if phone is None/empty or doesn't contain enough digits.
+    """
+    if not phone:
+        return "N/A"
+
+    # Extract only digits
+    digits = re.sub(r'\D', '', phone)
+
+    # Handle country code (1 for US)
+    if len(digits) == 11 and digits.startswith('1'):
+        digits = digits[1:]
+
+    # Format as (XXX) XXX-XXXX for 10-digit numbers
+    if len(digits) == 10:
+        return f"({digits[:3]}) {digits[3:6]}-{digits[6:]}"
+
+    # If not 10 digits, return original (cleaned) or N/A
+    if digits:
+        return phone.strip()  # Return original if we can't parse it
+    return "N/A"
 
 
 # Initialize Resend with API key
@@ -212,8 +246,8 @@ class EmailService:
         <div class="footer">
             <p>&copy; 2025 Quoted. All rights reserved.</p>
             <p>
-                <a href="https://quoted.it/terms">Terms</a> •
-                <a href="https://quoted.it/privacy">Privacy</a>
+                <a href="https://quoted.it.com/terms">Terms</a> •
+                <a href="https://quoted.it.com/privacy">Privacy</a>
             </p>
         </div>
     </div>
@@ -299,7 +333,7 @@ class EmailService:
                 <li>Watch Quoted learn your pricing style</li>
             </ul>
 
-            <a href="https://quoted.it/app" class="button">Start Quoting</a>
+            <a href="https://quoted.it.com/app" class="button">Start Quoting</a>
 
             <p class="muted">Your 7-day trial starts now. No credit card required.</p>
         """
@@ -360,7 +394,7 @@ class EmailService:
                 <li>Quote history and editing</li>
             </ul>
 
-            <a href="https://quoted.it/app" class="button">Continue Quoting</a>
+            <a href="https://quoted.it.com/app" class="button">Continue Quoting</a>
 
             <p class="muted">We'll send you a reminder before your trial ends.</p>
         """
@@ -416,7 +450,7 @@ class EmailService:
                 </div>
             </div>
 
-            <a href="https://quoted.it/app?upgrade=true" class="button">Choose Your Plan</a>
+            <a href="https://quoted.it.com/app?upgrade=true" class="button">Choose Your Plan</a>
 
             <p class="muted">Cancel anytime. No questions asked.</p>
         """
@@ -484,7 +518,7 @@ class EmailService:
                 <li>Priority support</li>
             </ul>
 
-            <a href="https://quoted.it/app" class="button">Go to Dashboard</a>
+            <a href="https://quoted.it.com/app" class="button">Go to Dashboard</a>
 
             <p class="muted">Need help? Reply to this email anytime.</p>
         """
@@ -535,7 +569,7 @@ class EmailService:
 
             <p>We'll automatically retry on {retry_date}. To avoid service interruption, please update your payment method.</p>
 
-            <a href="https://quoted.it/app?billing=true" class="button">Update Payment Method</a>
+            <a href="https://quoted.it.com/app?billing=true" class="button">Update Payment Method</a>
 
             <p class="muted">Questions? Reply to this email and we'll help sort it out.</p>
         """
@@ -584,8 +618,9 @@ class EmailService:
         greeting = f"Hi {customer_name}" if customer_name else "Hello"
         personal_msg = f"<p>{message}</p>" if message else ""
 
-        # Format the total amount
+        # Format the total amount and phone number
         formatted_total = f"${total:,.2f}"
+        formatted_phone = format_phone_number(contractor_phone)
 
         content = f"""
             <h1>Quote from {contractor_name}</h1>
@@ -613,11 +648,11 @@ class EmailService:
 
             <p>Please review the attached PDF for complete details.</p>
 
-            <p>Questions? Give me a call at <strong>{contractor_phone}</strong></p>
+            <p>Questions? Give me a call at <strong>{formatted_phone}</strong></p>
 
             <p class="muted" style="margin-top: 32px; padding-top: 24px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
                 This quote was generated with Quoted - Voice-to-quote for contractors.<br>
-                <a href="https://quoted.it" style="color: #a0a0a0;">Learn more</a>
+                <a href="https://quoted.it.com" style="color: #a0a0a0;">Learn more</a>
             </p>
         """
 
@@ -693,12 +728,12 @@ class EmailService:
                 </div>
             </div>
 
-            <a href="https://quoted.it/app" class="button">Generate Another Quote</a>
+            <a href="https://quoted.it.com/app" class="button">Generate Another Quote</a>
 
             <p class="muted" style="margin-top: 32px; padding-top: 24px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
                 <strong>Love Quoted? Spread the word!</strong><br>
                 Share your referral link and earn rewards when other contractors join.
-                <a href="https://quoted.it/app?tab=referral" style="color: #a0a0a0;">Get your referral code</a>
+                <a href="https://quoted.it.com/app?tab=referral" style="color: #a0a0a0;">Get your referral code</a>
             </p>
         """
 
@@ -759,12 +794,12 @@ class EmailService:
                 </div>
             </div>
 
-            <a href="https://quoted.it/app" class="button">Create a Quote</a>
+            <a href="https://quoted.it.com/app" class="button">Create a Quote</a>
 
             <p class="muted" style="margin-top: 32px; padding-top: 24px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
                 <strong>Know other contractors who'd love this?</strong><br>
                 Share your referral link and we'll hook you both up with rewards.
-                <a href="https://quoted.it/app?tab=referral" style="color: #a0a0a0;">Get your referral code</a>
+                <a href="https://quoted.it.com/app?tab=referral" style="color: #a0a0a0;">Get your referral code</a>
             </p>
         """
 
@@ -825,7 +860,7 @@ class EmailService:
                 </div>
             </div>
 
-            <a href="https://quoted.it/app?tab=pricing-brain" class="button">Check Your Pricing Brain</a>
+            <a href="https://quoted.it.com/app?tab=pricing-brain" class="button">Check Your Pricing Brain</a>
 
             <p class="muted">Want to see what Quoted has learned about your pricing style? Check your Pricing Brain dashboard.</p>
         """
@@ -884,7 +919,7 @@ class EmailService:
 
             <p>Your Pricing Brain is learning fast. With {quote_count} quote{"s" if quote_count != 1 else ""} under its belt, it's already adapting to your pricing style.</p>
 
-            <a href="https://quoted.it/app" class="button">Keep the Momentum Going</a>
+            <a href="https://quoted.it.com/app" class="button">Keep the Momentum Going</a>
 
             <div style="background-color: #1a1a1a; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 24px; margin: 32px 0;">
                 <div style="color: #ffffff; font-size: 18px; font-weight: 600; margin-bottom: 12px;">
@@ -897,7 +932,7 @@ class EmailService:
                     {referral_code}
                 </div>
                 <div style="margin-top: 16px; text-align: center;">
-                    <a href="https://quoted.it/app?tab=referral" style="color: #a0a0a0; font-size: 14px;">View your referral dashboard →</a>
+                    <a href="https://quoted.it.com/app?tab=referral" style="color: #a0a0a0; font-size: 14px;">View your referral dashboard →</a>
                 </div>
             </div>
 
@@ -953,7 +988,7 @@ class EmailService:
                 </div>
             </div>
 
-            <a href="https://quoted.it/app" class="button">Generate a Quote</a>
+            <a href="https://quoted.it.com/app" class="button">Generate a Quote</a>
 
             <p class="muted">Your pricing data is still here waiting for you whenever you're ready.</p>
         """
@@ -1010,12 +1045,12 @@ class EmailService:
                 </div>
             </div>
 
-            <a href="https://quoted.it/app" class="button">Come Back and Try It</a>
+            <a href="https://quoted.it.com/app" class="button">Come Back and Try It</a>
 
             <p class="muted" style="margin-top: 32px; padding-top: 24px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
                 <strong>Know other contractors?</strong><br>
                 Share your referral link and earn rewards when they join.
-                <a href="https://quoted.it/app?tab=referral" style="color: #a0a0a0;">Get your referral code</a>
+                <a href="https://quoted.it.com/app?tab=referral" style="color: #a0a0a0;">Get your referral code</a>
             </p>
         """
 
@@ -1070,12 +1105,12 @@ class EmailService:
                 </div>
             </div>
 
-            <a href="https://quoted.it/app" class="button">Reactivate My Account</a>
+            <a href="https://quoted.it.com/app" class="button">Reactivate My Account</a>
 
             <p style="margin-top: 32px; color: #e0e0e0;">Whether you come back or not, thanks for giving Quoted a try. We wish you all the best with your business.</p>
 
             <p class="muted" style="margin-top: 16px;">
-                If you don't want to receive these emails anymore, you can <a href="https://quoted.it/unsubscribe" style="color: #a0a0a0;">unsubscribe here</a>.
+                If you don't want to receive these emails anymore, you can <a href="https://quoted.it.com/unsubscribe" style="color: #a0a0a0;">unsubscribe here</a>.
             </p>
         """
 
@@ -1162,7 +1197,7 @@ class EmailService:
 
             {due_info}
 
-            <a href="https://quoted.it/app?tab=tasks" class="button">View My Tasks</a>
+            <a href="https://quoted.it.com/app?tab=tasks" class="button">View My Tasks</a>
 
             <p class="muted">You can manage your task reminders in the Tasks section of your dashboard.</p>
         """
@@ -1230,10 +1265,10 @@ class EmailService:
 
             <p>This is a great sign! They're actively reviewing your proposal. Consider following up if you don't hear back soon.</p>
 
-            <a href="https://quoted.it/app" class="button">View Quote Details</a>
+            <a href="https://quoted.it.com/app" class="button">View Quote Details</a>
 
             <p class="muted" style="margin-top: 24px;">
-                <a href="https://quoted.it/shared/{quote_token}" style="color: #a0a0a0;">View the quote as your customer sees it →</a>
+                <a href="https://quoted.it.com/shared/{quote_token}" style="color: #a0a0a0;">View the quote as your customer sees it →</a>
             </p>
         """
 
@@ -1310,7 +1345,7 @@ class EmailService:
 
             <p class="muted" style="padding-top: 24px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
                 This invoice was sent via Quoted.<br>
-                <a href="https://quoted.it" style="color: #a0a0a0;">Learn more</a>
+                <a href="https://quoted.it.com" style="color: #a0a0a0;">Learn more</a>
             </p>
         """
 
