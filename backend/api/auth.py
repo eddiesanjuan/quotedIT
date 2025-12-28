@@ -127,6 +127,7 @@ async def register(
 @ip_limiter.limit(RateLimits.AUTH_LOGIN)
 async def login(
     request: Request,
+    response: Response,
     credentials: UserLogin,
     db: AsyncSession = Depends(get_db),
 ):
@@ -216,6 +217,7 @@ async def get_me(
 @ip_limiter.limit(RateLimits.AUTH_LOGIN)  # Same limit as login to prevent brute force
 async def refresh_token(
     http_request: Request,
+    response: Response,
     request: RefreshTokenRequest,
     db: AsyncSession = Depends(get_db),
 ):
