@@ -8343,7 +8343,7 @@
         }
 
         // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             // Check voice support
             checkVoiceSupport();
 
@@ -8383,7 +8383,23 @@
                 fetchUserInfo();
             }
 
-            if (authToken && currentUser) {
+            // Auth state check - handle /start page flow where token exists but user info wasn't cached
+            if (authToken) {
+                // If we have a token but no cached user, fetch user info first
+                if (!currentUser) {
+                    try {
+                        await fetchUserInfo();
+                    } catch (err) {
+                        // Token invalid or expired - clear and show auth
+                        console.warn('Token validation failed, showing auth:', err.message);
+                        authToken = null;
+                        localStorage.removeItem('quoted_token');
+                        localStorage.removeItem('quoted_refresh_token');
+                        showAuthView();
+                        return;
+                    }
+                }
+
                 showAppView();
 
                 // Check for saved draft (DISC-032)
