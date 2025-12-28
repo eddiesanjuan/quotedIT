@@ -411,6 +411,7 @@
                     body: JSON.stringify({
                         email: email,
                         password: password,
+                        business_name: 'My Business',  // Placeholder - user updates during onboarding
                         referral_code: refCode || undefined
                     }),
                 });
@@ -418,7 +419,14 @@
                 const data = await response.json();
 
                 if (!response.ok) {
-                    throw new Error(data.detail || 'Registration failed. Please try again.');
+                    // Handle both string and array error formats
+                    let errorMsg = 'Registration failed. Please try again.';
+                    if (typeof data.detail === 'string') {
+                        errorMsg = data.detail;
+                    } else if (Array.isArray(data.detail) && data.detail[0]?.msg) {
+                        errorMsg = data.detail[0].msg;
+                    }
+                    throw new Error(errorMsg);
                 }
 
                 // Store tokens
