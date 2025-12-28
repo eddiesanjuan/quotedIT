@@ -67,7 +67,7 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        nav {
+        nav.site-nav {
             position: fixed;
             top: 0;
             left: 0;
@@ -140,7 +140,7 @@
         .cta-box { background: var(--bg-secondary); border: 1px solid var(--border); padding: 40px; margin: 48px 0; text-align: center; }
         .cta-box h3 { font-family: var(--font-serif); font-size: 1.5rem; font-weight: 500; margin-bottom: 12px; }
         .cta-box p { color: var(--text-secondary); margin-bottom: 24px; font-size: 1rem; }
-        .cta-button { display: inline-block; padding: 14px 32px; background: var(--text-primary); color: var(--bg-primary); font-weight: 600; text-decoration: none; transition: all 0.3s; }
+        .cta-button { display: inline-block; padding: 14px 32px; background: var(--text-primary); color: #0a0a0a !important; font-weight: 600; text-decoration: none; transition: all 0.3s; }
         .cta-button:hover { transform: translateY(-2px); box-shadow: 0 10px 40px rgba(255,255,255,0.1); opacity: 1; }
 
         footer { border-top: 1px solid var(--border); padding: 48px 40px; display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; }
@@ -164,7 +164,7 @@
     </style>
 </head>
 <body>
-    <nav>
+    <nav class="site-nav">
         <a href="/" class="logo">quoted.<span>it</span></a>
         <div class="nav-links">
             <a href="/use-cases">Use Cases</a>
