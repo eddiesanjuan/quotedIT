@@ -68,8 +68,8 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        /* Navigation */
-        nav {
+        /* Navigation - use specific class to avoid affecting TOC */
+        nav.site-nav {
             position: fixed;
             top: 0;
             left: 0;
@@ -369,7 +369,7 @@
             display: inline-block;
             padding: 14px 32px;
             background: var(--text-primary);
-            color: var(--bg-primary);
+            color: #0a0a0a !important;
             font-weight: 600;
             text-decoration: none;
             transition: all 0.3s;
@@ -476,7 +476,7 @@
 </head>
 <body>
     <!-- Navigation -->
-    <nav>
+    <nav class="site-nav">
         <a href="/" class="logo">quoted.<span>it</span></a>
         <div class="nav-links">
             <a href="/use-cases">Use Cases</a>
