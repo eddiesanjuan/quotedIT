@@ -543,7 +543,24 @@ def _format_corrections(corrections: dict) -> str:
             orig = change.get("original", 0)
             final = change.get("final", 0)
             reason = change.get("reason", "")
-            lines.append(f"- {item}: ${orig:.2f} → ${final:.2f} ({reason})")
+            change_line = f"- {item}: ${orig:.2f} → ${final:.2f}"
+            if reason:
+                change_line += f" ({reason})"
+
+            # DISC-123: Include quantity/unit changes in learning prompt
+            qty_details = []
+            if "quantity_original" in change or "quantity_final" in change:
+                qty_orig = change.get("quantity_original", "?")
+                qty_final = change.get("quantity_final", "?")
+                qty_details.append(f"qty: {qty_orig} → {qty_final}")
+            if "unit_original" in change or "unit_final" in change:
+                unit_orig = change.get("unit_original", "?")
+                unit_final = change.get("unit_final", "?")
+                qty_details.append(f"unit: '{unit_orig}' → '{unit_final}'")
+            if qty_details:
+                change_line += f" [{', '.join(qty_details)}]"
+
+            lines.append(change_line)
 
     if "learning_note" in corrections:
         lines.append(f"\nContractor Note: {corrections['learning_note']}")

@@ -110,6 +110,8 @@ class QuoteUpdateRequest(BaseModel):
     # DISC-067: Free-form timeline and terms fields
     timeline_text: Optional[str] = None
     terms_text: Optional[str] = None
+    # DISC-122: Deleted line items for learning
+    deleted_items: Optional[List[dict]] = None
 
 
 # Enhancement 5: Active Learning Models
@@ -1880,6 +1882,8 @@ async def update_quote(
                     "learning_note": update.correction_notes,
                     "learnings_applied": True,
                     "processed_at": datetime.utcnow().isoformat(),
+                    # DISC-122: Track deleted items for learning
+                    "deleted_items": update.deleted_items or [],
                 }
             )
 
@@ -1922,6 +1926,8 @@ async def update_quote(
                 "user_edit_rate": round(user_edit_count / user_quote_count * 100, 2) if user_quote_count > 0 else 0,
                 "corrections_for_category": corrections_for_category,
                 "user_total_corrections": user_total_corrections,
+                # DISC-122: Track deleted items count
+                "deleted_items_count": len(update.deleted_items) if update.deleted_items else 0,
             }
         )
     except Exception as e:
@@ -2650,7 +2656,7 @@ async def mark_quote_outcome(
     # Update the quote
     await db.update_quote(quote_id, **update_fields)
 
-    # Process outcome for learning
+    # DISC-121: Process outcome for learning
     if quote.job_type:
         try:
             if outcome_request.outcome == "won":
@@ -2660,8 +2666,13 @@ async def mark_quote_outcome(
                     category=quote.job_type,
                     signal_type="won",
                 )
-            # For losses, we track the data but don't immediately adjust pricing
-            # The aggregated stats will inform future pricing decisions
+            elif outcome_request.outcome == "lost":
+                # Lost quote - apply confidence penalty
+                await db.apply_loss_to_pricing_model(
+                    contractor_id=str(contractor.id),
+                    category=quote.job_type,
+                    loss_reason=outcome_request.reason,
+                )
         except Exception as e:
             print(f"Warning: Failed to process outcome learning: {e}")
 

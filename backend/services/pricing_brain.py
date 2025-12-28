@@ -47,11 +47,21 @@ class PricingBrainService:
         categories = pricing_knowledge.get("categories", {})
 
         # Calculate stats from quotes for backward compatibility / fallback
+        # DISC-121: Also track outcome stats per category
         quote_counts_from_db = {}
+        outcome_stats = {}  # {category: {won: 0, lost: 0}}
         for quote in quotes:
             job_type = quote.job_type
             if job_type:
                 quote_counts_from_db[job_type] = quote_counts_from_db.get(job_type, 0) + 1
+                # Track outcomes
+                if job_type not in outcome_stats:
+                    outcome_stats[job_type] = {"won": 0, "lost": 0}
+                if hasattr(quote, 'outcome'):
+                    if quote.outcome == "won":
+                        outcome_stats[job_type]["won"] += 1
+                    elif quote.outcome == "lost":
+                        outcome_stats[job_type]["lost"] += 1
 
         result = []
         for category_key, category_data in categories.items():
@@ -62,6 +72,14 @@ class PricingBrainService:
             quotes_count = max(stored_count, db_count)
 
             learned_adjustments = category_data.get("learned_adjustments", [])
+
+            # DISC-121: Calculate win rate for category
+            cat_outcomes = outcome_stats.get(category_key, {"won": 0, "lost": 0})
+            won_count = cat_outcomes["won"]
+            lost_count = cat_outcomes["lost"]
+            decided = won_count + lost_count
+            win_rate = round(won_count / decided * 100, 1) if decided > 0 else None
+
             result.append({
                 "category": category_key,
                 "display_name": category_data.get("display_name", category_key.replace("_", " ").title()),
@@ -70,6 +88,10 @@ class PricingBrainService:
                 "samples": category_data.get("samples", 0),
                 "learned_adjustments_count": len(learned_adjustments),
                 "learned_adjustments": learned_adjustments,  # Include for card preview
+                # DISC-121: Outcome stats
+                "won_count": won_count,
+                "lost_count": lost_count,
+                "win_rate": win_rate,
             })
 
         # Sort by quotes_count descending
