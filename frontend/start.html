@@ -310,7 +310,7 @@
     <div class="container">
         <div class="signup-card">
             <div class="signup-header">
-                <h1>Get Your First Quote in 3 Steps</h1>
+                <h1>Professional Quotes in 5 Minutes</h1>
                 <div class="steps">
                     <div class="step">
                         <span class="step-number">1</span>
@@ -322,9 +322,13 @@
                     </div>
                     <div class="step">
                         <span class="step-number">3</span>
-                        <span>Set up your pricing (we'll help)</span>
+                        <span>Build your pricing profile</span>
                     </div>
                 </div>
+                <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 16px;">
+                    Answer a few questions about how you price jobs.<br>
+                    Quoted learns your style and generates accurate quotes.
+                </p>
             </div>
 
             <form class="signup-form" id="signup-form">
@@ -449,13 +453,13 @@
                     });
                 }
 
-                // Build redirect URL with guided mode
-                let redirectUrl = '/app?guided=true';
+                // Build redirect URL with guided mode - direct to interview path
+                let redirectUrl = '/app?guided=true&path=interview';
                 if (preselectedTrade) {
                     redirectUrl += `&trade=${encodeURIComponent(preselectedTrade)}`;
                 }
 
-                // Redirect to app with guided mode
+                // Redirect to app with guided interview mode
                 window.location.href = redirectUrl;
 
             } catch (error) {

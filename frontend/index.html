@@ -101,6 +101,12 @@
             100% { background-position: 200% 0; }
         }
 
+        @keyframes successPulse {
+            0% { transform: scale(0.8); opacity: 0; }
+            50% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
         .animate-in {
             animation: fadeIn 0.6s ease-out forwards;
         }
@@ -5175,6 +5181,56 @@
                     </div>
                 </div>
             </div>
+            <!-- Interview completion content (pricing profile built) -->
+            <div id="welcomeInterview" style="display: none;">
+                <!-- Success celebration -->
+                <div style="margin-bottom: 20px;">
+                    <div class="success-checkmark" style="width: 64px; height: 64px; margin: 0 auto 16px; background: linear-gradient(135deg, var(--success), #22c55e); border-radius: 50%; display: flex; align-items: center; justify-content: center; animation: successPulse 0.6s ease-out;">
+                        <span style="font-size: 32px;">✓</span>
+                    </div>
+                    <h2 style="font-size: 1.5rem; margin-bottom: 8px; font-family: var(--font-serif);">Your Pricing Profile is Ready!</h2>
+                    <p style="color: var(--text-secondary); font-size: 0.95rem;">Quoted now understands how you price jobs.</p>
+                </div>
+
+                <!-- Pricing summary preview -->
+                <div id="pricingSummaryPreview" style="background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 16px; text-align: left;">
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                        <span style="color: var(--success); font-size: 1.1rem;">✓</span>
+                        <span style="font-weight: 600; font-size: 0.9rem;">Your pricing profile:</span>
+                    </div>
+                    <div id="pricingProfileItems" style="display: grid; gap: 8px; font-size: 0.875rem; color: var(--text-secondary);">
+                        <!-- Dynamically populated -->
+                    </div>
+                </div>
+
+                <!-- Pro tip for first quote -->
+                <div style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1)); border: 1px solid rgba(99, 102, 241, 0.2); border-radius: 10px; padding: 14px 16px; margin-bottom: 20px; text-align: left;">
+                    <div style="display: flex; align-items: flex-start; gap: 10px;">
+                        <span style="font-size: 1.25rem;">💡</span>
+                        <div style="font-size: 0.85rem;">
+                            <strong style="color: var(--text-primary); display: block; margin-bottom: 4px;">Pro tip for your first quote:</strong>
+                            <span style="color: var(--text-secondary);">Include specifics like customer name, address, and job details. The more context you give, the better the quote!</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="welcome-features" style="margin-bottom: 0;">
+                    <div class="welcome-feature">
+                        <span class="welcome-feature-icon">🎯</span>
+                        <div>
+                            <strong>Accurate quotes from day one</strong>
+                            <span>Prices based on your actual rates</span>
+                        </div>
+                    </div>
+                    <div class="welcome-feature">
+                        <span class="welcome-feature-icon">📈</span>
+                        <div>
+                            <strong>Gets smarter over time</strong>
+                            <span>Learning from every quote you edit</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <button class="btn btn-primary btn-large" onclick="closeWelcomeModal()" style="width: 100%;">
                 Create My First Quote
             </button>
@@ -5619,8 +5675,13 @@
                 <!-- Interview Chat -->
                 <div id="onboardingChat" class="onboarding-chat">
                     <div class="chat-header">
-                        <h3>Pricing Interview</h3>
-                        <p>Tell me about how you price your work. Type or use voice.</p>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <h3 id="chatHeaderTitle" style="margin: 0;">Building Your Pricing Profile</h3>
+                            <span id="chatProgressBadge" class="chat-progress-badge" style="background: rgba(99, 102, 241, 0.15); color: var(--accent); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 500;">
+                                Getting started...
+                            </span>
+                        </div>
+                        <p id="chatHeaderSubtitle" style="margin: 0;">Tell me about how you price your work. I'll learn your style.</p>
                     </div>
 
                     <div class="chat-messages" id="chatMessages"></div>
@@ -8357,16 +8418,22 @@
             // Check for guided mode (from /start page)
             const isGuidedMode = urlParams.get('guided') === 'true';
             const preselectedTrade = urlParams.get('trade');
+            const guidedPath = urlParams.get('path'); // 'interview' = direct to pricing profile builder
             if (isGuidedMode) {
                 // Store guided mode for session
                 sessionStorage.setItem('guided_mode', 'true');
+                // Store preferred path if specified (interview = Build Your Pricing Profile)
+                if (guidedPath === 'interview') {
+                    sessionStorage.setItem('guided_path', 'interview');
+                }
                 // Clean URL but preserve state
                 window.history.replaceState({guided: true}, document.title, window.location.pathname);
                 // Track guided mode entry
                 {% if posthog_api_key %}
                 if (window.posthog) {
                     posthog.capture('guided_onboarding_started', {
-                        preselected_trade: preselectedTrade
+                        preselected_trade: preselectedTrade,
+                        guided_path: guidedPath || 'default'
                     });
                 }
                 {% endif %}
@@ -10374,9 +10441,16 @@
 
             // Check if we're in guided mode (from /start page)
             const isGuidedMode = sessionStorage.getItem('guided_mode') === 'true';
+            const guidedPath = sessionStorage.getItem('guided_path'); // 'interview' for direct interview
 
-            if (isGuidedMode) {
-                // Show guided version with recommended path
+            if (isGuidedMode && guidedPath === 'interview') {
+                // Direct interview path - skip choice, go straight to pricing profile builder intro
+                document.getElementById('onboardingIntro').style.display = 'none';
+                document.getElementById('onboardingIntroGuided').style.display = 'block';
+                // Update the guided intro to show interview-focused content
+                updateGuidedIntroForInterview();
+            } else if (isGuidedMode) {
+                // Standard guided mode - show guided version with try-first recommended
                 document.getElementById('onboardingIntro').style.display = 'none';
                 document.getElementById('onboardingIntroGuided').style.display = 'block';
             } else {
@@ -10384,6 +10458,143 @@
                 document.getElementById('onboardingIntro').style.display = 'block';
                 document.getElementById('onboardingIntroGuided').style.display = 'none';
             }
+        }
+
+        // Update guided intro for interview path with "Build Your Pricing Profile" framing
+        function updateGuidedIntroForInterview() {
+            const guidedIntro = document.getElementById('onboardingIntroGuided');
+            if (!guidedIntro) return;
+
+            // Get the trade name for personalization
+            const tradeName = currentUser?.primary_trade ?
+                formatTradeName(currentUser.primary_trade) : 'your trade';
+
+            // Replace content with interview-focused experience
+            guidedIntro.innerHTML = `
+                <!-- Progress indicator -->
+                <div class="guided-progress">
+                    <div class="guided-progress-step completed">
+                        <span class="step-icon">✓</span>
+                        <span>Account</span>
+                    </div>
+                    <div class="guided-progress-connector" style="background: var(--success);"></div>
+                    <div class="guided-progress-step completed">
+                        <span class="step-icon">✓</span>
+                        <span>Trade</span>
+                    </div>
+                    <div class="guided-progress-connector"></div>
+                    <div class="guided-progress-step current">
+                        <span class="step-icon">3</span>
+                        <span>Pricing</span>
+                    </div>
+                </div>
+
+                <h3 style="font-size: 1.5rem; margin-bottom: 8px;">Build Your Pricing Profile</h3>
+                <p style="color: var(--text-secondary); margin-bottom: 24px;">
+                    Tell us how you price ${tradeName} jobs. We'll use this to generate accurate, personalized quotes.
+                </p>
+
+                <!-- What they'll share -->
+                <div class="pricing-profile-preview" style="background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+                    <h4 style="font-size: 0.875rem; font-weight: 600; color: var(--text-primary); margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                        <span style="color: var(--accent);">💡</span> What we'll cover
+                    </h4>
+                    <div style="display: grid; gap: 10px;">
+                        <div style="display: flex; align-items: center; gap: 10px; color: var(--text-secondary); font-size: 0.9rem;">
+                            <span style="color: var(--success); font-size: 0.75rem;">●</span>
+                            Your hourly rates and minimums
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 10px; color: var(--text-secondary); font-size: 0.9rem;">
+                            <span style="color: var(--success); font-size: 0.75rem;">●</span>
+                            How you mark up materials
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 10px; color: var(--text-secondary); font-size: 0.9rem;">
+                            <span style="color: var(--success); font-size: 0.75rem;">●</span>
+                            Common job types you handle
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 10px; color: var(--text-secondary); font-size: 0.9rem;">
+                            <span style="color: var(--success); font-size: 0.75rem;">●</span>
+                            Your pricing style (competitive vs premium)
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Time estimate -->
+                <div style="display: flex; align-items: center; justify-content: center; gap: 16px; margin-bottom: 20px; padding: 12px; background: rgba(99, 102, 241, 0.1); border-radius: 8px;">
+                    <span style="display: flex; align-items: center; gap: 6px; color: var(--accent); font-size: 0.875rem; font-weight: 500;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M12 6v6l4 2"></path>
+                        </svg>
+                        3-5 minutes
+                    </span>
+                    <span style="color: var(--text-muted); font-size: 0.8rem;">|</span>
+                    <span style="color: var(--text-secondary); font-size: 0.875rem;">
+                        Just a quick chat with our AI
+                    </span>
+                </div>
+
+                <button class="btn btn-primary btn-large" onclick="startOnboardingInterview()" style="width: 100%; padding: 16px 24px; font-size: 1rem;">
+                    <span style="display: flex; align-items: center; gap: 10px; justify-content: center;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                        Start Building My Profile
+                    </span>
+                </button>
+
+                <p style="text-align: center; margin-top: 16px; color: var(--text-muted); font-size: 0.8rem;">
+                    You can refine your pricing anytime from Settings
+                </p>
+            `;
+        }
+
+        // Helper to format trade names nicely
+        function formatTradeName(trade) {
+            if (!trade) return 'your';
+            const names = {
+                'deck_builder': 'deck building',
+                'general_contractor': 'contracting',
+                'painter': 'painting',
+                'landscaper': 'landscaping',
+                'roofer': 'roofing',
+                'electrician': 'electrical',
+                'plumber': 'plumbing',
+                'hvac': 'HVAC',
+                'flooring': 'flooring',
+                'tile': 'tile',
+                'drywall': 'drywall',
+                'concrete': 'concrete',
+                'fence_installer': 'fencing',
+                'pressure_washing': 'pressure washing',
+                'window_door': 'window & door',
+                'siding': 'siding',
+                'gutters': 'gutter',
+                'masonry': 'masonry',
+                'framing': 'framing',
+                'cabinet_maker': 'cabinet',
+                'pool_spa': 'pool & spa',
+                'tree_service': 'tree service',
+                'insulation': 'insulation',
+                'garage_door': 'garage door',
+                'closet_organizer': 'closet',
+                'graphic_designer': 'graphic design',
+                'web_developer': 'web development',
+                'writer': 'writing',
+                'photographer': 'photography',
+                'videographer': 'videography',
+                'dj': 'DJ',
+                'caterer': 'catering',
+                'event_planner': 'event planning',
+                'florist': 'floral',
+                'wedding_coordinator': 'wedding',
+                'personal_trainer': 'personal training',
+                'tutor': 'tutoring',
+                'coach': 'coaching',
+                'consultant': 'consulting',
+                'music_teacher': 'music teaching',
+            };
+            return names[trade] || trade.replace(/_/g, ' ');
         }
 
         // Template-guided quick setup functions
@@ -10888,7 +11099,50 @@
                 }
             }
 
+            // Update progress indicator for guided interview
+            updateInterviewProgress();
+
             return msgEl;
+        }
+
+        // Update interview progress badge and subtitle based on conversation progress
+        function updateInterviewProgress() {
+            const badge = document.getElementById('chatProgressBadge');
+            const subtitle = document.getElementById('chatHeaderSubtitle');
+            if (!badge) return;
+
+            // Define progress stages based on message count
+            // messageCount tracks user messages, so total messages is roughly messageCount * 2
+            let stage, badgeStyle, subtitleText;
+
+            if (messageCount === 0) {
+                stage = 'Getting started...';
+                badgeStyle = 'background: rgba(99, 102, 241, 0.15); color: var(--accent);';
+                subtitleText = 'Tell me about how you price your work. I\'ll learn your style.';
+            } else if (messageCount === 1) {
+                stage = 'Learning your rates';
+                badgeStyle = 'background: rgba(99, 102, 241, 0.2); color: var(--accent);';
+                subtitleText = 'Great! Keep describing how you price different types of work.';
+            } else if (messageCount === 2) {
+                stage = 'Building profile';
+                badgeStyle = 'background: rgba(99, 102, 241, 0.3); color: var(--accent);';
+                subtitleText = 'I\'m learning your pricing patterns. Share more for accuracy.';
+            } else if (messageCount === 3) {
+                stage = 'Getting detailed';
+                badgeStyle = 'background: rgba(74, 222, 128, 0.2); color: var(--success);';
+                subtitleText = 'Nice! A few more examples will make your quotes even better.';
+            } else if (messageCount >= 4) {
+                stage = '✓ Ready to finish!';
+                badgeStyle = 'background: rgba(74, 222, 128, 0.25); color: var(--success);';
+                subtitleText = 'Your pricing profile is looking great! Click "Finish & Save" when ready.';
+            }
+
+            badge.textContent = stage;
+            badge.style.cssText = badgeStyle + ' padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 500;';
+
+            if (subtitle && subtitleText) {
+                subtitle.textContent = subtitleText;
+            }
         }
 
         function addTypingIndicator() {
@@ -11078,28 +11332,43 @@
                 const pricingModel = await response.json();
 
                 removeTypingIndicator();
-                addChatMessage('assistant', "Your pricing is saved. You're ready to start quoting!");
 
                 // Track onboarding completion
+                const isGuidedMode = sessionStorage.getItem('guided_mode') === 'true';
+                const guidedPath = sessionStorage.getItem('guided_path');
                 {% if posthog_api_key %}
                 if (window.posthog) {
                     posthog.capture('onboarding_completed', {
                         onboarding_type: 'interview',
-                        onboarding_path: 'interview'  // DISC-007
+                        onboarding_path: 'interview',
+                        guided_mode: isGuidedMode,
+                        guided_path: guidedPath
                     });
+                    if (isGuidedMode) {
+                        posthog.capture('guided_onboarding_completed', {
+                            path_chosen: 'interview'
+                        });
+                    }
                 }
                 {% endif %}
 
                 // Set flag for first quote activation modal
                 localStorage.setItem('just_completed_onboarding', 'true');
 
-                setTimeout(async () => {
-                    await savePricingToContractor(pricingModel);
-                    // Refresh user info to get updated onboarding_completed_at
-                    await fetchUserInfo();
-                    document.getElementById('onboardingNotice').style.display = 'none';
-                    document.getElementById('inputSection').style.display = 'block';
-                }, 2000);
+                // Save pricing and update UI
+                await savePricingToContractor(pricingModel);
+                await fetchUserInfo();
+
+                // Hide onboarding
+                document.getElementById('onboardingNotice').style.display = 'none';
+                document.getElementById('inputSection').style.display = 'block';
+
+                // Show the interview success modal with pricing summary
+                showInterviewSuccessModal(pricingModel);
+
+                // Clear guided mode flags (flow is complete)
+                sessionStorage.removeItem('guided_mode');
+                sessionStorage.removeItem('guided_path');
 
             } catch (err) {
                 console.error('Complete error:', err);
@@ -11108,6 +11377,85 @@
                 document.getElementById('finishInterviewBtn').disabled = false;
                 document.getElementById('finishInterviewBtn').textContent = 'Finish & Save';
             }
+        }
+
+        /**
+         * Show the interview success modal with pricing summary
+         */
+        function showInterviewSuccessModal(pricingModel) {
+            const modal = document.getElementById('welcomeModal');
+            if (!modal) return;
+
+            // Hide all other content sections
+            const welcomeStandard = document.getElementById('welcomeStandard');
+            const welcomeGuided = document.getElementById('welcomeGuided');
+            const welcomeInterview = document.getElementById('welcomeInterview');
+
+            if (welcomeStandard) welcomeStandard.style.display = 'none';
+            if (welcomeGuided) welcomeGuided.style.display = 'none';
+            if (welcomeInterview) welcomeInterview.style.display = 'block';
+
+            // Populate pricing summary
+            const pricingItems = document.getElementById('pricingProfileItems');
+            if (pricingItems && pricingModel) {
+                const items = [];
+
+                // Add pricing details based on what was extracted
+                if (pricingModel.labor_rate_hourly) {
+                    items.push(`• Labor rate: $${pricingModel.labor_rate_hourly}/hr`);
+                }
+                if (pricingModel.helper_rate_hourly) {
+                    items.push(`• Helper rate: $${pricingModel.helper_rate_hourly}/hr`);
+                }
+                if (pricingModel.material_markup_percent) {
+                    items.push(`• Material markup: ${pricingModel.material_markup_percent}%`);
+                }
+                if (pricingModel.minimum_job_amount) {
+                    items.push(`• Minimum job: $${pricingModel.minimum_job_amount}`);
+                }
+                if (pricingModel.pricing_knowledge?.base_rate_per_sqft) {
+                    items.push(`• Base rate: $${pricingModel.pricing_knowledge.base_rate_per_sqft}/sq ft`);
+                }
+                if (pricingModel.pricing_knowledge?.base_rate_per_lf) {
+                    items.push(`• Base rate: $${pricingModel.pricing_knowledge.base_rate_per_lf}/linear ft`);
+                }
+
+                // Add job types if available
+                if (pricingModel.job_types && pricingModel.job_types.length > 0) {
+                    const jobTypeNames = pricingModel.job_types.slice(0, 3).map(jt => jt.name || jt.type).join(', ');
+                    items.push(`• Job types: ${jobTypeNames}`);
+                }
+
+                // Add pricing philosophy summary if available
+                if (pricingModel.pricing_philosophy) {
+                    const philosophy = pricingModel.pricing_philosophy.length > 60
+                        ? pricingModel.pricing_philosophy.substring(0, 60) + '...'
+                        : pricingModel.pricing_philosophy;
+                    items.push(`• Style: ${philosophy}`);
+                }
+
+                // If no specific items, show a generic message
+                if (items.length === 0) {
+                    items.push('• Your pricing preferences and job types');
+                    items.push('• How you handle materials and labor');
+                }
+
+                // Clear and populate safely
+                while (pricingItems.firstChild) {
+                    pricingItems.removeChild(pricingItems.firstChild);
+                }
+                items.forEach(item => {
+                    const div = document.createElement('div');
+                    div.textContent = item;
+                    pricingItems.appendChild(div);
+                });
+            }
+
+            // Show modal with animation
+            modal.style.display = 'flex';
+            requestAnimationFrame(() => {
+                modal.classList.add('welcome-modal-show');
+            });
         }
 
         async function savePricingToContractor(pricingModel) {
