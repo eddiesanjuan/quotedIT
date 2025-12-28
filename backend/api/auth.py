@@ -6,7 +6,7 @@ Handles user registration and login.
 from datetime import timedelta
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, status, Request
+from fastapi import APIRouter, Depends, HTTPException, status, Request, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
@@ -44,6 +44,7 @@ router = APIRouter()
 @ip_limiter.limit(RateLimits.AUTH_REGISTER)
 async def register(
     request: Request,
+    response: Response,
     user_data: UserCreate,
     db: AsyncSession = Depends(get_db),
 ):
