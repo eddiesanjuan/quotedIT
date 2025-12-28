@@ -290,6 +290,16 @@ if frontend_path.exists():
             "environment": settings.environment,
         })
 
+    @app.get("/start", response_class=HTMLResponse)
+    async def serve_start(request: Request):
+        """Serve the focused signup page - guided onboarding entry point."""
+        return templates.TemplateResponse("start.html", {
+            "request": request,
+            "posthog_api_key": settings.posthog_api_key,
+            "sentry_dsn": settings.sentry_dsn,
+            "environment": settings.environment,
+        })
+
     @app.get("/shared/{token}", response_class=HTMLResponse)
     async def serve_shared_quote(request: Request, token: str):
         """Serve the public shared quote view with injected config."""

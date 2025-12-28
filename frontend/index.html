@@ -1698,6 +1698,130 @@
             border: 1px solid rgba(102, 126, 234, 0.3);
         }
 
+        /* Guided Mode Onboarding */
+        .guided-progress {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 32px;
+        }
+
+        .guided-progress-step {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        .guided-progress-step.completed {
+            color: var(--success);
+        }
+
+        .guided-progress-step.current {
+            color: var(--text-primary);
+        }
+
+        .guided-progress-step .step-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+        }
+
+        .guided-progress-step.completed .step-icon {
+            background: var(--success);
+            border-color: var(--success);
+            color: var(--bg-primary);
+        }
+
+        .guided-progress-step.current .step-icon {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+
+        .guided-progress-connector {
+            width: 40px;
+            height: 2px;
+            background: var(--border);
+        }
+
+        .guided-progress-step.completed + .guided-progress-connector {
+            background: var(--success);
+        }
+
+        .guided-recommended-card {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.1));
+            border: 2px solid rgba(99, 102, 241, 0.4);
+            border-radius: 16px;
+            padding: 28px;
+            margin-bottom: 24px;
+            text-align: left;
+        }
+
+        .guided-recommended-card h4 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+        }
+
+        .guided-recommended-card p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .guided-recommended-card .meta {
+            display: flex;
+            gap: 16px;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        .guided-alternative-options {
+            text-align: center;
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border);
+        }
+
+        .guided-alternative-options p {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            margin-bottom: 12px;
+        }
+
+        .guided-alternative-links {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+        }
+
+        .guided-alternative-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.875rem;
+            transition: color 0.2s;
+        }
+
+        .guided-alternative-links a:hover {
+            color: var(--text-primary);
+            text-decoration: underline;
+        }
+
         .onboarding-options {
             display: flex;
             flex-direction: column;
@@ -4287,6 +4411,48 @@
             line-height: 1.5;
         }
 
+        /* Welcome modal - guided mode features */
+        .welcome-features {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-bottom: 24px;
+            text-align: left;
+        }
+
+        .welcome-feature {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 14px 16px;
+        }
+
+        .welcome-feature-icon {
+            font-size: 1.25rem;
+            line-height: 1;
+            flex-shrink: 0;
+        }
+
+        .welcome-feature div {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .welcome-feature strong {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .welcome-feature span:not(.welcome-feature-icon) {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
         @keyframes modalSlideUp {
             from {
                 opacity: 0;
@@ -4972,11 +5138,42 @@
                     <path d="M20 6L9 17l-5-5"></path>
                 </svg>
             </div>
-            <h2>You're all set!</h2>
-            <p>We've set up industry-standard pricing for you. Your first quote is ready to create.</p>
-            <div class="tip">
-                <div class="tip-label">Pro Tip</div>
-                <div class="tip-text">Quoted learns from your edits. After a few quotes, it'll match your exact pricing style.</div>
+            <!-- Standard welcome content -->
+            <div id="welcomeStandard">
+                <h2>You're all set!</h2>
+                <p>We've set up industry-standard pricing for you. Your first quote is ready to create.</p>
+                <div class="tip">
+                    <div class="tip-label">Pro Tip</div>
+                    <div class="tip-text">Quoted learns from your edits. After a few quotes, it'll match your exact pricing style.</div>
+                </div>
+            </div>
+            <!-- Guided mode enhanced content -->
+            <div id="welcomeGuided" style="display: none;">
+                <h2>You're ready to quote!</h2>
+                <p style="margin-bottom: 24px;">Here's what you can do with Quoted:</p>
+                <div class="welcome-features">
+                    <div class="welcome-feature">
+                        <span class="welcome-feature-icon">🎙️</span>
+                        <div>
+                            <strong>Describe any job by voice or text</strong>
+                            <span>Get a professional PDF quote in seconds</span>
+                        </div>
+                    </div>
+                    <div class="welcome-feature">
+                        <span class="welcome-feature-icon">📧</span>
+                        <div>
+                            <strong>Send quotes directly to customers</strong>
+                            <span>Track when they view and accept</span>
+                        </div>
+                    </div>
+                    <div class="welcome-feature">
+                        <span class="welcome-feature-icon">🧠</span>
+                        <div>
+                            <strong>Quoted learns your pricing</strong>
+                            <span>Gets more accurate with every quote</span>
+                        </div>
+                    </div>
+                </div>
             </div>
             <button class="btn btn-primary btn-large" onclick="closeWelcomeModal()" style="width: 100%;">
                 Create My First Quote
@@ -5248,7 +5445,7 @@
                     </div>
                 </div>
 
-                <!-- Intro Screen -->
+                <!-- Intro Screen (Standard) -->
                 <div id="onboardingIntro" class="onboarding-intro" style="display: none;">
                     <h3>Ready to create quotes?</h3>
                     <p>Choose how you'd like to get started. You can always customize your pricing later.</p>
@@ -5284,6 +5481,62 @@
                         <div style="display: flex; gap: 12px; width: 100%;">
                             <button class="btn btn-link" onclick="startOnboardingInterview()" style="flex: 1;">Quick Chat</button>
                             <button class="btn btn-link" onclick="showQuickSetup()" style="flex: 1;">Manual Setup</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Intro Screen (Guided Mode - from /start page) -->
+                <div id="onboardingIntroGuided" class="onboarding-intro" style="display: none;">
+                    <!-- Progress indicator -->
+                    <div class="guided-progress">
+                        <div class="guided-progress-step completed">
+                            <span class="step-icon">✓</span>
+                            <span>Account</span>
+                        </div>
+                        <div class="guided-progress-connector" style="background: var(--success);"></div>
+                        <div class="guided-progress-step completed">
+                            <span class="step-icon">✓</span>
+                            <span>Trade</span>
+                        </div>
+                        <div class="guided-progress-connector"></div>
+                        <div class="guided-progress-step current">
+                            <span class="step-icon">3</span>
+                            <span>Pricing</span>
+                        </div>
+                    </div>
+
+                    <h3>Now let's set up your pricing</h3>
+                    <p>This helps Quoted generate accurate quotes for your work.</p>
+
+                    <!-- Recommended option - prominent -->
+                    <div class="guided-recommended-card">
+                        <h4>
+                            <span style="font-size: 1.25rem;">🚀</span>
+                            Recommended: Try a Quote Now
+                        </h4>
+                        <p>We'll use standard rates for your trade to generate your first quote. You can refine your pricing anytime from Settings.</p>
+                        <div class="meta">
+                            <span>⚡ 30 seconds</span>
+                            <span>📝 Adjust later</span>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary btn-large" onclick="handleTryFirst()" style="width: 100%;">
+                        <span style="display: flex; align-items: center; gap: 8px; justify-content: center;">
+                            Start with Try-First
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M5 12h14"></path>
+                                <path d="M12 5l7 7-7 7"></path>
+                            </svg>
+                        </span>
+                    </button>
+
+                    <!-- Alternative options - de-emphasized -->
+                    <div class="guided-alternative-options">
+                        <p>Or, if you want more accurate quotes right away:</p>
+                        <div class="guided-alternative-links">
+                            <a href="javascript:void(0)" onclick="startOnboardingInterview()">Quick Chat (~5 min)</a>
+                            <a href="javascript:void(0)" onclick="showQuickSetup()">Enter rates manually</a>
                         </div>
                     </div>
                 </div>
@@ -7645,6 +7898,33 @@
         function showWelcomeModal() {
             const modal = document.getElementById('welcomeModal');
             if (modal) {
+                // Check if in guided mode (from /start page)
+                const isGuidedMode = sessionStorage.getItem('guided_mode') === 'true';
+                const welcomeStandard = document.getElementById('welcomeStandard');
+                const welcomeGuided = document.getElementById('welcomeGuided');
+
+                if (isGuidedMode && welcomeStandard && welcomeGuided) {
+                    // Show guided mode content with feature highlights
+                    welcomeStandard.style.display = 'none';
+                    welcomeGuided.style.display = 'block';
+
+                    // Track completion
+                    {% if posthog_api_key %}
+                    if (window.posthog) {
+                        posthog.capture('guided_onboarding_completed', {
+                            path_chosen: 'try_first'
+                        });
+                    }
+                    {% endif %}
+
+                    // Clear guided mode flag (flow is complete)
+                    sessionStorage.removeItem('guided_mode');
+                } else {
+                    // Standard content
+                    if (welcomeStandard) welcomeStandard.style.display = 'block';
+                    if (welcomeGuided) welcomeGuided.style.display = 'none';
+                }
+
                 modal.style.display = 'flex';
                 // Trigger animation
                 requestAnimationFrame(() => {
@@ -8072,6 +8352,24 @@
             const refCode = urlParams.get('ref');
             if (refCode) {
                 localStorage.setItem('referral_code', refCode);
+            }
+
+            // Check for guided mode (from /start page)
+            const isGuidedMode = urlParams.get('guided') === 'true';
+            const preselectedTrade = urlParams.get('trade');
+            if (isGuidedMode) {
+                // Store guided mode for session
+                sessionStorage.setItem('guided_mode', 'true');
+                // Clean URL but preserve state
+                window.history.replaceState({guided: true}, document.title, window.location.pathname);
+                // Track guided mode entry
+                {% if posthog_api_key %}
+                if (window.posthog) {
+                    posthog.capture('guided_onboarding_started', {
+                        preselected_trade: preselectedTrade
+                    });
+                }
+                {% endif %}
             }
 
             // Check for Stripe checkout return (embedded checkout completion)
@@ -10055,9 +10353,21 @@
 
         function showOnboardingIntro() {
             document.getElementById('industrySelection').style.display = 'none';
-            document.getElementById('onboardingIntro').style.display = 'block';
             document.getElementById('quickSetupForm').style.display = 'none';
             document.getElementById('onboardingChat').classList.remove('active');
+
+            // Check if we're in guided mode (from /start page)
+            const isGuidedMode = sessionStorage.getItem('guided_mode') === 'true';
+
+            if (isGuidedMode) {
+                // Show guided version with recommended path
+                document.getElementById('onboardingIntro').style.display = 'none';
+                document.getElementById('onboardingIntroGuided').style.display = 'block';
+            } else {
+                // Show standard onboarding menu
+                document.getElementById('onboardingIntro').style.display = 'block';
+                document.getElementById('onboardingIntroGuided').style.display = 'none';
+            }
         }
 
         // Template-guided quick setup functions
@@ -10326,12 +10636,17 @@
                 async function showQuickSetup() {
             document.getElementById('industrySelection').style.display = 'none';
             document.getElementById('onboardingIntro').style.display = 'none';
+            document.getElementById('onboardingIntroGuided').style.display = 'none';
             document.getElementById('quickSetupForm').style.display = 'block';
             document.getElementById('onboardingChat').classList.remove('active');
 
             // Track onboarding path selection
+            const isGuidedMode = sessionStorage.getItem('guided_mode') === 'true';
             {% if posthog_api_key %}
             if (window.posthog) {
+                if (isGuidedMode) {
+                    posthog.capture('guided_path_selected', { path: 'quick_setup', primary_trade: currentUser?.primary_trade });
+                }
                 posthog.capture('onboarding_path_selected', { path: 'quick_setup' });
                 posthog.capture('onboarding_started', { onboarding_type: 'quick_setup' });
             }
@@ -10347,6 +10662,7 @@
         async function startOnboardingInterview() {
             document.getElementById('industrySelection').style.display = 'none';
             document.getElementById('onboardingIntro').style.display = 'none';
+            document.getElementById('onboardingIntroGuided').style.display = 'none';
             document.getElementById('quickSetupForm').style.display = 'none';
             document.getElementById('onboardingChat').classList.add('active');
 
@@ -10354,8 +10670,12 @@
             messageCount = 0;
 
             // Track onboarding path selection
+            const isGuidedMode = sessionStorage.getItem('guided_mode') === 'true';
             {% if posthog_api_key %}
             if (window.posthog) {
+                if (isGuidedMode) {
+                    posthog.capture('guided_path_selected', { path: 'interview', primary_trade: currentUser?.primary_trade });
+                }
                 posthog.capture('onboarding_path_selected', { path: 'interview' });
                 posthog.capture('onboarding_started', { onboarding_type: 'interview' });
             }
@@ -10427,6 +10747,17 @@
                     listItem.style.pointerEvents = 'none';
                 }
 
+                // Track guided path selection if in guided mode
+                const isGuidedMode = sessionStorage.getItem('guided_mode') === 'true';
+                {% if posthog_api_key %}
+                if (isGuidedMode && window.posthog) {
+                    posthog.capture('guided_path_selected', {
+                        path: 'try_first',
+                        primary_trade: currentUser?.primary_trade,
+                    });
+                }
+                {% endif %}
+
                 // Call try-first endpoint
                 const response = await fetch(`${API_BASE}/onboarding/try-first`, {
                     method: 'POST',
@@ -10455,9 +10786,10 @@
                 // Refresh user info to get updated onboarding_completed_at
                 await fetchUserInfo();
 
-                // Hide onboarding
+                // Hide onboarding (both standard and guided versions)
                 document.getElementById('onboardingNotice').style.display = 'none';
                 document.getElementById('onboardingIntro').style.display = 'none';
+                document.getElementById('onboardingIntroGuided').style.display = 'none';
                 document.getElementById('inputSection').style.display = 'block';
 
                 // Show welcome modal instead of toast/alert
