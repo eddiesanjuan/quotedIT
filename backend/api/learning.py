@@ -433,10 +433,11 @@ async def get_quote_explanation(
     # Get contractor DNA (for pattern transfer explanations)
     contractor_dna = pricing_knowledge.get("contractor_dna", {})
 
-    # Get learned adjustments from quote metadata
-    quote_metadata = quote.metadata or {}
-    learned_adjustments = quote_metadata.get("learned_adjustments", [])
-    voice_signals = quote_metadata.get("voice_signals", {})
+    # Get learned adjustments from quote edit_details (if any)
+    # Note: Quote model doesn't have a metadata column, use edit_details instead
+    quote_edit_details = quote.edit_details or {}
+    learned_adjustments = quote_edit_details.get("learned_adjustments", [])
+    voice_signals = quote_edit_details.get("voice_signals", {})
 
     # Generate explanation
     explanation_service = PricingExplanationService()
