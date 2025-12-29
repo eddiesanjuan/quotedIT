@@ -12012,11 +12012,11 @@
             }
 
             try {
-                const token = localStorage.getItem('auth_token');
-                if (!token) return null;
+                // Use global authToken (set during login) like rest of app
+                if (!authToken) return null;
 
                 const response = await fetch(`${API_BASE}/learning/confidence/${encodeURIComponent(cacheKey)}`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
+                    headers: { 'Authorization': `Bearer ${authToken}` }
                 });
 
                 if (response.ok) {
