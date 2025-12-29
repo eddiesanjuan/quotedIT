@@ -26,7 +26,7 @@ class Settings(BaseSettings):
     frontend_url: str = "https://quoted.it.com"  # For generating shareable referral links
 
     # Founder Notifications (DISC-128)
-    founder_email: str = "eddie@quoted.it.com"  # Receives signup & demo usage alerts
+    founder_email: str = "eddie@granular.tools"  # Receives signup & demo usage alerts
 
     # API Keys
     anthropic_api_key: str = ""
