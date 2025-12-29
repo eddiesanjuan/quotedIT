@@ -776,3 +776,110 @@ async def recognize_customer(
             for c in customers
         ]
     }
+
+
+# =========================================================================
+# DISC-126: Bulletproof Customer Identification Endpoints
+# =========================================================================
+
+
+class CustomerMatchRequest(BaseModel):
+    """Request to find customer matches."""
+    name: Optional[str] = None
+    phone: Optional[str] = None
+    address: Optional[str] = None
+
+
+class CustomerMatchResponse(BaseModel):
+    """Customer match result."""
+    customer_id: str
+    name: str
+    phone: Optional[str]
+    email: Optional[str]
+    address: Optional[str]
+    confidence: float
+    match_reasons: List[str]
+    quote_count: int
+    total_quoted: float
+    last_quote_at: Optional[str]
+
+
+class CustomerMatchResultResponse(BaseModel):
+    """Full customer matching result."""
+    matches: List[CustomerMatchResponse]
+    exact_match: Optional[CustomerMatchResponse]
+    recommendation: str
+    message: str
+    input: dict
+
+
+@router.post("/match", response_model=CustomerMatchResultResponse)
+async def find_customer_matches(
+    request: CustomerMatchRequest,
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Find potential customer matches with confidence scores.
+
+    DISC-126: Bulletproof customer identification.
+
+    Confidence thresholds:
+    - >= 0.95: auto_link (phone match or exact name)
+    - >= 0.70: confirm_needed (likely match, ask user)
+    - >= 0.50: confirm_needed (weak match, ask user)
+    - < 0.50: create_new (no match found)
+
+    Returns matches sorted by confidence with recommendation.
+    """
+    # Get contractor
+    result = await db.execute(
+        select(Contractor).where(Contractor.user_id == current_user["sub"])
+    )
+    contractor = result.scalar_one_or_none()
+    if not contractor:
+        raise HTTPException(status_code=404, detail="Contractor not found")
+
+    # Find matches
+    match_result = await CustomerService.find_customer_matches(
+        db=db,
+        contractor_id=contractor.id,
+        name=request.name,
+        phone=request.phone,
+        address=request.address
+    )
+
+    return match_result
+
+
+class RecentCustomersResponse(BaseModel):
+    """Recent customers for picker."""
+    customers: List[dict]
+
+
+@router.get("/recent", response_model=RecentCustomersResponse)
+async def get_recent_customers(
+    limit: int = Query(10, ge=1, le=50),
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Get most recently quoted customers for quick picker.
+
+    DISC-126: For "repeat customer" voice signal - show recent customers.
+    """
+    # Get contractor
+    result = await db.execute(
+        select(Contractor).where(Contractor.user_id == current_user["sub"])
+    )
+    contractor = result.scalar_one_or_none()
+    if not contractor:
+        raise HTTPException(status_code=404, detail="Contractor not found")
+
+    customers = await CustomerService.get_recent_customers(
+        db=db,
+        contractor_id=contractor.id,
+        limit=limit
+    )
+
+    return {"customers": customers}

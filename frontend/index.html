@@ -7096,6 +7096,68 @@
         </div>
     </div>
 
+    <!-- DISC-126: Customer Match Confirmation Modal -->
+    <div class="modal-overlay" id="customerMatchModal" style="display: none;">
+        <div class="modal-content" style="max-width: 500px;">
+            <button class="modal-close" onclick="closeCustomerMatchModal()">&times;</button>
+            <h2 class="modal-title">Existing Customer Found</h2>
+            <p class="modal-subtitle" id="customerMatchMessage">
+                We found a customer that matches this information.
+            </p>
+
+            <!-- Match Results -->
+            <div id="customerMatchResults" style="margin-top: 20px;">
+                <!-- Matches will be populated here -->
+            </div>
+
+            <!-- Actions -->
+            <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 24px;">
+                <button type="button" class="btn btn-primary" id="confirmCustomerMatchBtn" onclick="confirmCustomerMatch()" style="width: 100%;">
+                    Link to Existing Customer
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="createNewCustomer()" style="width: 100%;">
+                    Create New Customer Instead
+                </button>
+                <button type="button" class="btn btn-ghost" onclick="closeCustomerMatchModal()" style="width: 100%;">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- DISC-126: Repeat Customer Picker Modal -->
+    <div class="modal-overlay" id="repeatCustomerModal" style="display: none;">
+        <div class="modal-content" style="max-width: 500px;">
+            <button class="modal-close" onclick="closeRepeatCustomerModal()">&times;</button>
+            <h2 class="modal-title">Select Customer</h2>
+            <p class="modal-subtitle">
+                You mentioned this is a repeat customer. Who is it?
+            </p>
+
+            <!-- Search Input -->
+            <div class="form-group" style="margin-top: 20px;">
+                <input type="text" id="repeatCustomerSearch" placeholder="Search customers..."
+                       style="background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); padding: 12px; border-radius: 8px; width: 100%; font-family: var(--font-sans); font-size: 1rem;"
+                       oninput="filterRecentCustomers(this.value)">
+            </div>
+
+            <!-- Recent Customers List -->
+            <div id="recentCustomersList" style="margin-top: 16px; max-height: 300px; overflow-y: auto;">
+                <!-- Customers will be populated here -->
+            </div>
+
+            <!-- Actions -->
+            <div style="display: flex; gap: 12px; margin-top: 24px;">
+                <button type="button" class="btn btn-secondary" onclick="skipRepeatCustomer()" style="flex: 1;">
+                    New Customer
+                </button>
+                <button type="button" class="btn btn-ghost" onclick="closeRepeatCustomerModal()" style="flex: 1;">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Edit Global Settings Modal -->
     <div class="modal-overlay" id="editGlobalSettingsModal" style="display: none;">
         <div class="modal-content" style="max-width: 600px;">
@@ -16534,6 +16596,11 @@
                     }
 
                     closeEditCustomerModal();
+
+                    // DISC-126: Check for customer matches after save
+                    if (customerData.customer_name || customerData.customer_phone) {
+                        await checkAndLinkCustomer(currentDetailQuote.id, customerData);
+                    }
                 } else {
                     const error = await response.json();
                     showError('Failed to update customer info: ' + (error.detail || 'Unknown error'));
@@ -16546,6 +16613,434 @@
                 saveBtn.textContent = 'Save Changes';
             }
         }
+
+        // ===== DISC-126: Customer Match Functions =====
+
+        // State for customer matching
+        let pendingCustomerMatch = null;
+        let recentCustomersCache = [];
+
+        // Check for customer matches and show confirmation if needed
+        async function checkAndLinkCustomer(quoteId, customerData) {
+            try {
+                const response = await fetch(`${API_BASE}/quotes/${quoteId}/check-customer-match`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                if (!response.ok) return;
+
+                const result = await response.json();
+
+                if (result.recommendation === 'auto_linked') {
+                    // Already auto-linked, update UI
+                    updateCustomerLinkStatus(result.customer_id, result.matches[0]);
+                    showSuccess('Linked to existing customer: ' + result.matches[0].name);
+                } else if (result.recommendation === 'confirm_needed' && result.matches && result.matches.length > 0) {
+                    // Show confirmation modal
+                    pendingCustomerMatch = {
+                        quoteId: quoteId,
+                        matches: result.matches,
+                        message: result.message
+                    };
+                    showCustomerMatchModal(result.matches, result.message);
+                }
+                // For 'create_new' recommendation, we don't need to do anything
+
+            } catch (err) {
+                console.error('Error checking customer match:', err);
+            }
+        }
+
+        // Show the customer match confirmation modal
+        function showCustomerMatchModal(matches, message) {
+            const modal = document.getElementById('customerMatchModal');
+            const messageEl = document.getElementById('customerMatchMessage');
+            const resultsContainer = document.getElementById('customerMatchResults');
+
+            messageEl.textContent = message || 'We found customers that match this information.';
+
+            // Clear previous results
+            resultsContainer.innerHTML = '';
+
+            // Build match cards using safe DOM methods
+            matches.forEach((match, index) => {
+                const card = document.createElement('div');
+                card.className = 'customer-match-card';
+                card.style.cssText = 'background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; cursor: pointer; transition: all 0.2s ease;';
+                if (index === 0) {
+                    card.style.border = '2px solid var(--accent)';
+                }
+
+                // Name row
+                const nameRow = document.createElement('div');
+                nameRow.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;';
+
+                const nameText = document.createElement('strong');
+                nameText.style.cssText = 'font-size: 1rem; color: var(--text-primary);';
+                nameText.textContent = match.name || 'Unknown';
+                nameRow.appendChild(nameText);
+
+                const confidenceBadge = document.createElement('span');
+                const confidencePercent = Math.round((match.confidence || 0) * 100);
+                confidenceBadge.style.cssText = 'background: var(--accent); color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600;';
+                confidenceBadge.textContent = confidencePercent + '% match';
+                nameRow.appendChild(confidenceBadge);
+
+                card.appendChild(nameRow);
+
+                // Details
+                const detailsDiv = document.createElement('div');
+                detailsDiv.style.cssText = 'font-size: 0.875rem; color: var(--text-secondary);';
+
+                if (match.phone) {
+                    const phoneSpan = document.createElement('div');
+                    phoneSpan.textContent = match.phone;
+                    detailsDiv.appendChild(phoneSpan);
+                }
+                if (match.address) {
+                    const addrSpan = document.createElement('div');
+                    addrSpan.textContent = match.address;
+                    detailsDiv.appendChild(addrSpan);
+                }
+
+                card.appendChild(detailsDiv);
+
+                // Stats row
+                const statsDiv = document.createElement('div');
+                statsDiv.style.cssText = 'display: flex; gap: 12px; margin-top: 8px; font-size: 0.75rem; color: var(--text-muted);';
+
+                const quoteCountSpan = document.createElement('span');
+                quoteCountSpan.textContent = (match.quote_count || 0) + ' quotes';
+                statsDiv.appendChild(quoteCountSpan);
+
+                const totalSpan = document.createElement('span');
+                totalSpan.textContent = '$' + (match.total_quoted || 0).toLocaleString() + ' total';
+                statsDiv.appendChild(totalSpan);
+
+                card.appendChild(statsDiv);
+
+                // Click handler
+                card.addEventListener('click', function() {
+                    // Select this match
+                    pendingCustomerMatch.selectedCustomerId = match.id;
+                    // Highlight selected card
+                    resultsContainer.querySelectorAll('.customer-match-card').forEach(c => {
+                        c.style.border = '1px solid var(--border)';
+                    });
+                    card.style.border = '2px solid var(--accent)';
+                });
+
+                // Select first match by default
+                if (index === 0) {
+                    pendingCustomerMatch.selectedCustomerId = match.id;
+                }
+
+                resultsContainer.appendChild(card);
+            });
+
+            modal.style.display = 'flex';
+        }
+
+        // Close customer match modal
+        function closeCustomerMatchModal() {
+            document.getElementById('customerMatchModal').style.display = 'none';
+            pendingCustomerMatch = null;
+        }
+
+        // Confirm linking to selected customer
+        async function confirmCustomerMatch() {
+            if (!pendingCustomerMatch || !pendingCustomerMatch.selectedCustomerId) return;
+
+            const btn = document.getElementById('confirmCustomerMatchBtn');
+            btn.disabled = true;
+            btn.textContent = 'Linking...';
+
+            try {
+                const response = await fetch(`${API_BASE}/quotes/${pendingCustomerMatch.quoteId}/link-customer`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        customer_id: pendingCustomerMatch.selectedCustomerId
+                    })
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    const selectedMatch = pendingCustomerMatch.matches.find(m => m.id === pendingCustomerMatch.selectedCustomerId);
+                    updateCustomerLinkStatus(result.customer_id, selectedMatch);
+                    showSuccess('Linked to customer: ' + (selectedMatch ? selectedMatch.name : 'Customer'));
+                    closeCustomerMatchModal();
+                } else {
+                    const error = await response.json();
+                    showError('Failed to link customer: ' + (error.detail || 'Unknown error'));
+                }
+            } catch (err) {
+                console.error('Error linking customer:', err);
+                showError('Network error. Please try again.');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Link to Existing Customer';
+            }
+        }
+
+        // Create new customer instead of linking
+        async function createNewCustomer() {
+            if (!pendingCustomerMatch) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/quotes/${pendingCustomerMatch.quoteId}/link-customer`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        create_new: true
+                    })
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.created) {
+                        showSuccess('New customer record created');
+                    }
+                    closeCustomerMatchModal();
+                } else {
+                    const error = await response.json();
+                    showError('Failed to create customer: ' + (error.detail || 'Unknown error'));
+                }
+            } catch (err) {
+                console.error('Error creating customer:', err);
+                showError('Network error. Please try again.');
+            }
+        }
+
+        // Update customer link status indicator in quote detail
+        function updateCustomerLinkStatus(customerId, customerInfo) {
+            // Update currentDetailQuote
+            if (currentDetailQuote) {
+                currentDetailQuote.customer_id = customerId;
+            }
+
+            // Add/update link indicator near customer name
+            const customerNameDisplay = document.getElementById('customerNameDisplay');
+            if (customerNameDisplay) {
+                let indicator = document.getElementById('customerLinkIndicator');
+                if (!indicator) {
+                    indicator = document.createElement('span');
+                    indicator.id = 'customerLinkIndicator';
+                    indicator.style.cssText = 'display: inline-flex; align-items: center; gap: 4px; background: var(--success); color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; margin-left: 8px;';
+                    customerNameDisplay.parentNode.insertBefore(indicator, customerNameDisplay.nextSibling);
+                }
+                indicator.textContent = '✓ Linked';
+                indicator.title = customerInfo ? 'Linked to: ' + customerInfo.name : 'Customer linked';
+            }
+        }
+
+        // ===== Repeat Customer Picker Functions =====
+
+        // Show repeat customer picker modal
+        async function showRepeatCustomerPicker(quoteId) {
+            const modal = document.getElementById('repeatCustomerModal');
+            const listContainer = document.getElementById('recentCustomersList');
+
+            // Clear search
+            document.getElementById('repeatCustomerSearch').value = '';
+
+            // Show loading
+            listContainer.innerHTML = '';
+            const loadingMsg = document.createElement('p');
+            loadingMsg.style.cssText = 'text-align: center; color: var(--text-secondary);';
+            loadingMsg.textContent = 'Loading customers...';
+            listContainer.appendChild(loadingMsg);
+
+            modal.style.display = 'flex';
+
+            // Store quote ID for selection
+            modal.dataset.quoteId = quoteId;
+
+            // Fetch recent customers
+            try {
+                const response = await fetch(`${API_BASE}/customers/recent?limit=20`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    recentCustomersCache = data.customers || [];
+                    renderRecentCustomers(recentCustomersCache);
+                } else {
+                    listContainer.innerHTML = '';
+                    const errorMsg = document.createElement('p');
+                    errorMsg.style.cssText = 'text-align: center; color: var(--error);';
+                    errorMsg.textContent = 'Failed to load customers';
+                    listContainer.appendChild(errorMsg);
+                }
+            } catch (err) {
+                console.error('Error loading recent customers:', err);
+                listContainer.innerHTML = '';
+                const errorMsg = document.createElement('p');
+                errorMsg.style.cssText = 'text-align: center; color: var(--error);';
+                errorMsg.textContent = 'Network error';
+                listContainer.appendChild(errorMsg);
+            }
+        }
+
+        // Render recent customers list
+        function renderRecentCustomers(customers) {
+            const listContainer = document.getElementById('recentCustomersList');
+            listContainer.innerHTML = '';
+
+            if (!customers || customers.length === 0) {
+                const emptyMsg = document.createElement('p');
+                emptyMsg.style.cssText = 'text-align: center; color: var(--text-secondary); padding: 20px;';
+                emptyMsg.textContent = 'No recent customers found';
+                listContainer.appendChild(emptyMsg);
+                return;
+            }
+
+            customers.forEach(customer => {
+                const item = document.createElement('div');
+                item.className = 'recent-customer-item';
+                item.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s ease;';
+
+                // Left side - customer info
+                const infoDiv = document.createElement('div');
+                infoDiv.style.cssText = 'flex: 1;';
+
+                const nameText = document.createElement('div');
+                nameText.style.cssText = 'font-weight: 600; color: var(--text-primary); margin-bottom: 2px;';
+                nameText.textContent = customer.name || 'Unknown';
+                infoDiv.appendChild(nameText);
+
+                const detailText = document.createElement('div');
+                detailText.style.cssText = 'font-size: 0.875rem; color: var(--text-secondary);';
+                const details = [];
+                if (customer.phone) details.push(customer.phone);
+                if (customer.last_quoted) details.push('Last: ' + new Date(customer.last_quoted).toLocaleDateString());
+                detailText.textContent = details.join(' • ');
+                infoDiv.appendChild(detailText);
+
+                item.appendChild(infoDiv);
+
+                // Right side - stats
+                const statsDiv = document.createElement('div');
+                statsDiv.style.cssText = 'text-align: right; font-size: 0.75rem; color: var(--text-muted);';
+
+                const countText = document.createElement('div');
+                countText.textContent = (customer.quote_count || 0) + ' quotes';
+                statsDiv.appendChild(countText);
+
+                const totalText = document.createElement('div');
+                totalText.textContent = '$' + (customer.total_quoted || 0).toLocaleString();
+                statsDiv.appendChild(totalText);
+
+                item.appendChild(statsDiv);
+
+                // Hover effect
+                item.addEventListener('mouseenter', function() {
+                    item.style.background = 'var(--bg-primary)';
+                    item.style.borderColor = 'var(--accent)';
+                });
+                item.addEventListener('mouseleave', function() {
+                    item.style.background = 'var(--bg-secondary)';
+                    item.style.borderColor = 'var(--border)';
+                });
+
+                // Click to select
+                item.addEventListener('click', function() {
+                    selectRepeatCustomer(customer);
+                });
+
+                listContainer.appendChild(item);
+            });
+        }
+
+        // Filter recent customers by search
+        function filterRecentCustomers(searchText) {
+            if (!searchText) {
+                renderRecentCustomers(recentCustomersCache);
+                return;
+            }
+
+            const query = searchText.toLowerCase();
+            const filtered = recentCustomersCache.filter(c => {
+                return (c.name && c.name.toLowerCase().includes(query)) ||
+                       (c.phone && c.phone.includes(query)) ||
+                       (c.address && c.address.toLowerCase().includes(query));
+            });
+            renderRecentCustomers(filtered);
+        }
+
+        // Select a repeat customer
+        async function selectRepeatCustomer(customer) {
+            const modal = document.getElementById('repeatCustomerModal');
+            const quoteId = modal.dataset.quoteId;
+
+            if (!quoteId) {
+                closeRepeatCustomerModal();
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/quotes/${quoteId}/link-customer`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        customer_id: customer.id
+                    })
+                });
+
+                if (response.ok) {
+                    // Update quote display with customer info
+                    if (currentDetailQuote && currentDetailQuote.id === quoteId) {
+                        currentDetailQuote.customer_name = customer.name;
+                        currentDetailQuote.customer_address = customer.address;
+                        currentDetailQuote.customer_phone = customer.phone;
+                        currentDetailQuote.customer_id = customer.id;
+
+                        document.getElementById('detailQuoteTitle').textContent = customer.name || 'Quote Details';
+                        document.getElementById('customerNameDisplay').textContent = customer.name || '—';
+                        document.getElementById('customerAddressDisplay').textContent = customer.address || '—';
+                        document.getElementById('customerPhoneDisplay').textContent = customer.phone || '—';
+
+                        updateCustomerLinkStatus(customer.id, customer);
+                    }
+
+                    showSuccess('Linked to customer: ' + customer.name);
+                    closeRepeatCustomerModal();
+                } else {
+                    const error = await response.json();
+                    showError('Failed to link customer: ' + (error.detail || 'Unknown error'));
+                }
+            } catch (err) {
+                console.error('Error selecting repeat customer:', err);
+                showError('Network error. Please try again.');
+            }
+        }
+
+        // Skip repeat customer selection (create new)
+        function skipRepeatCustomer() {
+            closeRepeatCustomerModal();
+        }
+
+        // Close repeat customer modal
+        function closeRepeatCustomerModal() {
+            const modal = document.getElementById('repeatCustomerModal');
+            modal.style.display = 'none';
+            delete modal.dataset.quoteId;
+        }
+
+        // ===== End DISC-126 Customer Match Functions =====
 
         // Share Quote Functions
         let currentShareUrl = '';
