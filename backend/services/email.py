@@ -338,7 +338,7 @@ class EmailService:
             <p class="muted">Your 7-day trial starts now. No credit card required.</p>
         """
 
-        html = EmailService._get_base_template().format(content=content)
+        html = EmailService._get_base_template().replace('{content}', content)
 
         try:
             response = resend.Emails.send({
@@ -399,7 +399,7 @@ class EmailService:
             <p class="muted">We'll send you a reminder before your trial ends.</p>
         """
 
-        html = EmailService._get_base_template().format(content=content)
+        html = EmailService._get_base_template().replace('{content}', content)
 
         try:
             response = resend.Emails.send({
@@ -455,7 +455,7 @@ class EmailService:
             <p class="muted">Cancel anytime. No questions asked.</p>
         """
 
-        html = EmailService._get_base_template().format(content=content)
+        html = EmailService._get_base_template().replace('{content}', content)
 
         try:
             response = resend.Emails.send({
@@ -523,7 +523,7 @@ class EmailService:
             <p class="muted">Need help? Reply to this email anytime.</p>
         """
 
-        html = EmailService._get_base_template().format(content=content)
+        html = EmailService._get_base_template().replace('{content}', content)
 
         try:
             response = resend.Emails.send({
@@ -574,7 +574,7 @@ class EmailService:
             <p class="muted">Questions? Reply to this email and we'll help sort it out.</p>
         """
 
-        html = EmailService._get_base_template().format(content=content)
+        html = EmailService._get_base_template().replace('{content}', content)
 
         try:
             response = resend.Emails.send({
@@ -737,7 +737,7 @@ class EmailService:
             </p>
         """
 
-        html = EmailService._get_base_template().format(content=content)
+        html = EmailService._get_base_template().replace('{content}', content)
 
         try:
             response = resend.Emails.send({
@@ -803,7 +803,7 @@ class EmailService:
             </p>
         """
 
-        html = EmailService._get_base_template().format(content=content)
+        html = EmailService._get_base_template().replace('{content}', content)
 
         try:
             response = resend.Emails.send({
@@ -865,7 +865,7 @@ class EmailService:
             <p class="muted">Want to see what Quoted has learned about your pricing style? Check your Pricing Brain dashboard.</p>
         """
 
-        html = EmailService._get_base_template().format(content=content)
+        html = EmailService._get_base_template().replace('{content}', content)
 
         try:
             response = resend.Emails.send({
@@ -939,7 +939,7 @@ class EmailService:
             <p class="muted">Questions or feedback? Hit reply—we read every message.</p>
         """
 
-        html = EmailService._get_base_template().format(content=content)
+        html = EmailService._get_base_template().replace('{content}', content)
 
         try:
             response = resend.Emails.send({
@@ -993,7 +993,7 @@ class EmailService:
             <p class="muted">Your pricing data is still here waiting for you whenever you're ready.</p>
         """
 
-        html = EmailService._get_base_template().format(content=content)
+        html = EmailService._get_base_template().replace('{content}', content)
 
         try:
             response = resend.Emails.send({
@@ -1054,7 +1054,7 @@ class EmailService:
             </p>
         """
 
-        html = EmailService._get_base_template().format(content=content)
+        html = EmailService._get_base_template().replace('{content}', content)
 
         try:
             response = resend.Emails.send({
@@ -1114,7 +1114,7 @@ class EmailService:
             </p>
         """
 
-        html = EmailService._get_base_template().format(content=content)
+        html = EmailService._get_base_template().replace('{content}', content)
 
         try:
             response = resend.Emails.send({
@@ -1202,7 +1202,7 @@ class EmailService:
             <p class="muted">You can manage your task reminders in the Tasks section of your dashboard.</p>
         """
 
-        html = EmailService._get_base_template().format(content=content)
+        html = EmailService._get_base_template().replace('{content}', content)
 
         try:
             loop = asyncio.get_event_loop()
@@ -1272,7 +1272,7 @@ class EmailService:
             </p>
         """
 
-        html = EmailService._get_base_template().format(content=content)
+        html = EmailService._get_base_template().replace('{content}', content)
 
         try:
             loop = asyncio.get_event_loop()
@@ -1425,7 +1425,7 @@ class EmailService:
             <p class="muted">This is an automated notification from Quoted.</p>
         """
 
-        html = EmailService._get_base_template().format(content=content)
+        html = EmailService._get_base_template().replace('{content}', content)
 
         try:
             loop = asyncio.get_event_loop()
@@ -1499,7 +1499,7 @@ class EmailService:
             <p class="muted">This is an automated notification from Quoted demo page.</p>
         """
 
-        html = EmailService._get_base_template().format(content=content)
+        html = EmailService._get_base_template().replace('{content}', content)
 
         try:
             loop = asyncio.get_event_loop()
