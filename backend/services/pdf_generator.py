@@ -689,8 +689,25 @@ class PDFGeneratorService:
                 if logo is None:
                     # Create BytesIO object for ReportLab
                     logo_buffer = io.BytesIO(logo_binary)
-                    # Create Image object with fixed height, preserve aspect ratio
-                    logo = Image(logo_buffer, width=48, height=48)
+                    # DISC-127: Preserve aspect ratio - calculate dimensions from actual image
+                    max_height = 48
+                    max_width = 120  # Allow wider logos
+                    try:
+                        from PIL import Image as PILImage
+                        # Re-open image to get dimensions (verify() closes it)
+                        logo_buffer.seek(0)
+                        pil_img = PILImage.open(io.BytesIO(logo_binary))
+                        orig_width, orig_height = pil_img.size
+                        # Calculate scale to fit within max dimensions while preserving aspect ratio
+                        scale = min(max_width / orig_width, max_height / orig_height)
+                        scaled_width = orig_width * scale
+                        scaled_height = orig_height * scale
+                        logo_buffer.seek(0)
+                        logo = Image(logo_buffer, width=scaled_width, height=scaled_height)
+                    except ImportError:
+                        # PIL not available - use fixed height, let ReportLab handle width
+                        logo_buffer.seek(0)
+                        logo = Image(logo_buffer, height=max_height)
             except Exception as e:
                 # If logo fails to load, fall back to placeholder
                 print(f"Warning: Failed to load custom logo: {e}")
@@ -709,9 +726,10 @@ class PDFGeneratorService:
         # Combine into a table for layout
         header_data = [[logo, business_info]]
 
+        # DISC-127: Increased first column to 130px to accommodate wider logos
         header_table = Table(
             header_data,
-            colWidths=[60, self.page_width - 60],
+            colWidths=[130, self.page_width - 130],
             hAlign='LEFT',
         )
 

@@ -1370,6 +1370,154 @@ class EmailService:
             logger.error(f"Failed to send invoice email to {to_email}", exc_info=True)
             raise
 
+    # =========================================================================
+    # Founder Notifications (DISC-128)
+    # Internal notifications for signups and demo usage
+    # =========================================================================
+
+    @staticmethod
+    async def send_founder_signup_notification(
+        user_email: str,
+        business_name: str,
+        owner_name: Optional[str],
+        primary_trade: Optional[str],
+        referral_code: Optional[str] = None,
+        used_referral: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Send notification to founder when a new user signs up (DISC-128).
+
+        Args:
+            user_email: New user's email address
+            business_name: Name of the business
+            owner_name: Owner's name
+            primary_trade: Primary trade/category
+            referral_code: New user's referral code
+            used_referral: Referral code they used (if any)
+
+        Returns:
+            Resend API response
+        """
+        referral_info = ""
+        if used_referral:
+            referral_info = f"""
+                <div style="color: #22c55e; font-size: 14px; margin-top: 12px;">
+                    🎉 Used referral code: <strong>{used_referral}</strong>
+                </div>
+            """
+
+        content = f"""
+            <h1>🎉 New Signup!</h1>
+
+            <div class="stat-box" style="margin: 24px 0;">
+                <div style="color: #ffffff; font-size: 20px; font-weight: 600; margin-bottom: 16px;">
+                    {business_name}
+                </div>
+                <div style="color: #e0e0e0; font-size: 15px; line-height: 1.8;">
+                    <strong>Owner:</strong> {owner_name or 'Not provided'}<br>
+                    <strong>Email:</strong> {user_email}<br>
+                    <strong>Trade:</strong> {primary_trade or 'Not specified'}<br>
+                    <strong>Their Referral Code:</strong> {referral_code or 'None'}
+                </div>
+                {referral_info}
+            </div>
+
+            <p class="muted">This is an automated notification from Quoted.</p>
+        """
+
+        html = EmailService._get_base_template().format(content=content)
+
+        try:
+            loop = asyncio.get_event_loop()
+            response = await loop.run_in_executor(
+                None,
+                partial(resend.Emails.send, {
+                    "from": EmailService.FROM_EMAIL,
+                    "to": settings.founder_email,
+                    "subject": f"🎉 New Signup: {business_name}",
+                    "html": html,
+                })
+            )
+            logger.info(f"Founder signup notification sent for {user_email}")
+            return response
+        except Exception as e:
+            logger.error(f"Failed to send founder signup notification for {user_email}", exc_info=True)
+            raise
+
+    @staticmethod
+    async def send_founder_demo_notification(
+        job_description: str,
+        quote_total: float,
+        line_item_count: int,
+        ip_address: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Send notification to founder when demo quote is generated (DISC-128).
+
+        Args:
+            job_description: The job description used
+            quote_total: Generated quote total
+            line_item_count: Number of line items
+            ip_address: Visitor's IP address (optional)
+
+        Returns:
+            Resend API response
+        """
+        formatted_total = f"${quote_total:,.2f}"
+        ip_info = f"<br><strong>IP:</strong> {ip_address}" if ip_address else ""
+
+        # Truncate long job descriptions
+        job_display = job_description[:200] + "..." if len(job_description) > 200 else job_description
+
+        content = f"""
+            <h1>👀 Demo Quote Generated</h1>
+
+            <div class="stat-box" style="margin: 24px 0;">
+                <div style="color: #a0a0a0; font-size: 13px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">
+                    Job Description
+                </div>
+                <div style="color: #e0e0e0; font-size: 15px; line-height: 1.6; margin-bottom: 16px;">
+                    {job_display}
+                </div>
+            </div>
+
+            <div class="stats-grid" style="margin: 24px 0;">
+                <div class="stat-box">
+                    <div class="stat-value">{formatted_total}</div>
+                    <div class="stat-label">Quote Total</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value">{line_item_count}</div>
+                    <div class="stat-label">Line Items</div>
+                </div>
+            </div>
+
+            <p class="muted" style="font-size: 13px;">
+                Visitor info{ip_info}
+            </p>
+
+            <p class="muted">This is an automated notification from Quoted demo page.</p>
+        """
+
+        html = EmailService._get_base_template().format(content=content)
+
+        try:
+            loop = asyncio.get_event_loop()
+            response = await loop.run_in_executor(
+                None,
+                partial(resend.Emails.send, {
+                    "from": EmailService.FROM_EMAIL,
+                    "to": settings.founder_email,
+                    "subject": f"👀 Demo: {formatted_total} quote generated",
+                    "html": html,
+                })
+            )
+            logger.info(f"Founder demo notification sent for {formatted_total} quote")
+            return response
+        except Exception as e:
+            logger.error(f"Failed to send founder demo notification", exc_info=True)
+            raise
+
 
 # Convenience instance
 email_service = EmailService()

@@ -25,6 +25,9 @@ class Settings(BaseSettings):
     environment: str = "development"  # development, production
     frontend_url: str = "https://quoted.it.com"  # For generating shareable referral links
 
+    # Founder Notifications (DISC-128)
+    founder_email: str = "eddie@quoted.it.com"  # Receives signup & demo usage alerts
+
     # API Keys
     anthropic_api_key: str = ""
     openai_api_key: str = ""  # For Whisper transcription
