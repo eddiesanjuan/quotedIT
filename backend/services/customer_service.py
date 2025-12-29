@@ -909,6 +909,419 @@ class CustomerService:
         months = (now.year - date.year) * 12 + (now.month - date.month)
         return max(0, months)
 
+    # =========================================================================
+    # DISC-126: Bulletproof Customer Identification
+    # =========================================================================
+
+    @staticmethod
+    def _levenshtein_distance(s1: str, s2: str) -> int:
+        """Calculate Levenshtein edit distance between two strings."""
+        if len(s1) < len(s2):
+            return CustomerService._levenshtein_distance(s2, s1)
+        if len(s2) == 0:
+            return len(s1)
+
+        previous_row = range(len(s2) + 1)
+        for i, c1 in enumerate(s1):
+            current_row = [i + 1]
+            for j, c2 in enumerate(s2):
+                insertions = previous_row[j + 1] + 1
+                deletions = current_row[j] + 1
+                substitutions = previous_row[j] + (c1 != c2)
+                current_row.append(min(insertions, deletions, substitutions))
+            previous_row = current_row
+        return previous_row[-1]
+
+    @staticmethod
+    def _name_similarity(name1: str, name2: str) -> float:
+        """
+        Calculate similarity between two names (0.0 to 1.0).
+        Uses normalized Levenshtein distance.
+        """
+        if not name1 or not name2:
+            return 0.0
+        n1 = CustomerService.normalize_name(name1)
+        n2 = CustomerService.normalize_name(name2)
+        if n1 == n2:
+            return 1.0
+        if not n1 or not n2:
+            return 0.0
+
+        distance = CustomerService._levenshtein_distance(n1, n2)
+        max_len = max(len(n1), len(n2))
+        return 1.0 - (distance / max_len)
+
+    @staticmethod
+    def _normalize_address(address: str) -> str:
+        """
+        Normalize address for comparison.
+        - Lowercase
+        - Expand common abbreviations
+        - Remove punctuation
+        - Collapse whitespace
+        """
+        if not address:
+            return ""
+        normalized = address.lower()
+        # Expand common abbreviations
+        replacements = {
+            r'\bst\b': 'street',
+            r'\bave\b': 'avenue',
+            r'\bblvd\b': 'boulevard',
+            r'\bdr\b': 'drive',
+            r'\bln\b': 'lane',
+            r'\brd\b': 'road',
+            r'\bct\b': 'court',
+            r'\bpl\b': 'place',
+            r'\bapt\b': 'apartment',
+            r'\bste\b': 'suite',
+            r'\bn\b': 'north',
+            r'\bs\b': 'south',
+            r'\be\b': 'east',
+            r'\bw\b': 'west',
+        }
+        for pattern, replacement in replacements.items():
+            normalized = re.sub(pattern, replacement, normalized)
+        # Remove punctuation
+        normalized = re.sub(r'[^\w\s]', '', normalized)
+        # Collapse whitespace
+        normalized = ' '.join(normalized.split())
+        return normalized.strip()
+
+    @staticmethod
+    def _address_similarity(addr1: str, addr2: str) -> float:
+        """
+        Calculate similarity between two addresses (0.0 to 1.0).
+        """
+        if not addr1 or not addr2:
+            return 0.0
+        n1 = CustomerService._normalize_address(addr1)
+        n2 = CustomerService._normalize_address(addr2)
+        if n1 == n2:
+            return 1.0
+        if not n1 or not n2:
+            return 0.0
+
+        # Use Levenshtein similarity
+        distance = CustomerService._levenshtein_distance(n1, n2)
+        max_len = max(len(n1), len(n2))
+        return 1.0 - (distance / max_len)
+
+    @staticmethod
+    async def find_customer_matches(
+        db: AsyncSession,
+        contractor_id: str,
+        name: Optional[str] = None,
+        phone: Optional[str] = None,
+        address: Optional[str] = None,
+        limit: int = 5
+    ) -> Dict[str, Any]:
+        """
+        Find potential customer matches with confidence scores.
+
+        DISC-126: Bulletproof customer identification with confidence-based matching.
+
+        Confidence Levels:
+        - EXACT (>= 0.95): Phone match or exact normalized name
+        - HIGH (>= 0.80): Very similar name + address match
+        - MEDIUM (>= 0.60): Similar name or partial matches
+        - LOW (< 0.60): Weak matches, likely different customers
+
+        Args:
+            db: Database session
+            contractor_id: Contractor ID to scope search
+            name: Customer name to match
+            phone: Customer phone to match (most reliable)
+            address: Customer address (secondary signal)
+            limit: Maximum matches to return
+
+        Returns:
+            Dict with:
+            - matches: List of potential matches with confidence
+            - exact_match: Customer if confidence >= 0.95
+            - recommendation: "auto_link", "confirm_needed", "create_new"
+            - message: Human-readable explanation
+        """
+        matches = []
+        exact_match = None
+
+        # Normalize inputs
+        normalized_name = CustomerService.normalize_name(name) if name else None
+        normalized_phone = CustomerService.normalize_phone(phone) if phone else None
+        normalized_addr = CustomerService._normalize_address(address) if address else None
+
+        # Get all customers for this contractor
+        result = await db.execute(
+            select(Customer).where(Customer.contractor_id == contractor_id)
+        )
+        all_customers = result.scalars().all()
+
+        for customer in all_customers:
+            confidence = 0.0
+            match_reasons = []
+
+            # Phone match (highest priority - nearly unique identifier)
+            if normalized_phone and customer.normalized_phone:
+                if normalized_phone == customer.normalized_phone:
+                    confidence = 0.98  # Near-certain match
+                    match_reasons.append("phone_exact")
+                elif normalized_phone[-7:] == customer.normalized_phone[-7:]:
+                    # Last 7 digits match (handles area code differences)
+                    confidence = max(confidence, 0.85)
+                    match_reasons.append("phone_partial")
+
+            # Name match
+            if normalized_name and customer.normalized_name:
+                if normalized_name == customer.normalized_name:
+                    # Exact normalized name
+                    name_conf = 0.90
+                    match_reasons.append("name_exact")
+                else:
+                    # Fuzzy name match
+                    similarity = CustomerService._name_similarity(name, customer.name)
+                    if similarity >= 0.85:
+                        name_conf = similarity * 0.85  # Scale to 0.72 max
+                        match_reasons.append(f"name_similar_{similarity:.0%}")
+                    elif similarity >= 0.70:
+                        name_conf = similarity * 0.70  # Scale to 0.49 max
+                        match_reasons.append(f"name_fuzzy_{similarity:.0%}")
+                    else:
+                        name_conf = 0.0
+
+                # Combine with phone confidence
+                if confidence > 0:
+                    confidence = min(0.99, confidence + name_conf * 0.1)  # Boost if both match
+                else:
+                    confidence = name_conf
+
+            # Address boost (secondary signal - doesn't create match alone)
+            if normalized_addr and customer.address:
+                addr_similarity = CustomerService._address_similarity(address, customer.address)
+                if addr_similarity >= 0.80:
+                    # Boost confidence by up to 10% for address match
+                    confidence = min(0.99, confidence + addr_similarity * 0.10)
+                    match_reasons.append(f"address_match_{addr_similarity:.0%}")
+
+            # Only include if there's meaningful confidence
+            if confidence >= 0.40:
+                matches.append({
+                    "customer_id": customer.id,
+                    "name": customer.name,
+                    "phone": customer.phone,
+                    "email": customer.email,
+                    "address": customer.address,
+                    "confidence": round(confidence, 3),
+                    "match_reasons": match_reasons,
+                    "quote_count": customer.quote_count or 0,
+                    "total_quoted": float(customer.total_quoted or 0),
+                    "last_quote_at": customer.last_quote_at.isoformat() if customer.last_quote_at else None
+                })
+
+        # Sort by confidence descending
+        matches.sort(key=lambda x: x["confidence"], reverse=True)
+        matches = matches[:limit]
+
+        # Determine recommendation
+        if matches and matches[0]["confidence"] >= 0.95:
+            exact_match = matches[0]
+            recommendation = "auto_link"
+            message = f"High confidence match: {exact_match['name']} ({exact_match['confidence']:.0%})"
+        elif matches and matches[0]["confidence"] >= 0.70:
+            recommendation = "confirm_needed"
+            message = f"Possible match found: {matches[0]['name']} ({matches[0]['confidence']:.0%}). Please confirm."
+        elif matches and matches[0]["confidence"] >= 0.50:
+            recommendation = "confirm_needed"
+            message = f"Weak match found: {matches[0]['name']} ({matches[0]['confidence']:.0%}). Is this the same customer?"
+        else:
+            recommendation = "create_new"
+            message = "No matching customer found. A new customer record will be created."
+
+        return {
+            "matches": matches,
+            "exact_match": exact_match,
+            "recommendation": recommendation,
+            "message": message,
+            "input": {
+                "name": name,
+                "phone": phone,
+                "address": address
+            }
+        }
+
+    @staticmethod
+    async def link_quote_to_customer_explicit(
+        db: AsyncSession,
+        quote: Quote,
+        customer_id: Optional[str] = None,
+        create_new: bool = False
+    ) -> Dict[str, Any]:
+        """
+        Explicitly link a quote to a customer with full control.
+
+        DISC-126: Bulletproof linking with explicit user choice.
+
+        Args:
+            db: Database session
+            quote: Quote to link
+            customer_id: Explicit customer ID to link (if user confirmed)
+            create_new: Force create new customer even if matches exist
+
+        Returns:
+            Dict with:
+            - success: bool
+            - customer: Customer data if linked
+            - action: "linked_existing", "created_new", "no_data"
+            - message: Human-readable result
+        """
+        from sqlalchemy import update
+
+        # No customer data to work with
+        if not quote.customer_name and not customer_id:
+            return {
+                "success": False,
+                "customer": None,
+                "action": "no_data",
+                "message": "No customer information available to link"
+            }
+
+        customer = None
+        action = None
+
+        if customer_id:
+            # Explicit link to existing customer
+            result = await db.execute(
+                select(Customer).where(
+                    and_(
+                        Customer.id == customer_id,
+                        Customer.contractor_id == quote.contractor_id
+                    )
+                )
+            )
+            customer = result.scalar_one_or_none()
+            if customer:
+                action = "linked_existing"
+                # Update customer with any new info from quote
+                if quote.customer_phone and not customer.phone:
+                    customer.phone = quote.customer_phone
+                    customer.normalized_phone = CustomerService.normalize_phone(quote.customer_phone)
+                if getattr(quote, 'customer_email', None) and not customer.email:
+                    customer.email = quote.customer_email
+                if quote.customer_address and not customer.address:
+                    customer.address = quote.customer_address
+                customer.updated_at = datetime.utcnow()
+            else:
+                return {
+                    "success": False,
+                    "customer": None,
+                    "action": "error",
+                    "message": f"Customer {customer_id} not found"
+                }
+        elif create_new or not quote.customer_name:
+            # Force create new customer
+            customer = Customer(
+                contractor_id=quote.contractor_id,
+                name=quote.customer_name.strip() if quote.customer_name else "Unknown",
+                phone=quote.customer_phone,
+                email=getattr(quote, 'customer_email', None),
+                address=quote.customer_address,
+                normalized_name=CustomerService.normalize_name(quote.customer_name) if quote.customer_name else "",
+                normalized_phone=CustomerService.normalize_phone(quote.customer_phone) if quote.customer_phone else "",
+                status="active"
+            )
+            db.add(customer)
+            await db.flush()
+            action = "created_new"
+        else:
+            # Auto-match using find_or_create (legacy behavior for backward compatibility)
+            customer = await CustomerService.find_or_create_customer(
+                db=db,
+                contractor_id=quote.contractor_id,
+                name=quote.customer_name,
+                phone=quote.customer_phone,
+                email=getattr(quote, 'customer_email', None),
+                address=quote.customer_address
+            )
+            action = "auto_matched"
+
+        if customer:
+            # Link quote to customer
+            await db.execute(
+                update(Quote)
+                .where(Quote.id == quote.id)
+                .values(customer_id=customer.id)
+            )
+            await db.flush()
+
+            # Update customer stats
+            await CustomerService.update_customer_stats(db, customer)
+
+            return {
+                "success": True,
+                "customer": {
+                    "id": customer.id,
+                    "name": customer.name,
+                    "phone": customer.phone,
+                    "email": customer.email,
+                    "address": customer.address,
+                    "quote_count": customer.quote_count,
+                    "total_quoted": float(customer.total_quoted or 0)
+                },
+                "action": action,
+                "message": f"Quote linked to customer: {customer.name}"
+            }
+
+        return {
+            "success": False,
+            "customer": None,
+            "action": "error",
+            "message": "Failed to link customer"
+        }
+
+    @staticmethod
+    async def get_recent_customers(
+        db: AsyncSession,
+        contractor_id: str,
+        limit: int = 10
+    ) -> List[Dict[str, Any]]:
+        """
+        Get most recently quoted customers for quick picker.
+
+        DISC-126: For "repeat customer" voice signal - show recent customers.
+
+        Args:
+            db: Database session
+            contractor_id: Contractor ID
+            limit: Maximum customers to return
+
+        Returns:
+            List of recent customers with quote counts
+        """
+        result = await db.execute(
+            select(Customer)
+            .where(
+                and_(
+                    Customer.contractor_id == contractor_id,
+                    Customer.status == "active"
+                )
+            )
+            .order_by(Customer.last_quote_at.desc().nullslast())
+            .limit(limit)
+        )
+        customers = result.scalars().all()
+
+        return [
+            {
+                "id": c.id,
+                "name": c.name,
+                "phone": c.phone,
+                "address": c.address,
+                "quote_count": c.quote_count or 0,
+                "last_quote_at": c.last_quote_at.isoformat() if c.last_quote_at else None,
+                "total_quoted": float(c.total_quoted or 0)
+            }
+            for c in customers
+        ]
+
 
 # Singleton instance for convenience
 customer_service = CustomerService()

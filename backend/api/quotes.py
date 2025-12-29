@@ -1740,6 +1740,148 @@ async def update_quote_customer(
     return quote_to_response(updated_quote)
 
 
+# =========================================================================
+# DISC-126: Bulletproof Customer Linking
+# =========================================================================
+
+
+class CustomerLinkRequest(BaseModel):
+    """Request to explicitly link a quote to a customer."""
+    customer_id: Optional[str] = None  # If provided, link to this existing customer
+    create_new: bool = False  # Force create new customer even if matches exist
+
+
+class CustomerLinkResponse(BaseModel):
+    """Response from customer linking."""
+    success: bool
+    customer: Optional[dict]
+    action: str  # "linked_existing", "created_new", "auto_matched", "no_data", "error"
+    message: str
+
+
+@router.post("/{quote_id}/link-customer", response_model=CustomerLinkResponse)
+async def link_quote_to_customer(
+    quote_id: str,
+    request: CustomerLinkRequest,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Explicitly link a quote to a customer record.
+
+    DISC-126: Bulletproof customer linking with user control.
+
+    Use cases:
+    1. User confirms match: pass customer_id from match results
+    2. User wants new: pass create_new=True
+    3. Auto-match: pass neither (legacy behavior)
+
+    This endpoint should be called:
+    - After user confirms customer match in UI
+    - When user edits customer fields and saves
+    - To re-link a quote to a different customer
+    """
+    db = get_db_service()
+
+    # Get the quote
+    quote = await db.get_quote(quote_id)
+    if not quote:
+        raise HTTPException(status_code=404, detail="Quote not found")
+
+    # Verify ownership
+    contractor = await db.get_contractor_by_user_id(current_user["id"])
+    if not contractor or quote.contractor_id != contractor.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    # Use the authenticated DB session
+    from ..services.auth import get_db as get_async_db
+    async for auth_db in get_async_db():
+        result = await CustomerService.link_quote_to_customer_explicit(
+            db=auth_db,
+            quote=quote,
+            customer_id=request.customer_id,
+            create_new=request.create_new
+        )
+        await auth_db.commit()
+        return result
+
+
+@router.post("/{quote_id}/check-customer-match")
+async def check_customer_match(
+    quote_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Check if a quote's customer info matches any existing customers.
+
+    DISC-126: Called after quote update to see if customer linking needed.
+
+    Returns match results so frontend can show confirmation if needed.
+    """
+    db = get_db_service()
+
+    # Get the quote
+    quote = await db.get_quote(quote_id)
+    if not quote:
+        raise HTTPException(status_code=404, detail="Quote not found")
+
+    # Verify ownership
+    contractor = await db.get_contractor_by_user_id(current_user["id"])
+    if not contractor or quote.contractor_id != contractor.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    # If quote already has a customer_id, return that info
+    if quote.customer_id:
+        from ..services.auth import get_db as get_async_db
+        from ..models.database import Customer
+        from sqlalchemy import select
+        async for auth_db in get_async_db():
+            result = await auth_db.execute(
+                select(Customer).where(Customer.id == quote.customer_id)
+            )
+            customer = result.scalar_one_or_none()
+            if customer:
+                return {
+                    "already_linked": True,
+                    "customer": {
+                        "id": customer.id,
+                        "name": customer.name,
+                        "phone": customer.phone,
+                        "email": customer.email,
+                        "address": customer.address,
+                        "quote_count": customer.quote_count
+                    },
+                    "matches": [],
+                    "recommendation": "already_linked",
+                    "message": f"Already linked to {customer.name}"
+                }
+
+    # Check for matches based on quote's customer info
+    if not quote.customer_name and not quote.customer_phone:
+        return {
+            "already_linked": False,
+            "customer": None,
+            "matches": [],
+            "recommendation": "no_data",
+            "message": "No customer information on quote"
+        }
+
+    # Find matches
+    from ..services.auth import get_db as get_async_db
+    async for auth_db in get_async_db():
+        match_result = await CustomerService.find_customer_matches(
+            db=auth_db,
+            contractor_id=contractor.id,
+            name=quote.customer_name,
+            phone=quote.customer_phone,
+            address=quote.customer_address
+        )
+        return {
+            "already_linked": False,
+            "customer": None,
+            **match_result
+        }
+
+
 @router.put("/{quote_id}", response_model=QuoteResponse)
 async def update_quote(
     quote_id: str,

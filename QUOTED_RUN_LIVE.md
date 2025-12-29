@@ -1,41 +1,64 @@
 # Quoted Run Live Progress
 
-[2025-12-21 18:22:48] ═══ QUOTED RUN STARTED ═══
-CEO: Initializing autonomous operations
-Mode: Founder-specified tickets (DISC-101, DISC-107, DISC-108)
+[2025-12-28 17:38:06] ═══ QUOTED RUN STARTED ═══
+CEO: Founder-specified ticket: DISC-126
 Watch: tail -f quoted/QUOTED_RUN_LIVE.md
 
-[18:23:14] ═══ PHASE 2: CEO Decision ═══
-  Founder-specified tickets:
-    1. DISC-101: LLM-as-Judge for Autonomous Cycles (READY)
-    2. DISC-107: Session Context Continuity - HANDOFF.md (DISCOVERED→APPROVED)
-    3. DISC-108: Regression Gate Before Commits (DISCOVERED→APPROVED)
-  Proceeding with implementation...
+[17:38:23] ═══ PHASE 2: CEO Decision ═══
+  Founder-specified ticket: DISC-126
+  Title: Customer Identification UX Deep Audit
+  Type: AUDIT/RESEARCH (produces findings document)
 
-[18:23:35] ═══ PHASE 3: Execution (Branch-First) ═══
-  🌿 Created branch: quoted-run/DISC-101-107-108
+[17:45:00] ═══ PHASE 3: Deep Audit ═══
+  Audited: customer_service.py (matching logic)
+  Audited: voice_signal_extractor.py (relationship signals)
+  Audited: quote_generator.py (Claude extraction)
+  Audited: quotes.py (customer linking)
+  Audited: frontend autocomplete (DISC-022)
 
-[18:24:47] ▶ DISC-101: LLM-as-Judge (DIRECT)
-   📖 Analyzing architecture...
-[18:25:35]   🔧 Created: docs/LLM_JUDGE_FRAMEWORK.md
-[18:25:49] ▶ DISC-107: Session Context Continuity (DIRECT)
-   📖 Creating HANDOFF.md template...
-[18:26:19]   🔧 Created: HANDOFF.md (session context file)
-[18:26:36] ▶ DISC-108: Regression Gate (DIRECT)
-   📖 Creating regression gate documentation...
-[18:27:12]   🔧 Created: docs/REGRESSION_GATE_PROTOCOL.md
-[18:28:21] ═══ PHASE 4: Preview Deployment ═══
-[18:28:27]   📤 Pushed branch to origin
-[18:28:27]   🔗 Creating PR...
-[18:28:55]   ⚠️ gh CLI not installed - PR must be created manually
-[18:28:55]   🔗 PR URL: https://github.com/eddiesanjuan/quotedIT/pull/new/quoted-run/DISC-101-107-108
+[18:05:00] ═══ PHASE 4: Findings ═══
+  Key Friction Points Identified:
+  1. Customer matching happens AFTER quote generation
+  2. "Repeat customer" signal detected but doesn't trigger lookup
+  3. Phone is best identifier but rarely captured
+  4. INNOV-8 auto-quote backend exists, no UI
+  5. Autocomplete only in edit modal, not voice flow
 
-[18:29:12] ═══ PHASE 5: Preview Verification ═══
-  📝 Documentation-only changes - no functional preview testing needed
-  ✅ Files created and committed successfully
+[18:15:00] ═══ DISC-126 COMPLETE ═══
+  Output: docs/DISC-126_CUSTOMER_ID_UX_AUDIT.md
 
-[18:31:06] ═══ PHASE 7: State Update ═══
-  📝 Updated DISCOVERY_BACKLOG.md (DISC-101,107,108 → COMPLETE)
-  📝 Updated HANDOFF.md with session context
+  Priority Recommendations:
+  - P1: Post-extraction customer confirmation
+  - P1: Repeat customer signal → customer picker
+  - P2: Phone prompt on ambiguous match
+  - P2: Expose INNOV-8 auto-quote in UI
 
-[18:31:06] ═══ QUOTED RUN COMPLETE ═══
+  Status: COMPLETE (awaiting deploy)
+
+[18:30:00] ═══ DISC-126 IMPLEMENTATION ═══
+  User requested: "Bulletproof customer identification"
+
+  Backend Changes:
+  ✓ customer_service.py: find_customer_matches() with confidence scoring
+  ✓ customer_service.py: link_quote_to_customer_explicit()
+  ✓ customer_service.py: get_recent_customers()
+  ✓ customers.py: POST /customers/match endpoint
+  ✓ customers.py: GET /customers/recent endpoint
+  ✓ quotes.py: POST /quotes/{id}/link-customer endpoint
+  ✓ quotes.py: POST /quotes/{id}/check-customer-match endpoint
+
+  Frontend Changes:
+  ✓ Customer Match Confirmation Modal (confidence display)
+  ✓ Repeat Customer Picker Modal (for voice "repeat customer")
+  ✓ saveCustomerInfo() now triggers match check after save
+  ✓ Customer link status indicator ("✓ Linked" badge)
+  ✓ All DOM operations use safe methods (no innerHTML for user data)
+
+  Matching Logic:
+  - Phone match → 0.95+ confidence (near-unique)
+  - Name + Address match → combined confidence
+  - Fuzzy matching via Levenshtein distance
+  - Thresholds: >=0.95 auto-link, >=0.70 confirm, <0.50 create new
+
+  Status: IMPLEMENTED (ready for testing & deploy)
+
