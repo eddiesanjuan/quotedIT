@@ -27,8 +27,12 @@ from slowapi.util import get_remote_address
 
 from ..services import get_transcription_service, get_sanity_check_service, get_pdf_service
 from ..services.quote_generator import QUOTE_GENERATION_TOOL
+from ..services.email import email_service
+from ..services.logging import get_api_logger
 from ..prompts import get_demo_quote_prompt
 from ..config import settings
+
+logger = get_api_logger()
 
 
 router = APIRouter()
@@ -238,6 +242,20 @@ async def generate_demo_quote(
             quote_data["notes"] = quote_data["notes"] + learning_note
         else:
             quote_data["notes"] = "Demo estimate based on industry-standard pricing." + learning_note
+
+        # DISC-128: Send founder notification (don't block demo response)
+        try:
+            # Get IP from request for context
+            client_ip = request.client.host if request.client else None
+            await email_service.send_founder_demo_notification(
+                job_description=transcription_text,
+                quote_total=quote_total,
+                line_item_count=len(quote_data.get("line_items", [])),
+                ip_address=client_ip,
+            )
+        except Exception as e:
+            # Log the error but don't block demo
+            logger.warning(f"Failed to send founder demo notification: {e}")
 
         # Build response
         return DemoQuoteResponse(

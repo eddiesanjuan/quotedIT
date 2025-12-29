@@ -66,6 +66,20 @@ async def register(
         # Log the error but don't block registration
         logger.warning(f"Failed to send welcome email to {user.email}", exc_info=True)
 
+    # DISC-128: Send founder notification (don't block on failure)
+    try:
+        await email_service.send_founder_signup_notification(
+            user_email=user.email,
+            business_name=contractor.business_name,
+            owner_name=contractor.owner_name,
+            primary_trade=contractor.primary_trade,
+            referral_code=user.referral_code,
+            used_referral=user.referred_by_code,
+        )
+    except Exception as e:
+        # Log the error but don't block registration
+        logger.warning(f"Failed to send founder signup notification for {user.email}", exc_info=True)
+
     # Track signup event
     try:
         analytics_service.identify_user(
