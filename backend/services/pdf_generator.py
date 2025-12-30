@@ -476,25 +476,26 @@ class PDFGeneratorService:
             leading=12,
         ))
 
-        # Body text (leading increased from 16 to 18 for better paragraph readability)
+        # Body text - DISC-130: Increased leading from 18 to 20 for better paragraph readability
+        # 20pt leading for 11pt font = 1.82x ratio (professional typographic standard)
         self.styles.add(ParagraphStyle(
             name='QuoteBody',
             parent=self.styles['Normal'],
             fontName=template["body_font"],
             fontSize=11 + font_adj,
-            leading=int(18 * space_mult) if space_mult != 0.6 else 15,
-            spaceAfter=int(8 * space_mult),
+            leading=int(20 * space_mult) if space_mult != 0.6 else 16,
+            spaceAfter=int(10 * space_mult),
             textColor=self.template_colors["header"],
         ))
 
-        # Body text - light color (leading increased from 16 to 18 for better paragraph readability)
+        # Body text - light color - DISC-130: Increased leading from 18 to 20 for better readability
         self.styles.add(ParagraphStyle(
             name='QuoteBodyLight',
             parent=self.styles['Normal'],
             fontName=template["body_font"],
             fontSize=11 + font_adj,
-            leading=int(18 * space_mult) if space_mult != 0.6 else 15,
-            spaceAfter=int(4 * space_mult),
+            leading=int(20 * space_mult) if space_mult != 0.6 else 16,
+            spaceAfter=int(6 * space_mult),
             textColor=BRAND_GRAY,
         ))
 
@@ -527,14 +528,14 @@ class PDFGeneratorService:
             textColor=self.template_colors["accent"],  # Use accent color for total
         ))
 
-        # Fine print / disclaimer
+        # Fine print / disclaimer - DISC-130: Increased leading from 11 to 13 for readability
         self.styles.add(ParagraphStyle(
             name='FinePrint',
             parent=self.styles['Normal'],
             fontName=template["body_font"],
             fontSize=8,
             textColor=BRAND_LIGHT_GRAY,
-            leading=11,
+            leading=13,  # 1.625x ratio for comfortable reading of legal text
         ))
 
         # Footer branding
@@ -972,13 +973,14 @@ class PDFGeneratorService:
             else:
                 item_text = f"<b>{name}</b>"
 
+            # DISC-130: Increased leading from 14 to 16 for better line item readability
             table_data.append([
                 Paragraph(item_text, ParagraphStyle(
                     name='ItemCell',
                     parent=self.styles['Normal'],
                     fontName='Helvetica',
                     fontSize=10,
-                    leading=14,
+                    leading=16,  # 1.6x ratio for comfortable multi-line reading
                     textColor=BRAND_DARK,
                 )),
                 Paragraph(f"${amount:,.2f}", ParagraphStyle(
