@@ -8,6 +8,7 @@ Standard Flag Names:
   - invoicing_enabled: DISC-071 quote-to-invoice
   - new_pdf_templates: DISC-072 PDF polish
   - voice_template_customization: DISC-070 voice PDF
+  - ai_company_enabled: AI Civilization autonomous operations
 
 Usage:
     from backend.services.feature_flags import is_feature_enabled
@@ -141,3 +142,12 @@ def is_new_pdf_templates_enabled(user_id: Optional[str] = None) -> bool:
 def is_voice_template_customization_enabled(user_id: Optional[str] = None) -> bool:
     """Check if voice-driven PDF customization is enabled (DISC-070)."""
     return is_feature_enabled("voice_template_customization", user_id, default=False)
+
+
+def is_ai_company_enabled(user_id: Optional[str] = None) -> bool:
+    """Check if AI Civilization autonomous operations are enabled.
+
+    This gates the /api/ai-company/* endpoints for webhook reception
+    and AI agent coordination. Default is False for safety.
+    """
+    return is_feature_enabled("ai_company_enabled", user_id, default=False)

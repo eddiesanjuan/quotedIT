@@ -1,0 +1,79 @@
+# AI Civilization Code Agent
+# Handles bug fixes, simple features, and PR creation
+
+name: AI Civilization Code Agent
+
+on:
+  repository_dispatch:
+    types: [code_dispatch]
+  workflow_dispatch:
+    inputs:
+      task:
+        description: 'Task description or ticket ID'
+        required: false
+        type: string
+
+jobs:
+  code-agent:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    if: ${{ vars.AI_COMPANY_ENABLED == 'true' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for branching
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Claude Code
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Run Code Agent
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          claude-code --print "
+          You are the Quoted Code Agent.
+
+          Read your specification from .ai-company/agents/code/AGENT.md
+          Read your current state from .ai-company/agents/code/state.md
+          Check your queue at .ai-company/agents/code/queue.md
+
+          Your responsibilities:
+          1. Pick up coding tasks from your queue
+          2. Create a feature branch for the work
+          3. Write clean, tested code following project conventions
+          4. Run tests to verify your changes
+          5. Create a PR with clear description
+          6. NEVER merge - always wait for human review
+
+          Constitutional Limits:
+          - Maximum 5 files per PR
+          - Never touch auth.py, billing.py, config.py without approval
+          - Never modify database migrations directly
+          - Always run tests before creating PR
+          - Never force push or modify git history
+
+          Update your state file with progress.
+          "
+
+      - name: Commit State Changes
+        if: success()
+        run: |
+          git config --local user.email "ai-company@quoted.it.com"
+          git config --local user.name "Quoted Code Agent"
+          git add .ai-company/agents/code/
+          git diff --cached --quiet || git commit -m "Code Agent: Update $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          git push || echo "No changes to push"

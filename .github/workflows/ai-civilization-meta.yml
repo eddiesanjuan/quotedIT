@@ -1,0 +1,78 @@
+# AI Civilization Meta Agent
+# Weekly self-improvement engine - evolves agents within constitutional bounds
+
+name: AI Civilization Meta Agent
+
+on:
+  schedule:
+    # Weekly on Sunday at 3 AM CST (9 AM UTC)
+    - cron: '0 9 * * 0'
+  repository_dispatch:
+    types: [meta_dispatch]
+  workflow_dispatch:
+    inputs:
+      focus:
+        description: 'Specific area to improve (optional)'
+        required: false
+        type: string
+
+jobs:
+  meta-agent:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    if: ${{ vars.AI_COMPANY_ENABLED == 'true' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for trend analysis
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Claude Code
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Run Meta Agent
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          claude-code --print "
+          You are the Quoted Meta Agent - the self-improvement engine.
+
+          Read your specification from .ai-company/agents/meta/AGENT.md
+          Read your current state from .ai-company/agents/meta/state.md
+          Analyze last week's performance from .ai-company/state/weekly/
+
+          Your responsibilities:
+          1. Review all agent performance metrics from the past week
+          2. Identify patterns in failures, escalations, and successes
+          3. Propose improvements to agent specifications (within constitutional limits)
+          4. Update shared knowledge in .ai-company/shared/knowledge/
+          5. Draft weekly summary for Eddie
+
+          Constitutional Limits:
+          - Can PROPOSE spec changes, never directly modify agent cores
+          - Cannot expand any agent's blast radius
+          - Cannot add new external API access
+          - Cannot modify constitutional limits of other agents
+          - All spec changes go to .ai-company/pending/spec-changes/ for approval
+
+          Focus on: efficiency, accuracy, user satisfaction trends.
+
+          Update your state file with analysis.
+          "
+
+      - name: Commit State Changes
+        if: success()
+        run: |
+          git config --local user.email "ai-company@quoted.it.com"
+          git config --local user.name "Quoted Meta Agent"
+          git add .ai-company/agents/meta/ .ai-company/state/weekly/ .ai-company/pending/
+          git diff --cached --quiet || git commit -m "Meta Agent: Weekly analysis $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          git push || echo "No changes to push"
