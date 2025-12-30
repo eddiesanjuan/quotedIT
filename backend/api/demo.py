@@ -309,14 +309,14 @@ async def generate_demo_pdf(
         # Add quote number for PDF
         quote_data["quote_number"] = f"DEMO-{datetime.now().strftime('%Y%m%d%H%M')}"
 
-        # Generate PDF with demo watermark
+        # DISC-129: Generate PDF with premium demo template and watermark
         pdf_bytes = pdf_service.generate_quote_pdf(
             quote_data=quote_data,
             contractor=demo_contractor,
             terms=DEMO_TERMS,
             watermark=True,
             watermark_text="DEMO",  # Demo-specific watermark text
-            template="modern",
+            template="demo_premium",  # Premium demo template for first impressions
         )
 
         # Return as base64 for easy frontend handling
@@ -363,13 +363,14 @@ async def download_demo_pdf(
             "notes": "💡 This is a demo PDF. With Quoted, you get your logo, contact info, and AI that learns your pricing.",
         }
 
+        # DISC-129: Use premium demo template for download endpoint too
         pdf_bytes = pdf_service.generate_quote_pdf(
             quote_data=sample_quote,
             contractor=DEMO_CONTRACTOR,
             terms=DEMO_TERMS,
             watermark=True,
             watermark_text="DEMO",
-            template="modern",
+            template="demo_premium",
         )
 
         return Response(

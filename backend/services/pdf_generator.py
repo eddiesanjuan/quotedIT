@@ -152,6 +152,18 @@ PDF_TEMPLATES = {
         "accent_color": "#000000",  # Black only
         "bg_alt_color": "#ffffff",
         "available_to": ["starter", "pro", "team"]
+    },
+    # DISC-129: Premium demo template for first impressions
+    "demo_premium": {
+        "name": "Demo Premium",
+        "description": "Ultra-polished demo experience",
+        "title_font": "Helvetica",
+        "body_font": "Helvetica",
+        "header_color": "#1a365d",  # Deep navy
+        "accent_color": "#d69e2e",  # Gold
+        "bg_alt_color": "#f7fafc",  # Very light blue-gray
+        "available_to": ["demo"],  # Demo only
+        "use_demo_logo": True,  # Flag to use DemoPremiumLogo
     }
 }
 
@@ -233,6 +245,89 @@ class LogoPlaceholder(Flowable):
         self.canv.drawString(x, y, self.initial)
 
 
+class DemoPremiumLogo(Flowable):
+    """
+    DISC-129: Premium demo logo placeholder for first impressions.
+
+    A sophisticated geometric logo design that looks intentionally premium,
+    not like "something's missing." Features a modern hexagon mark with
+    elegant typography.
+
+    Colors: Deep navy (#1a365d) + Gold (#d69e2e)
+    """
+
+    def __init__(self, size: float = 56):
+        Flowable.__init__(self)
+        self.size = size
+        self.width = size + 95  # Logo + text width
+        self.height = size
+
+        # Premium colors
+        self.navy = colors.HexColor('#1a365d')
+        self.gold = colors.HexColor('#d69e2e')
+        self.light_gold = colors.HexColor('#f6e05e')
+
+    def draw(self):
+        # Draw a modern hexagon mark
+        center_x = self.size / 2
+        center_y = self.size / 2
+        radius = self.size * 0.42
+
+        # Create hexagon path
+        import math
+        points = []
+        for i in range(6):
+            angle = math.radians(30 + i * 60)  # Start at 30° for flat-top hexagon
+            px = center_x + radius * math.cos(angle)
+            py = center_y + radius * math.sin(angle)
+            points.append((px, py))
+
+        # Draw filled hexagon with navy
+        self.canv.setFillColor(self.navy)
+        self.canv.setStrokeColor(self.navy)
+        path = self.canv.beginPath()
+        path.moveTo(*points[0])
+        for p in points[1:]:
+            path.lineTo(*p)
+        path.close()
+        self.canv.drawPath(path, fill=1, stroke=0)
+
+        # Draw gold accent - inner diamond shape
+        inner_radius = radius * 0.5
+        diamond_points = []
+        for i in range(4):
+            angle = math.radians(i * 90)  # Diamond at 0, 90, 180, 270
+            px = center_x + inner_radius * math.cos(angle)
+            py = center_y + inner_radius * math.sin(angle)
+            diamond_points.append((px, py))
+
+        self.canv.setFillColor(self.gold)
+        path = self.canv.beginPath()
+        path.moveTo(*diamond_points[0])
+        for p in diamond_points[1:]:
+            path.lineTo(*p)
+        path.close()
+        self.canv.drawPath(path, fill=1, stroke=0)
+
+        # Draw text next to hexagon: "YOUR BUSINESS"
+        text_x = self.size + 8
+
+        # "YOUR BUSINESS" - tracked typography
+        self.canv.setFillColor(self.navy)
+        self.canv.setFont('Helvetica-Bold', 12)
+        business_text = "YOUR BUSINESS"
+        # Draw with letter-spacing effect (manual tracking)
+        char_x = text_x
+        for char in business_text:
+            self.canv.drawString(char_x, center_y + 4, char)
+            char_x += self.canv.stringWidth(char, 'Helvetica-Bold', 12) + 1.2  # Extra tracking
+
+        # "Professional Services" subtitle
+        self.canv.setFillColor(self.gold)
+        self.canv.setFont('Helvetica', 9)
+        self.canv.drawString(text_x, center_y - 10, "Professional Services")
+
+
 class HorizontalLine(Flowable):
     """A thin horizontal divider line."""
 
@@ -278,6 +373,9 @@ class PDFGeneratorService:
         """
         # Get template config or fall back to modern
         template = PDF_TEMPLATES.get(template_key, PDF_TEMPLATES["modern"])
+
+        # DISC-129: Store template config for use in header builder
+        self._current_template = template
 
         # DISC-072: Get spacing mode (normal, compact, detailed)
         self.spacing_mode = template.get("spacing", "normal")
@@ -714,8 +812,13 @@ class PDFGeneratorService:
                 logo = LogoPlaceholder(initial, size=48)
 
         if logo is None:
-            # Use placeholder logo
-            logo = LogoPlaceholder(initial, size=48)
+            # DISC-129: Use premium demo logo if template specifies it
+            use_demo_logo = getattr(self, '_current_template', {}).get('use_demo_logo', False)
+            if use_demo_logo:
+                logo = DemoPremiumLogo(size=56)
+            else:
+                # Use standard placeholder logo
+                logo = LogoPlaceholder(initial, size=48)
 
         # Business info column
         business_info = []
@@ -727,9 +830,12 @@ class PDFGeneratorService:
         header_data = [[logo, business_info]]
 
         # DISC-127: Increased first column to 130px to accommodate wider logos
+        # DISC-129: Further increase for demo premium logo (logo+text ~150px)
+        use_demo_logo = getattr(self, '_current_template', {}).get('use_demo_logo', False)
+        first_col_width = 160 if use_demo_logo else 130
         header_table = Table(
             header_data,
-            colWidths=[130, self.page_width - 130],
+            colWidths=[first_col_width, self.page_width - first_col_width],
             hAlign='LEFT',
         )
 
