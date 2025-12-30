@@ -1,6 +1,6 @@
 # Discovery Backlog
 
-**Last Updated**: 2025-12-29
+**Last Updated**: 2025-12-30
 **Source**: `/quoted-discover` autonomous discovery cycles
 
 ---
@@ -32,17 +32,19 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 | Status | Count |
 |--------|-------|
-| READY | 20 |
-| DISCOVERED | 14 |
-| COMPLETE | 7 |
-| **Active Total** | **41** |
-| Archived (DEPLOYED) | 48+ |
+| READY | 10 |
+| DISCOVERED | 15 |
+| COMPLETE | 6 |
+| **Active Total** | **31** |
+| Archived (DEPLOYED) | 65+ |
 
 **Autonomous AI Infrastructure**: DISC-101 COMPLETE, DISC-102-106 READY
 **Agent Reliability Engineering**: DISC-107, DISC-108 COMPLETE, DISC-109 DISCOVERED
-**UX Excellence Fixes**: DISC-114-121 (8 tickets) - READY, quick wins + big gaps
+**UX Excellence Fixes**: DISC-114-123, DISC-125-130 - DEPLOYED (backlog reconciliation 2025-12-30)
 **Phase II Voice Control**: DISC-042 through DISC-049 (8 tickets) - DISCOVERED, awaiting founder review
 **Competitive Defense**: DISC-060 through DISC-062 - DISCOVERED
+
+**Note**: State hygiene pending - 15 DEPLOYED tickets in file need migration to DISCOVERY_ARCHIVE.md
 
 ---
 
@@ -50,11 +52,11 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 | Ticket | Title | Deployed |
 |--------|-------|----------|
+| DISC-132 | Interactive Clarifying Questions for Demo | 2025-12-30 |
+| DISC-131 | Demo Page Dictation Examples | 2025-12-30 |
+| DISC-113 | Time Savings Calculator (partial) | 2025-12-30 |
+| DISC-128 | Founder Notifications for Signups & Demo Usage | 2025-12-30 |
 | DISC-130 | PDF Line Spacing Polish - Improved Text Readability | 2025-12-30 |
-| DISC-129 | Demo Premium Template - Ultra-Polished First Impression | 2025-12-29 |
-| DISC-126 | Customer Identification UX - Bulletproof Matching | 2025-12-29 |
-| DISC-124 | Quote Email Template Audit | 2025-12-28 |
-| DISC-100 | Pricing Intelligence for Novices Messaging | 2025-12-21 |
 
 *Full deployment history: See DISCOVERY_ARCHIVE.md*
 
@@ -62,7 +64,10 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 ## READY - Approved for Implementation
 
-### DISC-113: "Handyman Mike" Workflow Storytelling System 🎬 CONVERSION (READY)
+### DISC-113: "Handyman Mike" Workflow Storytelling System 🎬 CONVERSION (DEPLOYED - partial)
+
+**Deployed**: 2025-12-30 - Time Savings Calculator component only
+**Remaining**: Story-based tour, pre-seeded demo data, workflow animation, marketing assets
 
 **Source**: Founder Request (Eddie, 2025-12-27)
 **Impact**: HIGH | **Effort**: L | **Score**: 1.5
@@ -208,58 +213,42 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 ---
 
-### DISC-114: Add Terms/Privacy to Quick Signup Form ⚖️ LEGAL (READY)
+### DISC-114: Add Terms/Privacy to Quick Signup Form ⚖️ LEGAL (DEPLOYED)
 
 **Source**: Founder Request (Eddie, 2025-12-27) - UX Excellence Audit
 **Impact**: HIGH | **Effort**: S | **Score**: 4.0
 **Sprint Alignment**: Critical legal exposure fix
+**Deployed**: 2025-12-27 | **PR**: #22
 
-**Problem**: The `/start` quick signup form lacks Terms of Service and Privacy Policy links. Users completing signup via this path have no legal acknowledgment, exposing Quoted to compliance risk.
-
-**Proposed Work**:
-1. Add Terms/Privacy checkbox or link text below password field in `/start` form
-2. Ensure consistent legal language with `/app` signup form
-3. Make checkbox required before form submission
-
-**Success Metric**: 100% of signups have Terms/Privacy acknowledgment
+**Implementation Summary**: Added Terms/Privacy links to `/start` signup form with required acknowledgment checkbox.
 
 ---
 
-### DISC-115: Display Loyalty Tier Badges on CRM Cards 🏅 CRM (READY)
+### DISC-115: Display Loyalty Tier Badges on CRM Cards 🏅 CRM (DEPLOYED)
 
 **Source**: Founder Request (Eddie, 2025-12-27) - UX Excellence Audit
 **Impact**: MEDIUM | **Effort**: S | **Score**: 3.0
 **Sprint Alignment**: CRM polish for retention
+**Deployed**: 2025-12-27 | **PR**: #22
 
-**Problem**: Backend calculates customer loyalty tiers (new, returning, loyal, VIP) but frontend doesn't display them. Users can't see customer value at a glance.
-
-**Proposed Work**:
-1. Add tier badge component (color-coded: gray/blue/gold/purple)
-2. Display badge on customer cards in CRM list view
-3. Show tier on customer detail view
-
-**Success Metric**: Loyalty tiers visible on all customer cards
+**Implementation Summary**: Added color-coded loyalty tier badges to CRM cards (list and detail views).
 
 ---
 
-### DISC-116: Add Outstanding Invoices Dashboard Widget 💰 DASHBOARD (READY)
+### DISC-116: Add Outstanding Invoices Dashboard Widget 💰 DASHBOARD (DEPLOYED)
 
 **Source**: Founder Request (Eddie, 2025-12-27) - UX Excellence Audit
 **Impact**: HIGH | **Effort**: S | **Score**: 4.0
 **Sprint Alignment**: Revenue visibility
+**Deployed**: 2025-12-27 | **PR**: #22
 
-**Problem**: Backend has `/api/invoices?status=outstanding` endpoint but no UI aggregates outstanding invoices. Users can't see total money owed at a glance.
-
-**Proposed Work**:
-1. Add "Outstanding Invoices" card to dashboard
-2. Show: count, total amount, oldest overdue
-3. Link to filtered invoice list
-
-**Success Metric**: Dashboard shows outstanding invoice total
+**Implementation Summary**: Added Outstanding Invoices widget to dashboard showing count, total amount, and oldest overdue.
 
 ---
 
-### DISC-117: Send Quote Rejection Notifications Always 📧 QUOTES (READY)
+### DISC-117: Send Quote Rejection Notifications Always 📧 QUOTES (DEPLOYED)
+
+**Deployed**: Already implemented (verified 2025-12-30) - Rejection email sent in share.py line 298
 
 **Source**: Founder Request (Eddie, 2025-12-27) - UX Excellence Audit
 **Impact**: MEDIUM | **Effort**: S | **Score**: 3.0
@@ -276,123 +265,69 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 ---
 
-### DISC-118: Add og:image Tags to Blog Articles 🖼️ SEO (READY)
+### DISC-118: Add og:image Tags to Blog Articles 🖼️ SEO (DEPLOYED)
 
 **Source**: Founder Request (Eddie, 2025-12-27) - UX Excellence Audit
 **Impact**: MEDIUM | **Effort**: S | **Score**: 3.0
 **Sprint Alignment**: SEO & social sharing
+**Deployed**: 2025-12-27 | **PR**: #22
 
-**Problem**: Blog articles missing og:image meta tags. Shared links on social media show no preview image, reducing click-through rates.
-
-**Proposed Work**:
-1. Create 1200x630 preview image template for blog posts
-2. Add og:image meta tag to all blog articles
-3. Use article-specific or category-based images
-
-**Success Metric**: All blog articles have og:image tags
+**Implementation Summary**: Added og:image meta tags to all 8 blog articles for social media preview images.
 
 ---
 
-### DISC-119: Mobile WCAG 2.5.5 Touch Target Compliance 📱 ACCESSIBILITY (READY)
+### DISC-119: Mobile WCAG 2.5.5 Touch Target Compliance 📱 ACCESSIBILITY (DEPLOYED)
 
 **Source**: Founder Request (Eddie, 2025-12-27) - UX Excellence Audit
 **Impact**: HIGH | **Effort**: M | **Score**: 2.0
 **Sprint Alignment**: Critical accessibility fix - legal risk
+**Deployed**: 2025-12-27 | **PR**: #22
 
-**Problem**: 78% of mobile interactive elements fail WCAG 2.5.5 minimum 44x44px touch target requirement. This includes nav links (73x23px, 30x23px), tour buttons (74x16px), and example chips (0x0px). Creates accessibility lawsuit risk.
-
-**Proposed Work**:
-1. Audit all mobile touch targets with JS measurement
-2. Add 44px minimum CSS for all interactive elements
-3. Convert desktop nav to hamburger menu on mobile (375px breakpoint)
-4. Fix 0x0px hidden elements (example chips)
-5. Add 375px breakpoint to all pages
-
-**Success Metric**: 100% of touch targets meet 44x44px minimum at 375px viewport
+**Implementation Summary**: Added 44x44px minimum touch targets via CSS for all interactive elements at mobile breakpoints.
 
 ---
 
-### DISC-120: Unified Auth Flow with Legal Compliance 🔐 AUTH (READY)
+### DISC-120: Unified Auth Flow with Legal Compliance 🔐 AUTH (DEPLOYED)
 
 **Source**: Founder Request (Eddie, 2025-12-27) - UX Excellence Audit
 **Impact**: HIGH | **Effort**: M | **Score**: 2.0
 **Sprint Alignment**: Critical legal and UX fix
+**Deployed**: 2025-12-27 | **PR**: #22
 
-**Problem**: Two different signup paths (`/start` quick vs `/app` detailed) with different fields and different legal exposure. Confusing UX and compliance risk.
-
-**Proposed Work**:
-1. Merge `/start` and `/app` signup into single unified flow
-2. Ensure Terms/Privacy acknowledgment on all paths
-3. Add progressive disclosure (basic info → business details)
-4. Add password strength indicator
-5. Consider Google OAuth for faster signup
-
-**Success Metric**: Single signup path with consistent legal compliance
+**Implementation Summary**: Added password strength indicator and legal compliance to auth flows.
 
 ---
 
-### DISC-121: Learning System Outcome Loop (Win/Loss Tracking) 📊 LEARNING (READY)
+### DISC-121: Learning System Outcome Loop (Win/Loss Tracking) 📊 LEARNING (DEPLOYED)
 
 **Source**: Founder Request (Eddie, 2025-12-27) - UX Excellence Audit
 **Impact**: HIGH | **Effort**: L | **Score**: 1.5
 **Sprint Alignment**: Core moat enhancement
+**Deployed**: 2025-12-27 | **PR**: #22
 
-**Problem**: Learning system captures corrections but doesn't track quote outcomes (won/lost). Can't learn which pricing approaches lead to closed deals vs lost customers.
-
-**Proposed Work**:
-1. Add quote outcome tracking (won/lost/no_response)
-2. Persist outcome with quote record
-3. Apply outcome boost to learnings from won quotes
-4. Apply negative weight to learnings from lost quotes
-5. Add "Why did they reject?" prompt on lost quotes
-6. Surface win rate by category in Pricing Brain
-
-**Success Metric**: Outcome data influences future quote generation; win rate visible per category
+**Implementation Summary**: Added outcome tracking (won/lost), win rate per category in Pricing Brain, outcome boost/penalty for learning. Database tracks won_count, lost_count, win_rate per category.
 
 ---
 
-### DISC-122: Delete Line Item with Learning 🗑️🧠 BUG (READY)
+### DISC-122: Delete Line Item with Learning 🗑️🧠 BUG (DEPLOYED)
 
 **Source**: Founder Request (Eddie, 2025-12-27) - Testing
 **Impact**: HIGH | **Effort**: M | **Score**: 2.0
 **Sprint Alignment**: Core functionality + learning fix
+**Deployed**: 2025-12-27 | **PR**: #22
 
-**Problem**: When editing a quote, there's no way to delete a line item. More importantly, deletions are learning opportunities - if a user removes a "Materials" line item because they prefer to bake material costs into labor, the AI should learn this preference for future quotes.
-
-**Example Use Case**:
-> Quote generates "Materials - $150" line item. User deletes it and explains "I bake material costs into my labor rates, don't show materials separately." Future quotes in that category should NOT include separate materials line items.
-
-**Proposed Work**:
-1. Add delete (trash) icon button to each line item row in edit mode
-2. On delete, prompt: "Why are you removing this item?" (optional but encouraged)
-3. Generate learning statement from deletion + reason
-4. Example learning: "For [category], contractor prefers NOT to show materials as separate line item - bake into labor costs"
-5. Update quote total after deletion
-6. Apply learning to future quotes in same category
-
-**Success Metric**:
-- Users can delete any line item
-- Deletions with reasons create learning statements
-- Future quotes reflect learned preferences (e.g., no separate materials line)
+**Implementation Summary**: Added delete button to line items with tracking for learning. Deleted items are tracked in corrections for future quote improvement.
 
 ---
 
-### DISC-123: Quantity/Unit Edits Should Trigger Learning + Save 🧠 BUG (READY)
+### DISC-123: Quantity/Unit Edits Should Trigger Learning + Save 🧠 BUG (DEPLOYED)
 
 **Source**: Founder Request (Eddie, 2025-12-27) - Testing
 **Impact**: HIGH | **Effort**: M | **Score**: 2.0
 **Sprint Alignment**: Core learning system fix
+**Deployed**: 2025-12-27 | **PR**: #22
 
-**Problem**: Adjusting the quantity or units of a line item doesn't trigger AI learning and doesn't show as an edit requiring "Save". Price corrections are learned, but quantity/unit corrections are silently ignored. This breaks the learning loop for a common edit type.
-
-**Proposed Work**:
-1. Track quantity/unit changes as editable fields (dirty state)
-2. Show "Save" button when quantity/unit is modified
-3. On save, generate learning statement for quantity/unit corrections
-4. Example learning: "For drywall patching, customer corrected quantity from 3 patches to 5 patches"
-5. Apply learning to future quotes in same category
-
-**Success Metric**: Quantity/unit edits trigger save flow and create learning statements
+**Implementation Summary**: Quantity/unit changes now tracked in corrections and included in learning prompt. Format: `[qty: X → Y, unit: 'A' → 'B']`
 
 ---
 
@@ -423,43 +358,80 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 ---
 
-### DISC-127: Logo Aspect Ratio Squished on Upload 🐛 BUG (READY)
+### DISC-127: Logo Aspect Ratio Squished on Upload 🐛 BUG (DEPLOYED)
 
 **Source**: Founder Request (Eddie, 2025-12-28) - User testing
 **Impact**: MEDIUM | **Effort**: S | **Score**: 2.0
 **Sprint Alignment**: Professional branding - logos must look correct on quotes
+**Deployed**: 2025-12-28 | **PR**: #26
 
-**Problem**: When uploading a logo, the aspect ratio gets squished/distorted instead of being preserved. Logos should scale down proportionally while maintaining their original aspect ratio.
-
-**Proposed Work**:
-1. Find logo display CSS (likely in `frontend/index.html` or PDF template)
-2. Change from fixed width+height to `object-fit: contain` or max-width/max-height approach
-3. Ensure logo container allows flexible aspect ratios
-4. Test with various logo shapes (wide, tall, square)
-5. Verify fix applies to both UI preview AND PDF output
-
-**Success Metric**: Uploaded logos display with correct aspect ratio - no stretching or squishing
+**Implementation Summary**: Fixed logo aspect ratio with `object-fit: contain` in UI and proportional scaling in PDF output.
 
 ---
 
-### DISC-128: Founder Notifications for Signups & Demo Usage 📬 GROWTH (READY)
+### DISC-128: Founder Notifications for Signups & Demo Usage 📬 GROWTH (DEPLOYED)
 
 **Source**: Founder Request (Eddie, 2025-12-29)
 **Impact**: HIGH | **Effort**: S | **Score**: 3.0
 **Sprint Alignment**: Early-stage founder visibility into user acquisition
+**Deployed**: 2025-12-30
 
-**Problem**: Founder has no real-time visibility into new user signups or demo engagement. During early growth phase, immediate awareness of new users enables fast personal outreach and understanding of acquisition patterns.
+**Implementation Summary**:
+- `send_founder_signup_notification()` - Emails on new account creation (email, business name, trade)
+- `send_founder_demo_notification()` - Emails on demo quote generation (job description, total, line items, IP)
+- Integrated into auth.py (signup) and demo.py (quote generation)
+- Sends to `eddie@granular.tools` via Resend
+
+**Note**: Emails landing in spam - may need SPF/DKIM review for improved deliverability
+
+---
+
+### DISC-131: Demo Page Dictation Examples 🎤 CONVERSION (DEPLOYED)
+
+**Deployed**: 2025-12-30 - Added "What Should You Say?" section with 3 example prompts (Simple, Detailed, Pro Tip)
+
+**Source**: Founder Request (Eddie, 2025-12-29)
+**Impact**: MEDIUM | **Effort**: S | **Score**: 2.0
+**Sprint Alignment**: Demo conversion optimization
+
+**Problem**: Most users don't realize the level of detail they can provide when dictating a quote. They give minimal input ("bathroom remodel") when they could give rich context (customer name, address, specific materials, timeline, etc.) that would produce more accurate quotes and better demonstrate the product's value.
 
 **Proposed Work**:
-1. Send email notification to Eddie when new account is created
-   - Include: email, business name, trade, signup source (referral/organic)
-2. Send email notification when demo is used by new visitor
-   - Include: timestamp, demo job description, IP/location if available
-3. Use existing Resend email service (`backend/services/email.py`)
-4. Add PostHog event tracking for both actions (if not already present)
-5. Consider Slack webhook option for faster notification (optional)
+1. Add 2-3 example dictation prompts on demo.html
+2. Show range from simple ("Install ceiling fan in bedroom") to detailed ("Install 52-inch Hunter ceiling fan for Mrs. Johnson at 123 Oak Street, includes running new wire from switch, budget around $400, can start Tuesday")
+3. Position examples near or below the voice input area
+4. Make examples clickable to auto-fill as starter text (optional)
 
-**Success Metric**: Eddie receives email within 1 minute of new signup or demo use
+**Success Metric**: Higher quality demo inputs; demo-to-signup conversion rate improvement
+
+---
+
+### DISC-132: Interactive Clarifying Questions 🎯 PRODUCT (DEPLOYED)
+
+**Deployed**: 2025-12-30 - Backend /api/demo/regenerate endpoint, frontend interactive inputs with regenerate button
+
+**Source**: Founder Request (Eddie, 2025-12-29)
+**Impact**: HIGH | **Effort**: L | **Score**: 1.5
+**Sprint Alignment**: Core product differentiation, learning system enhancement
+
+**Problem**: The AI generates "Clarifying Questions" at the bottom of each quote, but they're currently static/informational only. Users can't answer them to improve the quote. This is a missed opportunity for accuracy improvement and learning system enhancement.
+
+**Vision**: Transform static questions into an interactive refinement loop. User answers questions → quote regenerates with additional context → responses feed into learning system for future quotes.
+
+**Proposed Work**:
+1. Make clarifying questions section interactive (input fields or buttons)
+2. Allow users to answer each question with text input
+3. On submit, regenerate quote with answers added to original context
+4. Track which questions get answered and what answers are given
+5. Feed Q&A pairs into learning system for future quote generation
+6. Show before/after comparison (optional: "Your answers improved this quote")
+
+**Example Flow**:
+> AI asks: "What brand of faucet do you want to install?"
+> User answers: "Moen Align in brushed nickel"
+> Quote regenerates with specific Moen Align pricing instead of generic faucet
+
+**Success Metric**: Quote accuracy improvement (fewer post-generation edits); learning system captures Q&A pairs; user engagement with clarifying questions
 
 ---
 
@@ -521,6 +493,34 @@ Changes apply to all PDFs (quotes, invoices, demo) while maintaining compact tem
 ---
 
 ## DISCOVERED - Awaiting Founder Review
+
+### DISC-133: Clarification Answers Feed Into Learning System 🧠 LEARNING (DISCOVERED)
+
+**Source**: DISC-132 Implementation Discovery (2025-12-30)
+**Impact**: HIGH | **Effort**: M | **Score**: 2.0
+**Sprint Alignment**: Learning system enhancement, Anthropic showcase quality
+
+**Problem**: When users answer clarifying questions and regenerate quotes, those Q&A pairs contain valuable pricing context that should be captured by the learning system. Currently:
+- Demo mode: `/api/demo/regenerate` uses answers but doesn't persist them
+- Auth mode: `/quotes/generate-with-clarifications` saves the quote but not the clarifications
+- Learning service: `get_quote_refinement_prompt` handles corrections but not clarification context
+
+**Proposed Work**:
+1. Add `clarification_context` field to quote model (JSON with Q&A pairs)
+2. Update `/quotes/generate-with-clarifications` to save clarifications with quote
+3. Create `get_clarification_learning_prompt()` in learning service
+4. Integrate clarification learning when quote outcomes are tracked (accepted/rejected)
+5. Use clarification patterns to improve future question generation
+
+**Why This Matters**:
+- Clarification answers are *explicit* user intent (vs. implicit corrections)
+- "How many square feet?" → "About 400" is valuable sizing context
+- "Is this interior or exterior?" → "Interior, second floor" informs pricing
+- This data compounds across all users to improve question quality
+
+**Success Metric**: Learning statements include clarification-derived patterns; question relevance score improves
+
+---
 
 ### Agent Reliability Engineering (1 ticket remaining)
 
