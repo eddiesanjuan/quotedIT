@@ -1641,6 +1641,25 @@
         var errorMessage = document.getElementById('errorMessage');
         var resultsSection = document.getElementById('resultsSection');
 
+        // DISC-131: Handle ?prompt= query parameter from demo page
+        (function() {
+            var urlParams = new URLSearchParams(window.location.search);
+            var prompt = urlParams.get('prompt');
+            if (prompt) {
+                // Pre-fill the text area with the prompt
+                descriptionInput.value = decodeURIComponent(prompt);
+                // Switch to text tab
+                textTab.classList.add('active');
+                voiceTab.classList.remove('active');
+                textContent.classList.add('active');
+                voiceContent.classList.remove('active');
+                // Focus the textarea
+                setTimeout(function() {
+                    descriptionInput.focus();
+                }, 100);
+            }
+        })();
+
         // Tab switching
         voiceTab.addEventListener('click', function() {
             voiceTab.classList.add('active');

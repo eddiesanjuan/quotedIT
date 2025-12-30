@@ -579,6 +579,104 @@
             display: block;
         }
 
+        /* DISC-131: Example Voice Prompts Section */
+        .example-prompts-section {
+            text-align: center;
+            padding: 48px 32px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            margin-bottom: 32px;
+        }
+
+        .example-prompts-section h2 {
+            font-family: var(--font-serif);
+            font-size: 1.75rem;
+            font-weight: 500;
+            margin-bottom: 12px;
+        }
+
+        .example-prompts-section > p {
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+        }
+
+        .example-prompts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .example-prompt-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: left;
+            transition: all 0.3s ease;
+        }
+
+        .example-prompt-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        .example-prompt-label {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 100px;
+            font-size: 0.6875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 12px;
+        }
+
+        .example-prompt-card.simple .example-prompt-label {
+            background: rgba(74, 222, 128, 0.1);
+            color: var(--success);
+        }
+
+        .example-prompt-card.detailed .example-prompt-label {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--accent);
+        }
+
+        .example-prompt-card.pro .example-prompt-label {
+            background: rgba(251, 191, 36, 0.1);
+            color: var(--warning);
+        }
+
+        .example-prompt-text {
+            font-family: var(--font-serif);
+            font-style: italic;
+            font-size: 0.9375rem;
+            color: var(--text-primary);
+            line-height: 1.5;
+            margin-bottom: 16px;
+        }
+
+        .example-prompt-try {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            color: var(--accent);
+            font-size: 0.8125rem;
+            font-weight: 500;
+            text-decoration: none;
+            transition: gap 0.2s ease;
+        }
+
+        .example-prompt-try:hover {
+            gap: 8px;
+        }
+
+        .example-prompts-note {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
         /* CTA Section */
         .cta-section {
             text-align: center;
@@ -1459,6 +1557,30 @@
             <a href="/app" class="control-btn primary">
                 Start Your Free Trial
             </a>
+        </div>
+
+        <!-- DISC-131: Example Voice Prompts Section -->
+        <div class="example-prompts-section">
+            <h2>What Should You Say?</h2>
+            <p>Here's what contractors are saying to get instant quotes:</p>
+            <div class="example-prompts-grid">
+                <div class="example-prompt-card simple">
+                    <div class="example-prompt-label">Simple</div>
+                    <p class="example-prompt-text">"New kitchen faucet install for John Smith"</p>
+                    <a href="/try?prompt=New+kitchen+faucet+install+for+John+Smith" class="example-prompt-try">Try this →</a>
+                </div>
+                <div class="example-prompt-card detailed">
+                    <div class="example-prompt-label">Detailed</div>
+                    <p class="example-prompt-text">"Bathroom remodel for Sarah Miller at 123 Oak St. New tile floor, vanity replacement, and paint. About 80 square feet. She wants it done in two weeks."</p>
+                    <a href="/try?prompt=Bathroom+remodel+for+Sarah+Miller+at+123+Oak+St.+New+tile+floor,+vanity+replacement,+and+paint.+About+80+square+feet.+She+wants+it+done+in+two+weeks." class="example-prompt-try">Try this →</a>
+                </div>
+                <div class="example-prompt-card pro">
+                    <div class="example-prompt-label">Pro Tip</div>
+                    <p class="example-prompt-text">"Interior painting for the Johnsons. Living room 400 square feet, bedroom 300 square feet. They want Benjamin Moore paint. I'll need 2 days and my usual crew."</p>
+                    <a href="/try?prompt=Interior+painting+for+the+Johnsons.+Living+room+400+square+feet,+bedroom+300+square+feet.+They+want+Benjamin+Moore+paint.+I'll+need+2+days+and+my+usual+crew." class="example-prompt-try">Try this →</a>
+                </div>
+            </div>
+            <p class="example-prompts-note">💡 The more details you include, the more accurate your quote. But even a simple description works!</p>
         </div>
 
         <!-- CTA Section -->
