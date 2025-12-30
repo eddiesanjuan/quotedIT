@@ -24,3 +24,5 @@ Watch: tail -f quoted/QUOTED_RUN_LIVE.md
   - Highlighted weekly card with gradient styling
   - PostHog tracking for calculator engagement
   ✅ DISC-113 committed (Time Savings Calculator component)
+  ⚠️ NOTE: First commit went to demo.html (deprecated), fixed with second commit to try.html
+[21:15:00] ═══ PHASE 4: Local Testing ═══
