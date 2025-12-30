@@ -17,4 +17,10 @@ Watch: tail -f quoted/QUOTED_RUN_LIVE.md
   - Frontend: Interactive question inputs with regenerate button
   - Frontend: PostHog tracking for regeneration events
   ✅ DISC-132 committed
-▶ DISC-113: Starting Handyman Mike storytelling system
+▶ DISC-113: Implementing Handyman Mike storytelling system
+  - Component: Time Savings Calculator (highest conversion impact)
+  - Interactive calculator: "How many quotes per day?"
+  - Dynamic results: Daily/Weekly/Monthly hours saved
+  - Highlighted weekly card with gradient styling
+  - PostHog tracking for calculator engagement
+  ✅ DISC-113 committed (Time Savings Calculator component)
