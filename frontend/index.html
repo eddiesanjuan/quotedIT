@@ -5379,6 +5379,26 @@
                     <button class="auth-tab" id="registerTab" onclick="showAuthTab('register')">Create Account</button>
                 </div>
 
+                <!-- DISC-134: Social Login Buttons -->
+                <div class="social-login-section" id="socialLoginSection" style="margin-bottom: 20px;">
+                    <button type="button" class="btn btn-social btn-google" onclick="handleGoogleAuth()" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 12px; padding: 12px 16px; background: white; border: 1px solid var(--border); color: #1f2937; font-weight: 500; border-radius: 8px; cursor: pointer; transition: all 0.2s ease;">
+                        <svg width="18" height="18" viewBox="0 0 24 24">
+                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                        </svg>
+                        Continue with Google
+                    </button>
+
+                    <!-- Divider -->
+                    <div class="auth-divider" style="display: flex; align-items: center; margin: 20px 0; gap: 16px;">
+                        <div style="flex: 1; height: 1px; background: var(--border);"></div>
+                        <span style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">or continue with email</span>
+                        <div style="flex: 1; height: 1px; background: var(--border);"></div>
+                    </div>
+                </div>
+
                 <!-- Login Form -->
                 <form id="loginForm" onsubmit="handleLogin(event)">
                     <div class="form-group">
@@ -8684,6 +8704,11 @@
             // Check voice support
             checkVoiceSupport();
 
+            // DISC-134: Check for OAuth callback (returning from Google/Apple)
+            if (checkOAuthCallback()) {
+                return; // OAuth callback will handle the rest
+            }
+
             // Check for referral code in URL
             const urlParams = new URLSearchParams(window.location.search);
             const refCode = urlParams.get('ref');
@@ -9040,6 +9065,110 @@
                 btn.disabled = false;
                 btn.textContent = 'Create Account';
             }
+        }
+
+        // =============================================================================
+        // DISC-134: Google OAuth Handler
+        // =============================================================================
+        async function handleGoogleAuth() {
+            const btn = document.querySelector('.btn-google');
+            const originalText = btn.textContent;
+
+            try {
+                btn.disabled = true;
+                btn.textContent = 'Connecting...';
+
+                // Start OAuth flow - get the Google auth URL
+                const response = await fetch(`${API_BASE}/auth/oauth/google/start`);
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.detail || 'Failed to start Google sign in');
+                }
+
+                // Store state for verification after callback
+                localStorage.setItem('oauth_state', data.state);
+
+                // Redirect to Google OAuth
+                window.location.href = data.auth_url;
+
+            } catch (err) {
+                showAuthMessage(err.message, 'error');
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        }
+
+        // Handle OAuth callback (called when returning from Google)
+        async function handleOAuthCallback(provider, code, state) {
+            try {
+                // Verify state matches
+                const storedState = localStorage.getItem('oauth_state');
+                if (state !== storedState) {
+                    throw new Error('Invalid OAuth state. Please try again.');
+                }
+                localStorage.removeItem('oauth_state');
+
+                // Exchange code for tokens
+                const response = await fetch(`${API_BASE}/auth/oauth/${provider}/callback`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code, state }),
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.detail || 'OAuth authentication failed');
+                }
+
+                // Store tokens
+                authToken = data.access_token;
+                refreshToken = data.refresh_token;
+                localStorage.setItem('quoted_token', authToken);
+                localStorage.setItem('quoted_refresh_token', refreshToken);
+
+                // Track OAuth login method
+                if (typeof posthog !== 'undefined') {
+                    posthog.capture('auth_completed', { auth_method: `oauth_${provider}` });
+                }
+
+                await fetchUserInfo();
+                showAppView();
+
+                // Clear URL params
+                window.history.replaceState({}, document.title, window.location.pathname);
+
+            } catch (err) {
+                showAuthMessage(err.message, 'error');
+                showAuthView();
+            }
+        }
+
+        // Check for OAuth callback on page load
+        function checkOAuthCallback() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('code');
+            const state = urlParams.get('state');
+            const error = urlParams.get('error');
+
+            // Check if this is a callback URL
+            if (window.location.pathname.includes('/auth/callback/')) {
+                const provider = window.location.pathname.split('/auth/callback/')[1];
+
+                if (error) {
+                    showAuthMessage('Google sign in was cancelled: ' + error, 'error');
+                    window.history.replaceState({}, document.title, '/');
+                    return true;
+                }
+
+                if (code && state) {
+                    handleOAuthCallback(provider, code, state);
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         // Fetch user info - SEC-003: Use authenticatedFetch for auto-refresh
