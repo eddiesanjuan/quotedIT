@@ -1,64 +1,37 @@
 # Quoted Run Live Progress
 
-[2025-12-28 17:38:06] ═══ QUOTED RUN STARTED ═══
-CEO: Founder-specified ticket: DISC-126
+[2025-12-29 19:41:04] ═══ QUOTED RUN STARTED ═══
+CEO: Founder-specified ticket: DISC-130
 Watch: tail -f quoted/QUOTED_RUN_LIVE.md
 
-[17:38:23] ═══ PHASE 2: CEO Decision ═══
-  Founder-specified ticket: DISC-126
-  Title: Customer Identification UX Deep Audit
-  Type: AUDIT/RESEARCH (produces findings document)
+[19:41:15] ═══ PHASE 2: CEO Decision ═══
+  Founder-specified ticket: DISC-130
+  Title: PDF Line Spacing Polish - Improved Text Readability
+  Proceeding with implementation...
+[19:41:44]   📖 Analyzing pdf_generator.py for line spacing issues
+[19:42:04] ═══ PHASE 3: Execution (Branch-First) ═══
+[19:42:04]   🌿 Creating branch: quoted-run/DISC-130
+[19:43:03]   🔧 Applied line spacing improvements:
+      - QuoteBody: leading 18→20 (1.82x ratio)
+      - QuoteBodyLight: leading 18→20
+      - LineItem ItemCell: leading 14→16
+      - FinePrint: leading 11→13
+[19:43:47]   ✅ Committed to branch: a2eb727
 
-[17:45:00] ═══ PHASE 3: Deep Audit ═══
-  Audited: customer_service.py (matching logic)
-  Audited: voice_signal_extractor.py (relationship signals)
-  Audited: quote_generator.py (Claude extraction)
-  Audited: quotes.py (customer linking)
-  Audited: frontend autocomplete (DISC-022)
+[19:43:47] ═══ PHASE 4: Preview Deployment ═══
+[19:44:18]   📤 Pushed branch to origin
+[19:44:18]   🔗 Created PR: https://github.com/eddiesanjuan/quotedIT/pull/29
+[19:44:18]   ⏳ Waiting for Railway preview deploy (~90 seconds)...
+[$(date '+%H:%M:%S')] ═══ PHASE 5: Preview Verification ═══
+[$(date '+%H:%M:%S')]   🔗 Preview URL: 
+[19:47:43]   ✅ Preview health check passed
+[19:47:43]   🧪 Testing demo PDF generation on preview...
+[19:48:08]   ✅ Demo PDF generation verified on preview
 
-[18:05:00] ═══ PHASE 4: Findings ═══
-  Key Friction Points Identified:
-  1. Customer matching happens AFTER quote generation
-  2. "Repeat customer" signal detected but doesn't trigger lookup
-  3. Phone is best identifier but rarely captured
-  4. INNOV-8 auto-quote backend exists, no UI
-  5. Autocomplete only in edit modal, not voice flow
+[19:48:08] ═══ PHASE 6: Merge to Production ═══
+[19:48:28]   ✅ Merged PR #29 to main
+[19:48:28]   ⏳ Waiting for production deploy (~60 seconds)...
+[19:49:55]   ✅ Production health check passed
+[19:49:55]   ✅ Production PDF generation verified
 
-[18:15:00] ═══ DISC-126 COMPLETE ═══
-  Output: docs/DISC-126_CUSTOMER_ID_UX_AUDIT.md
-
-  Priority Recommendations:
-  - P1: Post-extraction customer confirmation
-  - P1: Repeat customer signal → customer picker
-  - P2: Phone prompt on ambiguous match
-  - P2: Expose INNOV-8 auto-quote in UI
-
-  Status: COMPLETE (awaiting deploy)
-
-[18:30:00] ═══ DISC-126 IMPLEMENTATION ═══
-  User requested: "Bulletproof customer identification"
-
-  Backend Changes:
-  ✓ customer_service.py: find_customer_matches() with confidence scoring
-  ✓ customer_service.py: link_quote_to_customer_explicit()
-  ✓ customer_service.py: get_recent_customers()
-  ✓ customers.py: POST /customers/match endpoint
-  ✓ customers.py: GET /customers/recent endpoint
-  ✓ quotes.py: POST /quotes/{id}/link-customer endpoint
-  ✓ quotes.py: POST /quotes/{id}/check-customer-match endpoint
-
-  Frontend Changes:
-  ✓ Customer Match Confirmation Modal (confidence display)
-  ✓ Repeat Customer Picker Modal (for voice "repeat customer")
-  ✓ saveCustomerInfo() now triggers match check after save
-  ✓ Customer link status indicator ("✓ Linked" badge)
-  ✓ All DOM operations use safe methods (no innerHTML for user data)
-
-  Matching Logic:
-  - Phone match → 0.95+ confidence (near-unique)
-  - Name + Address match → combined confidence
-  - Fuzzy matching via Levenshtein distance
-  - Thresholds: >=0.95 auto-link, >=0.70 confirm, <0.50 create new
-
-  Status: IMPLEMENTED (ready for testing & deploy)
-
+[19:49:55] ═══ PHASE 7: State Update ═══

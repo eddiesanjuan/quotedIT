@@ -1,6 +1,6 @@
 # Discovery Backlog
 
-**Last Updated**: 2025-12-28
+**Last Updated**: 2025-12-29
 **Source**: `/quoted-discover` autonomous discovery cycles
 
 ---
@@ -32,11 +32,11 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 | Status | Count |
 |--------|-------|
-| READY | 18 |
+| READY | 20 |
 | DISCOVERED | 14 |
-| COMPLETE | 6 |
-| **Active Total** | **38** |
-| Archived (DEPLOYED) | 46+ |
+| COMPLETE | 7 |
+| **Active Total** | **41** |
+| Archived (DEPLOYED) | 48+ |
 
 **Autonomous AI Infrastructure**: DISC-101 COMPLETE, DISC-102-106 READY
 **Agent Reliability Engineering**: DISC-107, DISC-108 COMPLETE, DISC-109 DISCOVERED
@@ -50,11 +50,11 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 | Ticket | Title | Deployed |
 |--------|-------|----------|
+| DISC-130 | PDF Line Spacing Polish - Improved Text Readability | 2025-12-30 |
+| DISC-129 | Demo Premium Template - Ultra-Polished First Impression | 2025-12-29 |
+| DISC-126 | Customer Identification UX - Bulletproof Matching | 2025-12-29 |
 | DISC-124 | Quote Email Template Audit | 2025-12-28 |
 | DISC-100 | Pricing Intelligence for Novices Messaging | 2025-12-21 |
-| DISC-099 | Direct Founder Support Channel | 2025-12-19 |
-| DISC-098 | Simplified Single-Tier Pricing ($9/mo) | 2025-12-19 |
-| DISC-097 | Landing Page CRM Feature Messaging | 2025-12-18 |
 
 *Full deployment history: See DISCOVERY_ARCHIVE.md*
 
@@ -396,7 +396,109 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 ---
 
-### DISC-125: Blog Article Formatting Fixes 📝 UX (READY)
+### DISC-126: Customer Identification UX - Bulletproof Matching 🎯 VOICE/CRM (DEPLOYED)
+
+**Source**: Founder Request (Eddie, 2025-12-28) - Voice workflow friction concern
+**Impact**: HIGH | **Effort**: M | **Score**: 2.0
+**Sprint Alignment**: Voice-first UX excellence, CRM reliability
+**Deployed**: 2025-12-29 | **PR**: #25
+
+**Implementation Summary**:
+- Phone-based customer matching with confidence scoring
+- Auto-link on high confidence (≥0.95), confirmation modal on moderate (0.70-0.95)
+- Fuzzy name matching via Levenshtein distance
+- Safe DOM manipulation (no innerHTML for user data)
+
+**Backend Changes**:
+- `customer_service.py`: `find_customer_matches()`, `link_quote_to_customer_explicit()`, `get_recent_customers()`
+- `customers.py`: POST `/customers/match`, GET `/customers/recent`
+- `quotes.py`: POST `/quotes/{id}/link-customer`, POST `/quotes/{id}/check-customer-match`
+
+**Frontend Changes**:
+- Customer Match Confirmation Modal
+- Repeat Customer Picker Modal
+- Customer link status indicator ("✓ Linked" badge)
+
+**Production Verified**: Phone matching correctly deduplicates customers (tested with same phone, different names → single customer with 2 quotes)
+
+---
+
+### DISC-127: Logo Aspect Ratio Squished on Upload 🐛 BUG (READY)
+
+**Source**: Founder Request (Eddie, 2025-12-28) - User testing
+**Impact**: MEDIUM | **Effort**: S | **Score**: 2.0
+**Sprint Alignment**: Professional branding - logos must look correct on quotes
+
+**Problem**: When uploading a logo, the aspect ratio gets squished/distorted instead of being preserved. Logos should scale down proportionally while maintaining their original aspect ratio.
+
+**Proposed Work**:
+1. Find logo display CSS (likely in `frontend/index.html` or PDF template)
+2. Change from fixed width+height to `object-fit: contain` or max-width/max-height approach
+3. Ensure logo container allows flexible aspect ratios
+4. Test with various logo shapes (wide, tall, square)
+5. Verify fix applies to both UI preview AND PDF output
+
+**Success Metric**: Uploaded logos display with correct aspect ratio - no stretching or squishing
+
+---
+
+### DISC-128: Founder Notifications for Signups & Demo Usage 📬 GROWTH (READY)
+
+**Source**: Founder Request (Eddie, 2025-12-29)
+**Impact**: HIGH | **Effort**: S | **Score**: 3.0
+**Sprint Alignment**: Early-stage founder visibility into user acquisition
+
+**Problem**: Founder has no real-time visibility into new user signups or demo engagement. During early growth phase, immediate awareness of new users enables fast personal outreach and understanding of acquisition patterns.
+
+**Proposed Work**:
+1. Send email notification to Eddie when new account is created
+   - Include: email, business name, trade, signup source (referral/organic)
+2. Send email notification when demo is used by new visitor
+   - Include: timestamp, demo job description, IP/location if available
+3. Use existing Resend email service (`backend/services/email.py`)
+4. Add PostHog event tracking for both actions (if not already present)
+5. Consider Slack webhook option for faster notification (optional)
+
+**Success Metric**: Eddie receives email within 1 minute of new signup or demo use
+
+---
+
+### DISC-130: PDF Line Spacing Polish - Improved Text Readability 📄 UX (DEPLOYED)
+
+**Source**: Founder Request (Eddie, 2025-12-29)
+**Impact**: MEDIUM | **Effort**: M | **Score**: 1.0
+**Sprint Alignment**: Professional polish for customer-facing documents
+**Deployed**: 2025-12-30 | **PR**: #29
+
+**Implementation Summary**:
+Improved line spacing across PDF text sections for better readability:
+- QuoteBody: leading 18→20pt (1.82x ratio for 11pt font)
+- QuoteBodyLight: leading 18→20pt with spaceAfter 4→6pt
+- LineItem ItemCell: leading 14→16pt for multi-line descriptions
+- FinePrint: leading 11→13pt for comfortable legal text reading
+
+Changes apply to all PDFs (quotes, invoices, demo) while maintaining compact template behavior.
+
+---
+
+### DISC-129: Demo Premium Template - Ultra-Polished First Impression ✨ CONVERSION (DEPLOYED)
+
+**Source**: Founder Request (Eddie, 2025-12-29)
+**Impact**: HIGH | **Effort**: M | **Score**: 2.0
+**Sprint Alignment**: Demo conversion optimization - first impression is everything
+**Deployed**: 2025-12-29
+
+**Implementation Summary**:
+- Created `DemoPremiumLogo` Flowable class with navy hexagon + gold diamond geometric design
+- Added `demo_premium` template to PDF_TEMPLATES with deep navy header (#1a365d) and gold accents (#d69e2e)
+- Updated demo API endpoints to use premium template
+- Typography: "YOUR BUSINESS" with letter-spacing + "Professional Services" tagline
+
+**Outcome**: Demo PDFs now render with sophisticated agency-quality placeholder design
+
+---
+
+### DISC-125: Blog Article Formatting Fixes 📝 UX (DEPLOYED)
 
 **Source**: Founder Request (Eddie, 2025-12-28) - Blog QA review
 **Impact**: MEDIUM | **Effort**: S | **Score**: 2.0

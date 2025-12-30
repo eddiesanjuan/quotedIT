@@ -1,6 +1,6 @@
 # Engineering State
 
-**Last Updated**: 2025-12-26
+**Last Updated**: 2025-12-29
 **Updated By**: Autonomous AI (CEO)
 
 ---
@@ -69,6 +69,7 @@ This section is the **authoritative source** for what features actually exist in
 | **Task creation** | ✅ E2E VERIFIED | Full CRUD with title, type, priority, due date, customer linking |
 | **Task completion** | ✅ E2E VERIFIED | Checkbox completion, status updates |
 | **CRM system** | ✅ E2E VERIFIED | Customer create/view/edit, tags, notes, quote history |
+| **Customer matching** | ✅ E2E VERIFIED | Phone-based deduplication with confidence scoring, auto-link on high confidence |
 
 ### Innovation Features (Dec 2025)
 | Feature | Status | Reality |
@@ -81,6 +82,10 @@ This section is the **authoritative source** for what features actually exist in
 | **Quick prefill** | ✅ DEPLOYED | Prefill quote from recent customer data |
 | **Quote duplication** | ✅ DEPLOYED | One-click duplicate existing quotes |
 | **Learning Excellence** | ✅ DEPLOYED | Anthropic showcase quality learning system |
+| **Anthropic Showcase: AI Learning Dashboard** | ✅ DEPLOYED | Stats, progress bar, category confidence bars (PR #27) |
+| **Anthropic Showcase: Confidence Badges** | ✅ DEPLOYED | Multi-dimension confidence display on quotes (PR #27) |
+| **Anthropic Showcase: Pricing Explanation** | ✅ DEPLOYED | Expandable "How did AI price this?" panel (PR #27) |
+| **Anthropic Showcase: Correction Feedback** | ✅ DEPLOYED | Structured feedback capture on quote edits (PR #27) |
 | **SEO blog** | ✅ DEPLOYED | 7 industry-specific quoting guides |
 
 ### Production Infrastructure (Dec 2025)
@@ -132,7 +137,15 @@ This section is the **authoritative source** for what features actually exist in
 | DISC-033 | Reddit Contractor Launch Post | **READY** | 🔴 FOUNDER ACTION |
 | MOBILE-001 | Mobile App Strategy (iOS + Android) | **QUEUED** | Strategic |
 
-### Recently Deployed (2025-12-26)
+### Recently Deployed (2025-12-30)
+
+| Ticket | Description | PR |
+|--------|-------------|-----|
+| DISC-130 | PDF Line Spacing Polish - Improved text readability across all PDFs | PR #29 |
+| SHOWCASE-001 | Anthropic Showcase: Interpretable AI, Honest Uncertainty, Human-AI Collaboration | PR #27 |
+| DISC-126 | Customer Identification UX - Bulletproof phone-based matching with confidence scoring | PR #25 |
+
+### Previously Deployed (2025-12-26)
 
 | Ticket | Description | Commits |
 |--------|-------------|---------|
