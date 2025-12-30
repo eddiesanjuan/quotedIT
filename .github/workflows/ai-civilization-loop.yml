@@ -1,0 +1,78 @@
+# AI Civilization Main Loop
+# Runs every 30 minutes to process pending events and coordinate agents
+
+name: AI Civilization Loop
+
+on:
+  schedule:
+    # Every 30 minutes during business hours (6 AM - 10 PM CST)
+    - cron: '0,30 12-4 * * *'  # 6-10 AM CST (UTC-6)
+    - cron: '0,30 5-11 * * *'  # 11 AM - 5 PM CST
+    - cron: '0,30 12-16 * * *' # 5-10 PM CST (next day UTC)
+  repository_dispatch:
+    types: [loop_dispatch]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run mode (no actions taken)'
+        required: false
+        default: 'false'
+        type: boolean
+
+jobs:
+  process-loop:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25  # Leave buffer before next loop
+
+    # Only run if AI Company is properly configured
+    if: ${{ vars.AI_COMPANY_ENABLED == 'true' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Claude Code
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Process Event Queue
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          QUOTED_API_URL: ${{ vars.QUOTED_API_URL }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          claude-code --print "
+          You are the AI Company Loop Coordinator.
+
+          Read the current state from .ai-company/state/current.md
+
+          Your job:
+          1. Fetch pending events from the API endpoint /api/ai-company/events/pending
+          2. For each event, dispatch to the appropriate agent workflow
+          3. Check for pending decisions that need Eddie's attention
+          4. Update .ai-company/state/current.md with current status
+          5. If any critical events, trigger urgent workflow
+
+          Constitutional Limits:
+          - Never take destructive actions (delete, modify production data)
+          - Never exceed your blast radius (coordination only)
+          - Queue anything requiring approval for Eddie
+
+          After processing, commit state changes if any.
+          "
+
+      - name: Update State
+        if: success()
+        run: |
+          git config --local user.email "ai-company@quoted.it.com"
+          git config --local user.name "Quoted AI Company"
+          git add .ai-company/state/
+          git diff --cached --quiet || git commit -m "AI Company: Loop update $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          git push || echo "No changes to push"

@@ -1,0 +1,79 @@
+# AI Civilization Ops Agent
+# Monitors system health, logs, and handles infrastructure events
+
+name: AI Civilization Ops Agent
+
+on:
+  schedule:
+    # Every 15 minutes for health checks
+    - cron: '*/15 * * * *'
+  repository_dispatch:
+    types: [ops_dispatch]
+  workflow_dispatch:
+    inputs:
+      task:
+        description: 'Specific ops task (health_check, log_review, incident)'
+        required: false
+        type: string
+
+jobs:
+  ops-agent:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    if: ${{ vars.AI_COMPANY_ENABLED == 'true' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Claude Code and Railway CLI
+        run: |
+          npm install -g @anthropic-ai/claude-code
+          npm install -g @railway/cli
+
+      - name: Run Ops Agent
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          QUOTED_API_URL: ${{ vars.QUOTED_API_URL }}
+        run: |
+          claude-code --print "
+          You are the Quoted Ops Agent.
+
+          Read your specification from .ai-company/agents/ops/AGENT.md
+          Read your current state from .ai-company/agents/ops/state.md
+
+          Your responsibilities:
+          1. Run health checks on production (railway logs, /health endpoint)
+          2. Analyze error patterns in recent logs
+          3. Detect anomalies (error rate spikes, latency issues)
+          4. For minor issues: attempt auto-fix within your limits
+          5. For major issues: create incident report and alert Eddie
+
+          Constitutional Limits:
+          - Can restart services (railway up)
+          - Can scale within predefined limits
+          - Cannot modify environment variables
+          - Cannot access database directly
+          - Must escalate any data-affecting changes
+
+          Update your state file with findings.
+          "
+
+      - name: Commit State Changes
+        if: success()
+        run: |
+          git config --local user.email "ai-company@quoted.it.com"
+          git config --local user.name "Quoted Ops Agent"
+          git add .ai-company/agents/ops/
+          git diff --cached --quiet || git commit -m "Ops Agent: Health check $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          git push || echo "No changes to push"

@@ -1592,3 +1592,8 @@ def init_db_sync():
     engine = create_engine(settings.sync_database_url)
     Base.metadata.create_all(engine)
     return engine
+
+
+# Import additional models to register them with Base.metadata
+# These must be imported AFTER Base is defined
+from . import ai_event  # AI Company models (DISC-XXX)

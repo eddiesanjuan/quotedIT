@@ -1,0 +1,93 @@
+# AI Civilization Urgent Handler
+# Critical event response - immediate escalation for production incidents
+
+name: AI Civilization Urgent Handler
+
+on:
+  repository_dispatch:
+    types: [urgent_dispatch]
+  workflow_dispatch:
+    inputs:
+      incident_type:
+        description: 'Type of incident (outage, security, data, payment)'
+        required: true
+        type: choice
+        options:
+          - outage
+          - security
+          - data
+          - payment
+      severity:
+        description: 'Severity level (critical, high)'
+        required: true
+        type: choice
+        options:
+          - critical
+          - high
+
+jobs:
+  urgent-handler:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10  # Fast response required
+
+    # Urgent handler runs even if AI Company is disabled - safety critical
+    if: ${{ vars.AI_COMPANY_ENABLED == 'true' || github.event.inputs.severity == 'critical' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Claude Code and Railway CLI
+        run: |
+          npm install -g @anthropic-ai/claude-code
+          npm install -g @railway/cli
+
+      - name: Handle Urgent Event
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          QUOTED_API_URL: ${{ vars.QUOTED_API_URL }}
+        run: |
+          claude-code --print "
+          You are the Quoted Urgent Handler - CRITICAL INCIDENT RESPONSE.
+
+          Read incident details from .ai-company/incidents/current.md if available.
+          Read your runbook from .ai-company/agents/ops/runbooks/
+
+          PRIORITY ACTIONS (in order):
+          1. Assess: What is broken? Check /health endpoint and Railway logs
+          2. Mitigate: Can we quickly restore service? (restart, rollback)
+          3. Communicate: Draft notification for Eddie (Resend email)
+          4. Document: Create incident report in .ai-company/incidents/
+
+          Constitutional Limits:
+          - CAN restart services (railway up)
+          - CAN rollback to previous deploy (railway rollback)
+          - CAN scale within predefined limits
+          - CANNOT modify environment variables
+          - CANNOT access database directly
+          - CANNOT make code changes without PR
+          - MUST notify Eddie for any data-affecting decisions
+
+          Time is critical. Take safe recovery actions first, document second.
+
+          Create incident report when done.
+          "
+
+      - name: Commit Incident Report
+        if: always()
+        run: |
+          git config --local user.email "ai-company@quoted.it.com"
+          git config --local user.name "Quoted Urgent Handler"
+          git add .ai-company/incidents/
+          git diff --cached --quiet || git commit -m "INCIDENT: Response $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          git push || echo "No changes to push"

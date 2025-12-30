@@ -1,0 +1,87 @@
+# AI Civilization Evening Summary
+# 6 PM CST daily wrap-up for Eddie
+
+name: AI Civilization Evening Summary
+
+on:
+  schedule:
+    # 6 PM CST (midnight UTC next day)
+    - cron: '0 0 * * *'
+  repository_dispatch:
+    types: [evening_dispatch]
+  workflow_dispatch:
+
+jobs:
+  evening-summary:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    if: ${{ vars.AI_COMPANY_ENABLED == 'true' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Claude Code
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Generate Evening Summary
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          POSTHOG_API_KEY: ${{ secrets.POSTHOG_API_KEY }}
+          QUOTED_API_URL: ${{ vars.QUOTED_API_URL }}
+        run: |
+          claude-code --print "
+          You are the Quoted Evening Summary Generator.
+
+          Read all agent states from .ai-company/agents/*/state.md
+          Read today's events from .ai-company/state/daily/
+          Read the morning briefing from .ai-company/briefings/
+
+          Generate a concise evening summary for Eddie:
+
+          1. TODAY'S ACCOMPLISHMENTS
+             - What agents completed autonomously
+             - PRs created/merged
+             - Customer interactions handled
+
+          2. METRICS SNAPSHOT
+             - Key numbers (quotes generated, users active, revenue)
+             - Comparison to yesterday/last week
+             - Notable trends
+
+          3. OVERNIGHT PLANS
+             - What agents will do while Eddie sleeps
+             - Scheduled health checks
+             - Any pending automations
+
+          4. OPEN ITEMS
+             - Decisions still pending from morning
+             - New items requiring attention tomorrow
+             - Recommended priority order
+
+          Format: Clear, scannable, under 400 words.
+          Tone: Celebratory for wins, matter-of-fact for issues.
+
+          Save summary to .ai-company/briefings/evening-YYYY-MM-DD.md
+          Archive today's state to .ai-company/state/daily/YYYY-MM-DD.md
+          Send via Resend to eddie@efsanjuan.com
+          "
+
+      - name: Commit Summary
+        if: success()
+        run: |
+          git config --local user.email "ai-company@quoted.it.com"
+          git config --local user.name "Quoted Evening Summary"
+          git add .ai-company/briefings/ .ai-company/state/daily/
+          git diff --cached --quiet || git commit -m "Evening Summary: $(date -u +%Y-%m-%d)"
+          git push || echo "No changes to push"

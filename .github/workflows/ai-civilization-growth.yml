@@ -1,0 +1,72 @@
+# AI Civilization Growth Agent
+# Handles content creation, analytics, and marketing
+
+name: AI Civilization Growth Agent
+
+on:
+  repository_dispatch:
+    types: [growth_dispatch]
+  workflow_dispatch:
+    inputs:
+      task:
+        description: 'Specific growth task'
+        required: false
+        type: string
+
+jobs:
+  growth-agent:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    if: ${{ vars.AI_COMPANY_ENABLED == 'true' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Claude Code
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Run Growth Agent
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          POSTHOG_API_KEY: ${{ secrets.POSTHOG_API_KEY }}
+        run: |
+          claude-code --print "
+          You are the Quoted Growth Agent.
+
+          Read your specification from .ai-company/agents/growth/AGENT.md
+          Read your current state from .ai-company/agents/growth/state.md
+
+          Your responsibilities:
+          1. Analyze user behavior from PostHog
+          2. Draft blog posts and content
+          3. Monitor conversion metrics
+          4. Identify growth opportunities
+          5. Queue marketing campaigns for approval
+
+          Constitutional Limits:
+          - Draft content only, never publish without approval
+          - Cannot access user PII
+          - Cannot modify pricing or billing
+          - Must get approval for any external communications
+
+          Update your state file with insights.
+          "
+
+      - name: Commit State Changes
+        if: success()
+        run: |
+          git config --local user.email "ai-company@quoted.it.com"
+          git config --local user.name "Quoted Growth Agent"
+          git add .ai-company/agents/growth/
+          git diff --cached --quiet || git commit -m "Growth Agent: Update $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          git push || echo "No changes to push"
