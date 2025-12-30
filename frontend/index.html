@@ -8273,6 +8273,7 @@
         // Initialize Stripe (will be set when publishable key is available)
         let stripeInstance = null;
         let embeddedCheckout = null;
+        let currentCheckoutBillingInterval = 'monthly'; // Track for conversion value
 
         {% if stripe_publishable_key %}
         stripeInstance = Stripe('{{ stripe_publishable_key }}');
@@ -8286,6 +8287,9 @@
                 showNotification('Payment system not available. Please try again.', 'error');
                 return;
             }
+
+            // Store for conversion tracking
+            currentCheckoutBillingInterval = billingInterval;
 
             const modal = document.getElementById('checkoutModal');
             const container = document.getElementById('checkoutContainer');
@@ -8390,6 +8394,17 @@
                 posthog.capture('subscription_completed');
             }
             {% endif %}
+
+            // Track Google Ads conversion
+            if (window.gtag) {
+                const conversionValue = currentCheckoutBillingInterval === 'annual' ? 59.00 : 9.00;
+                gtag('event', 'conversion', {
+                    'send_to': 'AW-17836503504/VW_gCM_oq9gbENDjjblC',
+                    'value': conversionValue,
+                    'currency': 'USD',
+                    'transaction_id': Date.now().toString() // Unique ID for deduplication
+                });
+            }
 
             // Refresh user info to get updated plan
             await fetchUserInfo();
@@ -8707,6 +8722,15 @@
                 window.history.replaceState({}, document.title, window.location.pathname);
                 // Show success notification
                 showNotification('Payment successful! Your account has been upgraded.', 'success', 6000);
+                // Track Google Ads conversion (fallback path - use default monthly value)
+                if (window.gtag) {
+                    gtag('event', 'conversion', {
+                        'send_to': 'AW-17836503504/VW_gCM_oq9gbENDjjblC',
+                        'value': 9.00,
+                        'currency': 'USD',
+                        'transaction_id': sessionId // Use Stripe session ID for deduplication
+                    });
+                }
                 // Refresh user info
                 fetchUserInfo();
             }
