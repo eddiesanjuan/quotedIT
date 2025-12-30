@@ -29,7 +29,7 @@ from ..services import get_transcription_service, get_sanity_check_service, get_
 from ..services.quote_generator import QUOTE_GENERATION_TOOL
 from ..services.email import email_service
 from ..services.logging import get_api_logger
-from ..prompts import get_demo_quote_prompt
+from ..prompts import get_demo_quote_prompt, get_demo_regenerate_prompt
 from ..config import settings
 
 logger = get_api_logger()
@@ -95,6 +95,18 @@ class DemoPDFRequest(BaseModel):
     contractor_name: Optional[str] = None
 
 
+class ClarificationAnswer(BaseModel):
+    """A single clarification question-answer pair."""
+    question: str
+    answer: str
+
+
+class DemoRegenerateRequest(BaseModel):
+    """Request to regenerate a demo quote with clarification answers."""
+    transcription: str
+    clarifications: list[ClarificationAnswer]
+
+
 async def _generate_demo_quote_with_universal_prompt(transcription: str) -> dict:
     """
     Generate a quote using the universal demo prompt.
@@ -140,6 +152,56 @@ async def _generate_demo_quote_with_universal_prompt(transcription: str) -> dict
 
     except Exception as e:
         raise Exception(f"Error generating demo quote: {str(e)}")
+
+
+async def _regenerate_demo_quote_with_clarifications(
+    transcription: str,
+    clarifications: list[dict],
+) -> dict:
+    """
+    Regenerate a demo quote using the original transcription plus clarification answers.
+
+    DISC-132: Interactive Clarifying Questions
+    This generates a more accurate quote by incorporating the user's answers
+    to the clarifying questions from the original quote.
+    """
+    client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
+
+    # Get the regeneration prompt with clarifications
+    prompt = get_demo_regenerate_prompt(transcription, clarifications)
+
+    try:
+        message = client.messages.create(
+            model=settings.claude_model,
+            max_tokens=settings.claude_max_tokens,
+            tools=[QUOTE_GENERATION_TOOL],
+            tool_choice={"type": "tool", "name": "generate_quote"},
+            messages=[{"role": "user", "content": prompt}],
+        )
+
+        # Extract the tool call result
+        for block in message.content:
+            if block.type == "tool_use" and block.name == "generate_quote":
+                quote_data = block.input
+
+                # Validate and normalize
+                quote_data["transcription"] = transcription
+                quote_data["generated_at"] = datetime.utcnow().isoformat()
+                quote_data["regenerated_with_clarifications"] = True
+
+                # Ensure subtotal matches line items
+                if quote_data.get("line_items"):
+                    calculated_subtotal = sum(
+                        item.get("amount", 0) for item in quote_data["line_items"]
+                    )
+                    quote_data["subtotal"] = round(calculated_subtotal)
+
+                return quote_data
+
+        raise ValueError("No tool call found in response")
+
+    except Exception as e:
+        raise Exception(f"Error regenerating demo quote: {str(e)}")
 
 
 @router.post("/quote", response_model=DemoQuoteResponse)
@@ -383,3 +445,101 @@ async def download_demo_pdf(
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error generating demo PDF: {str(e)}")
+
+
+@router.post("/regenerate", response_model=DemoQuoteResponse)
+@limiter.limit("5/hour")
+async def regenerate_demo_quote(
+    request: Request,
+    body: DemoRegenerateRequest,
+):
+    """
+    DISC-132: Regenerate a demo quote with clarification answers.
+
+    Takes the original transcription plus user-provided answers to
+    clarifying questions, and generates a more accurate quote.
+
+    Rate limited to 5 regenerations per IP per hour.
+    """
+    try:
+        # Validate input
+        if not body.transcription.strip():
+            raise HTTPException(
+                status_code=400,
+                detail="Original transcription is required"
+            )
+
+        if not body.clarifications:
+            raise HTTPException(
+                status_code=400,
+                detail="At least one clarification answer is required"
+            )
+
+        # Convert Pydantic models to dicts for the prompt
+        clarifications = [
+            {"question": c.question, "answer": c.answer}
+            for c in body.clarifications
+            if c.answer.strip()  # Only include non-empty answers
+        ]
+
+        if not clarifications:
+            raise HTTPException(
+                status_code=400,
+                detail="At least one non-empty answer is required"
+            )
+
+        # Regenerate quote with clarifications
+        quote_data = await _regenerate_demo_quote_with_clarifications(
+            body.transcription,
+            clarifications,
+        )
+
+        # Sanity check for demo quotes
+        sanity_check_service = get_sanity_check_service()
+        quote_total = quote_data.get("subtotal", 0)
+
+        if quote_total > sanity_check_service.GLOBAL_MAX_QUOTE:
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "error": "quote_sanity_check_failed",
+                    "message": f"This quote amount (${quote_total:,.0f}) exceeds reasonable bounds.",
+                    "quote_total": quote_total,
+                }
+            )
+
+        # Add demo-specific metadata
+        quote_data["is_demo"] = True
+        quote_data["id"] = "demo"
+
+        # Add clarified note
+        clarified_note = "\n\n✅ Quote refined based on your answers. This estimate is now more accurate!"
+        if quote_data.get("notes"):
+            quote_data["notes"] = quote_data["notes"] + clarified_note
+        else:
+            quote_data["notes"] = "Refined estimate based on your clarifications." + clarified_note
+
+        # Build response
+        return DemoQuoteResponse(
+            id="demo",
+            is_demo=True,
+            customer_name=quote_data.get("customer_name"),
+            customer_address=quote_data.get("customer_address"),
+            customer_phone=quote_data.get("customer_phone"),
+            job_type=quote_data.get("job_type"),
+            job_description=quote_data.get("job_description"),
+            line_items=quote_data.get("line_items", []),
+            subtotal=quote_data.get("subtotal", 0),
+            total=quote_data.get("subtotal", 0),
+            notes=quote_data.get("notes"),
+            estimated_days=quote_data.get("estimated_days"),
+            estimated_crew_size=quote_data.get("estimated_crew_size"),
+            confidence=quote_data.get("confidence"),
+            questions=quote_data.get("questions", []),
+            transcription=body.transcription,
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error regenerating demo quote: {str(e)}")

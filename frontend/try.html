@@ -687,6 +687,108 @@
             font-weight: 600;
         }
 
+        /* DISC-132: Interactive Clarifying Questions */
+        .question-item {
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .question-item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .question-item label {
+            display: block;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .question-item label::before {
+            content: "?";
+            position: absolute;
+            left: 0;
+            color: var(--warning);
+            font-weight: 600;
+        }
+
+        .question-item input {
+            width: 100%;
+            padding: 10px 12px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .question-item input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+        }
+
+        .question-item input::placeholder {
+            color: var(--text-secondary);
+            opacity: 0.7;
+        }
+
+        .regenerate-btn {
+            width: 100%;
+            margin-top: 16px;
+            padding: 12px 20px;
+            background: var(--warning);
+            border: none;
+            border-radius: 8px;
+            color: var(--bg);
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        .regenerate-btn:hover {
+            background: #e5a800;
+            transform: translateY(-1px);
+        }
+
+        .regenerate-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .regenerate-btn svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .regenerate-btn.loading {
+            pointer-events: none;
+        }
+
+        .regenerate-btn.loading::after {
+            content: "";
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--bg);
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-left: 8px;
+        }
+
         /* Action Buttons */
         .result-actions {
             display: flex;
@@ -1450,6 +1552,7 @@
                         <p id="quoteNotes"></p>
                     </div>
 
+                    <!-- DISC-132: Interactive Clarifying Questions -->
                     <div class="quote-questions" id="questionsSection">
                         <h4>
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1457,11 +1560,22 @@
                                 <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
                                 <path d="M12 17h.01"/>
                             </svg>
-                            Clarifying Questions
+                            Answer for a More Accurate Quote
                         </h4>
-                        <ul class="question-list" id="questionList">
-                            <!-- Questions will be inserted here -->
-                        </ul>
+                        <p style="color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 16px;">
+                            Provide details below and we'll refine your estimate.
+                        </p>
+                        <div class="question-list" id="questionList">
+                            <!-- Questions will be inserted here as form fields -->
+                        </div>
+                        <button type="button" class="regenerate-btn" id="regenerateBtn" style="display: none;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M1 4v6h6"/>
+                                <path d="M23 20v-6h-6"/>
+                                <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/>
+                            </svg>
+                            Regenerate Quote with My Answers
+                        </button>
                     </div>
 
                     <div class="result-actions">
@@ -1868,20 +1982,49 @@
                 notesSection.style.display = 'none';
             }
 
-            // Questions - using safe DOM manipulation
+            // DISC-132: Interactive Clarifying Questions
             var questionsSection = document.getElementById('questionsSection');
             var questionList = document.getElementById('questionList');
+            var regenerateBtn = document.getElementById('regenerateBtn');
             clearChildren(questionList);
 
             if (data.questions && data.questions.length > 0) {
-                data.questions.forEach(function(question) {
-                    var li = document.createElement('li');
-                    li.textContent = question;
-                    questionList.appendChild(li);
+                data.questions.forEach(function(question, index) {
+                    // Create question item container
+                    var questionItem = document.createElement('div');
+                    questionItem.className = 'question-item';
+
+                    // Create label
+                    var label = document.createElement('label');
+                    label.setAttribute('for', 'question-' + index);
+                    label.textContent = question;
+
+                    // Create input field
+                    var input = document.createElement('input');
+                    input.type = 'text';
+                    input.id = 'question-' + index;
+                    input.className = 'question-input';
+                    input.setAttribute('data-question', question);
+                    input.placeholder = 'Type your answer...';
+
+                    // Show regenerate button when user starts typing
+                    input.addEventListener('input', function() {
+                        var anyAnswered = document.querySelectorAll('.question-input').length > 0 &&
+                            Array.from(document.querySelectorAll('.question-input')).some(function(inp) {
+                                return inp.value.trim() !== '';
+                            });
+                        regenerateBtn.style.display = anyAnswered ? 'flex' : 'none';
+                    });
+
+                    questionItem.appendChild(label);
+                    questionItem.appendChild(input);
+                    questionList.appendChild(questionItem);
                 });
                 questionsSection.style.display = 'block';
+                regenerateBtn.style.display = 'none'; // Hide until user answers something
             } else {
                 questionsSection.style.display = 'none';
+                regenerateBtn.style.display = 'none';
             }
 
             // Show results section
@@ -1952,6 +2095,113 @@
             resultsSection.classList.remove('visible');
             descriptionInput.value = '';
             window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // DISC-132: Regenerate quote with clarification answers
+        document.getElementById('regenerateBtn').addEventListener('click', async function() {
+            if (!currentQuoteData || !currentQuoteData.transcription) return;
+
+            var btn = this;
+            btn.disabled = true;
+            btn.classList.add('loading');
+
+            // Store original content using safe DOM methods
+            var originalChildren = Array.from(btn.childNodes).map(function(node) {
+                return node.cloneNode(true);
+            });
+
+            // Clear and set loading state using safe DOM manipulation
+            while (btn.firstChild) {
+                btn.removeChild(btn.firstChild);
+            }
+            var loadingSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            loadingSvg.setAttribute('viewBox', '0 0 24 24');
+            loadingSvg.setAttribute('fill', 'none');
+            loadingSvg.setAttribute('stroke', 'currentColor');
+            loadingSvg.setAttribute('stroke-width', '2');
+            var path1 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            path1.setAttribute('d', 'M1 4v6h6');
+            var path2 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            path2.setAttribute('d', 'M23 20v-6h-6');
+            var path3 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            path3.setAttribute('d', 'M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15');
+            loadingSvg.appendChild(path1);
+            loadingSvg.appendChild(path2);
+            loadingSvg.appendChild(path3);
+            btn.appendChild(loadingSvg);
+            btn.appendChild(document.createTextNode(' Regenerating...'));
+
+            try {
+                // Collect answers from input fields
+                var clarifications = [];
+                var inputs = document.querySelectorAll('.question-input');
+                inputs.forEach(function(input) {
+                    var answer = input.value.trim();
+                    if (answer) {
+                        clarifications.push({
+                            question: input.getAttribute('data-question'),
+                            answer: answer
+                        });
+                    }
+                });
+
+                if (clarifications.length === 0) {
+                    showError('Please answer at least one question to regenerate.');
+                    return;
+                }
+
+                // Track regeneration attempt
+                if (typeof posthog !== 'undefined') {
+                    posthog.capture('demo_quote_regenerate_started', {
+                        original_total: currentQuoteData.total || currentQuoteData.subtotal,
+                        questions_answered: clarifications.length
+                    });
+                }
+
+                var response = await fetch('/api/demo/regenerate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        transcription: currentQuoteData.transcription,
+                        clarifications: clarifications
+                    })
+                });
+
+                if (!response.ok) {
+                    var errorData = await response.json().catch(function() { return {}; });
+                    throw new Error(errorData.detail || 'Failed to regenerate quote');
+                }
+
+                var data = await response.json();
+                currentQuoteData = data;
+                displayResults(data);
+
+                // Track successful regeneration
+                if (typeof posthog !== 'undefined') {
+                    posthog.capture('demo_quote_regenerated', {
+                        new_total: data.total || data.subtotal,
+                        questions_answered: clarifications.length
+                    });
+                }
+
+                // Scroll to top of results
+                resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+            } catch (err) {
+                showError('Failed to regenerate quote: ' + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.classList.remove('loading');
+                // Restore original content
+                while (btn.firstChild) {
+                    btn.removeChild(btn.firstChild);
+                }
+                originalChildren.forEach(function(child) {
+                    btn.appendChild(child);
+                });
+            }
         });
 
         // Share quote button

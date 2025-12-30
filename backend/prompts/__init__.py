@@ -15,6 +15,7 @@ from .setup_interview import (
 from .demo_generation import (
     get_demo_quote_prompt,
     get_demo_industry_detection_prompt,
+    get_demo_regenerate_prompt,
 )
 
 __all__ = [
@@ -25,4 +26,5 @@ __all__ = [
     "get_pricing_extraction_prompt",
     "get_demo_quote_prompt",
     "get_demo_industry_detection_prompt",
+    "get_demo_regenerate_prompt",
 ]

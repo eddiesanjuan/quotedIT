@@ -135,3 +135,111 @@ Be specific but concise. Examples:
 - "My toilet is leaking" → industry: "construction", profession: "plumber", job_type: "plumbing_repair"
 - "Planning a wedding for 100 guests" → industry: "events", profession: "event_planner", job_type: "wedding_planning"
 """
+
+
+def get_demo_regenerate_prompt(transcription: str, clarifications: list[dict]) -> str:
+    """
+    Generate a demo quote prompt that incorporates clarification answers.
+
+    This prompt takes the original transcription plus user-provided answers
+    to clarifying questions, and generates a more accurate quote.
+
+    Args:
+        transcription: The original transcribed voice note
+        clarifications: List of dicts with 'question' and 'answer' keys
+
+    Returns:
+        The prompt string for Claude with enhanced context
+    """
+    # Format clarifications as Q&A pairs
+    qa_section = "\n".join([
+        f"Q: {c['question']}\nA: {c['answer']}"
+        for c in clarifications
+        if c.get('answer', '').strip()
+    ])
+
+    return f"""You are a universal pricing assistant for DEMO mode. Your job is to create professional quotes for ANY type of work based on a voice description.
+
+## Original Voice Note Transcription
+
+"{transcription}"
+
+## Clarifying Information from Customer
+
+The customer has provided additional details to clarify their needs:
+
+{qa_section}
+
+## Your Task
+
+Using BOTH the original description AND the clarifying answers above:
+
+1. **DETECT THE INDUSTRY/PROFESSION** - What type of professional would do this work?
+   - Contractors (plumbers, electricians, roofers, handymen, etc.)
+   - Creative professionals (designers, photographers, videographers, etc.)
+   - Consultants (business, marketing, tech, etc.)
+   - Event professionals (planners, caterers, DJs, etc.)
+   - Freelancers (writers, developers, virtual assistants, etc.)
+   - Service providers (cleaners, landscapers, tutors, etc.)
+   - Any other profession that provides custom quotes
+
+2. **USE THE CLARIFICATIONS TO IMPROVE ACCURACY**
+   - The additional details should help you be more specific with pricing
+   - Adjust line items, quantities, and pricing based on the answers
+   - This quote should be MORE accurate than the original estimate
+
+3. **CREATE AN IMPROVED PROFESSIONAL QUOTE**
+   - Extract/update customer info if mentioned
+   - Write a clearer, more specific job description
+   - Provide more accurate line items based on the clarified scope
+   - Set confidence to "high" since you have more information
+
+## Pricing Guidelines by Category
+
+Use these as rough guidelines (adjust based on specifics):
+
+**Construction/Trade Work**:
+- Labor: $50-150/hour depending on trade and complexity
+- Materials: 15-25% markup typical
+- Minimum job: $150-500 depending on trade
+
+**Creative/Design Work**:
+- Hourly: $75-200/hour for experienced professionals
+- Project-based: Common for logos ($500-5000), websites ($2000-20000)
+- Consider deliverables, revisions, and usage rights
+
+**Consulting/Professional Services**:
+- Hourly: $100-500/hour depending on expertise
+- Day rates: $800-4000 for senior consultants
+- Project fees: Scope-dependent
+
+**Event Services**:
+- Hourly: $50-200/hour
+- Per-event: Varies widely by type and scale
+- Consider setup/breakdown time
+
+**General Freelance/Services**:
+- Hourly: $25-150/hour depending on skill level
+- Per-deliverable pricing when appropriate
+
+## Important Notes
+
+- You now have MORE context from the customer's answers - use it!
+- Set confidence to "high" since clarifications reduce uncertainty
+- Be more specific in line items based on the additional details
+- Don't ask the same questions again - you already have answers
+- Round all amounts to whole dollars
+
+## Output Format
+
+Use the generate_quote tool with:
+- job_type: A snake_case category (e.g., "website_design", "plumbing_repair")
+- job_description: Professional 2-3 sentence summary incorporating the clarified details
+- line_items: More specific breakdown based on clarified scope
+- subtotal: Sum of line items
+- estimated_days: When applicable (may be more accurate now)
+- estimated_crew_size: When applicable
+- confidence: "high" - you have clarified details
+- questions: Only 0-2 questions if there's STILL missing critical info
+
+Use the generate_quote tool now:"""
