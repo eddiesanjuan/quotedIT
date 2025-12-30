@@ -839,6 +839,128 @@
             height: 18px;
         }
 
+        /* DISC-113: Time Savings Calculator */
+        .time-savings-section {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            border-radius: 16px;
+            padding: 32px;
+            text-align: center;
+            margin-top: 32px;
+        }
+
+        .time-savings-section h3 {
+            font-family: var(--font-serif);
+            font-size: 1.5rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .time-savings-intro {
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+            font-size: 0.95rem;
+        }
+
+        .calculator-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .calculator-row label {
+            font-size: 0.95rem;
+            color: var(--text-primary);
+        }
+
+        .calculator-row input {
+            width: 70px;
+            padding: 10px 14px;
+            background: var(--bg-primary);
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-align: center;
+            transition: border-color 0.2s;
+        }
+
+        .calculator-row input:focus {
+            outline: none;
+            border-color: var(--success);
+        }
+
+        .savings-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            max-width: 500px;
+            margin: 0 auto 20px;
+        }
+
+        @media (max-width: 500px) {
+            .savings-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+        }
+
+        .savings-card {
+            background: var(--bg-card);
+            border-radius: 10px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .savings-card .label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .savings-card .value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--success);
+            line-height: 1.2;
+        }
+
+        .savings-card .unit {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .savings-card.highlight {
+            background: linear-gradient(135deg, var(--success) 0%, #10b981 100%);
+            transform: scale(1.03);
+        }
+
+        .savings-card.highlight .label,
+        .savings-card.highlight .unit {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .savings-card.highlight .value {
+            color: #fff;
+        }
+
+        .savings-insight {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-style: italic;
+        }
+
+        .savings-insight strong {
+            color: var(--success);
+        }
+
         /* CTA Section */
         .cta-section {
             background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.05));
@@ -1609,6 +1731,39 @@
                 </div>
             </div>
 
+            <!-- DISC-113: Time Savings Calculator -->
+            <div class="time-savings-section" id="timeSavingsSection">
+                <h3>How Much Time Will You Save?</h3>
+                <p class="time-savings-intro">Contractors spend 15-30 minutes writing each quote by hand. Quoted does it in seconds.</p>
+
+                <div class="calculator-row">
+                    <label for="quotesPerDay">Quotes you send per day:</label>
+                    <input type="number" id="quotesPerDay" min="1" max="50" value="5" onchange="calculateSavings()" oninput="calculateSavings()">
+                </div>
+
+                <div class="savings-grid">
+                    <div class="savings-card">
+                        <div class="label">Daily</div>
+                        <div class="value" id="dailySavings">1.25</div>
+                        <div class="unit">hours saved</div>
+                    </div>
+                    <div class="savings-card highlight">
+                        <div class="label">Weekly</div>
+                        <div class="value" id="weeklySavings">6.25</div>
+                        <div class="unit">hours saved</div>
+                    </div>
+                    <div class="savings-card">
+                        <div class="label">Monthly</div>
+                        <div class="value" id="monthlySavings">25</div>
+                        <div class="unit">hours saved</div>
+                    </div>
+                </div>
+
+                <p class="savings-insight" id="savingsInsight">
+                    That's <strong>25 hours</strong> back every month for actual jobs or family time.
+                </p>
+            </div>
+
             <!-- CTA Section -->
             <div class="cta-section">
                 <h2>Imagine This With YOUR Pricing</h2>
@@ -1773,6 +1928,54 @@
                 }, 100);
             }
         })();
+
+        // DISC-113: Time Savings Calculator
+        function calculateSavings() {
+            var quotesPerDay = parseInt(document.getElementById('quotesPerDay').value) || 5;
+
+            // Clamp to valid range
+            if (quotesPerDay < 1) quotesPerDay = 1;
+            if (quotesPerDay > 50) quotesPerDay = 50;
+
+            // 15 minutes saved per quote (average)
+            var minutesSavedPerQuote = 15;
+            var dailyMinutes = quotesPerDay * minutesSavedPerQuote;
+            var dailyHours = dailyMinutes / 60;
+            var weeklyHours = dailyHours * 5; // 5-day work week
+            var monthlyHours = weeklyHours * 4;
+
+            // Format numbers
+            function formatHours(hours) {
+                if (hours < 1) {
+                    return Math.round(hours * 60) + ' min';
+                }
+                return hours.toFixed(hours % 1 === 0 ? 0 : 1);
+            }
+
+            document.getElementById('dailySavings').textContent = formatHours(dailyHours);
+            document.getElementById('weeklySavings').textContent = formatHours(weeklyHours);
+            document.getElementById('monthlySavings').textContent = Math.round(monthlyHours);
+
+            // Update insight text using safe DOM manipulation
+            var insightEl = document.getElementById('savingsInsight');
+            insightEl.textContent = '';
+            insightEl.appendChild(document.createTextNode("That's "));
+            var strongEl = document.createElement('strong');
+            strongEl.textContent = Math.round(monthlyHours) + ' hours';
+            insightEl.appendChild(strongEl);
+            insightEl.appendChild(document.createTextNode(' back every month for actual jobs or family time.'));
+
+            // Track engagement (debounced) - only if PostHog available
+            if (window.posthog) {
+                if (window.savingsCalcTimeout) clearTimeout(window.savingsCalcTimeout);
+                window.savingsCalcTimeout = setTimeout(function() {
+                    window.posthog.capture('time_savings_calculated', {
+                        quotes_per_day: quotesPerDay,
+                        monthly_hours_saved: Math.round(monthlyHours)
+                    });
+                }, 1000);
+            }
+        }
 
         // Tab switching
         voiceTab.addEventListener('click', function() {
