@@ -106,6 +106,16 @@ class Settings(BaseSettings):
     posthog_api_key: str = ""  # PostHog analytics
     sentry_dsn: str = ""  # Sentry error tracking
 
+    # DISC-134: OAuth/Social Login
+    # Google OAuth - obtain from Google Cloud Console
+    google_client_id: str = ""
+    google_client_secret: str = ""
+    # Apple Sign In - obtain from Apple Developer Console (optional, for iOS users)
+    apple_client_id: str = ""  # Service ID
+    apple_team_id: str = ""
+    apple_key_id: str = ""
+    apple_private_key: str = ""  # Contents of .p8 file
+
     # Pricing Configuration
     trial_days: int = 7
     trial_quote_limit: int = 75

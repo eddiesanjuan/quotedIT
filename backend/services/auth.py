@@ -596,3 +596,212 @@ async def get_current_contractor(
         )
 
     return contractor
+
+
+# =============================================================================
+# DISC-134: OAuth/Social Login Functions
+# =============================================================================
+
+async def get_user_by_oauth(
+    db: AsyncSession,
+    oauth_provider: str,
+    oauth_id: str,
+) -> Optional[User]:
+    """Get a user by OAuth provider and ID."""
+    result = await db.execute(
+        select(User).where(
+            and_(
+                User.oauth_provider == oauth_provider,
+                User.oauth_id == oauth_id,
+            )
+        )
+    )
+    return result.scalar_one_or_none()
+
+
+async def get_or_create_oauth_user(
+    db: AsyncSession,
+    email: str,
+    oauth_provider: str,
+    oauth_id: str,
+    name: str = "",
+) -> tuple[User, Contractor, bool]:
+    """
+    Get or create a user via OAuth authentication.
+
+    DISC-134: This handles three cases:
+    1. User exists with same OAuth provider/ID → Return existing user
+    2. User exists with same email (different auth method) → Link OAuth, return existing
+    3. User doesn't exist → Create new user with OAuth credentials
+
+    Returns (user, contractor, is_new_user) tuple.
+    """
+    from ..utils.email import normalize_email, validate_email_for_registration
+
+    # Case 1: Check if user already exists with this OAuth identity
+    existing_oauth_user = await get_user_by_oauth(db, oauth_provider, oauth_id)
+    if existing_oauth_user:
+        # Get contractor
+        result = await db.execute(
+            select(Contractor).where(Contractor.user_id == existing_oauth_user.id)
+        )
+        contractor = result.scalar_one_or_none()
+        if not contractor:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="User exists but contractor profile not found"
+            )
+        return existing_oauth_user, contractor, False
+
+    # Case 2: Check if user exists with same email (different auth method)
+    existing_email_user = await get_user_by_email(db, email)
+    if existing_email_user:
+        # Link OAuth to existing user
+        existing_email_user.oauth_provider = oauth_provider
+        existing_email_user.oauth_id = oauth_id
+        await db.commit()
+        await db.refresh(existing_email_user)
+
+        # Get contractor
+        result = await db.execute(
+            select(Contractor).where(Contractor.user_id == existing_email_user.id)
+        )
+        contractor = result.scalar_one_or_none()
+        if not contractor:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="User exists but contractor profile not found"
+            )
+        return existing_email_user, contractor, False
+
+    # Case 3: Create new user with OAuth
+    # Validate email (block disposable domains) - DISC-017
+    is_valid, error_message = validate_email_for_registration(email)
+    if not is_valid:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=error_message
+        )
+
+    # Normalize email for duplicate detection - DISC-017
+    normalized = normalize_email(email)
+
+    # Check if normalized email already exists - DISC-017
+    result = await db.execute(
+        select(User).where(User.normalized_email == normalized)
+    )
+    existing_normalized = result.scalar_one_or_none()
+    if existing_normalized:
+        # This shouldn't happen if get_user_by_email worked, but handle edge case
+        # Link OAuth and return existing
+        existing_normalized.oauth_provider = oauth_provider
+        existing_normalized.oauth_id = oauth_id
+        await db.commit()
+        await db.refresh(existing_normalized)
+
+        result = await db.execute(
+            select(Contractor).where(Contractor.user_id == existing_normalized.id)
+        )
+        contractor = result.scalar_one_or_none()
+        if contractor:
+            return existing_normalized, contractor, False
+
+    # Generate unique referral code
+    from .referral import ReferralService
+    referral_code = await ReferralService.ensure_unique_referral_code(db, email)
+
+    # Parse name into business name (or use email prefix as fallback)
+    business_name = name if name else email.split("@")[0].title()
+    owner_name = name if name else None
+
+    # Create user (no password for OAuth users)
+    user = User(
+        id=generate_uuid(),
+        email=email,
+        normalized_email=normalized,
+        hashed_password="",  # OAuth users don't have password
+        is_active=True,
+        is_verified=True,  # OAuth users are pre-verified by provider
+        referral_code=referral_code,
+        oauth_provider=oauth_provider,
+        oauth_id=oauth_id,
+    )
+    db.add(user)
+
+    # Create contractor profile
+    contractor = Contractor(
+        id=generate_uuid(),
+        user_id=user.id,
+        email=email,
+        business_name=business_name,
+        owner_name=owner_name,
+        is_active=True,
+        primary_trade="general",  # Default, updated during onboarding
+    )
+    db.add(contractor)
+
+    # Create default pricing model
+    pricing_model = PricingModel(
+        id=generate_uuid(),
+        contractor_id=contractor.id,
+        labor_rate_hourly=65.0,
+        helper_rate_hourly=35.0,
+        material_markup_percent=20.0,
+        minimum_job_amount=500.0,
+        pricing_knowledge={},
+        pricing_notes=None,
+    )
+    db.add(pricing_model)
+
+    # Create default terms
+    terms = ContractorTerms(
+        id=generate_uuid(),
+        contractor_id=contractor.id,
+        deposit_percent=50.0,
+        quote_valid_days=30,
+        labor_warranty_years=2,
+        accepted_payment_methods=["Check", "Credit Card", "Cash"],
+    )
+    db.add(terms)
+
+    await db.commit()
+    await db.refresh(user)
+    await db.refresh(contractor)
+
+    # Initialize trial period
+    from .billing import BillingService
+    await BillingService.initialize_trial(db, user.id)
+
+    return user, contractor, True
+
+
+async def link_oauth_to_user(
+    db: AsyncSession,
+    user_id: str,
+    oauth_provider: str,
+    oauth_id: str,
+) -> bool:
+    """
+    Link an OAuth identity to an existing user.
+
+    DISC-134: Edge case handling for users who signed up with email
+    and later want to add social login.
+
+    Returns True if successful, False if OAuth ID is already linked to another user.
+    """
+    # Check if this OAuth ID is already linked to a different user
+    existing = await get_user_by_oauth(db, oauth_provider, oauth_id)
+    if existing and existing.id != user_id:
+        return False  # OAuth ID already linked to another account
+
+    # Get the user
+    user = await get_user_by_id(db, user_id)
+    if not user:
+        return False
+
+    # Link OAuth
+    user.oauth_provider = oauth_provider
+    user.oauth_id = oauth_id
+    await db.commit()
+
+    return True

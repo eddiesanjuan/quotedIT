@@ -60,6 +60,10 @@ class User(Base):
     onboarding_path = Column(String(20), nullable=True)  # "interview" or "quick_setup"
     onboarding_completed_at = Column(DateTime, nullable=True)  # When onboarding was completed
 
+    # OAuth/Social Login (DISC-134)
+    oauth_provider = Column(String(50), nullable=True, index=True)  # "google", "apple", or null for email/password
+    oauth_id = Column(String(255), nullable=True, index=True)  # Provider's unique user ID
+
     # Relationship to contractor (one-to-one)
     contractor = relationship("Contractor", back_populates="user", uselist=False)
 
@@ -1420,6 +1424,25 @@ async def run_migrations(engine):
                 WHERE table_name = 'invoices' AND column_name = 'reminder_count'
             """,
             "alter_sql": "ALTER TABLE invoices ADD COLUMN reminder_count INTEGER DEFAULT 0"
+        },
+        # DISC-134: OAuth/Social Login columns
+        {
+            "table": "users",
+            "column": "oauth_provider",
+            "check_sql": """
+                SELECT column_name FROM information_schema.columns
+                WHERE table_name = 'users' AND column_name = 'oauth_provider'
+            """,
+            "alter_sql": "ALTER TABLE users ADD COLUMN oauth_provider VARCHAR(50)"
+        },
+        {
+            "table": "users",
+            "column": "oauth_id",
+            "check_sql": """
+                SELECT column_name FROM information_schema.columns
+                WHERE table_name = 'users' AND column_name = 'oauth_id'
+            """,
+            "alter_sql": "ALTER TABLE users ADD COLUMN oauth_id VARCHAR(255)"
         },
     ]
 

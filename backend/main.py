@@ -251,6 +251,21 @@ if frontend_path.exists():
             "stripe_publishable_key": settings.stripe_publishable_key,
         })
 
+    @app.get("/auth/callback/{provider}", response_class=HTMLResponse)
+    async def serve_oauth_callback(request: Request, provider: str):
+        """
+        DISC-134: Serve the main app for OAuth callback.
+        Google/Apple OAuth redirects here with code & state params.
+        The SPA will handle the OAuth callback and exchange the code.
+        """
+        return templates.TemplateResponse("index.html", {
+            "request": request,
+            "posthog_api_key": settings.posthog_api_key,
+            "sentry_dsn": settings.sentry_dsn,
+            "environment": settings.environment,
+            "stripe_publishable_key": settings.stripe_publishable_key,
+        })
+
     @app.get("/demo")
     async def serve_demo():
         """Serve the functional demo page - generate real quotes without signup."""
