@@ -15623,6 +15623,16 @@
                     throw new Error(errorData.detail || 'Failed to submit reflection');
                 }
 
+                // Track successful submission
+                if (typeof posthog !== 'undefined') {
+                    posthog.capture('pricing_reflection_submitted', {
+                        invoice_id: reflectionInvoiceId,
+                        feeling: selectedReflectionFeeling,
+                        has_ideal_price: !!idealPrice,
+                        has_notes: !!notes
+                    });
+                }
+
                 closePricingReflectionModal();
                 showLearningToast('Thanks for the feedback! This helps improve your quotes.', '💭');
 
