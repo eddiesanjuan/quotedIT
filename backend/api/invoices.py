@@ -19,7 +19,7 @@ from sqlalchemy import select
 from ..services.auth import get_current_user, get_db
 from ..services import get_db_service, get_pdf_service
 from ..services.analytics import analytics_service
-from ..models.database import Invoice, Quote, Contractor
+from ..models.database import Invoice, Quote, Contractor, PricingReflection
 from ..services.database import async_session_factory
 
 
@@ -1002,3 +1002,285 @@ async def view_shared_invoice(token: str):
         except Exception as e:
             print(f"Error viewing shared invoice: {e}")
             raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============================================================================
+# DISC-135: Post-Job Pricing Reflection Loop
+# ============================================================================
+
+class PricingReflectionRequest(BaseModel):
+    """Request to submit pricing reflection after job completion."""
+    feeling: str  # "too_low", "just_right", "too_high"
+    ideal_price: Optional[float] = None  # What would you price it at next time?
+    notes: Optional[str] = None
+
+
+class PricingReflectionResponse(BaseModel):
+    """Pricing reflection response."""
+    id: str
+    invoice_id: str
+    quote_id: Optional[str] = None
+    feeling: str
+    ideal_price: Optional[float] = None
+    quoted_total: Optional[float] = None
+    price_delta_percent: Optional[float] = None
+    job_category: Optional[str] = None
+    notes: Optional[str] = None
+    created_at: str
+
+
+class PricingInsightsResponse(BaseModel):
+    """Aggregated pricing insights for contractor dashboard."""
+    total_reflections: int
+    feeling_breakdown: dict  # {"too_low": 5, "just_right": 12, "too_high": 3}
+    categories_needing_adjustment: List[dict]  # Categories where pricing is consistently off
+    recent_reflections: List[dict]
+    average_price_delta_percent: Optional[float] = None
+
+
+@router.post("/{invoice_id}/reflection", response_model=PricingReflectionResponse)
+async def submit_pricing_reflection(
+    invoice_id: str,
+    reflection_request: PricingReflectionRequest,
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Submit a pricing reflection after marking an invoice as paid.
+
+    DISC-135: Captures contractor's feeling about the pricing for this job.
+    This data feeds into the learning system to improve future quote accuracy.
+    """
+    contractor = await get_contractor_for_user(current_user["id"])
+    if not contractor:
+        raise HTTPException(status_code=400, detail="Contractor not found")
+
+    # Validate feeling
+    valid_feelings = ["too_low", "just_right", "too_high"]
+    if reflection_request.feeling not in valid_feelings:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid feeling. Must be one of: {', '.join(valid_feelings)}"
+        )
+
+    # Get the invoice
+    result = await db.execute(
+        select(Invoice).where(Invoice.id == invoice_id)
+    )
+    invoice = result.scalar_one_or_none()
+
+    if not invoice:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+
+    if invoice.contractor_id != contractor.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    # Check if reflection already exists for this invoice
+    existing = await db.execute(
+        select(PricingReflection).where(PricingReflection.invoice_id == invoice_id)
+    )
+    if existing.scalar_one_or_none():
+        raise HTTPException(status_code=400, detail="Reflection already submitted for this invoice")
+
+    # Get the source quote for category and original pricing
+    quote = None
+    job_category = None
+    if invoice.quote_id:
+        result = await db.execute(
+            select(Quote).where(Quote.id == invoice.quote_id)
+        )
+        quote = result.scalar_one_or_none()
+        if quote:
+            job_category = quote.job_category
+
+    # Calculate price delta if ideal_price provided
+    price_delta_percent = None
+    if reflection_request.ideal_price and invoice.total:
+        price_delta_percent = ((reflection_request.ideal_price - invoice.total) / invoice.total) * 100
+
+    # Create the reflection
+    reflection = PricingReflection(
+        contractor_id=contractor.id,
+        invoice_id=invoice_id,
+        quote_id=invoice.quote_id,
+        feeling=reflection_request.feeling,
+        ideal_price=reflection_request.ideal_price,
+        quoted_total=invoice.total,
+        price_delta_percent=price_delta_percent,
+        job_category=job_category,
+        notes=reflection_request.notes,
+        applied_to_learning=False,
+    )
+
+    db.add(reflection)
+    await db.commit()
+    await db.refresh(reflection)
+
+    # Track analytics
+    try:
+        analytics_service.track_event(
+            user_id=str(current_user["id"]),
+            event_name="pricing_reflection_submitted",
+            properties={
+                "contractor_id": str(contractor.id),
+                "invoice_id": invoice_id,
+                "feeling": reflection_request.feeling,
+                "job_category": job_category,
+                "has_ideal_price": reflection_request.ideal_price is not None,
+                "price_delta_percent": price_delta_percent,
+            }
+        )
+    except Exception as e:
+        print(f"Warning: Failed to track pricing reflection: {e}")
+
+    return PricingReflectionResponse(
+        id=reflection.id,
+        invoice_id=reflection.invoice_id,
+        quote_id=reflection.quote_id,
+        feeling=reflection.feeling,
+        ideal_price=reflection.ideal_price,
+        quoted_total=reflection.quoted_total,
+        price_delta_percent=reflection.price_delta_percent,
+        job_category=reflection.job_category,
+        notes=reflection.notes,
+        created_at=reflection.created_at.isoformat() if reflection.created_at else datetime.utcnow().isoformat(),
+    )
+
+
+@router.get("/{invoice_id}/reflection", response_model=PricingReflectionResponse)
+async def get_pricing_reflection(
+    invoice_id: str,
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Get the pricing reflection for a specific invoice.
+
+    DISC-135: Returns the contractor's reflection if one exists.
+    """
+    contractor = await get_contractor_for_user(current_user["id"])
+    if not contractor:
+        raise HTTPException(status_code=400, detail="Contractor not found")
+
+    # Get the invoice first to verify ownership
+    result = await db.execute(
+        select(Invoice).where(Invoice.id == invoice_id)
+    )
+    invoice = result.scalar_one_or_none()
+
+    if not invoice:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+
+    if invoice.contractor_id != contractor.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    # Get the reflection
+    result = await db.execute(
+        select(PricingReflection).where(PricingReflection.invoice_id == invoice_id)
+    )
+    reflection = result.scalar_one_or_none()
+
+    if not reflection:
+        raise HTTPException(status_code=404, detail="No reflection found for this invoice")
+
+    return PricingReflectionResponse(
+        id=reflection.id,
+        invoice_id=reflection.invoice_id,
+        quote_id=reflection.quote_id,
+        feeling=reflection.feeling,
+        ideal_price=reflection.ideal_price,
+        quoted_total=reflection.quoted_total,
+        price_delta_percent=reflection.price_delta_percent,
+        job_category=reflection.job_category,
+        notes=reflection.notes,
+        created_at=reflection.created_at.isoformat() if reflection.created_at else "",
+    )
+
+
+@router.get("/pricing-insights", response_model=PricingInsightsResponse)
+async def get_pricing_insights(
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Get aggregated pricing insights for the contractor.
+
+    DISC-135: Dashboard view showing pricing patterns and areas for improvement.
+    """
+    from sqlalchemy import func
+
+    contractor = await get_contractor_for_user(current_user["id"])
+    if not contractor:
+        raise HTTPException(status_code=400, detail="Contractor not found")
+
+    # Get all reflections for this contractor
+    result = await db.execute(
+        select(PricingReflection)
+        .where(PricingReflection.contractor_id == contractor.id)
+        .order_by(PricingReflection.created_at.desc())
+    )
+    reflections = result.scalars().all()
+
+    total_reflections = len(reflections)
+
+    # Calculate feeling breakdown
+    feeling_breakdown = {"too_low": 0, "just_right": 0, "too_high": 0}
+    for r in reflections:
+        if r.feeling in feeling_breakdown:
+            feeling_breakdown[r.feeling] += 1
+
+    # Calculate average price delta
+    deltas = [r.price_delta_percent for r in reflections if r.price_delta_percent is not None]
+    average_delta = sum(deltas) / len(deltas) if deltas else None
+
+    # Find categories needing adjustment (consistently too_low or too_high)
+    category_feelings = {}
+    for r in reflections:
+        if r.job_category:
+            if r.job_category not in category_feelings:
+                category_feelings[r.job_category] = {"too_low": 0, "just_right": 0, "too_high": 0, "total": 0}
+            category_feelings[r.job_category][r.feeling] += 1
+            category_feelings[r.job_category]["total"] += 1
+
+    categories_needing_adjustment = []
+    for cat, counts in category_feelings.items():
+        if counts["total"] >= 2:  # Need at least 2 data points
+            # If >60% are too_low or too_high, flag for adjustment
+            if counts["too_low"] / counts["total"] > 0.6:
+                categories_needing_adjustment.append({
+                    "category": cat,
+                    "issue": "pricing_too_low",
+                    "count": counts["too_low"],
+                    "total": counts["total"],
+                    "recommendation": f"Consider raising prices for {cat} jobs"
+                })
+            elif counts["too_high"] / counts["total"] > 0.6:
+                categories_needing_adjustment.append({
+                    "category": cat,
+                    "issue": "pricing_too_high",
+                    "count": counts["too_high"],
+                    "total": counts["total"],
+                    "recommendation": f"Consider lowering prices for {cat} jobs"
+                })
+
+    # Get recent reflections (last 10)
+    recent = []
+    for r in reflections[:10]:
+        recent.append({
+            "id": r.id,
+            "invoice_id": r.invoice_id,
+            "feeling": r.feeling,
+            "job_category": r.job_category,
+            "quoted_total": r.quoted_total,
+            "ideal_price": r.ideal_price,
+            "price_delta_percent": r.price_delta_percent,
+            "created_at": r.created_at.isoformat() if r.created_at else None,
+        })
+
+    return PricingInsightsResponse(
+        total_reflections=total_reflections,
+        feeling_breakdown=feeling_breakdown,
+        categories_needing_adjustment=categories_needing_adjustment,
+        recent_reflections=recent,
+        average_price_delta_percent=average_delta,
+    )

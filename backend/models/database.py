@@ -751,6 +751,56 @@ class FollowUpEvent(Base):
     sequence = relationship("FollowUpSequence", back_populates="events")
 
 
+# DISC-135: Post-Job Pricing Reflection Loop
+class PricingReflection(Base):
+    """
+    Captures contractor's reflection on pricing after a job is complete.
+
+    After an invoice is marked paid (or 7 days after creation), we prompt
+    the contractor for feedback on whether the pricing was right. This is
+    the most valuable learning signal - actual profit margin feedback, not
+    just acceptance rates.
+
+    Anthropic showcase quality: Human-AI collaboration at its finest.
+    The contractor knows in hindsight what they should have charged.
+    """
+    __tablename__ = "pricing_reflections"
+
+    id = Column(String, primary_key=True, default=generate_uuid)
+    contractor_id = Column(String, ForeignKey("contractors.id"), nullable=False, index=True)
+    invoice_id = Column(String, ForeignKey("invoices.id"), nullable=False, unique=True, index=True)
+    quote_id = Column(String, ForeignKey("quotes.id"), nullable=True, index=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    # The core reflection - simple 3-option UI
+    feeling = Column(String(20), nullable=False)
+    # "too_low" - Left money on the table
+    # "just_right" - Perfect pricing
+    # "too_high" - Lucky it sold
+
+    # Optional: What would you price this at next time?
+    ideal_price = Column(Float, nullable=True)  # Contractor's suggested price
+
+    # Job category (copied from quote for learning indexing)
+    job_category = Column(String(100), nullable=True)
+
+    # Actual vs quoted for learning
+    quoted_total = Column(Float, nullable=True)
+    price_delta_percent = Column(Float, nullable=True)  # (ideal - quoted) / quoted * 100
+
+    # Optional notes
+    notes = Column(Text, nullable=True)
+
+    # Learning integration
+    applied_to_learning = Column(Boolean, default=False)  # Has this been processed into pricing model?
+    applied_at = Column(DateTime, nullable=True)
+
+    # Relationships
+    contractor = relationship("Contractor")
+    invoice = relationship("Invoice")
+    quote = relationship("Quote")
+
+
 class SetupConversation(Base):
     """
     Stores the setup/onboarding conversation for a contractor.
