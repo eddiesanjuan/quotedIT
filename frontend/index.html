@@ -8987,10 +8987,23 @@
                 localStorage.setItem('quoted_token', authToken);
                 localStorage.setItem('quoted_refresh_token', refreshToken);
 
+                // Track successful login
+                if (typeof posthog !== 'undefined') {
+                    posthog.capture('login_completed', {
+                        method: 'password'
+                    });
+                }
+
                 await fetchUserInfo();
                 showAppView();
 
             } catch (err) {
+                // Track login failures for debugging
+                if (typeof posthog !== 'undefined') {
+                    posthog.capture('login_failed', {
+                        error: err.message
+                    });
+                }
                 showAuthMessage(err.message, 'error');
             } finally {
                 btn.disabled = false;
@@ -9083,10 +9096,35 @@
                 localStorage.setItem('quoted_token', authToken);
                 localStorage.setItem('quoted_refresh_token', refreshToken);
 
+                // Track successful account creation - CRITICAL conversion event
+                if (typeof posthog !== 'undefined') {
+                    posthog.capture('account_created', {
+                        source: document.referrer.includes('/try') ? 'demo' : 'direct',
+                        has_referral: !!referralCode,
+                        business_name_length: data.business_name?.length || 0
+                    });
+                }
+
+                // Google Ads conversion for signup (different from subscription conversion)
+                // Uses signup conversion action - value represents potential LTV
+                if (typeof gtag !== 'undefined') {
+                    gtag('event', 'conversion', {
+                        'send_to': 'AW-17836503504/signup', // Placeholder - update with actual conversion label
+                        'value': 9.00,
+                        'currency': 'USD'
+                    });
+                }
+
                 await fetchUserInfo();
                 showAppView();
 
             } catch (err) {
+                // Track signup errors for debugging
+                if (typeof posthog !== 'undefined') {
+                    posthog.capture('account_creation_failed', {
+                        error: err.message
+                    });
+                }
                 showAuthMessage(err.message, 'error');
             } finally {
                 btn.disabled = false;
@@ -9143,6 +9181,15 @@
             document.getElementById('navRight').style.display = 'none';
             document.getElementById('mobileNav').classList.remove('active');
             document.getElementById('floatingSupportBtn').style.display = 'none';
+
+            // Track auth form view - critical for conversion funnel analysis
+            if (typeof posthog !== 'undefined') {
+                posthog.capture('auth_form_viewed', {
+                    referrer: document.referrer,
+                    from_demo: document.referrer.includes('/try') || document.referrer.includes('/demo'),
+                    url_params: window.location.search
+                });
+            }
         }
 
         async function showAppView() {
