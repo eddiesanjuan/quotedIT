@@ -6640,6 +6640,58 @@
                 </div>
             </div>
 
+            <!-- DISC-135: Pricing Reflection Modal -->
+            <div class="modal" id="pricingReflectionModal" style="display: none;">
+                <div class="modal-content" style="max-width: 480px;">
+                    <div class="modal-header">
+                        <h3>💭 Quick Pricing Check</h3>
+                        <button class="modal-close" onclick="closePricingReflectionModal()">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <p style="color: var(--text-secondary); margin-bottom: 16px;">
+                            How did you feel about the pricing on this job? This helps Quoted learn your preferences.
+                        </p>
+
+                        <div style="display: flex; gap: 12px; margin-bottom: 20px;">
+                            <button type="button" class="reflection-btn" data-feeling="too_low" onclick="selectReflectionFeeling('too_low')" style="flex: 1; padding: 16px; border: 2px solid var(--border); border-radius: 12px; background: var(--bg-elevated); cursor: pointer; transition: all 0.2s;">
+                                <div style="font-size: 2rem; margin-bottom: 8px;">📉</div>
+                                <div style="font-weight: 600; color: var(--text-primary);">Too Low</div>
+                                <div style="font-size: 0.75rem; color: var(--text-secondary);">Left money on table</div>
+                            </button>
+                            <button type="button" class="reflection-btn" data-feeling="just_right" onclick="selectReflectionFeeling('just_right')" style="flex: 1; padding: 16px; border: 2px solid var(--border); border-radius: 12px; background: var(--bg-elevated); cursor: pointer; transition: all 0.2s;">
+                                <div style="font-size: 2rem; margin-bottom: 8px;">✅</div>
+                                <div style="font-weight: 600; color: var(--text-primary);">Just Right</div>
+                                <div style="font-size: 0.75rem; color: var(--text-secondary);">Fair for the work</div>
+                            </button>
+                            <button type="button" class="reflection-btn" data-feeling="too_high" onclick="selectReflectionFeeling('too_high')" style="flex: 1; padding: 16px; border: 2px solid var(--border); border-radius: 12px; background: var(--bg-elevated); cursor: pointer; transition: all 0.2s;">
+                                <div style="font-size: 2rem; margin-bottom: 8px;">📈</div>
+                                <div style="font-weight: 600; color: var(--text-primary);">Too High</div>
+                                <div style="font-size: 0.75rem; color: var(--text-secondary);">Got lucky it sold</div>
+                            </button>
+                        </div>
+
+                        <div id="idealPriceSection" style="display: none; margin-bottom: 16px;">
+                            <div class="form-group">
+                                <label>What would you price this at next time? (optional)</label>
+                                <div style="position: relative;">
+                                    <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-secondary);">$</span>
+                                    <input type="number" id="reflectionIdealPrice" placeholder="0.00" step="0.01" style="padding-left: 28px;">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Notes (optional)</label>
+                            <textarea id="reflectionNotes" placeholder="Any details about why..." rows="2" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-elevated); color: var(--text-primary); font-family: inherit; resize: vertical;"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer" style="justify-content: space-between;">
+                        <button class="btn btn-secondary" onclick="skipPricingReflection()">Skip for Now</button>
+                        <button class="btn btn-primary" id="submitReflectionBtn" onclick="submitPricingReflection()" disabled>Submit Feedback</button>
+                    </div>
+                </div>
+            </div>
+
             <!-- Account/Billing Section -->
             <div class="card" id="accountSection" style="display: none;">
                 <h2 class="card-title">Account & Billing</h2>
@@ -15454,12 +15506,132 @@
                 closeMarkPaidModal();
                 showLearningToast('Invoice marked as paid!', '💰');
 
-                // Refresh invoice detail
-                showInvoiceDetail(currentInvoice.id);
+                // DISC-135: Open pricing reflection modal
+                openPricingReflectionModal();
 
             } catch (error) {
                 console.error('Error marking invoice paid:', error);
                 showError('Failed to mark invoice as paid');
+            }
+        }
+
+        // ================================================================
+        // DISC-135: Pricing Reflection Functions
+        // ================================================================
+
+        let selectedReflectionFeeling = null;
+        let reflectionInvoiceId = null;
+
+        function openPricingReflectionModal() {
+            if (!currentInvoice) return;
+
+            reflectionInvoiceId = currentInvoice.id;
+            selectedReflectionFeeling = null;
+
+            // Reset form
+            document.querySelectorAll('.reflection-btn').forEach(btn => {
+                btn.style.borderColor = 'var(--border)';
+                btn.style.background = 'var(--bg-elevated)';
+            });
+            document.getElementById('idealPriceSection').style.display = 'none';
+            document.getElementById('reflectionIdealPrice').value = '';
+            document.getElementById('reflectionNotes').value = '';
+            document.getElementById('submitReflectionBtn').disabled = true;
+
+            document.getElementById('pricingReflectionModal').style.display = 'flex';
+
+            // Track opening
+            if (typeof posthog !== 'undefined') {
+                posthog.capture('pricing_reflection_opened', {
+                    invoice_id: reflectionInvoiceId,
+                    invoice_total: currentInvoice.total
+                });
+            }
+        }
+
+        function closePricingReflectionModal() {
+            document.getElementById('pricingReflectionModal').style.display = 'none';
+            // Refresh invoice detail after closing
+            if (reflectionInvoiceId) {
+                showInvoiceDetail(reflectionInvoiceId);
+            }
+        }
+
+        function selectReflectionFeeling(feeling) {
+            selectedReflectionFeeling = feeling;
+
+            // Update button styles
+            document.querySelectorAll('.reflection-btn').forEach(btn => {
+                const btnFeeling = btn.getAttribute('data-feeling');
+                if (btnFeeling === feeling) {
+                    btn.style.borderColor = 'var(--accent)';
+                    btn.style.background = 'rgba(255, 107, 0, 0.1)';
+                } else {
+                    btn.style.borderColor = 'var(--border)';
+                    btn.style.background = 'var(--bg-elevated)';
+                }
+            });
+
+            // Show ideal price field for too_low or too_high
+            if (feeling === 'too_low' || feeling === 'too_high') {
+                document.getElementById('idealPriceSection').style.display = 'block';
+            } else {
+                document.getElementById('idealPriceSection').style.display = 'none';
+            }
+
+            // Enable submit button
+            document.getElementById('submitReflectionBtn').disabled = false;
+        }
+
+        function skipPricingReflection() {
+            // Track skip
+            if (typeof posthog !== 'undefined') {
+                posthog.capture('pricing_reflection_skipped', {
+                    invoice_id: reflectionInvoiceId
+                });
+            }
+
+            closePricingReflectionModal();
+        }
+
+        async function submitPricingReflection() {
+            if (!selectedReflectionFeeling || !reflectionInvoiceId) return;
+
+            const idealPrice = document.getElementById('reflectionIdealPrice').value;
+            const notes = document.getElementById('reflectionNotes').value.trim();
+
+            const submitBtn = document.getElementById('submitReflectionBtn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting...';
+
+            try {
+                const response = await fetch(`${API_BASE}/invoices/${reflectionInvoiceId}/reflection`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        feeling: selectedReflectionFeeling,
+                        ideal_price: idealPrice ? parseFloat(idealPrice) : null,
+                        notes: notes || null
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.detail || 'Failed to submit reflection');
+                }
+
+                closePricingReflectionModal();
+                showLearningToast('Thanks for the feedback! This helps improve your quotes.', '💭');
+
+            } catch (error) {
+                console.error('Error submitting reflection:', error);
+                showError(error.message || 'Failed to submit reflection');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit Feedback';
             }
         }
 
