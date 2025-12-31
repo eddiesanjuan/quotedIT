@@ -124,6 +124,29 @@ async def run_smart_followups():
         logger.error(f"Error in run_smart_followups: {e}")
 
 
+async def run_marketing_report():
+    """
+    DISC-141: Daily Marketing Analytics Report.
+
+    Generate and send daily marketing metrics to founder:
+    - Signup counts (yesterday vs trend)
+    - Quote generation metrics
+    - All-time totals
+    - 7-day sparkline
+
+    Runs daily at 8am UTC (3am EST).
+    """
+    from .marketing_analytics import run_daily_marketing_report
+
+    logger.info("Running daily marketing report")
+
+    try:
+        await run_daily_marketing_report()
+        logger.info("Daily marketing report completed")
+    except Exception as e:
+        logger.error(f"Error in run_marketing_report: {e}")
+
+
 async def check_invoice_reminders():
     """
     INNOV-6: Invoice Automation - Payment Reminders.
@@ -312,8 +335,17 @@ def start_scheduler():
         max_instances=1,
     )
 
+    # DISC-141: Daily marketing report - daily at 8am UTC (3am EST)
+    scheduler.add_job(
+        run_marketing_report,
+        trigger=CronTrigger(hour=8, minute=0),
+        id="marketing_report",
+        replace_existing=True,
+        max_instances=1,
+    )
+
     scheduler.start()
-    logger.info("Background scheduler started with jobs: task_reminders (5min), quote_followups (daily 9am UTC), smart_followups (15min), invoice_reminders (daily 10am UTC)")
+    logger.info("Background scheduler started with jobs: task_reminders (5min), quote_followups (daily 9am UTC), smart_followups (15min), invoice_reminders (daily 10am UTC), marketing_report (daily 8am UTC)")
 
 
 def stop_scheduler():

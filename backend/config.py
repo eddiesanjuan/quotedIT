@@ -103,8 +103,12 @@ class Settings(BaseSettings):
     stripe_unlimited_product_id: str = "prod_TapBB8ff0tCan0"
 
     # Analytics & Monitoring
-    posthog_api_key: str = ""  # PostHog analytics
+    posthog_api_key: str = ""  # PostHog analytics (write key - phc_*)
+    posthog_read_api_key: str = ""  # PostHog read API key for querying events (phx_*)
     sentry_dsn: str = ""  # Sentry error tracking
+
+    # Marketing Analytics (DISC-141)
+    marketing_reports_enabled: bool = True  # Enable daily marketing reports to founder
 
     # Pricing Configuration
     trial_days: int = 7

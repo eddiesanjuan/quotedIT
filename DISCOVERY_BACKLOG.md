@@ -32,9 +32,9 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 | Status | Count |
 |--------|-------|
-| READY | 17 |
+| READY | 16 |
 | DISCOVERED | 14 |
-| COMPLETE | 7 |
+| COMPLETE | 8 |
 | **Active Total** | **38** |
 | Archived (DEPLOYED) | 66+ |
 
@@ -695,7 +695,7 @@ Landing → Try Page View → Input/Recording Started → Quote Generated (or Ab
 
 ---
 
-### DISC-141: Google Ads Intelligence Agent 📈🤖 GROWTH (READY)
+### DISC-141: Google Ads Intelligence Agent 📈🤖 GROWTH (COMPLETE - Phase 1)
 
 **Source**: Founder Request (Eddie, 2025-12-31)
 **Impact**: HIGH | **Effort**: M | **Score**: 2.0
@@ -707,40 +707,22 @@ Landing → Try Page View → Input/Recording Started → Quote Generated (or Ab
 - Recommend bid/targeting adjustments
 - Alert when cost-per-acquisition is too high
 
-**Proposed Architecture**:
+**PHASE 1 COMPLETE** (2025-12-31):
+- ✅ `backend/services/marketing_analytics.py` - Daily metrics service
+- ✅ Scheduled job: Daily marketing report at 8am UTC (3am EST)
+- ✅ Email report: Signups, quotes, 7-day trend, sparkline visualization
+- ✅ Config: `MARKETING_REPORTS_ENABLED` toggle
 
-1. **Google Ads API Integration**
-   - Daily sync of campaign metrics (impressions, clicks, cost)
-   - Real-time conversion tracking (already have gtag)
-   - Store historical data for trend analysis
+**First report**: Tomorrow 8am UTC (3am EST)
 
-2. **PostHog ↔ Ads Correlation**
-   - Match `gclid` from ads to PostHog events
-   - Calculate true funnel: Click → Page View → Demo → Signup
-   - Identify which campaigns/keywords convert
+**PHASE 2 (Pending - requires API keys)**:
+- PostHog read API key (`POSTHOG_READ_API_KEY=phx_*`) - enables funnel tracking
+- Google Ads API integration - enables spend correlation
 
-3. **Autonomous Daily Report**
-   - Cost per click, cost per demo, cost per signup
-   - Conversion rate by campaign/keyword
-   - Recommendations (pause keyword X, increase bid on Y)
-   - Anomaly alerts (CTR dropped 50%!)
-
-4. **Weekly Strategy Memo**
-   - What's working, what's not
-   - Suggested budget reallocation
-   - A/B test ideas for landing page
-   - Competitive ad intelligence (what are competitors bidding on)
-
-5. **Founder Slack/Email Alerts**
-   - "Campaign X spent $50 with 0 conversions - pause?"
-   - "Keyword 'contractor quote software' has 5% conversion - increase budget?"
-   - "Traffic spike detected - 3x normal, check if virality?"
-
-**Technical Requirements**:
-- Google Ads API credentials (OAuth)
-- PostHog read API key
-- Scheduled job infrastructure (already have APScheduler)
-- Email alerts (already have Resend)
+**PHASE 3 (Future)**:
+- Automated bid/targeting recommendations
+- Anomaly detection alerts
+- Weekly strategy memos
 
 **Success Metric**: CPA (cost per acquisition) improves 50% within 30 days; founder receives actionable recommendations, not just data
 
