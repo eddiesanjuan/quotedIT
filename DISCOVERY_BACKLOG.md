@@ -1,6 +1,6 @@
 # Discovery Backlog
 
-**Last Updated**: 2025-12-30
+**Last Updated**: 2025-12-31
 **Source**: `/quoted-discover` autonomous discovery cycles
 
 ---
@@ -52,11 +52,11 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 | Ticket | Title | Deployed |
 |--------|-------|----------|
+| DISC-135 | Post-Job Pricing Reflection Loop + Conversion Tracking | 2025-12-31 |
 | DISC-133 | Clarification Answers Feed Into Learning System | 2025-12-30 |
 | DISC-132 | Interactive Clarifying Questions for Demo | 2025-12-30 |
 | DISC-131 | Demo Page Dictation Examples | 2025-12-30 |
 | DISC-113 | Time Savings Calculator (partial) | 2025-12-30 |
-| DISC-128 | Founder Notifications for Signups & Demo Usage | 2025-12-30 |
 
 *Full deployment history: See DISCOVERY_ARCHIVE.md*
 
@@ -517,7 +517,7 @@ Changes apply to all PDFs (quotes, invoices, demo) while maintaining compact tem
 
 ---
 
-### DISC-135: Post-Job Pricing Reflection Loop 💰🧠 LEARNING (READY)
+### DISC-135: Post-Job Pricing Reflection Loop 💰🧠 LEARNING (DEPLOYED)
 
 **Source**: Founder Request (Eddie, 2025-12-30)
 **Impact**: HIGH | **Effort**: M | **Score**: 1.5
