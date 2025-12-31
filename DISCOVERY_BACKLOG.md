@@ -32,10 +32,10 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 | Status | Count |
 |--------|-------|
-| READY | 16 |
+| READY | 17 |
 | DISCOVERED | 14 |
 | COMPLETE | 7 |
-| **Active Total** | **37** |
+| **Active Total** | **38** |
 | Archived (DEPLOYED) | 66+ |
 
 **Autonomous AI Infrastructure**: DISC-101 COMPLETE, DISC-102-106 READY
@@ -692,6 +692,57 @@ Landing → Try Page View → Input/Recording Started → Quote Generated (or Ab
    - Recommended actions
 
 **Success Metric**: Founder wakes up to a briefing, not a crisis
+
+---
+
+### DISC-141: Google Ads Intelligence Agent 📈🤖 GROWTH (READY)
+
+**Source**: Founder Request (Eddie, 2025-12-31)
+**Impact**: HIGH | **Effort**: M | **Score**: 2.0
+**Sprint Alignment**: Paid acquisition optimization, autonomous marketing
+
+**Problem**: 80 clicks, 4000 impressions, 0 conversions. No automated system to:
+- Track ad spend vs. conversions in real-time
+- Detect when ads are underperforming
+- Recommend bid/targeting adjustments
+- Alert when cost-per-acquisition is too high
+
+**Proposed Architecture**:
+
+1. **Google Ads API Integration**
+   - Daily sync of campaign metrics (impressions, clicks, cost)
+   - Real-time conversion tracking (already have gtag)
+   - Store historical data for trend analysis
+
+2. **PostHog ↔ Ads Correlation**
+   - Match `gclid` from ads to PostHog events
+   - Calculate true funnel: Click → Page View → Demo → Signup
+   - Identify which campaigns/keywords convert
+
+3. **Autonomous Daily Report**
+   - Cost per click, cost per demo, cost per signup
+   - Conversion rate by campaign/keyword
+   - Recommendations (pause keyword X, increase bid on Y)
+   - Anomaly alerts (CTR dropped 50%!)
+
+4. **Weekly Strategy Memo**
+   - What's working, what's not
+   - Suggested budget reallocation
+   - A/B test ideas for landing page
+   - Competitive ad intelligence (what are competitors bidding on)
+
+5. **Founder Slack/Email Alerts**
+   - "Campaign X spent $50 with 0 conversions - pause?"
+   - "Keyword 'contractor quote software' has 5% conversion - increase budget?"
+   - "Traffic spike detected - 3x normal, check if virality?"
+
+**Technical Requirements**:
+- Google Ads API credentials (OAuth)
+- PostHog read API key
+- Scheduled job infrastructure (already have APScheduler)
+- Email alerts (already have Resend)
+
+**Success Metric**: CPA (cost per acquisition) improves 50% within 30 days; founder receives actionable recommendations, not just data
 
 ---
 
