@@ -32,11 +32,11 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 | Status | Count |
 |--------|-------|
-| READY | 10 |
-| DISCOVERED | 15 |
-| COMPLETE | 6 |
-| **Active Total** | **31** |
-| Archived (DEPLOYED) | 65+ |
+| READY | 16 |
+| DISCOVERED | 14 |
+| COMPLETE | 7 |
+| **Active Total** | **37** |
+| Archived (DEPLOYED) | 66+ |
 
 **Autonomous AI Infrastructure**: DISC-101 COMPLETE, DISC-102-106 READY
 **Agent Reliability Engineering**: DISC-107, DISC-108 COMPLETE, DISC-109 DISCOVERED
@@ -52,11 +52,11 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 | Ticket | Title | Deployed |
 |--------|-------|----------|
+| DISC-133 | Clarification Answers Feed Into Learning System | 2025-12-30 |
 | DISC-132 | Interactive Clarifying Questions for Demo | 2025-12-30 |
 | DISC-131 | Demo Page Dictation Examples | 2025-12-30 |
 | DISC-113 | Time Savings Calculator (partial) | 2025-12-30 |
 | DISC-128 | Founder Notifications for Signups & Demo Usage | 2025-12-30 |
-| DISC-130 | PDF Line Spacing Polish - Improved Text Readability | 2025-12-30 |
 
 *Full deployment history: See DISCOVERY_ARCHIVE.md*
 
@@ -492,35 +492,210 @@ Changes apply to all PDFs (quotes, invoices, demo) while maintaining compact tem
 
 ---
 
-## DISCOVERED - Awaiting Founder Review
+### DISC-134: Social Login (Google, Apple, etc.) 🔐 AUTH (READY)
 
-### DISC-133: Clarification Answers Feed Into Learning System 🧠 LEARNING (DISCOVERED)
+**Source**: Founder Request (Eddie, 2025-12-30)
+**Impact**: MEDIUM | **Effort**: M | **Score**: 1.0
+**Sprint Alignment**: Reduces signup friction, industry-standard auth option
 
-**Source**: DISC-132 Implementation Discovery (2025-12-30)
-**Impact**: HIGH | **Effort**: M | **Score**: 2.0
-**Sprint Alignment**: Learning system enhancement, Anthropic showcase quality
-
-**Problem**: When users answer clarifying questions and regenerate quotes, those Q&A pairs contain valuable pricing context that should be captured by the learning system. Currently:
-- Demo mode: `/api/demo/regenerate` uses answers but doesn't persist them
-- Auth mode: `/quotes/generate-with-clarifications` saves the quote but not the clarifications
-- Learning service: `get_quote_refinement_prompt` handles corrections but not clarification context
+**Problem**: Currently users must use magic link (email-based) authentication. While frictionless, many users expect and prefer OAuth/social login options they use everywhere else. "Sign in with Google" is often perceived as faster and more trustworthy than entering an email address.
 
 **Proposed Work**:
-1. Add `clarification_context` field to quote model (JSON with Q&A pairs)
-2. Update `/quotes/generate-with-clarifications` to save clarifications with quote
-3. Create `get_clarification_learning_prompt()` in learning service
-4. Integrate clarification learning when quote outcomes are tracked (accepted/rejected)
-5. Use clarification patterns to improve future question generation
+1. **Google OAuth Integration** - Add "Sign in with Google" button to auth flow (highest priority, most common)
+2. **Apple Sign In** - Add Apple OAuth for iOS users (required for App Store if we ever go mobile)
+3. **UI Updates** - Auth form redesign with social buttons + "or continue with email" divider
+4. **Account Linking** - Handle edge case where user has both email and social accounts
+5. **PostHog Tracking** - Track auth method chosen to measure adoption
 
-**Why This Matters**:
-- Clarification answers are *explicit* user intent (vs. implicit corrections)
-- "How many square feet?" → "About 400" is valuable sizing context
-- "Is this interior or exterior?" → "Interior, second floor" informs pricing
-- This data compounds across all users to improve question quality
+**Technical Notes**:
+- Google: OAuth 2.0 via Google Cloud Console
+- Apple: Sign in with Apple SDK
+- Backend: Store OAuth provider + provider_id in contractor model
+- Consider: passkey support for future (WebAuthn)
 
-**Success Metric**: Learning statements include clarification-derived patterns; question relevance score improves
+**Success Metric**: 30%+ of new signups use social login within 30 days of launch
 
 ---
+
+### DISC-135: Post-Job Pricing Reflection Loop 💰🧠 LEARNING (READY)
+
+**Source**: Founder Request (Eddie, 2025-12-30)
+**Impact**: HIGH | **Effort**: M | **Score**: 1.5
+**Sprint Alignment**: Learning system excellence, Anthropic showcase quality
+
+**Problem**: Current learning captures quote acceptance/rejection (DISC-121), but not actual job profitability. A quote can be accepted but leave money on the table, or be accepted but take longer than expected. The contractor knows this after the job - we should capture it.
+
+**The Insight**: Contractors always know in hindsight "I should have charged more for that" or "that was perfect pricing." This is the most valuable signal possible for the learning system - real profit margin feedback, not just acceptance rates.
+
+**Proposed Work**:
+1. **Post-Invoice Prompt** - After invoice is marked paid (or 7 days after creation), trigger reflection UI
+2. **Simple 3-Option UI** - "How did this pricing feel?" → "Too Low (left money)" | "Just Right" | "Too High (lucky it sold)"
+3. **Optional Numeric Input** - "What would you price this at next time?" → captures ideal price
+4. **Learning Integration** - Feed reflection data into category-specific pricing adjustments
+5. **Dashboard Insight** - Show pattern: "Your bathroom remodels tend to be underpriced by ~15%"
+
+**Why This Is Unique**:
+- No competitor does this - they all stop at "quote sent"
+- Creates compounding accuracy over time
+- Contractors WANT to tell you this (it's cathartic)
+- Anthropic showcase: Human-AI collaboration at its finest
+
+**Technical Notes**:
+- New table: `pricing_reflections` (invoice_id, feeling, ideal_price, created_at)
+- Trigger: Invoice status change to "paid" or age > 7 days
+- Learning weight: Higher than acceptance signal (actual outcome vs. customer behavior)
+
+**Success Metric**: 40%+ reflection completion rate; measurable improvement in pricing confidence scores for categories with 5+ reflections
+
+---
+
+### DISC-136: Try Page Analytics Gaps 📊 ANALYTICS (COMPLETE)
+
+**Source**: Founder Request (Eddie, 2025-12-30)
+**Impact**: HIGH | **Effort**: S | **Score**: 3.0
+**Sprint Alignment**: CRITICAL - 80 clicks, 0 conversions, blind to funnel
+
+**Problem**: try.html (demo page) had no page view event. Couldn't see funnel.
+
+**Implementation (2025-12-31)**:
+- ✅ `try_page_viewed` - fires on load with referrer, UTM params, gclid
+- ✅ `demo_input_started` - fires when user starts typing (text mode)
+- ✅ `demo_recording_started` - fires when user starts voice recording
+- ✅ `demo_quote_generated` - fires on successful quote with total, line items
+- ✅ `demo_abandoned` - fires on page unload if left without generating
+
+**Full Funnel Now Visible**:
+Landing → Try Page View → Input/Recording Started → Quote Generated (or Abandoned)
+
+**Files Modified**: `frontend/try.html`
+
+---
+
+### DISC-137: Exit Intent Survey Reporting 📧 ANALYTICS (READY)
+
+**Source**: Founder Request (Eddie, 2025-12-30)
+**Impact**: MEDIUM | **Effort**: S | **Score**: 2.0
+**Sprint Alignment**: Understand why users leave
+
+**Problem**: Exit intent survey data goes to PostHog but founder has to manually check. Need proactive reporting.
+
+**Current State**:
+- `exit_survey_completed` captures reasons and other_text
+- Data exists but requires PostHog dashboard login
+
+**Proposed Work**:
+1. Daily email digest: "Yesterday's Exit Survey Summary"
+   - Count by reason (Not my industry, Too expensive, etc.)
+   - Any verbatim "Other" responses (most valuable)
+   - Trend vs. previous day/week
+2. Instant alert for specific keywords ("bug", "broken", "doesn't work")
+3. Add to founder notification service (alongside DISC-128)
+
+**Success Metric**: Founder receives daily exit survey digest; can read user feedback without logging into PostHog
+
+---
+
+### DISC-138: Google Ads → Conversion Funnel Dashboard 📈 ANALYTICS (READY)
+
+**Source**: Founder Request (Eddie, 2025-12-30)
+**Impact**: HIGH | **Effort**: M | **Score**: 1.5
+**Sprint Alignment**: Understand paid acquisition performance
+
+**Problem**: 80 ad clicks, 4000 impressions, 0 conversions. No visibility into where users drop off.
+
+**Proposed Work**:
+1. **PostHog Dashboard**: Create "Acquisition Funnel" dashboard
+   - Landing page views (by UTM source)
+   - CTA clicks (Try Demo vs Sign Up)
+   - Try page views
+   - Demo generation attempts
+   - Demo completions
+   - Signup attempts
+   - Signup completions
+2. **Conversion Tracking Integration**
+   - Verify Google Ads conversion pixel fires on signup
+   - Add conversion tracking for demo completion (micro-conversion)
+3. **Funnel Visualization**
+   - Step-by-step drop-off visualization
+   - Segment by ad campaign, device, time of day
+
+**Success Metric**: Can answer "where do ad visitors drop off?" in 30 seconds
+
+---
+
+### DISC-139: Real-Time Traffic Spike Alerts 🚨 MONITORING (READY)
+
+**Source**: Founder Request (Eddie, 2025-12-30)
+**Impact**: HIGH | **Effort**: M | **Score**: 1.5
+**Sprint Alignment**: Don't miss viral moments
+
+**Problem**: If Quoted goes viral (HN, Reddit, tweet), founder needs to know immediately to:
+- Monitor for issues
+- Engage with community
+- Scale infrastructure if needed
+
+**Proposed Work**:
+1. **Hourly traffic check** (backend scheduler)
+   - Compare current hour page views to 7-day average
+   - If 3x+ normal: send founder alert
+2. **Demo generation spike alert**
+   - If 5+ demo quotes in an hour (vs. typical ~1)
+   - Immediate Slack/email notification
+3. **Signup velocity alert**
+   - Any signup triggers notification (DISC-128 already does this)
+   - But also alert on 3+ signups in an hour = potential viral
+4. **Infrastructure pre-emptive warning**
+   - Monitor Railway metrics
+   - Alert if approaching limits
+
+**Success Metric**: Founder knows within 1 hour if traffic spikes 3x or more
+
+---
+
+### DISC-140: Autonomous Monitoring Agent 🤖 INFRASTRUCTURE (READY)
+
+**Source**: Founder Request (Eddie, 2025-12-30)
+**Impact**: HIGH | **Effort**: L | **Score**: 1.0
+**Sprint Alignment**: AI civilization infrastructure
+
+**Problem**: No autonomous system watching for anomalies. Founder must manually check everything.
+
+**Vision**: An AI agent that continuously monitors Quoted and surfaces issues proactively.
+
+**Proposed Work**:
+1. **Monitoring Agent Architecture**
+   - Scheduled runs (every 15 min for critical, hourly for trends)
+   - State persistence (knows what's "normal")
+   - Alert throttling (don't spam)
+
+2. **Health Checks**:
+   - API response times (alert if >2s average)
+   - Error rates (alert if >1% of requests)
+   - Demo generation success rate
+   - PDF generation success rate
+   - Payment processing health
+
+3. **Business Metrics Watch**:
+   - Traffic anomalies (up or down)
+   - Conversion rate changes
+   - Revenue alerts (payment failures)
+   - Churn signals (users deleting accounts)
+
+4. **Competitive Intelligence**:
+   - Monitor competitor pricing changes
+   - Track competitor feature releases
+   - Alert on industry news mentioning "quoting"
+
+5. **Weekly Summary Email**:
+   - Key metrics vs. previous week
+   - Anomalies detected
+   - Recommended actions
+
+**Success Metric**: Founder wakes up to a briefing, not a crisis
+
+---
+
+## DISCOVERED - Awaiting Founder Review
 
 ### Agent Reliability Engineering (1 ticket remaining)
 

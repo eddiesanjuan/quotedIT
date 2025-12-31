@@ -1910,6 +1910,65 @@
         var errorMessage = document.getElementById('errorMessage');
         var resultsSection = document.getElementById('resultsSection');
 
+        // DISC-136: Critical analytics - track page view and user engagement
+        (function() {
+            // Track page view immediately
+            if (window.posthog) {
+                var urlParams = new URLSearchParams(window.location.search);
+                window.posthog.capture('try_page_viewed', {
+                    referrer: document.referrer,
+                    utm_source: urlParams.get('utm_source') || null,
+                    utm_medium: urlParams.get('utm_medium') || null,
+                    utm_campaign: urlParams.get('utm_campaign') || null,
+                    gclid: urlParams.get('gclid') || null,  // Google Ads click ID
+                    has_prompt: !!urlParams.get('prompt')
+                });
+            }
+
+            // Track when user starts typing (first interaction)
+            var hasTrackedInput = false;
+            if (descriptionInput) {
+                descriptionInput.addEventListener('input', function() {
+                    if (!hasTrackedInput && window.posthog) {
+                        hasTrackedInput = true;
+                        window.posthog.capture('demo_input_started', {
+                            input_method: 'text',
+                            time_to_first_input_ms: performance.now()
+                        });
+                    }
+                });
+            }
+
+            // Track when user starts recording (voice interaction)
+            var hasTrackedRecording = false;
+            if (recordBtn) {
+                recordBtn.addEventListener('click', function() {
+                    if (!hasTrackedRecording && window.posthog) {
+                        hasTrackedRecording = true;
+                        window.posthog.capture('demo_recording_started', {
+                            time_to_first_record_ms: performance.now()
+                        });
+                    }
+                });
+            }
+
+            // Track page abandonment (user leaves before generating)
+            var hasGenerated = false;
+            window.addEventListener('beforeunload', function() {
+                if (!hasGenerated && window.posthog) {
+                    window.posthog.capture('demo_abandoned', {
+                        had_input: hasTrackedInput || hasTrackedRecording,
+                        time_on_page_ms: performance.now()
+                    });
+                }
+            });
+
+            // Mark when quote is generated (to prevent false abandonment tracking)
+            window.markQuoteGenerated = function() {
+                hasGenerated = true;
+            };
+        })();
+
         // DISC-131: Handle ?prompt= query parameter from demo page
         (function() {
             var urlParams = new URLSearchParams(window.location.search);
@@ -2070,6 +2129,17 @@
                 var data = await response.json();
                 currentQuoteData = data;
                 displayResults(data);
+                if (window.markQuoteGenerated) window.markQuoteGenerated();
+
+                // Track successful quote generation
+                if (window.posthog) {
+                    window.posthog.capture('demo_quote_generated', {
+                        input_method: 'voice',
+                        total: data.total || data.subtotal,
+                        line_items_count: (data.line_items || []).length,
+                        time_to_quote_ms: performance.now()
+                    });
+                }
                 recordStatus.textContent = 'Tap to start recording';
             } catch (err) {
                 showError(err.message);
@@ -2107,6 +2177,17 @@
                 var data = await response.json();
                 currentQuoteData = data;
                 displayResults(data);
+                if (window.markQuoteGenerated) window.markQuoteGenerated();
+
+                // Track successful quote generation
+                if (window.posthog) {
+                    window.posthog.capture('demo_quote_generated', {
+                        input_method: 'text',
+                        total: data.total || data.subtotal,
+                        line_items_count: (data.line_items || []).length,
+                        time_to_quote_ms: performance.now()
+                    });
+                }
             } catch (err) {
                 showError(err.message);
             } finally {
@@ -2380,6 +2461,7 @@
                 var data = await response.json();
                 currentQuoteData = data;
                 displayResults(data);
+                if (window.markQuoteGenerated) window.markQuoteGenerated();
 
                 // Track successful regeneration
                 if (typeof posthog !== 'undefined') {
