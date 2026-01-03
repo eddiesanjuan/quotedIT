@@ -801,6 +801,44 @@ class PricingReflection(Base):
     quote = relationship("Quote")
 
 
+# DISC-137: Exit Intent Survey Reporting
+class ExitSurvey(Base):
+    """
+    Captures exit intent survey responses from landing page.
+
+    When visitors attempt to leave without signing up, we show a quick survey
+    to understand why. This data helps improve conversion and product-market fit.
+
+    Data is aggregated into daily digest emails to founder, with instant alerts
+    for concerning keywords like "bug", "broken", "doesn't work".
+    """
+    __tablename__ = "exit_surveys"
+
+    id = Column(String, primary_key=True, default=generate_uuid)
+    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+
+    # Survey response
+    reasons = Column(JSON, nullable=False)  # List of reason codes: ["not_my_trade", "pricing_high", etc.]
+    other_text = Column(Text, nullable=True)  # Verbatim "Other" reason (most valuable feedback)
+
+    # Context
+    page_url = Column(String(500), nullable=True)
+    referrer = Column(String(500), nullable=True)
+    user_agent = Column(String(500), nullable=True)
+
+    # Tracking
+    ip_hash = Column(String(64), nullable=True)  # Hashed IP for deduplication (privacy-safe)
+    session_id = Column(String(100), nullable=True)  # Browser session ID if available
+
+    # Alert tracking
+    alert_sent = Column(Boolean, default=False)  # True if instant alert was sent for concerning keywords
+    alert_sent_at = Column(DateTime, nullable=True)
+
+    # Digest tracking
+    included_in_digest = Column(Boolean, default=False)  # True if included in daily digest
+    digest_date = Column(DateTime, nullable=True)  # Date of digest that included this
+
+
 class SetupConversation(Base):
     """
     Stores the setup/onboarding conversation for a contractor.

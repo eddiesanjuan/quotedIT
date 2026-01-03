@@ -1,0 +1,128 @@
+name: AI Civilization - Discovery Agent
+
+on:
+  workflow_dispatch:
+    inputs:
+      task:
+        description: 'Optional specific discovery focus'
+        required: false
+        type: string
+  schedule:
+    # Run weekly on Sundays at 6 AM UTC (midnight CST)
+    - cron: '0 6 * * 0'
+
+concurrency:
+  group: ai-civilization-discovery
+  cancel-in-progress: false
+
+jobs:
+  discovery:
+    runs-on: ubuntu-latest
+    if: vars.AI_COMPANY_ENABLED == 'true'
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Check Emergency Stop
+        run: |
+          if [ -f ".ai-company/EMERGENCY_STOP" ]; then
+            echo "EMERGENCY STOP is active. Halting."
+            exit 0
+          fi
+
+      - name: Setup Claude Code
+        uses: anthropics/claude-code-action@beta
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+
+      - name: Run Discovery Agent
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DISCOVERY_FOCUS: ${{ github.event.inputs.task }}
+        run: |
+          FOCUS="${DISCOVERY_FOCUS:-General discovery cycle}"
+          claude -p "You are the Discovery Agent for Quoted AI Company.
+
+          ## Your Mission
+          Find new opportunities, improvements, and initiatives for the Quoted product.
+
+          ## Read First
+          1. .ai-company/agents/discovery/AGENT.md (your specification)
+          2. .ai-company/agents/discovery/state.md (your current state)
+          3. DISCOVERY_BACKLOG.md (avoid duplicates)
+          4. ENGINEERING_STATE.md (current product reality)
+          5. COMPANY_STATE.md (strategic goals)
+
+          ## Your Task
+          1. Spawn Product, Growth, and Strategy discovery specialists
+          2. Synthesize their findings
+          3. Score by Impact/Effort ratio
+          4. Write new DISCOVERED tickets to DISCOVERY_BACKLOG.md
+          5. Update your state.md
+
+          ## Focus
+          $FOCUS
+
+          ## Completion
+          When genuinely complete, output:
+          <promise>DISCOVERY CYCLE COMPLETE</promise>
+
+          Only output this promise when ALL specialists have returned and backlog is updated."
+
+      - name: Commit State Changes
+        run: |
+          git config user.name "Quoted AI Company"
+          git config user.email "ai@quoted.it.com"
+          git add .ai-company/agents/discovery/ DISCOVERY_BACKLOG.md || true
+          git diff --staged --quiet || git commit -m "Discovery: Cycle complete $(date +%Y-%m-%d)"
+          git push || true
+
+      - name: Self-Dispatch Check
+        if: success()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Check for emergency stop
+          if [ -f ".ai-company/EMERGENCY_STOP" ]; then
+            echo "EMERGENCY_STOP detected. Halting self-dispatch."
+            exit 0
+          fi
+
+          # Read iteration count
+          ITERATION_FILE=".ai-company/agents/discovery/iteration.md"
+          if [ -f "$ITERATION_FILE" ]; then
+            ITERATION=$(grep -oP 'iteration: \K\d+' "$ITERATION_FILE" || echo 0)
+          else
+            ITERATION=0
+          fi
+          MAX_ITERATIONS=3
+
+          # Check if completion promise was output
+          STATE_FILE=".ai-company/agents/discovery/state.md"
+          if grep -q "DISCOVERY CYCLE COMPLETE" "$STATE_FILE" 2>/dev/null; then
+            echo "Completion promise found. Work complete."
+            echo -e "---\niteration: 0\nlast_reset: $(date -u +%Y-%m-%dT%H:%M:%SZ)\n---" > "$ITERATION_FILE"
+            git add "$ITERATION_FILE" && git commit -m "Discovery: Reset iteration counter" && git push || true
+            exit 0
+          fi
+
+          # Check iteration limit
+          if [ "$ITERATION" -ge "$MAX_ITERATIONS" ]; then
+            echo "Max iterations ($MAX_ITERATIONS) reached. Manual review required."
+            exit 0
+          fi
+
+          # Increment and self-dispatch
+          NEW_ITERATION=$((ITERATION + 1))
+          echo -e "---\niteration: $NEW_ITERATION\nlast_run: $(date -u +%Y-%m-%dT%H:%M:%SZ)\n---" > "$ITERATION_FILE"
+          git add "$ITERATION_FILE" && git commit -m "Discovery: Iteration $NEW_ITERATION" && git push || true
+
+          echo "Self-dispatching iteration $NEW_ITERATION of $MAX_ITERATIONS..."
+          sleep 60  # Cooldown
+          gh workflow run ai-civilization-discovery.yml
