@@ -1,25 +1,28 @@
 """
-Analytics API routes for Quoted (DISC-137).
+Analytics API routes for Quoted (DISC-137, DISC-138).
 
 Handles analytics data collection from frontend:
 - Exit intent survey submissions
-- Future: other conversion funnel events
+- Conversion funnel data (DISC-138)
 
 No authentication required for data collection endpoints.
+Founder-only endpoints require auth.
 """
 
 import hashlib
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 from datetime import datetime
 
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Request, Depends
 from pydantic import BaseModel
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 
 from ..services.exit_survey import ExitSurveyService
+from ..services.funnel_analytics import FunnelAnalyticsService
 from ..services.database import async_session_factory
 from ..services.logging import get_api_logger
+from ..config import settings
 
 logger = get_api_logger()
 
@@ -119,4 +122,104 @@ async def submit_exit_survey(
         raise HTTPException(
             status_code=500,
             detail="Failed to submit survey"
+        )
+
+
+# ============================================================================
+# DISC-138: Conversion Funnel Analytics
+# ============================================================================
+
+
+class FunnelResponse(BaseModel):
+    """Funnel analytics response."""
+    period_start: str
+    period_end: str
+    overall_conversion_rate: float
+    steps: List[Dict[str, Any]]
+    posthog_configured: bool
+
+
+class TrafficSourcesResponse(BaseModel):
+    """Traffic sources breakdown response."""
+    sources: Dict[str, int]
+    posthog_configured: bool
+
+
+@router.get("/funnel", response_model=FunnelResponse)
+async def get_conversion_funnel(
+    request: Request,
+    days: int = 7,
+    utm_source: Optional[str] = None
+):
+    """
+    Get conversion funnel data.
+
+    Returns step-by-step funnel from landing page to signup.
+    Requires PostHog read API key for full visibility.
+
+    Args:
+        days: Number of days to analyze (default: 7)
+        utm_source: Optional UTM source filter (e.g., "google")
+
+    Note: This is a public endpoint for MVP. In production,
+    should be restricted to founder/admin accounts.
+    """
+    try:
+        async with async_session_factory() as db:
+            funnel = await FunnelAnalyticsService.get_funnel_data(
+                db=db,
+                days=days,
+                utm_source=utm_source
+            )
+
+            return FunnelResponse(
+                period_start=funnel.period_start.isoformat(),
+                period_end=funnel.period_end.isoformat(),
+                overall_conversion_rate=round(funnel.overall_conversion_rate, 2),
+                steps=[
+                    {
+                        "name": step.name,
+                        "event": step.event_name,
+                        "count": step.count,
+                        "conversion_rate": round(step.conversion_rate, 2)
+                    }
+                    for step in funnel.steps
+                ],
+                posthog_configured=bool(settings.posthog_read_api_key)
+            )
+
+    except Exception as e:
+        logger.error(f"Failed to get funnel data: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to retrieve funnel data"
+        )
+
+
+@router.get("/traffic-sources", response_model=TrafficSourcesResponse)
+async def get_traffic_sources(
+    request: Request,
+    days: int = 7
+):
+    """
+    Get traffic breakdown by UTM source.
+
+    Requires PostHog read API key.
+
+    Args:
+        days: Number of days to analyze (default: 7)
+    """
+    try:
+        sources = await FunnelAnalyticsService.get_traffic_sources(days=days)
+
+        return TrafficSourcesResponse(
+            sources=sources if not sources.get("posthog_not_configured") else {},
+            posthog_configured=bool(settings.posthog_read_api_key)
+        )
+
+    except Exception as e:
+        logger.error(f"Failed to get traffic sources: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to retrieve traffic sources"
         )
