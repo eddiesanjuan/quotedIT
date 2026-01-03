@@ -1,25 +1,57 @@
 # AI Civilization - Deep Agent Run (Ralph Wiggum Loop)
 
-Execute an agent in a self-healing loop using Ralph Wiggum plugin. This runs locally with automatic retry until completion or max iterations.
+Execute an agent in a self-healing loop using Ralph Wiggum plugin. Supports direct task execution, ticket targeting, and smart queue management.
 
 ---
 
 ## Arguments
 
 Parse from $ARGUMENTS:
-- `agent`: Which agent to run (support, ops, code, growth, meta, finance, full)
-- `--max`: Optional max iterations override (defaults to Constitutional limit)
+- `agent`: Which agent to run (support, ops, code, growth, meta, finance, discovery, full, overnight)
+- `task`: Optional - direct task description OR ticket ID (e.g., "add duplicate button" or "DISC-113")
+- `--max`: Optional max iterations override
+- `--track`: Create a DISC ticket for tracking (when using direct task)
+- `--urgent`: Priority tier 1 (founder-urgent)
+- `--skip-empty`: Skip agents with empty queues (default for full/overnight)
 
 ## Usage Examples
 
+```bash
+# === DIRECT TASK EXECUTION (Founder Fast Path) ===
+/ai-run-deep code "add duplicate quote button"     # Immediate implementation
+/ai-run-deep code "fix login bug" --urgent         # Highest priority
+/ai-run-deep code "add dark mode" --track          # Creates DISC-XXX and implements
+
+# === TICKET TARGETING ===
+/ai-run-deep code DISC-113                         # Implement specific ticket
+/ai-run-deep code DISC-113,DISC-114,DISC-115       # Multiple tickets
+
+# === STANDARD AGENT RUNS ===
+/ai-run-deep support                               # Clear support inbox
+/ai-run-deep ops                                   # Health check
+/ai-run-deep code                                  # Process READY queue by priority
+/ai-run-deep code --max=5                          # Custom iteration limit
+/ai-run-deep discovery                             # Find new opportunities
+/ai-run-deep growth                                # Process content queue
+
+# === FULL COMPANY RUNS ===
+/ai-run-deep full                                  # All agents, smart skip
+/ai-run-deep full --no-skip                        # Force run all agents
+/ai-run-deep overnight                             # Extended overnight run
 ```
-/ai-run-deep support         # Deep run support agent until inbox clear
-/ai-run-deep ops             # Deep run ops until health green
-/ai-run-deep code            # Deep run code until queue empty
-/ai-run-deep code --max=5    # Deep run code with custom limit
-/ai-run-deep full            # Full company operation (all agents)
-/ai-run-deep overnight       # Overnight full company run
-```
+
+## Priority Tiers (Code Agent)
+
+When processing work, Code Agent follows this priority order:
+
+| Tier | Source | Description |
+|------|--------|-------------|
+| **1 - FOUNDER** | Direct command with `--urgent` | Eddie said do it NOW |
+| **2 - FOUNDER** | Direct command (no flag) | Eddie initiated, high priority |
+| **3 - URGENT** | Tickets tagged `urgent` or `bug` | Production issues |
+| **4 - READY-HIGH** | READY tickets with `HIGH` impact | High-value features |
+| **5 - READY** | Standard READY tickets | Normal queue |
+| **6 - BACKLOG** | Lower priority items | When queue is empty |
 
 ## Completion Promises (from Constitution Article IX)
 
@@ -31,40 +63,186 @@ Parse from $ARGUMENTS:
 | growth | `CONTENT QUEUE PROCESSED` | 5 |
 | meta | `WEEKLY ANALYSIS COMPLETE` | 2 |
 | finance | `FINANCIAL SYNC COMPLETE` | 3 |
+| discovery | `DISCOVERY CYCLE COMPLETE` | 3 |
+
+---
 
 ## Instructions
 
-### Step 1: Validate and Setup
+### Step 1: Parse Arguments
 
-1. Parse $ARGUMENTS to get agent name
-2. Validate agent is one of: support, ops, code, growth, meta, finance, full, overnight
-3. Check for emergency stop: `.ai-company/EMERGENCY_STOP`
-4. If emergency stop exists, halt and report
-
-### Step 2: Load Agent Context
-
-Read the agent's specification and current state:
 ```
-.ai-company/agents/{agent}/AGENT.md
-.ai-company/agents/{agent}/state.md
-.ai-company/agents/{agent}/iteration.md
+$ARGUMENTS parsing:
+- First word = agent name
+- If second word exists and doesn't start with "--":
+  - If matches DISC-XXX pattern → ticket targeting mode
+  - Else → direct task mode (treat as task description)
+- Parse flags: --max=N, --track, --urgent, --skip-empty, --no-skip
 ```
 
-### Step 3: Build Loop Prompt
+### Step 2: Check Emergency Stop
 
-For single agent, construct the prompt:
+```bash
+if [ -f ".ai-company/EMERGENCY_STOP" ]; then
+  echo "EMERGENCY STOP active. Run /ai-status for details."
+  exit 0
+fi
+```
+
+### Step 3: Route by Mode
+
+#### Mode A: Direct Task Execution
+
+When a task description is provided (e.g., `/ai-run-deep code "add duplicate button"`):
+
+1. **Create ephemeral task** (or DISC ticket if `--track`):
+   ```markdown
+   # Ephemeral Task (Founder-Initiated)
+
+   **Created**: {timestamp}
+   **Priority**: FOUNDER {1 if --urgent, else 2}
+   **Description**: {task description}
+   **Track**: {DISC-XXX if --track, else "ephemeral"}
+   ```
+
+2. **If --track flag**, add to DISCOVERY_BACKLOG.md:
+   ```markdown
+   ### DISC-{next}: {task description}
+   **Status**: READY
+   **Source**: Founder Direct (/ai-run-deep)
+   **Priority**: FOUNDER
+   ```
+
+3. **Build Code Agent prompt with this task as ONLY focus**:
+   ```markdown
+   ## FOUNDER DIRECTIVE (Priority 1)
+
+   Eddie has directly requested this task. Implement immediately.
+
+   **Task**: {description}
+   **Tracking**: {DISC-XXX or ephemeral}
+
+   Do NOT process other queue items. Focus solely on this task.
+   When complete, output: <promise>FOUNDER TASK COMPLETE</promise>
+   ```
+
+4. **Execute via Ralph loop** (max 5 iterations for founder tasks)
+
+#### Mode B: Ticket Targeting
+
+When DISC-XXX pattern detected (e.g., `/ai-run-deep code DISC-113`):
+
+1. **Read ticket(s) from DISCOVERY_BACKLOG.md**
+2. **Validate ticket exists and is READY** (or force if founder command)
+3. **Build Code Agent prompt with specific ticket(s)**:
+   ```markdown
+   ## TARGETED TICKETS
+
+   Implement these specific tickets in order:
+
+   1. DISC-113: {title}
+      {full ticket content}
+
+   Do NOT process other queue items.
+   When all targeted tickets complete: <promise>TARGETED WORK COMPLETE</promise>
+   ```
+
+4. **Execute via Ralph loop**
+
+#### Mode C: Standard Queue Processing
+
+When no task/ticket specified (e.g., `/ai-run-deep code`):
+
+1. **Read agent state and queue**
+2. **Apply priority sorting** (see Priority Tiers above)
+3. **Build standard agent prompt**
+4. **Execute via Ralph loop**
+
+### Step 4: Smart Queue Skip (Full/Overnight Mode)
+
+For `/ai-run-deep full` or `overnight`, check each agent's queue before running:
+
+```markdown
+## Pre-Run Queue Check
+
+| Agent | Queue Status | Action |
+|-------|--------------|--------|
+| ops | Always run | RUN (health is continuous) |
+| support | Inbox: {count} | {RUN if >0, SKIP if 0} |
+| finance | Last sync: {time} | {RUN if >24h, SKIP if recent} |
+| discovery | Last run: {time} | {RUN if >7d, SKIP if recent} |
+| code | READY queue: {count} | {RUN if >0, SKIP if 0} |
+| growth | Content queue: {count} | {RUN if >0, SKIP if 0} |
+| meta | Day: {weekday} | {RUN if Sunday, SKIP otherwise} |
+```
+
+**How to check queues:**
+
+- **support**: Check Resend inbox count or `.ai-company/agents/support/state.md`
+- **finance**: Check `Last Sync` timestamp in `.ai-company/agents/finance/state.md`
+- **discovery**: Check `Last Run` in `.ai-company/agents/discovery/state.md`
+- **code**: Count READY tickets in `DISCOVERY_BACKLOG.md`
+- **growth**: Check `Content Queue` in `.ai-company/agents/growth/state.md`
+- **meta**: Check if today is Sunday
+
+**If `--no-skip`**: Run all agents regardless of queue status.
+
+### Step 5: Full Company Mode Execution Order
+
+```
+/ai-run-deep full
+
+Execution sequence:
+1. ops (health baseline) - ALWAYS
+2. support (clear inbox) - if inbox > 0
+3. finance (sync metrics) - if last sync > 24h
+4. discovery (find work) - if last run > 7 days
+5. code (implement READY) - if READY queue > 0
+6. growth (content) - if content queue > 0
+7. meta (weekly review) - if Sunday
+
+Between each agent:
+- Check for EMERGENCY_STOP
+- Log to .ai-company/state/deep-run-{timestamp}.md
+- 30 second cooldown
+```
+
+### Step 6: Overnight Mode
+
+For `/ai-run-deep overnight`:
+
+1. **Extended limits**: Constitutional max * 2
+2. **Force discovery**: Run even if recent
+3. **Full logging**: `.ai-company/logs/overnight-{date}.md`
+4. **Morning briefing**: Generate when complete
+5. **Email summary**: Send to Eddie (if configured)
+
+```
+Overnight stops when:
+1. All agents report complete (all promises output)
+2. EMERGENCY_STOP triggered
+3. Any agent exceeds doubled max iterations
+4. Unrecoverable error occurs
+```
+
+### Step 7: Build Agent Prompt
+
+For standard agent runs, construct:
 
 ```markdown
 You are executing the Quoted {Agent} Agent in deep mode.
 
 ## Your Specification
-[Contents of AGENT.md]
+[Contents of .ai-company/agents/{agent}/AGENT.md]
 
 ## Current State
-[Contents of state.md]
+[Contents of .ai-company/agents/{agent}/state.md]
 
 ## Current Iteration
 [Contents of iteration.md or "iteration: 1"]
+
+## Priority Queue (Code Agent only)
+[Sorted list of work items by priority tier]
 
 ## Constitutional Limits
 - Max iterations: {MAX_ITERATIONS}
@@ -73,7 +251,6 @@ You are executing the Quoted {Agent} Agent in deep mode.
 
 ## Your Task
 Execute your responsibilities until complete. When genuinely finished:
-
 1. Update your state.md with results
 2. Output your completion promise: <promise>{COMPLETION_PROMISE}</promise>
 
@@ -89,15 +266,11 @@ If NOT complete after this iteration:
 - Iteration files track progress across context resets
 ```
 
-### Step 4: Invoke Ralph Wiggum Loop
-
-Use the Ralph Wiggum plugin skill to start the loop:
+### Step 8: Invoke Ralph Wiggum Loop
 
 ```
 /ralph-wiggum:ralph-loop
 ```
-
-With the constructed prompt above.
 
 The loop will:
 1. Execute the agent prompt
@@ -106,100 +279,66 @@ The loop will:
 4. If not found: Continue next iteration
 5. If max iterations reached: Stop loop, escalate
 
-### Step 5: Full Company Mode
-
-For `/ai-run-deep full` or `/ai-run-deep overnight`:
-
-Run agents in dependency order:
-1. **ops** first (health baseline)
-2. **support** (clear inbox)
-3. **finance** (sync metrics)
-4. **code** (process code queue)
-5. **growth** (process content)
-6. **meta** (if Sunday, weekly analysis)
-
-Between each agent:
-- Check for emergency stop
-- Log completion to `.ai-company/state/deep-run-{timestamp}.md`
-- 30 second cooldown
-
-### Step 6: Monitor and Report
-
-Create a live status display:
+### Step 9: Report Results
 
 ```
-+--------------------------------------------------------------+
-|  AI CIVILIZATION - DEEP RUN                                    |
-+--------------------------------------------------------------+
++==============================================================================+
+|  AI CIVILIZATION - DEEP RUN COMPLETE                                          |
++==============================================================================+
 
+Mode: {direct-task / ticket / queue / full / overnight}
 Agent: {agent name}
-Mode: Ralph Wiggum Loop
-Completion Promise: {promise}
+Task: {description or "queue processing"}
 
-Iteration: {current} / {max}
-Status: {running/complete/stopped}
+Iterations: {count} / {max}
+Result: {SUCCESS / ESCALATE / EMERGENCY_STOP}
+Promise: {completion promise if output}
 
-Progress:
-  [1] Started: 10:30:00 - Processed 5 tickets
-  [2] Started: 10:32:15 - Processed 3 more tickets
-  [3] Started: 10:34:30 - COMPLETE - Promise output
+{If direct task with --track}
+Ticket Created: DISC-{XXX}
+Status: {COMPLETE / IN_PROGRESS}
 
-Result: SUCCESS / ESCALATE / EMERGENCY_STOP
+{If code agent}
+PRs Created: {list}
+Tickets Completed: {list}
+Remaining in Queue: {count}
 
-State File: .ai-company/agents/{agent}/state.md
-+--------------------------------------------------------------+
+{If full run}
+| Agent | Status | Iterations | Notes |
+|-------|--------|------------|-------|
+| ops | COMPLETE | 1 | Health green |
+| support | SKIPPED | 0 | Inbox empty |
+| finance | COMPLETE | 2 | Synced $X MRR |
+| discovery | COMPLETE | 1 | Found 3 opportunities |
+| code | ESCALATE | 3 | 2/5 tickets done |
+| growth | SKIPPED | 0 | Queue empty |
+| meta | SKIPPED | 0 | Not Sunday |
+
++==============================================================================+
 ```
+
+---
+
+## Quick Reference
+
+| You Want | Command |
+|----------|---------|
+| Add feature immediately | `/ai-run-deep code "description"` |
+| Add feature with tracking | `/ai-run-deep code "description" --track` |
+| Urgent fix | `/ai-run-deep code "fix X" --urgent` |
+| Specific ticket | `/ai-run-deep code DISC-113` |
+| Multiple tickets | `/ai-run-deep code DISC-113,DISC-114` |
+| Process READY queue | `/ai-run-deep code` |
+| Full company run | `/ai-run-deep full` |
+| Overnight autonomous | `/ai-run-deep overnight` |
+| Find new work | `/ai-run-deep discovery` |
+| Emergency stop | `/ai-stop` |
+
+---
 
 ## Emergency Stop
 
-At any point during deep run:
-- User can run `/ai-stop` to halt
-- Or create file: `touch .ai-company/EMERGENCY_STOP`
-- Or use Ralph's built-in: `/ralph-wiggum:cancel-ralph`
-
-## Overnight Mode
-
-For `/ai-run-deep overnight`:
-
-1. Set MAX_ITERATIONS higher (Constitutional max * 2)
-2. Enable all agents
-3. Log everything to `.ai-company/logs/overnight-{date}.md`
-4. Generate morning briefing when complete
-5. Send summary to Eddie's email (if configured)
-
-Overnight is designed to be started before bed:
-```bash
-# Start overnight run
-/ai-run-deep overnight
-
-# It will run until:
-# 1. All agents report complete
-# 2. Emergency stop triggered
-# 3. Any agent exceeds doubled max iterations
-```
-
-## Output Log Format
-
-Create/append to `.ai-company/state/deep-run-log.md`:
-
-```markdown
-# Deep Run Log
-
-## {timestamp} - {agent}
-- **Mode**: deep / full / overnight
-- **Iterations**: {count}
-- **Result**: complete / escalate / emergency_stop
-- **Promise**: {if output}
-- **Duration**: {minutes}
-- **Summary**: {one line}
-```
-
-## Integration with /quoted-run
-
-For maximum overnight power, combine with discovery:
-
-```
-/ai-run-deep overnight && /quoted-discover --auto-approve
-```
-
-This runs the entire company overnight AND generates new work for tomorrow.
+At any point:
+- `/ai-stop` - Halt everything
+- `touch .ai-company/EMERGENCY_STOP` - File-based halt
+- `/ralph-wiggum:cancel-ralph` - Cancel current loop

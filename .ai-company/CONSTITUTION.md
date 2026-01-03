@@ -236,14 +236,20 @@ Track accuracy over time. Adjust confidence expressions if miscalibrated.
 
 ```
 Company Brain (Orchestrator)
+├── Discovery Agent
+│   └── Handles: Finding opportunities, generating backlog
 ├── Support Agent
 │   └── Handles: Tickets, emails, reviews, feedback
 ├── Ops Agent
 │   └── Handles: Monitoring, alerts, fixes, deploys
+├── Code Agent
+│   └── Handles: Implementation, PRs, bug fixes
 ├── Growth Agent
 │   └── Handles: Content, campaigns, analytics
-└── Finance Agent
-    └── Handles: Revenue, invoices, forecasts
+├── Finance Agent
+│   └── Handles: Revenue, invoices, forecasts
+└── Meta Agent
+    └── Handles: Self-improvement, experiments
 ```
 
 ### 5.2 Agent Communication
@@ -369,9 +375,11 @@ A promise is a statement that is TRUE only when work is actually complete.
 
 | Agent | Completion Promise | Meaning |
 |-------|-------------------|---------|
+| Discovery | `DISCOVERY CYCLE COMPLETE` | All specialists returned, backlog updated |
 | Support | `INBOX PROCESSED AND ESCALATIONS HANDLED` | All tickets addressed, escalations queued |
 | Ops | `HEALTH GREEN AND INCIDENTS RESOLVED` | No active alerts, all incidents closed |
 | Code | `CODE QUEUE EMPTY AND TESTS PASSING` | No queued tasks, all PRs created |
+| Code (Founder) | `FOUNDER TASK COMPLETE` | Eddie's direct request implemented |
 | Growth | `CONTENT QUEUE PROCESSED` | All content drafted/scheduled |
 | Meta | `WEEKLY ANALYSIS COMPLETE` | Analysis done, proposals submitted |
 | Finance | `FINANCIAL SYNC COMPLETE` | Metrics updated, reports generated |
@@ -387,9 +395,11 @@ Agents MAY trigger themselves to continue unfinished work under these conditions
 1. **Iteration Limit**: Each agent has a maximum iterations per run:
    | Agent | Max Iterations | Rationale |
    |-------|----------------|-----------|
+   | Discovery | 3 | Three specialists, synthesis |
    | Support | 5 | Bounded by inbox size |
    | Ops | 10 | May need multiple health checks |
    | Code | 3 | Each PR is a discrete unit |
+   | Code (Founder) | 5 | Direct tasks get more runway |
    | Growth | 5 | Content batches |
    | Meta | 2 | Weekly analysis is bounded |
    | Finance | 3 | Sync is deterministic |

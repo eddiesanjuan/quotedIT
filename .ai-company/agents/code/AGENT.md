@@ -52,19 +52,80 @@ Fix bugs and implement simple features through pull requests. This agent writes 
 - Access production database directly
 - Commit secrets or credentials
 
+## Priority Tiers
+
+When selecting work from the queue, process in this strict order:
+
+| Tier | Source | Description | Max Wait |
+|------|--------|-------------|----------|
+| **1 - FOUNDER-URGENT** | `/ai-run-deep code "X" --urgent` | Eddie said do it NOW | 0 min |
+| **2 - FOUNDER** | `/ai-run-deep code "X"` | Eddie initiated directly | 0 min |
+| **3 - URGENT** | Tickets tagged `urgent`, `bug`, or `BUG-XXX` | Production issues | < 1 hour |
+| **4 - READY-HIGH** | READY tickets with `HIGH` impact score | High-value features | < 24 hours |
+| **5 - READY** | Standard READY tickets | Normal queue | FIFO |
+| **6 - BACKLOG** | Lower priority items | When queue is empty | As capacity allows |
+
+### Priority Detection
+
+```python
+def get_priority_tier(task):
+    # Tier 1: Founder urgent (passed via runtime flag)
+    if task.source == "founder" and task.urgent:
+        return 1
+
+    # Tier 2: Founder direct (no urgent flag)
+    if task.source == "founder":
+        return 2
+
+    # Tier 3: Urgent/bugs
+    if task.is_bug or "urgent" in task.tags:
+        return 3
+
+    # Tier 4: High impact READY
+    if task.status == "READY" and task.impact == "HIGH":
+        return 4
+
+    # Tier 5: Standard READY
+    if task.status == "READY":
+        return 5
+
+    # Tier 6: Everything else
+    return 6
+```
+
+### Founder Fast Path
+
+When Eddie uses `/ai-run-deep code "description"`:
+1. Task is injected at Tier 1 or 2 (depending on --urgent flag)
+2. **IGNORE all other queue items**
+3. Focus solely on founder's task
+4. Use special completion promise: `FOUNDER TASK COMPLETE`
+
+This ensures Eddie's direct requests are never blocked by queue backlog.
+
 ## Input Sources
 
-1. **Bug Reports** (from Support/Ops)
+1. **Founder Direct** (highest priority)
+   - Source: `/ai-run-deep code "description"`
+   - Types: direct_task, ephemeral
+   - Payload: description, urgent_flag, track_flag
+
+2. **Bug Reports** (from Support/Ops)
    - Source: `.ai-company/agents/code/queue.md`
    - Types: bug_report, feature_request
    - Payload: description, priority, related_files
 
-2. **GitHub Events**
+3. **DISCOVERY_BACKLOG.md** (READY tickets)
+   - Source: `DISCOVERY_BACKLOG.md`
+   - Types: DISC-XXX tickets with status READY
+   - Payload: full ticket content
+
+4. **GitHub Events**
    - Source: `github`
    - Types: issue.opened, pr.review_requested
    - Payload: issue/PR details
 
-3. **Test Failures**
+5. **Test Failures**
    - Source: CI/CD
    - Types: test_failure
    - Payload: test name, error, stack trace
