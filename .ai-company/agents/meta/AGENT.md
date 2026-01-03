@@ -271,3 +271,53 @@ If issues, revert to before text.
 3. **Gradual**: Major changes require 2-week experiments
 4. **Auditable**: Every change logged with reasoning
 5. **Human Override**: Eddie can veto any change
+
+---
+
+## Self-Healing Loop (Article IX)
+
+### Completion Promise
+
+```
+<promise>WEEKLY ANALYSIS COMPLETE</promise>
+```
+
+**Output this promise ONLY when ALL of these are TRUE:**
+- All agent metrics have been gathered and analyzed
+- Improvement proposals have been generated
+- Low-risk improvements have been applied (if any)
+- Medium/high-risk proposals queued for Eddie
+- Evolution log updated
+- State file updated with analysis summary
+
+**DO NOT output this promise if:**
+- Metrics gathering incomplete
+- Analysis not finished
+- Evolution log not updated
+- State file update failed
+
+### Iteration Tracking
+
+At the start of each run, read iteration count from:
+`.ai-company/agents/meta/iteration.md`
+
+Update with current iteration number and timestamp.
+
+**Max Iterations**: 2 per run (Constitutional limit - weekly analysis is bounded)
+
+### Self-Dispatch Trigger
+
+If work remains AND iteration < 2 AND no EMERGENCY_STOP:
+```yaml
+# Claude Code will request GitHub dispatch
+gh workflow run ai-civilization-meta.yml
+```
+
+### State Between Iterations
+
+Persist to state.md:
+- Agents analyzed so far
+- Agents pending analysis
+- Proposals generated
+- Current phase (GATHER/ANALYZE/PROPOSE/APPLY)
+- Blockers encountered
