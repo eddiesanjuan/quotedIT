@@ -1,25 +1,25 @@
-# AI Civilization Ops Agent
-# Monitors system health, logs, and handles infrastructure events
+# AI Civilization Finance Agent
+# Tracks revenue metrics, MRR, and financial health
 
-name: AI Civilization Ops Agent
+name: AI Civilization Finance Agent
 
 on:
   schedule:
-    # Every 15 minutes for health checks
-    - cron: '*/15 * * * *'
+    # Daily at 7 AM CST (1 PM UTC) for morning financial sync
+    - cron: '0 13 * * *'
   repository_dispatch:
-    types: [ops_dispatch]
+    types: [finance_dispatch]
   workflow_dispatch:
     inputs:
       task:
-        description: 'Specific ops task (health_check, log_review, incident)'
+        description: 'Specific finance task (sync, report, forecast)'
         required: false
         type: string
 
 jobs:
-  ops-agent:
+  finance-agent:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
 
     if: ${{ vars.AI_COMPANY_ENABLED == 'true' }}
 
@@ -34,48 +34,45 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install Claude Code and Railway CLI
-        run: |
-          npm install -g @anthropic-ai/claude-code
-          npm install -g @railway/cli
+      - name: Install Claude Code
+        run: npm install -g @anthropic-ai/claude-code
 
-      - name: Run Ops Agent
+      - name: Run Finance Agent
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-          QUOTED_API_URL: ${{ vars.QUOTED_API_URL }}
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
         run: |
           claude-code --print "
-          You are the Quoted Ops Agent.
+          You are the Quoted Finance Agent.
 
-          Read your specification from .ai-company/agents/ops/AGENT.md
-          Read your current state from .ai-company/agents/ops/state.md
+          Read your specification from .ai-company/agents/finance/AGENT.md
+          Read your current state from .ai-company/agents/finance/state.md
 
           Your responsibilities:
-          1. Run health checks on production (railway logs, /health endpoint)
-          2. Analyze error patterns in recent logs
-          3. Detect anomalies (error rate spikes, latency issues)
-          4. For minor issues: attempt auto-fix within your limits
-          5. For major issues: create incident report and alert Eddie
+          1. Sync with Stripe to get current MRR and subscriber count
+          2. Calculate key metrics (MRR, churn rate, LTV)
+          3. Generate daily/weekly financial reports
+          4. Flag anomalies (revenue drops, churn spikes)
+          5. Queue refund requests for Eddie's approval
 
           Constitutional Limits:
-          - Can restart services (railway up)
-          - Can scale within predefined limits
-          - Cannot modify environment variables
-          - Cannot access database directly
-          - Must escalate any data-affecting changes
+          - Read-only access to Stripe data
+          - Cannot process refunds or modify subscriptions
+          - Cannot access individual payment methods
+          - Must escalate any financial decision
 
-          Update your state file with findings.
+          Update your state file with current metrics.
+          Output <promise>FINANCIAL SYNC COMPLETE</promise> when done.
           "
 
       - name: Commit State Changes
         if: success()
         run: |
           git config --local user.email "ai-company@quoted.it.com"
-          git config --local user.name "Quoted Ops Agent"
-          git add .ai-company/agents/ops/
-          git diff --cached --quiet || git commit -m "Ops Agent: Health check $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          git config --local user.name "Quoted Finance Agent"
+          git add .ai-company/agents/finance/
+          git diff --cached --quiet || git commit -m "Finance Agent: Sync $(date -u +%Y-%m-%dT%H:%M:%SZ)"
           git push || echo "No changes to push"
 
       - name: Self-Dispatch Check
@@ -90,21 +87,21 @@ jobs:
           fi
 
           # Read iteration count
-          ITERATION_FILE=".ai-company/agents/ops/iteration.md"
+          ITERATION_FILE=".ai-company/agents/finance/iteration.md"
           if [ -f "$ITERATION_FILE" ]; then
             ITERATION=$(grep -oP 'iteration: \K\d+' "$ITERATION_FILE" || echo 0)
           else
             ITERATION=0
           fi
-          MAX_ITERATIONS=10
+          MAX_ITERATIONS=3
 
           # Check if completion promise was output
-          STATE_FILE=".ai-company/agents/ops/state.md"
-          if grep -q "HEALTH GREEN AND INCIDENTS RESOLVED" "$STATE_FILE" 2>/dev/null; then
+          STATE_FILE=".ai-company/agents/finance/state.md"
+          if grep -q "FINANCIAL SYNC COMPLETE" "$STATE_FILE" 2>/dev/null; then
             echo "✅ Completion promise found. Work complete."
             # Reset iteration counter
             echo -e "---\niteration: 0\nlast_reset: $(date -u +%Y-%m-%dT%H:%M:%SZ)\n---" > "$ITERATION_FILE"
-            git add "$ITERATION_FILE" && git commit -m "Ops: Reset iteration counter" && git push || true
+            git add "$ITERATION_FILE" && git commit -m "Finance: Reset iteration counter" && git push || true
             exit 0
           fi
 
@@ -117,8 +114,8 @@ jobs:
           # Increment and self-dispatch
           NEW_ITERATION=$((ITERATION + 1))
           echo -e "---\niteration: $NEW_ITERATION\nlast_run: $(date -u +%Y-%m-%dT%H:%M:%SZ)\n---" > "$ITERATION_FILE"
-          git add "$ITERATION_FILE" && git commit -m "Ops: Iteration $NEW_ITERATION" && git push || true
+          git add "$ITERATION_FILE" && git commit -m "Finance: Iteration $NEW_ITERATION" && git push || true
 
           echo "🔄 Self-dispatching iteration $NEW_ITERATION of $MAX_ITERATIONS..."
           sleep 60  # Cooldown
-          gh workflow run ai-civilization-ops.yml
+          gh workflow run ai-civilization-finance.yml

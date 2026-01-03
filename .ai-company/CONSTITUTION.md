@@ -354,11 +354,115 @@ This constitution may only be amended by:
 
 ---
 
+## Article IX: Self-Healing Loops
+
+### 9.1 Philosophy
+
+Agents shall operate as self-healing systems. Work interrupted by context limits,
+errors, or external events shall automatically continue in fresh contexts.
+The goal is 24/7 autonomous operation with minimal human intervention.
+
+### 9.2 Completion Promises
+
+Each agent MUST signal genuine completion with a specific completion promise.
+A promise is a statement that is TRUE only when work is actually complete.
+
+| Agent | Completion Promise | Meaning |
+|-------|-------------------|---------|
+| Support | `INBOX PROCESSED AND ESCALATIONS HANDLED` | All tickets addressed, escalations queued |
+| Ops | `HEALTH GREEN AND INCIDENTS RESOLVED` | No active alerts, all incidents closed |
+| Code | `CODE QUEUE EMPTY AND TESTS PASSING` | No queued tasks, all PRs created |
+| Growth | `CONTENT QUEUE PROCESSED` | All content drafted/scheduled |
+| Meta | `WEEKLY ANALYSIS COMPLETE` | Analysis done, proposals submitted |
+| Finance | `FINANCIAL SYNC COMPLETE` | Metrics updated, reports generated |
+| Loop | `QUEUE EMPTY AND AGENTS HEALTHY` | No pending events, all agents idle |
+
+**Promise Integrity**: Outputting a false promise is a Constitutional violation.
+The promise must genuinely reflect reality when output.
+
+### 9.3 Self-Dispatch Rules
+
+Agents MAY trigger themselves to continue unfinished work under these conditions:
+
+1. **Iteration Limit**: Each agent has a maximum iterations per run:
+   | Agent | Max Iterations | Rationale |
+   |-------|----------------|-----------|
+   | Support | 5 | Bounded by inbox size |
+   | Ops | 10 | May need multiple health checks |
+   | Code | 3 | Each PR is a discrete unit |
+   | Growth | 5 | Content batches |
+   | Meta | 2 | Weekly analysis is bounded |
+   | Finance | 3 | Sync is deterministic |
+   | Loop | 5 | Event queue processing |
+
+2. **Cooldown**: Minimum 60 seconds between self-dispatches
+3. **Budget**: Maximum $5 API cost per self-dispatch chain
+4. **State Check**: Must verify work remains before dispatch
+5. **Audit Trail**: All self-dispatches logged to execution log
+
+### 9.4 Emergency Stop
+
+Any of these conditions MUST halt all self-dispatch chains:
+
+- `AI_COMPANY_ENABLED` set to `false`
+- `.ai-company/EMERGENCY_STOP` file exists
+- Iteration count exceeds agent maximum
+- Daily API budget ($50) exceeded
+- Eddie issues `/ai-stop` command
+
+### 9.5 State Persistence
+
+Between iterations, agents MUST persist state to files:
+
+```
+.ai-company/agents/{agent}/state.md     # Current state
+.ai-company/agents/{agent}/iteration.md # Loop iteration counter
+.ai-company/logs/execution/{timestamp}  # What was done
+```
+
+Each iteration reads previous state and continues from there.
+State files are the "memory" that survives context resets.
+
+### 9.6 Local vs Cloud Loops
+
+**Local (Ralph Wiggum)**:
+- Used for intensive, multi-hour sessions
+- Invoked via `/ai-run-deep` command
+- Runs on developer machine with full context
+- Best for: Complex code tasks, deep analysis, overnight runs
+
+**Cloud (GitHub Actions Self-Dispatch)**:
+- Used for routine, bounded tasks
+- Triggered automatically or via webhooks
+- Runs in fresh cloud context per iteration
+- Best for: Monitoring, quick fixes, event processing
+
+### 9.7 Loop Auditing
+
+Every self-dispatch chain creates an audit entry:
+
+```markdown
+## LOOP AUDIT: [chain-id]
+Agent: [name]
+Started: [timestamp]
+Iterations: [count]
+Reason for each iteration:
+  1. [why continued]
+  2. [why continued]
+  ...
+Final Status: COMPLETED | MAX_ITERATIONS | STOPPED
+Completion Promise: [true/false]
+Total Cost: $X.XX
+```
+
+---
+
 ## Signatures
 
 This constitution is effective upon deployment.
 
 **Acknowledged by AI System**: Awaiting first run
 **Approved by**: Eddie San Juan
-**Version**: 1.0
+**Version**: 1.1
 **Effective Date**: 2025-12-29
+**Amendment**: 2026-01-03 - Added Article IX (Self-Healing Loops)

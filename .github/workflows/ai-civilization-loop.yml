@@ -76,3 +76,48 @@ jobs:
           git add .ai-company/state/
           git diff --cached --quiet || git commit -m "AI Company: Loop update $(date -u +%Y-%m-%dT%H:%M:%SZ)"
           git push || echo "No changes to push"
+
+      - name: Self-Dispatch Check
+        if: success()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Check for emergency stop
+          if [ -f ".ai-company/EMERGENCY_STOP" ]; then
+            echo "🛑 EMERGENCY_STOP detected. Halting self-dispatch."
+            exit 0
+          fi
+
+          # Read iteration count
+          ITERATION_FILE=".ai-company/state/loop-iteration.md"
+          if [ -f "$ITERATION_FILE" ]; then
+            ITERATION=$(grep -oP 'iteration: \K\d+' "$ITERATION_FILE" || echo 0)
+          else
+            ITERATION=0
+          fi
+          MAX_ITERATIONS=5
+
+          # Check if completion promise was output (queue empty)
+          STATE_FILE=".ai-company/state/current.md"
+          if grep -q "QUEUE EMPTY AND AGENTS HEALTHY" "$STATE_FILE" 2>/dev/null; then
+            echo "✅ Completion promise found. Queue processed."
+            # Reset iteration counter
+            echo -e "---\niteration: 0\nlast_reset: $(date -u +%Y-%m-%dT%H:%M:%SZ)\n---" > "$ITERATION_FILE"
+            git add "$ITERATION_FILE" && git commit -m "Loop: Reset iteration counter" && git push || true
+            exit 0
+          fi
+
+          # Check iteration limit
+          if [ "$ITERATION" -ge "$MAX_ITERATIONS" ]; then
+            echo "⚠️ Max iterations ($MAX_ITERATIONS) reached. Manual review required."
+            exit 0
+          fi
+
+          # Increment and self-dispatch
+          NEW_ITERATION=$((ITERATION + 1))
+          echo -e "---\niteration: $NEW_ITERATION\nlast_run: $(date -u +%Y-%m-%dT%H:%M:%SZ)\n---" > "$ITERATION_FILE"
+          git add "$ITERATION_FILE" && git commit -m "Loop: Iteration $NEW_ITERATION" && git push || true
+
+          echo "🔄 Self-dispatching iteration $NEW_ITERATION of $MAX_ITERATIONS..."
+          sleep 60  # Cooldown
+          gh workflow run ai-civilization-loop.yml

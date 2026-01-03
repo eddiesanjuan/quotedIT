@@ -240,3 +240,53 @@ Status: IDLE | WORKING | BLOCKED
 2. **No auth/billing changes** - Too sensitive for autonomous work
 3. **Tests must pass** - No broken builds
 4. **Human merge required** - Safety net for all production changes
+
+---
+
+## Self-Healing Loop (Article IX)
+
+### Completion Promise
+
+```
+<promise>CODE QUEUE EMPTY AND TESTS PASSING</promise>
+```
+
+**Output this promise ONLY when ALL of these are TRUE:**
+- Code queue has no pending tasks
+- All queued tasks either have PRs created OR are blocked with documented reason
+- All tests pass in the repository
+- State file updated with PR links and statuses
+- No uncommitted work in progress
+
+**DO NOT output this promise if:**
+- Tasks remain in queue
+- A PR creation failed
+- Tests are failing
+- Work is in progress but not committed
+- State file update failed
+
+### Iteration Tracking
+
+At the start of each run, read iteration count from:
+`.ai-company/agents/code/iteration.md`
+
+Update with current iteration number and timestamp.
+
+**Max Iterations**: 3 per run (Constitutional limit - each PR is discrete unit)
+
+### Self-Dispatch Trigger
+
+If work remains AND iteration < 3 AND no EMERGENCY_STOP:
+```yaml
+# Claude Code will request GitHub dispatch
+gh workflow run ai-civilization-code.yml
+```
+
+### State Between Iterations
+
+Persist to state.md:
+- Current task being worked on
+- Branch name if work in progress
+- Files modified so far
+- Test status
+- Blockers encountered

@@ -219,3 +219,52 @@ Status: IDLE | ANALYZING | CREATING
 - Social media engagement
 - SEO rankings for target keywords
 - Customer acquisition cost (CAC)
+
+---
+
+## Self-Healing Loop (Article IX)
+
+### Completion Promise
+
+```
+<promise>CONTENT QUEUE PROCESSED</promise>
+```
+
+**Output this promise ONLY when ALL of these are TRUE:**
+- Content queue has no pending drafts
+- All scheduled content is ready
+- Analytics reports generated for the period
+- State file updated with content status
+- All drafts either completed OR blocked with documented reason
+
+**DO NOT output this promise if:**
+- Content items remain in queue
+- Scheduled posts are not ready
+- Analytics generation failed
+- State file update failed
+
+### Iteration Tracking
+
+At the start of each run, read iteration count from:
+`.ai-company/agents/growth/iteration.md`
+
+Update with current iteration number and timestamp.
+
+**Max Iterations**: 5 per run (Constitutional limit)
+
+### Self-Dispatch Trigger
+
+If work remains AND iteration < 5 AND no EMERGENCY_STOP:
+```yaml
+# Claude Code will request GitHub dispatch
+gh workflow run ai-civilization-growth.yml
+```
+
+### State Between Iterations
+
+Persist to state.md:
+- Content items processed
+- Content items pending
+- Current draft in progress
+- Scheduled posts status
+- Blockers encountered
