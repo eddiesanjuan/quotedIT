@@ -2485,6 +2485,26 @@
             }
             {% endif %}
 
+            // DISC-137: Send to backend for reporting
+            // Fire-and-forget - don't block UI on response
+            try {
+                fetch('/api/analytics/exit-survey', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        reasons: reasons,
+                        other_text: otherText || null,
+                        page_url: window.location.href,
+                        session_id: sessionStorage.getItem('quoted_session_id') || null
+                    })
+                }).catch(function(err) {
+                    // Silently fail - don't disrupt user experience
+                    console.debug('Exit survey submit failed:', err);
+                });
+            } catch (e) {
+                console.debug('Exit survey submit error:', e);
+            }
+
             // Show thank you message using safe DOM methods
             const formContainer = document.getElementById('exitSurveyForm');
             if (formContainer) {
