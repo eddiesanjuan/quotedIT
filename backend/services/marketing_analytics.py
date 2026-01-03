@@ -171,7 +171,8 @@ class MarketingAnalyticsService:
     def generate_daily_report_html(
         metrics: DailyMetrics,
         totals: Dict[str, int],
-        week_metrics: List[DailyMetrics]
+        week_metrics: List[DailyMetrics],
+        funnel_html: Optional[str] = None
     ) -> str:
         """
         Generate HTML email content for daily marketing report.
@@ -180,6 +181,7 @@ class MarketingAnalyticsService:
             metrics: Yesterday's metrics
             totals: All-time totals
             week_metrics: Last 7 days of metrics
+            funnel_html: Optional funnel visualization HTML (DISC-138)
 
         Returns:
             HTML string for email body
@@ -247,19 +249,10 @@ class MarketingAnalyticsService:
             </div>
         </div>
 
-        <div style="background-color: #2a1a1a; border: 1px solid rgba(255, 100, 100, 0.2); border-radius: 8px; padding: 20px; margin: 24px 0;">
-            <div style="color: #ff9999; font-size: 14px; font-weight: 600; margin-bottom: 12px;">⚠️ Data Limitations</div>
-            <div style="color: #ccaaaa; font-size: 13px; line-height: 1.6;">
-                This report shows database metrics only. For full funnel visibility (page views → demos → signups), configure PostHog read API:
-                <br><br>
-                <code style="background: #1a1111; padding: 4px 8px; border-radius: 4px;">POSTHOG_READ_API_KEY=phx_...</code>
-                <br><br>
-                Get key at: <a href="https://app.posthog.com/settings/user-api-keys" style="color: #ff9999;">PostHog Settings</a>
-            </div>
-        </div>
+        {funnel_html or ''}
 
         <p class="muted" style="margin-top: 32px; font-size: 12px;">
-            This report is generated automatically by DISC-141 Marketing Analytics.<br>
+            This report is generated automatically by DISC-141/DISC-138 Marketing Analytics.<br>
             To stop these emails, set MARKETING_REPORTS_ENABLED=false in Railway.
         </p>
         """
@@ -278,6 +271,7 @@ class MarketingAnalyticsService:
             True if sent successfully
         """
         from .email import EmailService
+        from .funnel_analytics import FunnelAnalyticsService
 
         logger.info("Generating daily marketing report...")
 
@@ -287,9 +281,17 @@ class MarketingAnalyticsService:
             totals = await MarketingAnalyticsService.get_total_counts(db)
             week_metrics = await MarketingAnalyticsService.get_metrics_range(db, 7)
 
+            # Get funnel data (DISC-138)
+            funnel_html = None
+            try:
+                funnel = await FunnelAnalyticsService.get_funnel_data(db, days=7)
+                funnel_html = FunnelAnalyticsService.generate_funnel_report_html(funnel)
+            except Exception as e:
+                logger.warning(f"Failed to get funnel data for report: {e}")
+
             # Generate HTML
             html_content = MarketingAnalyticsService.generate_daily_report_html(
-                yesterday, totals, week_metrics
+                yesterday, totals, week_metrics, funnel_html
             )
 
             # Send email
