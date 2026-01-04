@@ -1,0 +1,156 @@
+{
+  "name": "mobile-375",
+  "viewport": {
+    "width": 375,
+    "height": 667
+  },
+  "deviceScaleFactor": 2,
+  "isMobile": true,
+  "hasTouch": true,
+  "generationMs": 12648,
+  "captures": [
+    {
+      "label": "landing",
+      "url": "https://quoted.it.com/",
+      "status": 200,
+      "navigationError": null,
+      "domContentLoadedMs": 302,
+      "basics": {
+        "title": "quoted.it - Voice to Quote in Seconds",
+        "description": "Turn voice notes into professional budget quotes in seconds. For contractors, consultants, freelancers, and anyone who prices work.",
+        "canonical": null,
+        "h1": "Talk, don't type.Quote in seconds.",
+        "url": "https://quoted.it.com/"
+      },
+      "timings": {
+        "type": "navigate",
+        "startTime": 0,
+        "duration": 570.7000002861023,
+        "domContentLoaded": 301.30000019073486,
+        "loadEventEnd": 570.7000002861023,
+        "transferSize": 91278,
+        "encodedBodySize": 90978,
+        "decodedBodySize": 90978
+      },
+      "layout": {
+        "viewport": {
+          "width": 422,
+          "height": 751
+        },
+        "horizontalOverflow": true,
+        "scrollHeight": 10847,
+        "scrollWidth": 422
+      },
+      "screenshotPath": "reports/ux-excellence-playwright/2025-12-27-gpt52-codex/mobile-375/landing.png"
+    },
+    {
+      "label": "try-initial",
+      "url": "https://quoted.it.com/try",
+      "status": 200,
+      "navigationError": null,
+      "domContentLoadedMs": 46,
+      "basics": {
+        "title": "Try Quoted Free - Generate a Real Quote",
+        "description": "Try Quoted without signing up. Generate a real quote using AI - works for contractors, designers, consultants, and any service business.",
+        "canonical": null,
+        "h1": "Generate a Real Quote",
+        "url": "https://quoted.it.com/try"
+      },
+      "timings": {
+        "type": "navigate",
+        "startTime": 0,
+        "duration": 46.10000038146973,
+        "domContentLoaded": 45.60000038146973,
+        "loadEventEnd": 46.10000038146973,
+        "transferSize": 90385,
+        "encodedBodySize": 90085,
+        "decodedBodySize": 90085
+      },
+      "layout": {
+        "viewport": {
+          "width": 375,
+          "height": 667
+        },
+        "horizontalOverflow": false,
+        "scrollHeight": 1000,
+        "scrollWidth": 375
+      },
+      "screenshotPath": "reports/ux-excellence-playwright/2025-12-27-gpt52-codex/mobile-375/try-initial.png"
+    },
+    {
+      "label": "app-entry",
+      "url": "https://quoted.it.com/app",
+      "status": 200,
+      "navigationError": null,
+      "domContentLoadedMs": 562,
+      "basics": {
+        "title": "quoted.it - Voice to Quote",
+        "description": null,
+        "canonical": null,
+        "h1": "Voice to quotein seconds.",
+        "url": "https://quoted.it.com/app"
+      },
+      "timings": {
+        "type": "navigate",
+        "startTime": 0,
+        "duration": 806.0999999046326,
+        "domContentLoaded": 559.5,
+        "loadEventEnd": 806.0999999046326,
+        "transferSize": 746753,
+        "encodedBodySize": 746453,
+        "decodedBodySize": 746453
+      },
+      "layout": {
+        "viewport": {
+          "width": 375,
+          "height": 667
+        },
+        "horizontalOverflow": false,
+        "scrollHeight": 985,
+        "scrollWidth": 375
+      },
+      "screenshotPath": "reports/ux-excellence-playwright/2025-12-27-gpt52-codex/mobile-375/app-entry.png"
+    },
+    {
+      "label": "blog-index",
+      "url": "https://quoted.it.com/blog",
+      "status": 200,
+      "navigationError": null,
+      "domContentLoadedMs": 47,
+      "basics": {
+        "title": "The Quoting Guide — Quoted Blog",
+        "description": "Expert guides on writing professional quotes, pricing strategies, and winning more clients. For freelancers, contractors, photographers, consultants, and anyone who quotes services.",
+        "canonical": "https://quoted.it.com/blog/",
+        "h1": "The Quoting Guide",
+        "url": "https://quoted.it.com/blog"
+      },
+      "timings": {
+        "type": "navigate",
+        "startTime": 0,
+        "duration": 45.89999961853027,
+        "domContentLoaded": 45.299999713897705,
+        "loadEventEnd": 45.89999961853027,
+        "transferSize": 25398,
+        "encodedBodySize": 25098,
+        "decodedBodySize": 25098
+      },
+      "layout": {
+        "viewport": {
+          "width": 375,
+          "height": 667
+        },
+        "horizontalOverflow": false,
+        "scrollHeight": 5720,
+        "scrollWidth": 375
+      },
+      "screenshotPath": "reports/ux-excellence-playwright/2025-12-27-gpt52-codex/mobile-375/blog-index.png"
+    }
+  ],
+  "consoleSummary": {
+    "total": 0,
+    "errors": [],
+    "warnings": []
+  },
+  "pageErrors": [],
+  "requestFailures": []
+}

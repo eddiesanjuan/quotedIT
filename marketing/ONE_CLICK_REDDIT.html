@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quoted - One-Click Reddit Posts</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+            color: #fff;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+        }
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 40px;
+        }
+        .post-card {
+            background: #252540;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            border: 1px solid #333;
+        }
+        .post-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .subreddit {
+            background: #ff4500;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        .subreddit.safe {
+            background: #22c55e;
+        }
+        .subreddit.story {
+            background: #6366f1;
+        }
+        .priority {
+            color: #888;
+            font-size: 0.85rem;
+        }
+        .post-title {
+            font-size: 1.1rem;
+            margin-bottom: 12px;
+            color: #fff;
+        }
+        .post-preview {
+            background: #1a1a2e;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+            font-size: 0.9rem;
+            color: #aaa;
+            max-height: 150px;
+            overflow: hidden;
+            position: relative;
+        }
+        .post-preview::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: linear-gradient(transparent, #1a1a2e);
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: none;
+            font-size: 1rem;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+        }
+        .btn-copy {
+            background: #333;
+            color: #fff;
+            margin-left: 10px;
+        }
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .instructions {
+            background: #252540;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 30px;
+            border-left: 4px solid #6366f1;
+        }
+        .instructions h2 {
+            margin-bottom: 12px;
+            font-size: 1.2rem;
+        }
+        .instructions ol {
+            margin-left: 20px;
+            color: #aaa;
+        }
+        .instructions li {
+            margin-bottom: 8px;
+        }
+        .week-label {
+            display: inline-block;
+            background: #333;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-bottom: 10px;
+        }
+        .copied-toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #22c55e;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .checklist {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #333;
+        }
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 0;
+            color: #aaa;
+        }
+        .checklist-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        .checklist-item.done {
+            text-decoration: line-through;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Quoted Marketing</h1>
+        <p class="subtitle">One-click Reddit posts. No excuses.</p>
+
+        <div class="instructions">
+            <h2>How This Works</h2>
+            <ol>
+                <li><strong>Click the button</strong> - Opens Reddit with your post pre-filled</li>
+                <li><strong>Review</strong> - Make any small tweaks if needed</li>
+                <li><strong>Submit</strong> - That's it. You're done.</li>
+            </ol>
+        </div>
+
+        <!-- TIER 1: SAFE PROMOTION THREADS -->
+
+        <div class="post-card">
+            <div class="post-header">
+                <span class="subreddit safe">r/smallbusiness</span>
+                <span class="priority">TIER 1 - Safe</span>
+            </div>
+            <span class="week-label">Week 1 - Monday</span>
+            <div class="post-title">Weekly "Promote Your Business" Thread</div>
+            <div class="post-preview">
+I run a $30-50M contracting business. After years of watching my team struggle with quoting tools that are either way too complex (Buildxact, Jobber) or way too basic (Excel spreadsheets), I built something in between.
+
+Quoted.it.com - speak your estimate out loud, get a professional PDF in 60 seconds.
+
+It learns your pricing over time. No 47-tab setup wizards. No enterprise sales calls.
+
+$9/mo. Built it for contractors like the ones I work with every day.
+
+Happy to answer questions about either the tool or running a trades business.
+            </div>
+            <div class="btn-group">
+                <a href="https://www.reddit.com/r/smallbusiness/search?q=weekly+promote&restrict_sr=on&sort=new" target="_blank" class="btn btn-primary">Find Weekly Thread</a>
+                <button class="btn btn-copy" onclick="copyText('smallbiz')">Copy Text</button>
+            </div>
+            <textarea id="smallbiz" style="position:absolute;left:-9999px;">I run a $30-50M contracting business. After years of watching my team struggle with quoting tools that are either way too complex (Buildxact, Jobber) or way too basic (Excel spreadsheets), I built something in between.
+
+Quoted.it.com - speak your estimate out loud, get a professional PDF in 60 seconds.
+
+It learns your pricing over time. No 47-tab setup wizards. No enterprise sales calls.
+
+$9/mo. Built it for contractors like the ones I work with every day.
+
+Happy to answer questions about either the tool or running a trades business.</textarea>
+        </div>
+
+        <div class="post-card">
+            <div class="post-header">
+                <span class="subreddit safe">r/SaaS</span>
+                <span class="priority">TIER 1 - Safe</span>
+            </div>
+            <span class="week-label">Week 1 - Tuesday</span>
+            <div class="post-title">Weekly Feedback / Share Thread</div>
+            <div class="post-preview">
+**Name**: Quoted
+**URL**: quoted.it.com
+**Pitch**: Voice-to-quote for contractors
+
+**My background**: I operate a $30-50M contracting business. Built this because every quoting tool I tried was either designed for enterprise (Buildxact) or was just a glorified spreadsheet.
+
+**The gap I saw**: Contractors making $50-500K/year need professional quotes but don't need (or want) complex software. They want to describe a job and get a PDF.
+
+**Looking for feedback on**:
+- Demo flow at /demo (try without signup)
+- Is $9/mo positioned right for this market?
+- Landing page - does it speak to blue-collar users?
+
+**Stage**: Just launched, first users in trial, bootstrapped
+            </div>
+            <div class="btn-group">
+                <a href="https://www.reddit.com/r/SaaS/search?q=weekly+feedback+OR+share&restrict_sr=on&sort=new" target="_blank" class="btn btn-primary">Find Weekly Thread</a>
+                <button class="btn btn-copy" onclick="copyText('saas')">Copy Text</button>
+            </div>
+            <textarea id="saas" style="position:absolute;left:-9999px;">**Name**: Quoted
+**URL**: quoted.it.com
+**Pitch**: Voice-to-quote for contractors
+
+**My background**: I operate a $30-50M contracting business. Built this because every quoting tool I tried was either designed for enterprise (Buildxact) or was just a glorified spreadsheet.
+
+**The gap I saw**: Contractors making $50-500K/year need professional quotes but don't need (or want) complex software. They want to describe a job and get a PDF.
+
+**Looking for feedback on**:
+- Demo flow at /demo (try without signup)
+- Is $9/mo positioned right for this market?
+- Landing page - does it speak to blue-collar users?
+
+**Stage**: Just launched, first users in trial, bootstrapped</textarea>
+        </div>
+
+        <!-- TIER 2: STORY POSTS -->
+
+        <div class="post-card">
+            <div class="post-header">
+                <span class="subreddit story">r/Entrepreneur</span>
+                <span class="priority">TIER 2 - Story</span>
+            </div>
+            <span class="week-label">Week 1 - Wednesday</span>
+            <div class="post-title">I run a $30-50M contracting business. Built a quoting tool because everything else sucked.</div>
+            <div class="post-preview">
+Not a success story. Just sharing what I'm building and why.
+
+**Background**: I operate a contracting business that does $30-50M annually. I've used every quoting tool out there - Jobber, Housecall Pro, Buildxact, ServiceTitan. They all have the same problem:
+
+They're either built for enterprise (complex setup, features you'll never use, sales calls to get pricing) or they're basically spreadsheets with a logo.
+
+**The gap I kept seeing**:
+
+The solo contractor or small crew doing $50K-$500K/year. They need to look professional to win jobs, but they don't need a $200/mo platform with CRM, scheduling, invoicing, dispatch, and 47 other features.
+
+They need to describe a job and get a PDF. That's it.
+            </div>
+            <div class="btn-group">
+                <a href="https://www.reddit.com/r/Entrepreneur/submit?selftext=true&title=I%20run%20a%20%2430-50M%20contracting%20business.%20Built%20a%20quoting%20tool%20because%20everything%20else%20sucked." target="_blank" class="btn btn-primary">Create Post</a>
+                <button class="btn btn-copy" onclick="copyText('entrepreneur')">Copy Body</button>
+            </div>
+            <textarea id="entrepreneur" style="position:absolute;left:-9999px;">Not a success story. Just sharing what I'm building and why.
+
+**Background**: I operate a contracting business that does $30-50M annually. I've used every quoting tool out there - Jobber, Housecall Pro, Buildxact, ServiceTitan. They all have the same problem:
+
+They're either built for enterprise (complex setup, features you'll never use, sales calls to get pricing) or they're basically spreadsheets with a logo.
+
+**The gap I kept seeing**:
+
+The solo contractor or small crew doing $50K-$500K/year. They need to look professional to win jobs, but they don't need a $200/mo platform with CRM, scheduling, invoicing, dispatch, and 47 other features.
+
+They need to describe a job and get a PDF. That's it.
+
+**What I built**:
+
+Quoted.it.com - speak your estimate out loud (like you would to a helper), and AI generates a professional PDF quote.
+
+- Learns your pricing over time
+- No complex setup
+- $9/mo flat
+
+**Where I'm at**:
+- First users in trial
+- Solo on the product side, still running my main business
+- Just launched a demo where you can try it without signup
+
+**What I've learned so far**:
+
+1. Contractors don't want "AI" - they want less time doing paperwork
+2. The "learning" feature (AI remembers your prices) resonates way more than I expected
+3. Blue-collar users are skeptical of software. The demo-before-signup approach helps.
+
+Building in public. Happy to answer questions about the tool or about running a trades business.</textarea>
+        </div>
+
+        <div class="post-card">
+            <div class="post-header">
+                <span class="subreddit story">r/startups</span>
+                <span class="priority">TIER 2 - Story</span>
+            </div>
+            <span class="week-label">Week 1 - Thursday</span>
+            <div class="post-title">Share Your Startup Thread Post</div>
+            <div class="post-preview">
+**Startup**: Quoted
+**URL**: quoted.it.com
+**Location**: USA
+**Pitch**: Voice-to-quote for contractors
+
+**Founder background**: I run a $30-50M contracting business. Built this because every quoting tool I tried was either enterprise-grade overkill or a glorified spreadsheet.
+
+**Target customer**: Solo contractors and small crews ($50K-$500K/year) who need professional quotes but don't need complex software.
+
+**How it works**: Speak your estimate naturally, AI generates a professional PDF with learned pricing.
+
+**Traction**: Just launched, first users in trial, pre-revenue
+**Pricing**: $9/mo flat
+
+**Ask**: Feedback on positioning. Is "voice-to-quote" clear enough, or does it sound gimmicky?
+            </div>
+            <div class="btn-group">
+                <a href="https://www.reddit.com/r/startups/search?q=share+your+startup&restrict_sr=on&sort=new" target="_blank" class="btn btn-primary">Find Share Thread</a>
+                <button class="btn btn-copy" onclick="copyText('startups')">Copy Text</button>
+            </div>
+            <textarea id="startups" style="position:absolute;left:-9999px;">**Startup**: Quoted
+**URL**: quoted.it.com
+**Location**: USA
+**Pitch**: Voice-to-quote for contractors
+
+**Founder background**: I run a $30-50M contracting business. Built this because every quoting tool I tried was either enterprise-grade overkill or a glorified spreadsheet.
+
+**Target customer**: Solo contractors and small crews ($50K-$500K/year) who need professional quotes but don't need complex software.
+
+**How it works**: Speak your estimate naturally, AI generates a professional PDF with learned pricing.
+
+**Traction**: Just launched, first users in trial, pre-revenue
+**Pricing**: $9/mo flat
+
+**Ask**: Feedback on positioning. Is "voice-to-quote" clear enough, or does it sound gimmicky?</textarea>
+        </div>
+
+        <!-- CHECKLIST -->
+        <div class="post-card">
+            <h2 style="margin-bottom: 16px;">This Week's Checklist</h2>
+            <div class="checklist">
+                <label class="checklist-item">
+                    <input type="checkbox" onchange="toggleDone(this)">
+                    <span>Monday: Post in r/smallbusiness weekly thread</span>
+                </label>
+                <label class="checklist-item">
+                    <input type="checkbox" onchange="toggleDone(this)">
+                    <span>Tuesday: Post in r/SaaS feedback thread</span>
+                </label>
+                <label class="checklist-item">
+                    <input type="checkbox" onchange="toggleDone(this)">
+                    <span>Wednesday: Post founder story in r/Entrepreneur</span>
+                </label>
+                <label class="checklist-item">
+                    <input type="checkbox" onchange="toggleDone(this)">
+                    <span>Thursday: Post in r/startups share thread</span>
+                </label>
+                <label class="checklist-item">
+                    <input type="checkbox" onchange="toggleDone(this)">
+                    <span>Friday: Reply to all comments on your posts</span>
+                </label>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="copied-toast" id="toast">Copied to clipboard!</div>
+
+    <script>
+        function copyText(id) {
+            const textarea = document.getElementById(id);
+            textarea.style.left = '0';
+            textarea.select();
+            document.execCommand('copy');
+            textarea.style.left = '-9999px';
+
+            const toast = document.getElementById('toast');
+            toast.style.display = 'block';
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 2000);
+        }
+
+        function toggleDone(checkbox) {
+            const item = checkbox.parentElement;
+            if (checkbox.checked) {
+                item.classList.add('done');
+            } else {
+                item.classList.remove('done');
+            }
+            // Save to localStorage
+            saveChecklist();
+        }
+
+        function saveChecklist() {
+            const checkboxes = document.querySelectorAll('.checklist-item input');
+            const state = Array.from(checkboxes).map(cb => cb.checked);
+            localStorage.setItem('quoted_reddit_checklist', JSON.stringify(state));
+        }
+
+        function loadChecklist() {
+            const saved = localStorage.getItem('quoted_reddit_checklist');
+            if (saved) {
+                const state = JSON.parse(saved);
+                const checkboxes = document.querySelectorAll('.checklist-item input');
+                checkboxes.forEach((cb, i) => {
+                    if (state[i]) {
+                        cb.checked = true;
+                        cb.parentElement.classList.add('done');
+                    }
+                });
+            }
+        }
+
+        // Load saved state on page load
+        loadChecklist();
+    </script>
+</body>
+</html>

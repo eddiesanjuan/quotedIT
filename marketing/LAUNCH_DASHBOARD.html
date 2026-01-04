@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quoted - Marketing Launch Dashboard</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            min-height: 100vh;
+            padding: 40px 20px;
+            color: #fff;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 1.1rem;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        .card {
+            background: #151515;
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid #252525;
+            transition: border-color 0.3s;
+        }
+        .card:hover {
+            border-color: #6366f1;
+        }
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .card-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        .card-icon.reddit {
+            background: linear-gradient(135deg, #ff4500, #ff6b35);
+        }
+        .card-icon.email {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        }
+        .card-icon.analytics {
+            background: linear-gradient(135deg, #22c55e, #4ade80);
+        }
+        .card-icon.product {
+            background: linear-gradient(135deg, #f59e0b, #fbbf24);
+        }
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        .card-subtitle {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        .card-content {
+            color: #999;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: transform 0.2s, opacity 0.2s;
+            border: none;
+            font-size: 0.95rem;
+            width: 100%;
+            text-align: center;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            opacity: 0.9;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+        }
+        .btn-secondary {
+            background: #252525;
+            color: #fff;
+            margin-top: 10px;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        .stat {
+            background: #151515;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid #252525;
+        }
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .stat-label {
+            color: #666;
+            font-size: 0.85rem;
+            margin-top: 4px;
+        }
+        .today-section {
+            background: linear-gradient(135deg, #1a1a2e 0%, #252540 100%);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 40px;
+            border: 1px solid #333;
+        }
+        .today-title {
+            font-size: 1.1rem;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .today-task {
+            background: #1a1a1a;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .today-task-text {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .task-checkbox {
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+        }
+        .task-link {
+            color: #6366f1;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+        .task-link:hover {
+            text-decoration: underline;
+        }
+        .quick-links {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        .quick-link {
+            background: #252525;
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: background 0.2s;
+        }
+        .quick-link:hover {
+            background: #333;
+        }
+        @media (max-width: 768px) {
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Quoted Marketing HQ</h1>
+        <p class="subtitle">Your lazy marketing command center</p>
+
+        <!-- Today's Tasks -->
+        <div class="today-section">
+            <div class="today-title">
+                <span style="font-size: 1.2rem;">📅</span>
+                <span>Today's Tasks (based on day of week)</span>
+            </div>
+            <div id="todayTasks"></div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-value">$0</div>
+                <div class="stat-label">MRR</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">Trial</div>
+                <div class="stat-label">Stage</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">$9</div>
+                <div class="stat-label">Price</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="dayCount">0</div>
+                <div class="stat-label">Days Since Launch</div>
+            </div>
+        </div>
+
+        <!-- Main Actions -->
+        <div class="grid">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon reddit">📱</div>
+                    <div>
+                        <div class="card-title">Reddit Posts</div>
+                        <div class="card-subtitle">One-click posting</div>
+                    </div>
+                </div>
+                <div class="card-content">
+                    Pre-written posts for r/smallbusiness, r/SaaS, r/Entrepreneur, and r/startups.
+                    Click, paste, post.
+                </div>
+                <a href="ONE_CLICK_REDDIT.html" class="btn btn-primary">Open Reddit Dashboard</a>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon email">📧</div>
+                    <div>
+                        <div class="card-title">Email Automation</div>
+                        <div class="card-subtitle">Set it and forget it</div>
+                    </div>
+                </div>
+                <div class="card-content">
+                    Apollo.io setup guide with pre-written sequences. 30 min setup, then autopilot.
+                </div>
+                <a href="https://app.apollo.io" target="_blank" class="btn btn-primary">Open Apollo</a>
+                <a href="EMAIL_AUTOMATION_SETUP.md" class="btn btn-secondary">Setup Guide</a>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon analytics">📊</div>
+                    <div>
+                        <div class="card-title">Analytics</div>
+                        <div class="card-subtitle">Track what's working</div>
+                    </div>
+                </div>
+                <div class="card-content">
+                    PostHog dashboard for demo views, signups, and conversions. See what's driving growth.
+                </div>
+                <a href="https://app.posthog.com" target="_blank" class="btn btn-primary">Open PostHog</a>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon product">🎯</div>
+                    <div>
+                        <div class="card-title">Product</div>
+                        <div class="card-subtitle">What you're selling</div>
+                    </div>
+                </div>
+                <div class="card-content">
+                    Quick links to the demo, landing page, and live product.
+                </div>
+                <a href="https://quoted.it.com/demo" target="_blank" class="btn btn-primary">Try Demo</a>
+                <a href="https://quoted.it.com" target="_blank" class="btn btn-secondary">Landing Page</a>
+            </div>
+        </div>
+
+        <!-- Quick Links -->
+        <div style="text-align: center;">
+            <p style="color: #666; margin-bottom: 10px;">Quick Links</p>
+            <div class="quick-links" style="justify-content: center;">
+                <a href="https://www.reddit.com/r/smallbusiness" target="_blank" class="quick-link">r/smallbusiness</a>
+                <a href="https://www.reddit.com/r/SaaS" target="_blank" class="quick-link">r/SaaS</a>
+                <a href="https://www.reddit.com/r/Entrepreneur" target="_blank" class="quick-link">r/Entrepreneur</a>
+                <a href="https://www.reddit.com/r/startups" target="_blank" class="quick-link">r/startups</a>
+                <a href="https://stripe.com/dashboard" target="_blank" class="quick-link">Stripe</a>
+                <a href="https://railway.app/dashboard" target="_blank" class="quick-link">Railway</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Calculate days since launch (Dec 22, 2025)
+        var launchDate = new Date('2025-12-22');
+        var today = new Date();
+        var daysSinceLaunch = Math.floor((today - launchDate) / (1000 * 60 * 60 * 24));
+        document.getElementById('dayCount').textContent = Math.max(0, daysSinceLaunch);
+
+        // Task data by day of week
+        var tasks = {
+            0: [ // Sunday
+                { text: "Rest day - review last week's metrics", link: "https://app.posthog.com" },
+                { text: "Plan next week's Reddit posts", link: "ONE_CLICK_REDDIT.html" }
+            ],
+            1: [ // Monday
+                { text: "Post in r/smallbusiness weekly thread", link: "https://www.reddit.com/r/smallbusiness/search?q=weekly+promote&restrict_sr=on&sort=new" },
+                { text: "Add 50 new contacts to Apollo sequence", link: "https://app.apollo.io" }
+            ],
+            2: [ // Tuesday
+                { text: "Post in r/SaaS weekly thread", link: "https://www.reddit.com/r/SaaS/search?q=weekly+feedback&restrict_sr=on&sort=new" },
+                { text: "Check Apollo replies", link: "https://app.apollo.io" }
+            ],
+            3: [ // Wednesday
+                { text: "Post founder story in r/Entrepreneur", link: "ONE_CLICK_REDDIT.html" },
+                { text: "Add 50 new contacts to Apollo", link: "https://app.apollo.io" }
+            ],
+            4: [ // Thursday
+                { text: "Post in r/startups share thread", link: "https://www.reddit.com/r/startups/search?q=share+your+startup&restrict_sr=on&sort=new" },
+                { text: "Check Apollo replies", link: "https://app.apollo.io" }
+            ],
+            5: [ // Friday
+                { text: "Reply to all Reddit comments", link: "https://www.reddit.com/message/inbox" },
+                { text: "Add 50 new contacts to Apollo", link: "https://app.apollo.io" },
+                { text: "Check PostHog for weekly trends", link: "https://app.posthog.com" }
+            ],
+            6: [ // Saturday
+                { text: "Light day - just check replies", link: "https://app.apollo.io" }
+            ]
+        };
+
+        // Build today's tasks using safe DOM methods
+        var dayOfWeek = today.getDay();
+        var todayTasksEl = document.getElementById('todayTasks');
+        var todayTaskList = tasks[dayOfWeek];
+
+        todayTaskList.forEach(function(task, i) {
+            // Create task container
+            var taskEl = document.createElement('div');
+            taskEl.className = 'today-task';
+
+            // Create left side (checkbox + label)
+            var taskText = document.createElement('div');
+            taskText.className = 'today-task-text';
+
+            var checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.className = 'task-checkbox';
+            checkbox.id = 'task-' + i;
+
+            var label = document.createElement('label');
+            label.setAttribute('for', 'task-' + i);
+            label.textContent = task.text;
+
+            taskText.appendChild(checkbox);
+            taskText.appendChild(label);
+
+            // Create link
+            var link = document.createElement('a');
+            link.href = task.link;
+            link.target = '_blank';
+            link.className = 'task-link';
+            link.textContent = 'Open →';
+
+            // Assemble
+            taskEl.appendChild(taskText);
+            taskEl.appendChild(link);
+            todayTasksEl.appendChild(taskEl);
+        });
+    </script>
+</body>
+</html>

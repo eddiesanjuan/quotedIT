@@ -1,0 +1,138 @@
+{
+  "clientWidth": 375,
+  "offenderCount": 12,
+  "offenders": [
+    {
+      "hint": "nav",
+      "tag": "nav",
+      "width": 409,
+      "height": 79,
+      "left": 0,
+      "right": 409,
+      "overflow": 34,
+      "overflowRight": 34,
+      "overflowLeft": 0
+    },
+    {
+      "hint": ".industry-chip",
+      "tag": "div",
+      "width": 162,
+      "height": 90,
+      "left": 246,
+      "right": 408,
+      "overflow": 32.59375,
+      "overflowRight": 33,
+      "overflowLeft": 0
+    },
+    {
+      "hint": ".industry-chip",
+      "tag": "div",
+      "width": 162,
+      "height": 90,
+      "left": 246,
+      "right": 408,
+      "overflow": 32.59375,
+      "overflowRight": 33,
+      "overflowLeft": 0
+    },
+    {
+      "hint": ".industry-chip",
+      "tag": "div",
+      "width": 162,
+      "height": 90,
+      "left": 246,
+      "right": 408,
+      "overflow": 32.59375,
+      "overflowRight": 33,
+      "overflowLeft": 0
+    },
+    {
+      "hint": ".industry-chip",
+      "tag": "div",
+      "width": 162,
+      "height": 90,
+      "left": 246,
+      "right": 408,
+      "overflow": 32.59375,
+      "overflowRight": 33,
+      "overflowLeft": 0
+    },
+    {
+      "hint": ".industry-chip",
+      "tag": "div",
+      "width": 162,
+      "height": 74,
+      "left": 246,
+      "right": 408,
+      "overflow": 32.59375,
+      "overflowRight": 33,
+      "overflowLeft": 0
+    },
+    {
+      "hint": ".industry-chip",
+      "tag": "div",
+      "width": 162,
+      "height": 90,
+      "left": 246,
+      "right": 408,
+      "overflow": 32.59375,
+      "overflowRight": 33,
+      "overflowLeft": 0
+    },
+    {
+      "hint": ".industry-chip",
+      "tag": "div",
+      "width": 162,
+      "height": 74,
+      "left": 246,
+      "right": 408,
+      "overflow": 32.59375,
+      "overflowRight": 33,
+      "overflowLeft": 0
+    },
+    {
+      "hint": ".industry-chip",
+      "tag": "div",
+      "width": 162,
+      "height": 90,
+      "left": 246,
+      "right": 408,
+      "overflow": 32.59375,
+      "overflowRight": 33,
+      "overflowLeft": 0
+    },
+    {
+      "hint": ".industry-chip",
+      "tag": "div",
+      "width": 162,
+      "height": 90,
+      "left": 246,
+      "right": 408,
+      "overflow": 32.59375,
+      "overflowRight": 33,
+      "overflowLeft": 0
+    },
+    {
+      "hint": ".industry-chip",
+      "tag": "div",
+      "width": 162,
+      "height": 90,
+      "left": 246,
+      "right": 408,
+      "overflow": 32.59375,
+      "overflowRight": 33,
+      "overflowLeft": 0
+    },
+    {
+      "hint": ".nav-cta",
+      "tag": "a",
+      "width": 116,
+      "height": 46,
+      "left": 269,
+      "right": 385,
+      "overflow": 10,
+      "overflowRight": 10,
+      "overflowLeft": 0
+    }
+  ]
+}

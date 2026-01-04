@@ -114,6 +114,9 @@ class Settings(BaseSettings):
     google_ads_refresh_token: str = ""  # OAuth2 refresh token (generated via auth flow)
     google_ads_customer_id: str = ""  # Google Ads account ID (10 digits, no dashes)
 
+    # Google Ads Scripts Webhook (DISC-141 Phase 2B - Alternative to API)
+    google_ads_webhook_secret: str = ""  # Secret for authenticating webhook calls
+
     # Marketing Analytics (DISC-141)
     marketing_reports_enabled: bool = True  # Enable daily marketing reports to founder
 

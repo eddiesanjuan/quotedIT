@@ -20,6 +20,7 @@ from slowapi.util import get_remote_address
 
 from ..services.exit_survey import ExitSurveyService
 from ..services.funnel_analytics import FunnelAnalyticsService
+from ..services.google_ads_scripts import GoogleAdsScriptsService, generate_google_ads_script
 from ..services.database import async_session_factory
 from ..services.logging import get_api_logger
 from ..config import settings
@@ -324,3 +325,145 @@ async def get_google_ads_status(request: Request):
             status_code=500,
             detail="Failed to retrieve Google Ads status"
         )
+
+
+# ============================================================================
+# DISC-141 Phase 2B: Google Ads Scripts (Alternative to API)
+# ============================================================================
+
+
+class GoogleAdsWebhookRequest(BaseModel):
+    """Data received from Google Ads Scripts."""
+    accountId: str
+    accountName: str = "Unknown"
+    currency: str = "USD"
+    dateRange: str = "LAST_7_DAYS"
+    totalImpressions: int = 0
+    totalClicks: int = 0
+    totalCost: float = 0
+    totalConversions: float = 0
+    campaigns: List[Dict[str, Any]] = []
+    timestamp: Optional[str] = None
+
+
+class GoogleAdsScriptsResponse(BaseModel):
+    """Google Ads Scripts status response."""
+    has_data: bool
+    message: str
+    metrics: Optional[Dict[str, Any]] = None
+    anomalies: List[Dict[str, Any]] = []
+    recommendations: List[str] = []
+
+
+@router.post("/google-ads-webhook")
+async def google_ads_webhook(
+    request: Request,
+    data: GoogleAdsWebhookRequest
+):
+    """
+    Receive campaign data from Google Ads Scripts.
+
+    This is the webhook endpoint that receives data pushed from
+    a Google Ads Script running in your Google Ads account.
+
+    Requires X-Webhook-Secret header matching GOOGLE_ADS_WEBHOOK_SECRET.
+    """
+    # Verify webhook secret
+    webhook_secret = request.headers.get("X-Webhook-Secret", "")
+    expected_secret = getattr(settings, 'google_ads_webhook_secret', '')
+
+    if not expected_secret:
+        # No secret configured - accept for now (MVP)
+        logger.warning("Google Ads webhook received but no secret configured")
+    elif webhook_secret != expected_secret:
+        logger.warning("Google Ads webhook received with invalid secret")
+        raise HTTPException(status_code=401, detail="Invalid webhook secret")
+
+    try:
+        # Store the snapshot
+        snapshot = GoogleAdsScriptsService.store_snapshot(data.model_dump())
+
+        return {
+            "success": True,
+            "message": f"Stored {len(snapshot.campaigns)} campaigns",
+            "received_at": snapshot.received_at.isoformat()
+        }
+
+    except Exception as e:
+        logger.error(f"Failed to process Google Ads webhook: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to process webhook data"
+        )
+
+
+@router.get("/google-ads-scripts", response_model=GoogleAdsScriptsResponse)
+async def get_google_ads_scripts_status(request: Request):
+    """
+    Get Google Ads performance from Scripts data.
+
+    Returns metrics, anomalies, and recommendations based on
+    data pushed from Google Ads Scripts.
+    """
+    snapshot = GoogleAdsScriptsService.get_latest_snapshot()
+
+    if not snapshot:
+        return GoogleAdsScriptsResponse(
+            has_data=False,
+            message="No data yet. Run the Google Ads Script to sync data.",
+            metrics=None,
+            anomalies=[],
+            recommendations=GoogleAdsScriptsService.generate_recommendations()
+        )
+
+    return GoogleAdsScriptsResponse(
+        has_data=True,
+        message=f"Data from {snapshot.received_at.strftime('%Y-%m-%d %H:%M')} UTC",
+        metrics={
+            "account_name": snapshot.account_name,
+            "date_range": snapshot.date_range,
+            "impressions": snapshot.total_impressions,
+            "clicks": snapshot.total_clicks,
+            "cost": round(snapshot.total_cost, 2),
+            "conversions": snapshot.total_conversions,
+            "ctr": round(snapshot.overall_ctr, 2),
+            "cpc": round(snapshot.overall_cpc, 2),
+            "cpa": round(snapshot.overall_cpa, 2) if snapshot.overall_cpa != float('inf') else None,
+            "campaigns": len(snapshot.campaigns)
+        },
+        anomalies=GoogleAdsScriptsService.check_anomalies(),
+        recommendations=GoogleAdsScriptsService.generate_recommendations()
+    )
+
+
+@router.get("/google-ads-script-code")
+async def get_google_ads_script_code(request: Request):
+    """
+    Get the JavaScript code to paste into Google Ads Scripts.
+
+    This generates the script with your webhook URL and secret.
+    Copy this into Google Ads → Tools & Settings → Scripts.
+    """
+    # Determine the webhook URL based on environment
+    if settings.environment == "production":
+        webhook_url = "https://quoted.it.com/api/analytics/google-ads-webhook"
+    else:
+        webhook_url = "http://localhost:8000/api/analytics/google-ads-webhook"
+
+    webhook_secret = getattr(settings, 'google_ads_webhook_secret', 'dev-secret-change-me')
+
+    script_code = generate_google_ads_script(webhook_url, webhook_secret)
+
+    return {
+        "webhook_url": webhook_url,
+        "script_code": script_code,
+        "instructions": [
+            "1. Go to Google Ads → Tools & Settings → Scripts",
+            "2. Click the + button to create a new script",
+            "3. Name it 'Quoted Data Sync'",
+            "4. Paste the script_code below",
+            "5. Click 'Authorize' and grant permissions",
+            "6. Click 'Preview' to test (check logs for success)",
+            "7. Set frequency to 'Daily' and save"
+        ]
+    }

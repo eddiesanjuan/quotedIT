@@ -1,0 +1,59 @@
+{
+  "minSize": 44,
+  "totalTargets": 7,
+  "tooSmallCount": 4,
+  "worstOffenders": [
+    {
+      "tag": "a",
+      "label": "See how it works for your industry",
+      "width": 239,
+      "height": 22,
+      "top": 609,
+      "left": 12,
+      "href": "/use-cases",
+      "id": null,
+      "className": "fade-in fade-in-delay-4",
+      "minDimension": 22,
+      "area": 5258
+    },
+    {
+      "tag": "a",
+      "label": "Blog",
+      "width": 30,
+      "height": 23,
+      "top": 25,
+      "left": 213,
+      "href": "/blog/",
+      "id": null,
+      "className": "",
+      "minDimension": 23,
+      "area": 690
+    },
+    {
+      "tag": "a",
+      "label": "Use Cases",
+      "width": 73,
+      "height": 23,
+      "top": 25,
+      "left": 116,
+      "href": "/use-cases",
+      "id": null,
+      "className": "",
+      "minDimension": 23,
+      "area": 1679
+    },
+    {
+      "tag": "a",
+      "label": "quoted.it",
+      "width": 78,
+      "height": 32,
+      "top": 20,
+      "left": 16,
+      "href": "/",
+      "id": null,
+      "className": "logo",
+      "minDimension": 32,
+      "area": 2496
+    }
+  ]
+}

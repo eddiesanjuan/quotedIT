@@ -1,0 +1,371 @@
+{
+  "name": "desktop-1440",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "deviceScaleFactor": 1,
+  "isMobile": false,
+  "hasTouch": false,
+  "generationMs": 13106,
+  "captures": [
+    {
+      "label": "landing",
+      "url": "https://quoted.it.com/",
+      "status": 200,
+      "navigationError": null,
+      "domContentLoadedMs": 501,
+      "basics": {
+        "title": "quoted.it - Voice to Quote in Seconds",
+        "description": "Turn voice notes into professional budget quotes in seconds. For contractors, consultants, freelancers, and anyone who prices work.",
+        "canonical": null,
+        "h1": "Talk, don't type.Quote in seconds.",
+        "url": "https://quoted.it.com/"
+      },
+      "timings": {
+        "type": "navigate",
+        "startTime": 0,
+        "duration": 925.8000001907349,
+        "domContentLoaded": 499.90000009536743,
+        "loadEventEnd": 925.8000001907349,
+        "transferSize": 91278,
+        "encodedBodySize": 90978,
+        "decodedBodySize": 90978
+      },
+      "layout": {
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "client": {
+          "width": 1440,
+          "height": 900
+        },
+        "devicePixelRatio": 1,
+        "horizontalOverflow": false,
+        "scrollHeight": 9351,
+        "scrollWidth": 1440
+      },
+      "screenshotPath": "reports/ux-excellence-playwright/2025-12-27-gpt52-codex-v2/desktop-1440/landing.png"
+    },
+    {
+      "label": "try-initial",
+      "url": "https://quoted.it.com/try",
+      "status": 200,
+      "navigationError": null,
+      "domContentLoadedMs": 65,
+      "basics": {
+        "title": "Try Quoted Free - Generate a Real Quote",
+        "description": "Try Quoted without signing up. Generate a real quote using AI - works for contractors, designers, consultants, and any service business.",
+        "canonical": null,
+        "h1": "Generate a Real Quote",
+        "url": "https://quoted.it.com/try"
+      },
+      "timings": {
+        "type": "navigate",
+        "startTime": 0,
+        "duration": 64.5,
+        "domContentLoaded": 63.80000019073486,
+        "loadEventEnd": 64.5,
+        "transferSize": 90385,
+        "encodedBodySize": 90085,
+        "decodedBodySize": 90085
+      },
+      "layout": {
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "client": {
+          "width": 1440,
+          "height": 900
+        },
+        "devicePixelRatio": 1,
+        "horizontalOverflow": false,
+        "scrollHeight": 976,
+        "scrollWidth": 1440
+      },
+      "screenshotPath": "reports/ux-excellence-playwright/2025-12-27-gpt52-codex-v2/desktop-1440/try-initial.png"
+    },
+    {
+      "label": "app-entry",
+      "url": "https://quoted.it.com/app",
+      "status": 200,
+      "navigationError": null,
+      "domContentLoadedMs": 780,
+      "basics": {
+        "title": "quoted.it - Voice to Quote",
+        "description": null,
+        "canonical": null,
+        "h1": "Voice to quotein seconds.",
+        "url": "https://quoted.it.com/app"
+      },
+      "timings": {
+        "type": "navigate",
+        "startTime": 0,
+        "duration": 1069.3000001907349,
+        "domContentLoaded": 778,
+        "loadEventEnd": 1069.3000001907349,
+        "transferSize": 746753,
+        "encodedBodySize": 746453,
+        "decodedBodySize": 746453
+      },
+      "layout": {
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "client": {
+          "width": 1440,
+          "height": 900
+        },
+        "devicePixelRatio": 1,
+        "horizontalOverflow": false,
+        "scrollHeight": 1085,
+        "scrollWidth": 1440
+      },
+      "screenshotPath": "reports/ux-excellence-playwright/2025-12-27-gpt52-codex-v2/desktop-1440/app-entry.png"
+    },
+    {
+      "label": "blog-index",
+      "url": "https://quoted.it.com/blog",
+      "status": 200,
+      "navigationError": null,
+      "domContentLoadedMs": 53,
+      "basics": {
+        "title": "The Quoting Guide — Quoted Blog",
+        "description": "Expert guides on writing professional quotes, pricing strategies, and winning more clients. For freelancers, contractors, photographers, consultants, and anyone who quotes services.",
+        "canonical": "https://quoted.it.com/blog/",
+        "h1": "The Quoting Guide",
+        "url": "https://quoted.it.com/blog"
+      },
+      "timings": {
+        "type": "navigate",
+        "startTime": 0,
+        "duration": 52.90000009536743,
+        "domContentLoaded": 52.40000009536743,
+        "loadEventEnd": 52.90000009536743,
+        "transferSize": 25398,
+        "encodedBodySize": 25098,
+        "decodedBodySize": 25098
+      },
+      "layout": {
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "client": {
+          "width": 1440,
+          "height": 900
+        },
+        "devicePixelRatio": 1,
+        "horizontalOverflow": false,
+        "scrollHeight": 3283,
+        "scrollWidth": 1440
+      },
+      "screenshotPath": "reports/ux-excellence-playwright/2025-12-27-gpt52-codex-v2/desktop-1440/blog-index.png"
+    },
+    {
+      "label": "use-cases",
+      "url": "https://quoted.it.com/use-cases",
+      "status": 200,
+      "navigationError": null,
+      "domContentLoadedMs": 50,
+      "basics": {
+        "title": "Use Cases - How Every Industry Uses Quoted",
+        "description": "See how contractors, photographers, consultants, event planners, and dozens of other professionals use Quoted to generate quotes in seconds instead of hours.",
+        "canonical": null,
+        "h1": "Stop Fighting With Templates.Start Talking.",
+        "url": "https://quoted.it.com/use-cases"
+      },
+      "timings": {
+        "type": "navigate",
+        "startTime": 0,
+        "duration": 49.90000009536743,
+        "domContentLoaded": 49.19999980926514,
+        "loadEventEnd": 49.90000009536743,
+        "transferSize": 95316,
+        "encodedBodySize": 95016,
+        "decodedBodySize": 95016
+      },
+      "layout": {
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "client": {
+          "width": 1440,
+          "height": 900
+        },
+        "devicePixelRatio": 1,
+        "horizontalOverflow": false,
+        "scrollHeight": 5229,
+        "scrollWidth": 1440
+      },
+      "screenshotPath": "reports/ux-excellence-playwright/2025-12-27-gpt52-codex-v2/desktop-1440/use-cases.png"
+    },
+    {
+      "label": "help",
+      "url": "https://quoted.it.com/help",
+      "status": 200,
+      "navigationError": null,
+      "domContentLoadedMs": 65,
+      "basics": {
+        "title": "Help & FAQ - quoted.it",
+        "description": null,
+        "canonical": null,
+        "h1": "Help & FAQ",
+        "url": "https://quoted.it.com/help"
+      },
+      "timings": {
+        "type": "navigate",
+        "startTime": 0,
+        "duration": 86.30000019073486,
+        "domContentLoaded": 64.59999990463257,
+        "loadEventEnd": 86.30000019073486,
+        "transferSize": 28580,
+        "encodedBodySize": 28280,
+        "decodedBodySize": 28280
+      },
+      "layout": {
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "client": {
+          "width": 1440,
+          "height": 900
+        },
+        "devicePixelRatio": 1,
+        "horizontalOverflow": false,
+        "scrollHeight": 2832,
+        "scrollWidth": 1440
+      },
+      "screenshotPath": "reports/ux-excellence-playwright/2025-12-27-gpt52-codex-v2/desktop-1440/help.png"
+    },
+    {
+      "label": "for-customers",
+      "url": "https://quoted.it.com/for-customers",
+      "status": 200,
+      "navigationError": null,
+      "domContentLoadedMs": 53,
+      "basics": {
+        "title": "Your Contractor Uses Quoted | quoted.it",
+        "description": "Generate professional quotes in 60 seconds with voice AI. Join 100+ contractors using Quoted.",
+        "canonical": null,
+        "h1": "Your contractor uses Quoted. You can too.",
+        "url": "https://quoted.it.com/for-customers"
+      },
+      "timings": {
+        "type": "navigate",
+        "startTime": 0,
+        "duration": 66.5,
+        "domContentLoaded": 51.69999980926514,
+        "loadEventEnd": 66.5,
+        "transferSize": 9483,
+        "encodedBodySize": 9183,
+        "decodedBodySize": 9183
+      },
+      "layout": {
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "client": {
+          "width": 1440,
+          "height": 900
+        },
+        "devicePixelRatio": 1,
+        "horizontalOverflow": false,
+        "scrollHeight": 900,
+        "scrollWidth": 1440
+      },
+      "screenshotPath": "reports/ux-excellence-playwright/2025-12-27-gpt52-codex-v2/desktop-1440/for-customers.png"
+    },
+    {
+      "label": "terms",
+      "url": "https://quoted.it.com/terms",
+      "status": 200,
+      "navigationError": null,
+      "domContentLoadedMs": 51,
+      "basics": {
+        "title": "Terms of Service - quoted.it",
+        "description": "Terms of Service for Quoted - Voice to Quote AI for Contractors",
+        "canonical": null,
+        "h1": "Terms of Service",
+        "url": "https://quoted.it.com/terms"
+      },
+      "timings": {
+        "type": "navigate",
+        "startTime": 0,
+        "duration": 50.60000038146973,
+        "domContentLoaded": 50,
+        "loadEventEnd": 50.60000038146973,
+        "transferSize": 17772,
+        "encodedBodySize": 17472,
+        "decodedBodySize": 17472
+      },
+      "layout": {
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "client": {
+          "width": 1440,
+          "height": 900
+        },
+        "devicePixelRatio": 1,
+        "horizontalOverflow": false,
+        "scrollHeight": 7018,
+        "scrollWidth": 1440
+      },
+      "screenshotPath": "reports/ux-excellence-playwright/2025-12-27-gpt52-codex-v2/desktop-1440/terms.png"
+    },
+    {
+      "label": "privacy",
+      "url": "https://quoted.it.com/privacy",
+      "status": 200,
+      "navigationError": null,
+      "domContentLoadedMs": 46,
+      "basics": {
+        "title": "Privacy Policy - quoted.it",
+        "description": "Privacy Policy for Quoted - Voice to Quote AI for Contractors",
+        "canonical": null,
+        "h1": "Privacy Policy",
+        "url": "https://quoted.it.com/privacy"
+      },
+      "timings": {
+        "type": "navigate",
+        "startTime": 0,
+        "duration": 45.700000286102295,
+        "domContentLoaded": 45.10000038146973,
+        "loadEventEnd": 45.700000286102295,
+        "transferSize": 20809,
+        "encodedBodySize": 20509,
+        "decodedBodySize": 20509
+      },
+      "layout": {
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "client": {
+          "width": 1440,
+          "height": 900
+        },
+        "devicePixelRatio": 1,
+        "horizontalOverflow": false,
+        "scrollHeight": 8327,
+        "scrollWidth": 1440
+      },
+      "screenshotPath": "reports/ux-excellence-playwright/2025-12-27-gpt52-codex-v2/desktop-1440/privacy.png"
+    }
+  ],
+  "consoleSummary": {
+    "total": 0,
+    "errors": [],
+    "warnings": []
+  },
+  "pageErrors": [],
+  "requestFailures": []
+}

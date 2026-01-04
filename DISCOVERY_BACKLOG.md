@@ -32,10 +32,10 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 | Status | Count |
 |--------|-------|
-| READY | 16 |
+| READY | 17 |
 | DISCOVERED | 15 |
 | COMPLETE | 9 |
-| **Active Total** | **40** |
+| **Active Total** | **41** |
 | Archived (DEPLOYED) | 66+ |
 
 **Autonomous AI Infrastructure**: DISC-101 COMPLETE, DISC-102-106 READY
@@ -725,6 +725,44 @@ Landing → Try Page View → Input/Recording Started → Quote Generated (or Ab
 - Weekly strategy memos
 
 **Success Metric**: CPA (cost per acquisition) improves 50% within 30 days; founder receives actionable recommendations, not just data
+
+---
+
+### DISC-144: Evolve Landing Page Messaging - Voice Hook + Depth Reveal 🎯 GROWTH (READY)
+
+**Source**: Founder Request (Eddie, 2026-01-04)
+**Impact**: HIGH | **Effort**: M | **Score**: 1.5
+**Sprint Alignment**: Conversion optimization, differentiation preservation
+
+**Problem**: Current "Voice to Quote" positioning is differentiating but undersells the full value. Product has evolved to include learning system, customer tracking, outcome-aware pricing, but marketing doesn't reveal this depth. Risk of being perceived as a single-feature tool.
+
+**Strategic Insight**: Don't abandon the voice hook (it's the unfair advantage). Instead, evolve the narrative to reveal depth while keeping the differentiator.
+
+**Proposed Work**:
+1. **Hero Evolution** - A/B test headlines:
+   - Current: "Voice to Quote"
+   - Test A: "Describe your job. Get a professional quote in seconds."
+   - Test B: "Talk. Quote. Get Paid."
+   - Subtext expansion: "Quoted learns your pricing, tracks your customers, and gets smarter with every job."
+
+2. **Value Depth Section** - Add section below hero showing:
+   - Learning system ("Gets smarter with every quote you send")
+   - Customer tracking ("Know your repeat customers automatically")
+   - Outcome awareness ("Learn from what actually wins jobs")
+
+3. **Trust Signal Enhancement** - Add:
+   - "Powered by Claude" or similar AI credibility
+   - Time savings calculator prominent placement
+   - Testimonial/proof when available
+
+4. **PostHog Experiment Setup** - Proper A/B test infrastructure for headline variants
+
+**What NOT to Do**:
+- Don't use "CRM" (sets wrong expectations)
+- Don't abandon voice as primary hook
+- Don't make it sound like every other SaaS
+
+**Success Metric**: Demo page visits from landing +20%; Signup conversion rate improvement measurable via A/B test
 
 ---
 

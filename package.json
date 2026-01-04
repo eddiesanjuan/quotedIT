@@ -1,0 +1,10 @@
+{
+  "name": "quoted-ux-audit",
+  "private": true,
+  "scripts": {
+    "ux:audit": "playwright test scripts/ux_audit_playwright/ux-excellence.spec.js --workers=1 --reporter=line"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.57.0"
+  }
+}

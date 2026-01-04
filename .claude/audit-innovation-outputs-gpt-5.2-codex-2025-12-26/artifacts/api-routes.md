@@ -1,0 +1,173 @@
+# API Route Inventory (GPT-5.2-Codex)
+
+- Generated from `backend/main.py` + `backend/api/*` at `/Users/eddiesanjuan/Personal_Assistant/Eddie_Personal_Assistant/quoted`
+- Routes discovered: **138**
+- Public/unknown-auth routes: **28**
+- Public/unknown-auth + no rate limit: **19**
+
+## Top Risk Slice (Public + No Rate Limit)
+
+| Method | Full Path | File:Line | Auth Hint | Rate Limit Hint | Handler |
+|---|---|---:|---|---|---|
+| `GET` | `/api/billing/plans` | `backend/api/billing.py:281` | `none` | `unlimited` | `get_plans:282` |
+| `POST` | `/api/billing/webhook` | `backend/api/billing.py:185` | `none` | `unlimited` | `stripe_webhook:186` |
+| `GET` | `/api/contractors/` | `backend/api/contractors.py:467` | `none` | `unlimited` | `list_contractors:468` |
+| `POST` | `/api/contractors/` | `backend/api/contractors.py:183` | `none` | `unlimited` | `create_contractor:184` |
+| `GET` | `/api/contractors/{contractor_id}` | `backend/api/contractors.py:219` | `none` | `unlimited` | `get_contractor:220` |
+| `GET` | `/api/contractors/{contractor_id}/accuracy` | `backend/api/contractors.py:405` | `none` | `unlimited` | `get_accuracy_stats:406` |
+| `GET` | `/api/customers/` | `backend/api/customers.py:141` | `none` | `unlimited` | `list_customers:142` |
+| `GET` | `/api/invoices/shared/{token}` | `backend/api/invoices.py:941` | `none` | `unlimited` | `view_shared_invoice:942` |
+| `GET` | `/api/onboarding/` | `backend/api/onboarding.py:725` | `none` | `unlimited` | `list_sessions:726` |
+| `GET` | `/api/onboarding/industries` | `backend/api/onboarding.py:437` | `none` | `unlimited` | `get_industries:438` |
+| `GET` | `/api/onboarding/templates` | `backend/api/onboarding.py:515` | `none` | `unlimited` | `list_templates:516` |
+| `GET` | `/api/onboarding/templates/{industry}` | `backend/api/onboarding.py:532` | `none` | `unlimited` | `get_pricing_template:533` |
+| `GET` | `/api/onboarding/{session_id}` | `backend/api/onboarding.py:549` | `none` | `unlimited` | `get_session:550` |
+| `POST` | `/api/onboarding/{session_id}/continue` | `backend/api/onboarding.py:161` | `none` | `unlimited` | `continue_setup:162` |
+| `GET` | `/api/onboarding/{session_id}/messages` | `backend/api/onboarding.py:561` | `none` | `unlimited` | `get_messages:562` |
+| `GET` | `/api/quotes/outcome/reasons` | `backend/api/quotes.py:2907` | `none` | `unlimited` | `get_outcome_reasons:2908` |
+| `POST` | `/api/quotes/shared/{token}/deposit-checkout` | `backend/api/share.py:759` | `none` | `unlimited` | `create_deposit_checkout:760` |
+| `GET` | `/api/tasks/` | `backend/api/tasks.py:129` | `none` | `unlimited` | `list_tasks:130` |
+| `GET` | `/api/testimonials/` | `backend/api/testimonials.py:87` | `none` | `unlimited` | `get_testimonials:88` |
+
+## Full Inventory
+
+| Method | Full Path | File:Line | Auth Hint | Rate Limit Hint | Handler |
+|---|---|---:|---|---|---|
+| `POST` | `/api/auth/login` | `backend/api/auth.py:125` | `none` | `limited` | `login:127` |
+| `POST` | `/api/auth/logout` | `backend/api/auth.py:262` | `required` | `unlimited` | `logout:263` |
+| `GET` | `/api/auth/me` | `backend/api/auth.py:181` | `required` | `unlimited` | `get_me:182` |
+| `POST` | `/api/auth/refresh` | `backend/api/auth.py:214` | `none` | `limited` | `refresh_token:216` |
+| `POST` | `/api/auth/register` | `backend/api/auth.py:43` | `none` | `limited` | `register:45` |
+| `POST` | `/api/billing/create-checkout` | `backend/api/billing.py:50` | `required` | `unlimited` | `create_checkout_session:51` |
+| `POST` | `/api/billing/create-embedded-checkout` | `backend/api/billing.py:89` | `required` | `unlimited` | `create_embedded_checkout_session:90` |
+| `GET` | `/api/billing/plans` | `backend/api/billing.py:281` | `none` | `unlimited` | `get_plans:282` |
+| `POST` | `/api/billing/portal` | `backend/api/billing.py:126` | `required` | `unlimited` | `create_portal_session:127` |
+| `GET` | `/api/billing/status` | `backend/api/billing.py:153` | `required` | `unlimited` | `get_billing_status:154` |
+| `POST` | `/api/billing/webhook` | `backend/api/billing.py:185` | `none` | `unlimited` | `stripe_webhook:186` |
+| `GET` | `/api/contractors/` | `backend/api/contractors.py:467` | `none` | `unlimited` | `list_contractors:468` |
+| `POST` | `/api/contractors/` | `backend/api/contractors.py:183` | `none` | `unlimited` | `create_contractor:184` |
+| `POST` | `/api/contractors/industry` | `backend/api/contractors.py:426` | `required` | `unlimited` | `set_industry:427` |
+| `DELETE` | `/api/contractors/logo` | `backend/api/contractors.py:558` | `required` | `unlimited` | `delete_logo:559` |
+| `GET` | `/api/contractors/logo` | `backend/api/contractors.py:541` | `required` | `unlimited` | `get_logo:542` |
+| `POST` | `/api/contractors/logo` | `backend/api/contractors.py:487` | `required` | `unlimited` | `upload_logo:488` |
+| `GET` | `/api/contractors/me/terms` | `backend/api/contractors.py:339` | `required` | `unlimited` | `get_my_terms:340` |
+| `PUT` | `/api/contractors/me/terms` | `backend/api/contractors.py:362` | `required` | `unlimited` | `update_my_terms:363` |
+| `GET` | `/api/contractors/suggestions` | `backend/api/contractors.py:682` | `required` | `unlimited` | `get_proactive_suggestions:683` |
+| `POST` | `/api/contractors/suggestions/{suggestion_id}/dismiss` | `backend/api/contractors.py:730` | `required` | `unlimited` | `dismiss_suggestion:731` |
+| `GET` | `/api/contractors/template-settings` | `backend/api/contractors.py:638` | `required` | `unlimited` | `get_template_settings:639` |
+| `PUT` | `/api/contractors/template-settings` | `backend/api/contractors.py:595` | `required` | `unlimited` | `update_template_settings:596` |
+| `GET` | `/api/contractors/{contractor_id}` | `backend/api/contractors.py:219` | `none` | `unlimited` | `get_contractor:220` |
+| `GET` | `/api/contractors/{contractor_id}/accuracy` | `backend/api/contractors.py:405` | `none` | `unlimited` | `get_accuracy_stats:406` |
+| `GET` | `/api/contractors/{contractor_id}/pricing` | `backend/api/contractors.py:228` | `required` | `unlimited` | `get_pricing_model:229` |
+| `PUT` | `/api/contractors/{contractor_id}/pricing` | `backend/api/contractors.py:257` | `required` | `unlimited` | `update_pricing_model_endpoint:258` |
+| `GET` | `/api/contractors/{contractor_id}/terms` | `backend/api/contractors.py:298` | `required` | `unlimited` | `get_terms:299` |
+| `PUT` | `/api/contractors/{contractor_id}/terms` | `backend/api/contractors.py:314` | `required` | `unlimited` | `update_terms:315` |
+| `GET` | `/api/customers/` | `backend/api/customers.py:141` | `none` | `unlimited` | `list_customers:142` |
+| `POST` | `/api/customers/` | `backend/api/customers.py:288` | `required` | `unlimited` | `create_customer:289` |
+| `GET` | `/api/customers/auto-quote/recognize` | `backend/api/customers.py:736` | `required` | `unlimited` | `recognize_customer:737` |
+| `GET` | `/api/customers/auto-quote/suggestions` | `backend/api/customers.py:646` | `required` | `unlimited` | `get_auto_quote_suggestions:647` |
+| `POST` | `/api/customers/backfill` | `backend/api/customers.py:531` | `required` | `unlimited` | `backfill_quotes_to_customers:532` |
+| `GET` | `/api/customers/dormant` | `backend/api/customers.py:214` | `required` | `unlimited` | `get_dormant_customers:215` |
+| `GET` | `/api/customers/search` | `backend/api/customers.py:191` | `required` | `unlimited` | `search_customers:192` |
+| `GET` | `/api/customers/summary` | `backend/api/customers.py:178` | `required` | `unlimited` | `get_customer_summary:179` |
+| `GET` | `/api/customers/top` | `backend/api/customers.py:234` | `required` | `unlimited` | `get_top_customers:235` |
+| `POST` | `/api/customers/voice-command` | `backend/api/customers.py:465` | `required` | `unlimited` | `process_voice_command:466` |
+| `GET` | `/api/customers/{customer_id}` | `backend/api/customers.py:257` | `required` | `unlimited` | `get_customer:258` |
+| `PATCH` | `/api/customers/{customer_id}` | `backend/api/customers.py:327` | `required` | `unlimited` | `update_customer:328` |
+| `POST` | `/api/customers/{customer_id}/notes` | `backend/api/customers.py:359` | `required` | `unlimited` | `add_customer_note:360` |
+| `POST` | `/api/customers/{customer_id}/tags` | `backend/api/customers.py:388` | `required` | `unlimited` | `add_customer_tag:389` |
+| `DELETE` | `/api/customers/{customer_id}/tags/{tag}` | `backend/api/customers.py:417` | `required` | `unlimited` | `remove_customer_tag:418` |
+| `POST` | `/api/demo/pdf` | `backend/api/demo.py:268` | `none` | `limited` | `generate_demo_pdf:270` |
+| `GET` | `/api/demo/pdf/{quote_id}` | `backend/api/demo.py:318` | `none` | `limited` | `download_demo_pdf:320` |
+| `POST` | `/api/demo/quote` | `backend/api/demo.py:141` | `none` | `limited` | `generate_demo_quote:143` |
+| `POST` | `/api/followup/create` | `backend/api/followup.py:47` | `required` | `unlimited` | `create_follow_up_sequence:48` |
+| `GET` | `/api/followup/quote/{quote_id}` | `backend/api/followup.py:111` | `required` | `unlimited` | `get_follow_up_status:112` |
+| `POST` | `/api/followup/quote/{quote_id}/pause` | `backend/api/followup.py:151` | `required` | `unlimited` | `pause_follow_up_sequence:152` |
+| `POST` | `/api/followup/quote/{quote_id}/resume` | `backend/api/followup.py:201` | `required` | `unlimited` | `resume_follow_up_sequence:202` |
+| `GET` | `/api/invoices/` | `backend/api/invoices.py:301` | `required` | `unlimited` | `list_invoices:302` |
+| `POST` | `/api/invoices/` | `backend/api/invoices.py:183` | `required` | `unlimited` | `create_invoice:184` |
+| `POST` | `/api/invoices/automation/generate` | `backend/api/invoices.py:880` | `required` | `unlimited` | `auto_generate_invoice:881` |
+| `GET` | `/api/invoices/automation/outstanding` | `backend/api/invoices.py:853` | `required` | `unlimited` | `get_outstanding_invoices:854` |
+| `GET` | `/api/invoices/automation/settings` | `backend/api/invoices.py:770` | `required` | `unlimited` | `get_automation_settings:771` |
+| `PUT` | `/api/invoices/automation/settings` | `backend/api/invoices.py:792` | `required` | `unlimited` | `update_automation_settings:793` |
+| `POST` | `/api/invoices/from-quote/{quote_id}` | `backend/api/invoices.py:687` | `required` | `unlimited` | `create_invoice_from_quote:688` |
+| `GET` | `/api/invoices/shared/{token}` | `backend/api/invoices.py:941` | `none` | `unlimited` | `view_shared_invoice:942` |
+| `DELETE` | `/api/invoices/{invoice_id}` | `backend/api/invoices.py:416` | `required` | `unlimited` | `delete_invoice:417` |
+| `GET` | `/api/invoices/{invoice_id}` | `backend/api/invoices.py:325` | `required` | `unlimited` | `get_invoice:326` |
+| `PUT` | `/api/invoices/{invoice_id}` | `backend/api/invoices.py:350` | `required` | `unlimited` | `update_invoice:351` |
+| `POST` | `/api/invoices/{invoice_id}/mark-paid` | `backend/api/invoices.py:452` | `required` | `unlimited` | `mark_invoice_paid:453` |
+| `POST` | `/api/invoices/{invoice_id}/pdf` | `backend/api/invoices.py:505` | `required` | `unlimited` | `generate_invoice_pdf:506` |
+| `POST` | `/api/invoices/{invoice_id}/send` | `backend/api/invoices.py:608` | `required` | `unlimited` | `send_invoice:609` |
+| `GET` | `/api/learning/progress` | `backend/api/learning.py:49` | `required` | `unlimited` | `get_learning_progress:50` |
+| `GET` | `/api/onboarding/` | `backend/api/onboarding.py:725` | `none` | `unlimited` | `list_sessions:726` |
+| `GET` | `/api/onboarding/industries` | `backend/api/onboarding.py:437` | `none` | `unlimited` | `get_industries:438` |
+| `POST` | `/api/onboarding/quick` | `backend/api/onboarding.py:332` | `required` | `unlimited` | `quick_setup:333` |
+| `POST` | `/api/onboarding/start` | `backend/api/onboarding.py:102` | `required` | `unlimited` | `start_setup:103` |
+| `GET` | `/api/onboarding/templates` | `backend/api/onboarding.py:515` | `none` | `unlimited` | `list_templates:516` |
+| `GET` | `/api/onboarding/templates/{industry}` | `backend/api/onboarding.py:532` | `none` | `unlimited` | `get_pricing_template:533` |
+| `POST` | `/api/onboarding/try-first` | `backend/api/onboarding.py:577` | `required` | `unlimited` | `try_first_activation:578` |
+| `GET` | `/api/onboarding/{session_id}` | `backend/api/onboarding.py:549` | `none` | `unlimited` | `get_session:550` |
+| `POST` | `/api/onboarding/{session_id}/complete` | `backend/api/onboarding.py:222` | `required` | `unlimited` | `complete_setup:223` |
+| `POST` | `/api/onboarding/{session_id}/continue` | `backend/api/onboarding.py:161` | `none` | `unlimited` | `continue_setup:162` |
+| `GET` | `/api/onboarding/{session_id}/messages` | `backend/api/onboarding.py:561` | `none` | `unlimited` | `get_messages:562` |
+| `GET` | `/api/pricing-brain/` | `backend/api/pricing_brain.py:82` | `required` | `unlimited` | `get_all_categories:83` |
+| `GET` | `/api/pricing-brain/settings/global` | `backend/api/pricing_brain.py:346` | `required` | `unlimited` | `get_global_settings:347` |
+| `PUT` | `/api/pricing-brain/settings/global` | `backend/api/pricing_brain.py:373` | `required` | `unlimited` | `update_global_settings:374` |
+| `POST` | `/api/pricing-brain/sync` | `backend/api/pricing_brain.py:305` | `required` | `unlimited` | `sync_categories_from_quotes:306` |
+| `DELETE` | `/api/pricing-brain/{category}` | `backend/api/pricing_brain.py:204` | `required` | `unlimited` | `delete_category:205` |
+| `GET` | `/api/pricing-brain/{category}` | `backend/api/pricing_brain.py:120` | `required` | `unlimited` | `get_category:121` |
+| `PUT` | `/api/pricing-brain/{category}` | `backend/api/pricing_brain.py:152` | `required` | `unlimited` | `update_category:153` |
+| `POST` | `/api/pricing-brain/{category}/analyze` | `backend/api/pricing_brain.py:244` | `required` | `unlimited` | `analyze_category:245` |
+| `GET` | `/api/pricing-brain/{category}/confidence` | `backend/api/pricing_brain.py:424` | `required` | `unlimited` | `get_category_confidence:425` |
+| `GET` | `/api/quotes/` | `backend/api/quotes.py:1999` | `required` | `unlimited` | `list_quotes:2000` |
+| `GET` | `/api/quotes/analytics/by-job-type` | `backend/api/quotes.py:3064` | `required` | `unlimited` | `get_performance_by_job_type:3065` |
+| `GET` | `/api/quotes/analytics/dashboard` | `backend/api/quotes.py:2929` | `required` | `unlimited` | `get_win_loss_dashboard:2930` |
+| `GET` | `/api/quotes/analytics/loss-reasons` | `backend/api/quotes.py:3001` | `required` | `unlimited` | `get_loss_reasons_analysis:3002` |
+| `GET` | `/api/quotes/analytics/stats` | `backend/api/quotes.py:2968` | `required` | `unlimited` | `get_win_loss_stats:2969` |
+| `GET` | `/api/quotes/analytics/trend` | `backend/api/quotes.py:3034` | `required` | `unlimited` | `get_monthly_trend:3035` |
+| `POST` | `/api/quotes/clarifying-questions` | `backend/api/quotes.py:659` | `required` | `limited` | `get_clarifying_questions:661` |
+| `GET` | `/api/quotes/customers` | `backend/api/quotes.py:2227` | `required` | `unlimited` | `get_customers:2228` |
+| `GET` | `/api/quotes/feedback/stats` | `backend/api/quotes.py:2202` | `required` | `unlimited` | `get_feedback_stats:2203` |
+| `POST` | `/api/quotes/generate` | `backend/api/quotes.py:347` | `required` | `limited` | `generate_quote:349` |
+| `POST` | `/api/quotes/generate-from-audio` | `backend/api/quotes.py:910` | `required` | `limited` | `generate_quote_from_audio:912` |
+| `POST` | `/api/quotes/generate-with-clarifications` | `backend/api/quotes.py:733` | `required` | `limited` | `generate_quote_with_clarifications:735` |
+| `GET` | `/api/quotes/outcome/category/{category}` | `backend/api/quotes.py:2812` | `required` | `unlimited` | `get_category_outcome_insight:2813` |
+| `GET` | `/api/quotes/outcome/reasons` | `backend/api/quotes.py:2907` | `none` | `unlimited` | `get_outcome_reasons:2908` |
+| `GET` | `/api/quotes/outcome/stats` | `backend/api/quotes.py:2667` | `required` | `unlimited` | `get_outcome_stats:2668` |
+| `GET` | `/api/quotes/pdf/templates` | `backend/api/quotes.py:2341` | `required` | `unlimited` | `get_pdf_templates:2342` |
+| `GET` | `/api/quotes/shared/{token}` | `backend/api/share.py:351` | `none` | `limited` | `view_shared_quote:353` |
+| `POST` | `/api/quotes/shared/{token}/accept` | `backend/api/share.py:529` | `none` | `limited` | `accept_quote:531` |
+| `POST` | `/api/quotes/shared/{token}/deposit-checkout` | `backend/api/share.py:759` | `none` | `unlimited` | `create_deposit_checkout:760` |
+| `POST` | `/api/quotes/shared/{token}/reject` | `backend/api/share.py:666` | `none` | `limited` | `reject_quote:668` |
+| `POST` | `/api/quotes/transcribe` | `backend/api/quotes.py:869` | `required` | `limited` | `transcribe_audio:871` |
+| `DELETE` | `/api/quotes/{quote_id}` | `backend/api/quotes.py:1643` | `required` | `unlimited` | `delete_quote:1644` |
+| `GET` | `/api/quotes/{quote_id}` | `backend/api/quotes.py:1226` | `required` | `unlimited` | `get_quote:1227` |
+| `PUT` | `/api/quotes/{quote_id}` | `backend/api/quotes.py:1710` | `required` | `unlimited` | `update_quote:1711` |
+| `GET` | `/api/quotes/{quote_id}/analytics` | `backend/api/quotes.py:1588` | `required` | `unlimited` | `get_quote_analytics:1589` |
+| `GET` | `/api/quotes/{quote_id}/confidence` | `backend/api/quotes.py:1262` | `required` | `unlimited` | `get_quote_confidence:1263` |
+| `PUT` | `/api/quotes/{quote_id}/customer` | `backend/api/quotes.py:1671` | `required` | `unlimited` | `update_quote_customer:1672` |
+| `POST` | `/api/quotes/{quote_id}/duplicate` | `backend/api/quotes.py:2401` | `required` | `unlimited` | `duplicate_quote:2402` |
+| `GET` | `/api/quotes/{quote_id}/explanation` | `backend/api/quotes.py:1405` | `required` | `unlimited` | `get_quote_explanation:1406` |
+| `GET` | `/api/quotes/{quote_id}/feedback` | `backend/api/quotes.py:2176` | `required` | `unlimited` | `get_feedback:2177` |
+| `POST` | `/api/quotes/{quote_id}/feedback` | `backend/api/quotes.py:2077` | `required` | `unlimited` | `submit_feedback:2078` |
+| `PUT` | `/api/quotes/{quote_id}/feedback` | `backend/api/quotes.py:2142` | `required` | `unlimited` | `update_feedback:2143` |
+| `GET` | `/api/quotes/{quote_id}/learning-stats` | `backend/api/quotes.py:2032` | `required` | `unlimited` | `get_learning_stats:2033` |
+| `POST` | `/api/quotes/{quote_id}/outcome` | `backend/api/quotes.py:2541` | `required` | `unlimited` | `mark_quote_outcome:2542` |
+| `POST` | `/api/quotes/{quote_id}/pdf` | `backend/api/quotes.py:1916` | `required` | `limited` | `generate_pdf:1918` |
+| `POST` | `/api/quotes/{quote_id}/share` | `backend/api/share.py:272` | `required` | `limited` | `generate_share_link:274` |
+| `POST` | `/api/quotes/{quote_id}/share/email` | `backend/api/share.py:108` | `required` | `limited` | `share_quote_via_email:110` |
+| `GET` | `/api/referral/code` | `backend/api/referral.py:36` | `required` | `unlimited` | `get_referral_code:37` |
+| `GET` | `/api/referral/link` | `backend/api/referral.py:78` | `required` | `unlimited` | `get_referral_link:79` |
+| `GET` | `/api/referral/stats` | `backend/api/referral.py:59` | `required` | `unlimited` | `get_referral_stats:60` |
+| `GET` | `/api/tasks/` | `backend/api/tasks.py:129` | `none` | `unlimited` | `list_tasks:130` |
+| `POST` | `/api/tasks/` | `backend/api/tasks.py:382` | `required` | `unlimited` | `create_task:383` |
+| `POST` | `/api/tasks/quick` | `backend/api/tasks.py:419` | `required` | `unlimited` | `create_quick_task:420` |
+| `GET` | `/api/tasks/summary` | `backend/api/tasks.py:276` | `required` | `unlimited` | `get_task_summary:277` |
+| `DELETE` | `/api/tasks/{task_id}` | `backend/api/tasks.py:623` | `required` | `unlimited` | `delete_task:624` |
+| `GET` | `/api/tasks/{task_id}` | `backend/api/tasks.py:346` | `required` | `unlimited` | `get_task:347` |
+| `PATCH` | `/api/tasks/{task_id}` | `backend/api/tasks.py:468` | `required` | `unlimited` | `update_task:469` |
+| `POST` | `/api/tasks/{task_id}/complete` | `backend/api/tasks.py:526` | `required` | `unlimited` | `toggle_task_complete:527` |
+| `POST` | `/api/tasks/{task_id}/snooze` | `backend/api/tasks.py:574` | `required` | `unlimited` | `snooze_task:575` |
+| `GET` | `/api/testimonials/` | `backend/api/testimonials.py:87` | `none` | `unlimited` | `get_testimonials:88` |
+| `POST` | `/api/testimonials/` | `backend/api/testimonials.py:38` | `required` | `unlimited` | `submit_testimonial:39` |
+| `GET` | `/api/testimonials/check-submitted` | `backend/api/testimonials.py:121` | `required` | `unlimited` | `check_testimonial_submitted:122` |
