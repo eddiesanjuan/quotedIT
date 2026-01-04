@@ -252,15 +252,25 @@ if frontend_path.exists():
             "stripe_publishable_key": settings.stripe_publishable_key,
         })
 
-    @app.get("/demo")
-    async def serve_demo():
+    @app.get("/demo", response_class=HTMLResponse)
+    async def serve_demo(request: Request):
         """Serve the functional demo page - generate real quotes without signup."""
-        return FileResponse(frontend_path / "try.html")
+        return templates.TemplateResponse("try.html", {
+            "request": request,
+            "posthog_api_key": settings.posthog_api_key,
+            "sentry_dsn": settings.sentry_dsn,
+            "environment": settings.environment,
+        })
 
-    @app.get("/try")
-    async def serve_try():
+    @app.get("/try", response_class=HTMLResponse)
+    async def serve_try(request: Request):
         """Serve the functional demo page - generate real quotes without signup."""
-        return FileResponse(frontend_path / "try.html")
+        return templates.TemplateResponse("try.html", {
+            "request": request,
+            "posthog_api_key": settings.posthog_api_key,
+            "sentry_dsn": settings.sentry_dsn,
+            "environment": settings.environment,
+        })
 
     @app.get("/demo-promo")
     async def serve_demo_promo():
