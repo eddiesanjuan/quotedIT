@@ -286,3 +286,41 @@ async def check_traffic_anomalies(request: Request):
             status_code=500,
             detail="Failed to check traffic anomalies"
         )
+
+
+class GoogleAdsResponse(BaseModel):
+    """Google Ads status response."""
+    configured: bool
+    message: str
+    metrics: Optional[Dict[str, Any]] = None
+    anomalies: List[Dict[str, Any]] = []
+    recommendations: List[str] = []
+
+
+@router.get("/google-ads", response_model=GoogleAdsResponse)
+async def get_google_ads_status(request: Request):
+    """
+    Get Google Ads performance summary.
+
+    Requires Google Ads API credentials to be configured.
+    Returns metrics, anomalies, and AI recommendations.
+    """
+    try:
+        from ..services.google_ads_analytics import get_google_ads_summary
+
+        summary = await get_google_ads_summary()
+
+        return GoogleAdsResponse(
+            configured=summary["configured"],
+            message=summary.get("message", "Google Ads data retrieved"),
+            metrics=summary.get("metrics"),
+            anomalies=summary.get("anomalies", []),
+            recommendations=summary.get("recommendations", [])
+        )
+
+    except Exception as e:
+        logger.error(f"Failed to get Google Ads status: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to retrieve Google Ads status"
+        )

@@ -107,6 +107,13 @@ class Settings(BaseSettings):
     posthog_read_api_key: str = ""  # PostHog read API key for querying events (phx_*)
     sentry_dsn: str = ""  # Sentry error tracking
 
+    # Google Ads API (DISC-141 Phase 2)
+    google_ads_developer_token: str = ""  # Developer token from Google Ads API Center
+    google_ads_client_id: str = ""  # OAuth2 client ID from Google Cloud Console
+    google_ads_client_secret: str = ""  # OAuth2 client secret
+    google_ads_refresh_token: str = ""  # OAuth2 refresh token (generated via auth flow)
+    google_ads_customer_id: str = ""  # Google Ads account ID (10 digits, no dashes)
+
     # Marketing Analytics (DISC-141)
     marketing_reports_enabled: bool = True  # Enable daily marketing reports to founder
 

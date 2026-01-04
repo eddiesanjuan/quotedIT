@@ -1,6 +1,6 @@
 # Discovery Backlog
 
-**Last Updated**: 2025-12-31
+**Last Updated**: 2026-01-04
 **Source**: `/quoted-discover` autonomous discovery cycles
 
 ---
@@ -33,9 +33,9 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 | Status | Count |
 |--------|-------|
 | READY | 16 |
-| DISCOVERED | 14 |
-| COMPLETE | 8 |
-| **Active Total** | **38** |
+| DISCOVERED | 15 |
+| COMPLETE | 9 |
+| **Active Total** | **40** |
 | Archived (DEPLOYED) | 66+ |
 
 **Autonomous AI Infrastructure**: DISC-101 COMPLETE, DISC-102-106 READY
@@ -757,6 +757,77 @@ Landing → Try Page View → Input/Recording Started → Quote Generated (or Ab
 **Relationship to DISC-102**: DISC-102 is risk-based (classify actions by risk level). This is cadence-based (checkpoint every N cycles regardless of content). Both are valid; cadence-based is simpler but less surgical.
 
 **Success Metric**: Catch compound errors before they exceed 3 cycles.
+
+---
+
+### DISC-143: Configure Google Ads API Credentials 🔑 ANALYTICS (DISCOVERED)
+
+**Source**: DISC-141 Phase 2 infrastructure (2025-01-04)
+**Impact**: HIGH | **Effort**: S | **Score**: 2.5
+**Urgency**: High - traffic declining, need visibility
+
+**Problem**: Google Ads campaigns running but no visibility into performance via API. Currently requires manual dashboard checking which is overwhelming.
+
+**Infrastructure Ready**: `backend/services/google_ads_analytics.py` is built and waiting for credentials.
+
+**Setup Steps**:
+
+1. **Get Developer Token** (5 min):
+   - Go to https://ads.google.com/aw/apicenter
+   - Apply for API access (Basic access is fine for read-only)
+   - Copy the developer token
+
+2. **Create OAuth Credentials** (10 min):
+   - Go to https://console.cloud.google.com
+   - Create new project or use existing
+   - Enable "Google Ads API"
+   - Go to APIs & Services → Credentials → Create OAuth Client ID
+   - Type: Web application
+   - Add authorized redirect: `https://quoted.it.com/auth/callback/google`
+   - Copy Client ID and Client Secret
+
+3. **Generate Refresh Token** (5 min):
+   - Use Google's OAuth Playground: https://developers.google.com/oauthplayground
+   - Configure with your Client ID/Secret
+   - Authorize scope: `https://www.googleapis.com/auth/adwords`
+   - Exchange for refresh token
+
+4. **Add to Railway** (2 min):
+   ```
+   GOOGLE_ADS_DEVELOPER_TOKEN=<your token>
+   GOOGLE_ADS_CLIENT_ID=<client id>
+   GOOGLE_ADS_CLIENT_SECRET=<client secret>
+   GOOGLE_ADS_REFRESH_TOKEN=<refresh token>
+   GOOGLE_ADS_CUSTOMER_ID=<10-digit account ID, no dashes>
+   ```
+
+5. **Verify**: `GET /api/analytics/google-ads` should return campaign data
+
+**Once Complete**:
+- Daily reports will include Google Ads metrics
+- AI recommendations for optimization
+- Anomaly alerts for CPC/CTR issues
+
+---
+
+### DISC-142: Configure PostHog Read API Key 🔑 ANALYTICS (COMPLETE)
+
+**Source**: DISC-138 deployment verification (2025-01-04)
+**Impact**: LOW | **Effort**: XS | **Score**: 3.0
+
+**Problem**: The funnel analytics endpoints (DISC-138) are deployed and working, but return `posthog_configured: false`. Full funnel visibility requires a PostHog Read API key.
+
+**Proposed Work**:
+1. Generate PostHog Personal API Key with read-only access from PostHog dashboard
+2. Add `POSTHOG_READ_API_KEY` environment variable to Railway production
+3. Verify funnel endpoint returns real data: `GET /api/analytics/funnel?days=7`
+
+**Current State**:
+- Endpoints work: `/api/analytics/funnel` and `/api/analytics/traffic-sources`
+- Database fallback active (only shows signups/quotes, not page views)
+- Full funnel (landing → CTA → demo → signup) requires PostHog API
+
+**Success Metric**: `posthog_configured: true` in API response; full 7-step funnel visible.
 
 ---
 
