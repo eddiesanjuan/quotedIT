@@ -223,3 +223,66 @@ async def get_traffic_sources(
             status_code=500,
             detail="Failed to retrieve traffic sources"
         )
+
+
+class TrafficAnomalyResponse(BaseModel):
+    """Traffic anomaly check response."""
+    has_issues: bool
+    alerts: List[Dict[str, Any]]
+    message: str
+
+
+@router.get("/traffic-check", response_model=TrafficAnomalyResponse)
+async def check_traffic_anomalies(request: Request):
+    """
+    Check for traffic anomalies (spikes and drops).
+
+    Compares current traffic to 7-day baseline.
+    Returns any detected issues that need attention.
+
+    Use this to quickly diagnose traffic problems.
+    """
+    try:
+        from ..services.traffic_spike_alerts import TrafficSpikeAlertService
+
+        async with async_session_factory() as db:
+            # Check for spikes
+            spike_alerts = await TrafficSpikeAlertService.detect_spikes(db)
+
+            # Check for drops (the painful part)
+            drop_alerts = await TrafficSpikeAlertService.detect_traffic_drops(db)
+
+            all_alerts = spike_alerts + drop_alerts
+
+            # Format alerts for response
+            alert_list = [
+                {
+                    "type": a.alert_type,
+                    "severity": a.severity,
+                    "message": a.message,
+                    "current": a.current_value,
+                    "average": round(a.average_value, 1),
+                    "multiplier": round(a.multiplier, 2) if a.multiplier != float("inf") else None
+                }
+                for a in all_alerts
+            ]
+
+            if not all_alerts:
+                message = "✅ Traffic looks normal. No significant spikes or drops detected."
+            elif any(a.alert_type in ['traffic_drop', 'conversion_drop'] for a in all_alerts):
+                message = f"⚠️ {len(all_alerts)} issue(s) detected - traffic may be declining!"
+            else:
+                message = f"🚀 {len(all_alerts)} spike(s) detected - traffic is surging!"
+
+            return TrafficAnomalyResponse(
+                has_issues=len(all_alerts) > 0,
+                alerts=alert_list,
+                message=message
+            )
+
+    except Exception as e:
+        logger.error(f"Failed to check traffic anomalies: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to check traffic anomalies"
+        )
