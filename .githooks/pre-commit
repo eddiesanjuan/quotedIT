@@ -1,0 +1,33 @@
+#!/bin/bash
+# Pre-commit hook to prevent committing dangerous files
+
+# Check for node_modules
+if git diff --cached --name-only | grep -q "^node_modules/"; then
+    echo "❌ ERROR: Attempting to commit node_modules/"
+    echo "   Run: git reset HEAD node_modules/"
+    exit 1
+fi
+
+# Check for .env files (except .env.example)
+if git diff --cached --name-only | grep -E "^\.env$|^\.env\." | grep -v ".env.example"; then
+    echo "❌ ERROR: Attempting to commit .env file"
+    exit 1
+fi
+
+# Check for large files (>5MB)
+large_files=$(git diff --cached --name-only | while read file; do
+    if [ -f "$file" ]; then
+        size=$(wc -c < "$file" 2>/dev/null || echo 0)
+        if [ "$size" -gt 5242880 ]; then
+            echo "$file"
+        fi
+    fi
+done)
+
+if [ -n "$large_files" ]; then
+    echo "❌ ERROR: Large files detected (>5MB):"
+    echo "$large_files"
+    exit 1
+fi
+
+echo "✅ Pre-commit checks passed"
