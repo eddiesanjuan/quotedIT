@@ -284,7 +284,7 @@ def generate_google_ads_script(webhook_url: str, webhook_secret: str) -> str:
         JavaScript code to paste into Google Ads Scripts
     """
     return f'''
-// Quoted.it Google Ads Data Sync
+// Quoted.it Google Ads Data Sync v2
 // Paste this into Google Ads → Tools & Settings → Scripts
 // Run daily to sync campaign performance data
 
@@ -298,7 +298,11 @@ function main() {{
   var accountName = account.getName();
   var currency = account.getCurrencyCode();
 
-  // Get campaign data for last 7 days
+  Logger.log("=== Quoted.it Data Sync ===");
+  Logger.log("Account ID: " + accountId);
+  Logger.log("Account Name: " + accountName);
+
+  // Get ALL campaigns (no status filter)
   var campaigns = [];
   var totalImpressions = 0;
   var totalClicks = 0;
@@ -306,12 +310,15 @@ function main() {{
   var totalConversions = 0;
 
   var campaignIterator = AdsApp.campaigns()
-    .withCondition("Status = ENABLED")
     .forDateRange("LAST_7_DAYS")
     .get();
 
+  var campaignCount = 0;
+  Logger.log("Scanning campaigns...");
+
   while (campaignIterator.hasNext()) {{
     var campaign = campaignIterator.next();
+    campaignCount++;
     var stats = campaign.getStatsFor("LAST_7_DAYS");
 
     var impressions = stats.getImpressions();
@@ -320,11 +327,15 @@ function main() {{
     var conversions = stats.getConversions();
     var ctr = impressions > 0 ? (clicks / impressions * 100) : 0;
     var avgCpc = clicks > 0 ? (cost / clicks) : 0;
+    var status = campaign.isEnabled() ? "ENABLED" : "PAUSED";
+
+    Logger.log("  Campaign: " + campaign.getName() + " [" + status + "]");
+    Logger.log("    Clicks: " + clicks + ", Impressions: " + impressions);
 
     campaigns.push({{
       id: campaign.getId().toString(),
       name: campaign.getName(),
-      status: campaign.isEnabled() ? "ENABLED" : "PAUSED",
+      status: status,
       impressions: impressions,
       clicks: clicks,
       cost: cost,
@@ -338,6 +349,8 @@ function main() {{
     totalCost += cost;
     totalConversions += conversions;
   }}
+
+  Logger.log("Found " + campaignCount + " campaign(s)");
 
   // Build payload
   var payload = {{
@@ -369,11 +382,8 @@ function main() {{
     var responseCode = response.getResponseCode();
 
     if (responseCode === 200) {{
-      Logger.log("✅ Data synced successfully!");
-      Logger.log("Impressions: " + totalImpressions);
-      Logger.log("Clicks: " + totalClicks);
-      Logger.log("Cost: $" + totalCost.toFixed(2));
-      Logger.log("Conversions: " + totalConversions);
+      Logger.log("✅ Data synced to Quoted!");
+      Logger.log("Summary: " + totalClicks + " clicks, " + totalImpressions + " impressions, $" + totalCost.toFixed(2) + " cost");
     }} else {{
       Logger.log("❌ Webhook returned: " + responseCode);
       Logger.log(response.getContentText());
