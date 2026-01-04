@@ -32,10 +32,10 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 | Status | Count |
 |--------|-------|
-| READY | 17 |
+| READY | 18 |
 | DISCOVERED | 15 |
 | COMPLETE | 9 |
-| **Active Total** | **41** |
+| **Active Total** | **42** |
 | Archived (DEPLOYED) | 66+ |
 
 **Autonomous AI Infrastructure**: DISC-101 COMPLETE, DISC-102-106 READY
@@ -763,6 +763,43 @@ Landing → Try Page View → Input/Recording Started → Quote Generated (or Ab
 - Don't make it sound like every other SaaS
 
 **Success Metric**: Demo page visits from landing +20%; Signup conversion rate improvement measurable via A/B test
+
+---
+
+### DISC-145: Fresh Blog Content Round - Organic Voice, Living Blog 📝 GROWTH (READY)
+
+**Source**: Founder Request (Eddie, 2026-01-04)
+**Impact**: MEDIUM | **Effort**: L | **Score**: 1.0
+**Sprint Alignment**: Content marketing, SEO diversification, brand authenticity
+
+**Problem**: Current blog articles are SEO-optimized guides (useful but formulaic). The blog feels like a static SEO farm rather than a living publication. Need fresh content with varied tones to build authentic brand voice and attract different audience segments.
+
+**Content Strategy Shift**:
+- Move from "Ultimate Guide to X" formula to varied, authentic content
+- Include founder perspective, industry insights, real contractor stories
+- Create content people actually want to read (not just rank for)
+
+**Proposed Topics** (3-5 articles):
+1. **"Pricing Psychology: Why Contractors Undercharge"** - Behavioral insights, real data from learning system patterns
+2. **"Lessons From Our First 100 Quotes"** - Founder perspective, what we learned building Quoted
+3. **"The 5 Quoting Mistakes That Cost You Jobs"** - Practical, shareable, contractor voice
+4. **"Seasonal Job Trends: What's Hot in Q1"** - Timely, industry insight piece
+5. **"Why I Built a Voice-to-Quote App"** - Founder story, origin, vision
+
+**Tone Guidelines**:
+- Authentic, not corporate
+- Opinionated where appropriate
+- Include real examples/data when possible
+- Varied lengths (some short takes, some deep dives)
+- NO buzzword-heavy AI hype
+
+**Proposed Work**:
+1. Outline 3-5 article topics with angles
+2. Write articles with varied tones/lengths
+3. Add to blog with proper og:image tags
+4. Cross-post/promote on relevant channels
+
+**Success Metric**: Blog traffic diversity (not just SEO); social shares; time-on-page > existing articles
 
 ---
 
