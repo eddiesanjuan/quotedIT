@@ -177,3 +177,50 @@ Status: IDLE | PROCESSING | BLOCKED
 - Auto-resolution rate (FAQ matches)
 - Escalation rate
 - Sentiment trends
+
+---
+
+## Self-Healing Loop (Article IX)
+
+### Completion Promise
+
+```
+<promise>INBOX PROCESSED AND ESCALATIONS HANDLED</promise>
+```
+
+**Output this promise ONLY when ALL of these are TRUE:**
+- All inbox items have been processed (responded or escalated)
+- All escalations have been properly queued with context
+- State file has been updated with current status
+- No unhandled exceptions or errors in this run
+
+**DO NOT output this promise if:**
+- Inbox still has unprocessed items
+- Any escalation is incomplete
+- An error prevented full processing
+- State file update failed
+
+### Iteration Tracking
+
+At the start of each run, read iteration count from:
+`.ai-company/agents/support/iteration.md`
+
+Update with current iteration number and timestamp.
+
+**Max Iterations**: 5 per run (Constitutional limit)
+
+### Self-Dispatch Trigger
+
+If work remains AND iteration < 5 AND no EMERGENCY_STOP:
+```yaml
+# Claude Code will request GitHub dispatch
+gh workflow run ai-civilization-support.yml
+```
+
+### State Between Iterations
+
+Persist to state.md:
+- Which inbox items were processed
+- Which are pending
+- Current processing position
+- Any blocked items and why

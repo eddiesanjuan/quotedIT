@@ -2,10 +2,23 @@
 
 You are the **orchestrator** for Quoted discovery cycles. Your job is simple: **spawn discovery agents and synthesize results**.
 
+**This command is part of the AI Civilization framework.** It executes the Discovery Agent specification.
+
+## Integration with AI Civilization
+
+```
+/quoted-discover         → Manual discovery run
+/ai-run-deep discovery   → Ralph loop discovery (more intensive)
+/ai-run-deep full        → Discovery included in full company run (if >7 days)
+/ai-run-deep overnight   → Discovery always runs
+```
+
 ## Architecture
 
 ```
 YOU (Orchestrator) - Stay thin, preserve context
+  │
+  ├─→ Read: .ai-company/agents/discovery/AGENT.md (specification)
   │
   ├─→ Task: Discovery Agent (fresh context, full budget)
   │      └─→ Spawns 3 specialist agents (Product, Growth, Strategy)
@@ -13,7 +26,9 @@ YOU (Orchestrator) - Stay thin, preserve context
   │      └─→ Returns structured report
   │      └─→ Context discarded
   │
-  └─→ You write results to DISCOVERY_BACKLOG.md
+  ├─→ Write results to DISCOVERY_BACKLOG.md
+  │
+  └─→ Update .ai-company/agents/discovery/state.md
 ```
 
 **Why this architecture**: Discovery agents get the FULL context window to deeply analyze opportunities. Clean output goes to backlog.
@@ -232,8 +247,69 @@ Current State: [Brief status]
 **Next Steps**:
 1. Review new DISCOVERED items in DISCOVERY_BACKLOG.md
 2. Approve by changing status: DISCOVERED → READY
-3. Run `/quoted-run` to execute approved work
+3. Run `/ai-run-deep code` to execute approved work
 ═══════════════════════════════════════════════════════════
+```
+
+### Step 4: Update Discovery Agent State
+
+Update `.ai-company/agents/discovery/state.md`:
+
+```markdown
+# Discovery Agent State
+
+Last Run: {current timestamp}
+Status: COMPLETE
+
+## Run Summary
+
+| Metric | Value |
+|--------|-------|
+| New Discoveries | {count} |
+| Duplicates Avoided | {count} |
+| Questions Raised | {count} |
+
+## Discovery Sources
+
+| Source | Count | Top Finding |
+|--------|-------|-------------|
+| Product | {count} | {brief} |
+| Growth | {count} | {brief} |
+| Strategy | {count} | {brief} |
+
+## Backlog Status
+
+| Status | Count |
+|--------|-------|
+| DISCOVERED | {new count} |
+| READY | {count} |
+| COMPLETE | {count} |
+| DEPLOYED | {count} |
+
+## Anti-Discoveries
+
+{list anti-discoveries}
+
+## Questions for Founder
+
+{list questions}
+
+## Notes
+
+Discovery cycle completed. Next run recommended in 7 days.
+```
+
+### Step 5: Output Completion Promise
+
+When ALL of these are true:
+- All three specialists returned results
+- Results synthesized and deduplicated
+- DISCOVERY_BACKLOG.md updated
+- State file updated
+
+Output:
+```
+<promise>DISCOVERY CYCLE COMPLETE</promise>
 ```
 
 ---
@@ -245,12 +321,17 @@ Current State: [Brief status]
 3. **DISCOVERED status**: All new items start as DISCOVERED, not READY
 4. **Evidence-based**: Discoveries must be grounded in actual analysis
 5. **Sprint-aligned**: Prioritize what helps current sprint goal
+6. **Update state**: Always update the Discovery Agent state file
+7. **Honest promises**: Only output completion promise when genuinely complete
 
 ---
 
 ## BEGIN
 
-1. Spawn Discovery Agent
-2. Wait for results
-3. Write to DISCOVERY_BACKLOG.md
-4. Report to founder
+1. Read .ai-company/agents/discovery/AGENT.md for full specification
+2. Spawn Discovery Agent
+3. Wait for results
+4. Write to DISCOVERY_BACKLOG.md
+5. Update .ai-company/agents/discovery/state.md
+6. Output completion promise
+7. Report to founder

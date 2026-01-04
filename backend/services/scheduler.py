@@ -147,6 +147,28 @@ async def run_marketing_report():
         logger.error(f"Error in run_marketing_report: {e}")
 
 
+async def run_exit_survey_digest():
+    """
+    DISC-137: Daily Exit Survey Digest.
+
+    Generate and send daily exit survey summary to founder:
+    - Reason breakdown (counts by category)
+    - Verbatim "Other" responses (most valuable)
+    - Trend vs previous day
+
+    Runs daily at 8:30am UTC (3:30am EST), after marketing report.
+    """
+    from .exit_survey import run_exit_survey_digest as _run_digest
+
+    logger.info("Running exit survey digest")
+
+    try:
+        await _run_digest()
+        logger.info("Exit survey digest completed")
+    except Exception as e:
+        logger.error(f"Error in run_exit_survey_digest: {e}")
+
+
 async def check_invoice_reminders():
     """
     INNOV-6: Invoice Automation - Payment Reminders.
@@ -344,8 +366,17 @@ def start_scheduler():
         max_instances=1,
     )
 
+    # DISC-137: Daily exit survey digest - daily at 8:30am UTC (3:30am EST)
+    scheduler.add_job(
+        run_exit_survey_digest,
+        trigger=CronTrigger(hour=8, minute=30),
+        id="exit_survey_digest",
+        replace_existing=True,
+        max_instances=1,
+    )
+
     scheduler.start()
-    logger.info("Background scheduler started with jobs: task_reminders (5min), quote_followups (daily 9am UTC), smart_followups (15min), invoice_reminders (daily 10am UTC), marketing_report (daily 8am UTC)")
+    logger.info("Background scheduler started with jobs: task_reminders (5min), quote_followups (daily 9am UTC), smart_followups (15min), invoice_reminders (daily 10am UTC), marketing_report (daily 8am UTC), exit_survey_digest (daily 8:30am UTC)")
 
 
 def stop_scheduler():

@@ -235,3 +235,52 @@ Status: IDLE | CALCULATING | REPORTING
 - Time to first payment
 - Refund rate and reasons
 - Revenue by cohort
+
+---
+
+## Self-Healing Loop (Article IX)
+
+### Completion Promise
+
+```
+<promise>FINANCIAL SYNC COMPLETE</promise>
+```
+
+**Output this promise ONLY when ALL of these are TRUE:**
+- All Stripe events have been processed
+- MRR and key metrics are calculated and current
+- Financial reports generated for the period
+- Anomalies flagged and escalated (if any)
+- State file updated with current metrics
+
+**DO NOT output this promise if:**
+- Stripe sync incomplete
+- Metrics calculation failed
+- Reports not generated
+- State file update failed
+
+### Iteration Tracking
+
+At the start of each run, read iteration count from:
+`.ai-company/agents/finance/iteration.md`
+
+Update with current iteration number and timestamp.
+
+**Max Iterations**: 3 per run (Constitutional limit - sync is deterministic)
+
+### Self-Dispatch Trigger
+
+If work remains AND iteration < 3 AND no EMERGENCY_STOP:
+```yaml
+# Claude Code will request GitHub dispatch
+gh workflow run ai-civilization-finance.yml
+```
+
+### State Between Iterations
+
+Persist to state.md:
+- Events processed count
+- Events pending count
+- Last sync timestamp
+- Metrics calculated
+- Blockers encountered

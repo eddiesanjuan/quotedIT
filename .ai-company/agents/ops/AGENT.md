@@ -197,3 +197,53 @@ Status: IDLE | MONITORING | INCIDENT
 - Error rate trends
 - Deployment success rate
 - False positive rate for alerts
+
+---
+
+## Self-Healing Loop (Article IX)
+
+### Completion Promise
+
+```
+<promise>HEALTH GREEN AND INCIDENTS RESOLVED</promise>
+```
+
+**Output this promise ONLY when ALL of these are TRUE:**
+- System health is GREEN (error rate < 1%, response time < 500ms)
+- No active incidents (all resolved or escalated)
+- All alerts have been addressed
+- Health check passed on all monitored services
+- State file updated with current metrics
+
+**DO NOT output this promise if:**
+- Any health metric is YELLOW or RED
+- Active incidents remain unresolved
+- Alerts are pending review
+- External service check failed
+- State file update failed
+
+### Iteration Tracking
+
+At the start of each run, read iteration count from:
+`.ai-company/agents/ops/iteration.md`
+
+Update with current iteration number and timestamp.
+
+**Max Iterations**: 10 per run (Constitutional limit - higher for monitoring)
+
+### Self-Dispatch Trigger
+
+If work remains AND iteration < 10 AND no EMERGENCY_STOP:
+```yaml
+# Claude Code will request GitHub dispatch
+gh workflow run ai-civilization-ops.yml
+```
+
+### State Between Iterations
+
+Persist to state.md:
+- Current health status (GREEN/YELLOW/RED)
+- Active incidents list
+- Pending alerts
+- Last successful health check timestamp
+- Recovery actions in progress
