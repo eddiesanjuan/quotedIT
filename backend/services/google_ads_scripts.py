@@ -308,19 +308,11 @@ function main() {{
   var totalClicks = 0;
   var totalCost = 0;
   var totalConversions = 0;
-
-  var campaignIterator = AdsApp.campaigns()
-    .forDateRange("LAST_7_DAYS")
-    .get();
-
   var campaignCount = 0;
-  Logger.log("Scanning campaigns...");
 
-  while (campaignIterator.hasNext()) {{
-    var campaign = campaignIterator.next();
-    campaignCount++;
+  // Helper function to process campaign stats
+  function processCampaign(campaign, campaignType) {{
     var stats = campaign.getStatsFor("LAST_7_DAYS");
-
     var impressions = stats.getImpressions();
     var clicks = stats.getClicks();
     var cost = stats.getCost();
@@ -329,12 +321,13 @@ function main() {{
     var avgCpc = clicks > 0 ? (cost / clicks) : 0;
     var status = campaign.isEnabled() ? "ENABLED" : "PAUSED";
 
-    Logger.log("  Campaign: " + campaign.getName() + " [" + status + "]");
-    Logger.log("    Clicks: " + clicks + ", Impressions: " + impressions);
+    Logger.log("  [" + campaignType + "] " + campaign.getName() + " [" + status + "]");
+    Logger.log("    Clicks: " + clicks + ", Impressions: " + impressions + ", Cost: $" + cost.toFixed(2));
 
     campaigns.push({{
       id: campaign.getId().toString(),
       name: campaign.getName(),
+      type: campaignType,
       status: status,
       impressions: impressions,
       clicks: clicks,
@@ -348,9 +341,38 @@ function main() {{
     totalClicks += clicks;
     totalCost += cost;
     totalConversions += conversions;
+    campaignCount++;
   }}
 
-  Logger.log("Found " + campaignCount + " campaign(s)");
+  Logger.log("Scanning campaigns...");
+
+  // 1. Regular campaigns (Search, Display, Video, etc.)
+  var regularIterator = AdsApp.campaigns().forDateRange("LAST_7_DAYS").get();
+  while (regularIterator.hasNext()) {{
+    processCampaign(regularIterator.next(), "Standard");
+  }}
+
+  // 2. Performance Max campaigns (requires separate API)
+  try {{
+    var pmaxIterator = AdsApp.performanceMaxCampaigns().forDateRange("LAST_7_DAYS").get();
+    while (pmaxIterator.hasNext()) {{
+      processCampaign(pmaxIterator.next(), "Performance Max");
+    }}
+  }} catch (e) {{
+    Logger.log("  Note: Could not access Performance Max campaigns: " + e.message);
+  }}
+
+  // 3. Shopping campaigns
+  try {{
+    var shoppingIterator = AdsApp.shoppingCampaigns().forDateRange("LAST_7_DAYS").get();
+    while (shoppingIterator.hasNext()) {{
+      processCampaign(shoppingIterator.next(), "Shopping");
+    }}
+  }} catch (e) {{
+    // Shopping campaigns not available
+  }}
+
+  Logger.log("Found " + campaignCount + " campaign(s) total");
 
   // Build payload
   var payload = {{
