@@ -169,6 +169,29 @@ async def run_exit_survey_digest():
         logger.error(f"Error in run_exit_survey_digest: {e}")
 
 
+async def run_traffic_spike_check():
+    """
+    DISC-139: Real-Time Traffic Spike Alerts.
+
+    Hourly check for unusual activity:
+    - Compare signups to 7-day average
+    - Alert on 3x+ normal traffic
+    - Alert on 3+ signups/hour or 5+ demos/hour
+    - Enable rapid response to viral moments
+
+    Runs every hour at :30 (offset from other jobs).
+    """
+    from .traffic_spike_alerts import check_traffic_spikes
+
+    logger.info("Running traffic spike check")
+
+    try:
+        await check_traffic_spikes()
+        logger.info("Traffic spike check completed")
+    except Exception as e:
+        logger.error(f"Error in run_traffic_spike_check: {e}")
+
+
 async def check_invoice_reminders():
     """
     INNOV-6: Invoice Automation - Payment Reminders.
@@ -375,8 +398,17 @@ def start_scheduler():
         max_instances=1,
     )
 
+    # DISC-139: Hourly traffic spike alerts - every hour at :30
+    scheduler.add_job(
+        run_traffic_spike_check,
+        trigger=CronTrigger(minute=30),
+        id="traffic_spike_check",
+        replace_existing=True,
+        max_instances=1,
+    )
+
     scheduler.start()
-    logger.info("Background scheduler started with jobs: task_reminders (5min), quote_followups (daily 9am UTC), smart_followups (15min), invoice_reminders (daily 10am UTC), marketing_report (daily 8am UTC), exit_survey_digest (daily 8:30am UTC)")
+    logger.info("Background scheduler started with jobs: task_reminders (5min), quote_followups (daily 9am UTC), smart_followups (15min), invoice_reminders (daily 10am UTC), marketing_report (daily 8am UTC), exit_survey_digest (daily 8:30am UTC), traffic_spike_check (hourly :30)")
 
 
 def stop_scheduler():
