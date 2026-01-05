@@ -36,3 +36,36 @@ dist/
 build/
 *.egg-info/
 node_modules/
+
+# =============================================================================
+# AI Civilization - Runtime State (not application code)
+# =============================================================================
+# These files track AI agent runtime state, logs, and queues.
+# They don't affect the Quoted application and change frequently.
+# Keeping them out of git keeps PRs focused on actual application changes.
+#
+# KEPT IN REPO: CONSTITUTION.md, config/*.md, agents/*/AGENT.md, knowledge/**
+# =============================================================================
+
+# Agent runtime state files
+.ai-company/agents/*/state.md
+.ai-company/agents/code/queue.md
+.ai-company/agents/code/learnings.md
+.ai-company/agents/meta/evolution-log.md
+.ai-company/agents/meta/experiments.md
+.ai-company/agents/meta/proposals.md
+.ai-company/agents/growth/content-queue.md
+.ai-company/agents/support/drafts.md
+.ai-company/agents/support/inbox.md
+.ai-company/agents/ops/fixes.md
+.ai-company/agents/ops/alerts.md
+.ai-company/agents/finance/reports.md
+
+# Run logs and ephemeral state
+.ai-company/state/
+.ai-company/logs/
+.ai-company/queues/
+
+# Iteration tracking (used by Ralph Wiggum loop)
+.ai-company/iteration.md
+.ai-company/agents/*/iteration.md

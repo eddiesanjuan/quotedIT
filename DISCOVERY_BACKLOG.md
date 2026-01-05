@@ -21,6 +21,7 @@
 | Status | Meaning |
 |--------|---------|
 | **READY** | Approved, ready for implementation |
+| **PR_PENDING** | PR created, awaiting test/merge (auto-prioritized by ai-run-deep) |
 | **DISCOVERED** | Proposed, awaiting founder review |
 | **COMPLETE** | Implemented, pending deploy |
 
@@ -32,13 +33,16 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 | Status | Count |
 |--------|-------|
-| READY | 10 |
+| PR_PENDING | 4 |
+| READY | 7 |
 | DISCOVERED | 18 |
-| COMPLETE | 11 |
-| **Active Total** | **39** |
-| Archived (DEPLOYED) | 92+ |
+| COMPLETE | 7 |
+| DEPLOYED | 1 |
+| **Active Total** | **37** |
+| Archived (DEPLOYED) | 96+ |
 
-**Autonomous AI Infrastructure**: DISC-101/102/104/106 DEPLOYED, DISC-103/105 READY
+**PR_PENDING (Priority)**: DISC-103 (#41), DISC-134 (#44), DISC-140 (#42), DISC-144 (#43)
+**Autonomous AI Infrastructure**: DISC-101/102/104/106 DEPLOYED, DISC-105 READY
 **Agent Reliability Engineering**: DISC-107/108 DEPLOYED, DISC-109 DISCOVERED
 **Analytics Pipeline**: DISC-136/137/138/139/141/142/149/151 ALL DEPLOYED (Jan 3-5)
 **Phase II Voice Control**: DISC-042 through DISC-049 (8 tickets) - DISCOVERED, awaiting founder review
@@ -155,7 +159,9 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 ---
 
 
-### DISC-103: Smart Complexity Detection for Task Routing 🎯 INFRASTRUCTURE (READY)
+### DISC-103: Smart Complexity Detection for Task Routing 🎯 INFRASTRUCTURE (PR_PENDING)
+
+**⚠️ PR #41 Open** - Awaiting preview test and merge
 
 **Source**: Founder Request (Eddie, 2025-12-21) - Transcript Insights Analysis
 **Impact**: MEDIUM | **Effort**: M | **Score**: 1.0
@@ -197,7 +203,9 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 
 
-### DISC-134: Social Login (Google, Apple, etc.) 🔐 AUTH (COMPLETE)
+### DISC-134: Social Login (Google, Apple, etc.) 🔐 AUTH (PR_PENDING)
+
+**⚠️ PR #44 Open** - Awaiting preview test and merge
 
 **Source**: Founder Request (Eddie, 2025-12-30)
 **Impact**: MEDIUM | **Effort**: M | **Score**: 1.0
@@ -235,50 +243,9 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 ---
 
-### DISC-140: Autonomous Monitoring Agent 🤖 INFRASTRUCTURE (READY)
+### DISC-144: Evolve Landing Page Messaging - Voice Hook + Depth Reveal 🎯 GROWTH (PR_PENDING)
 
-**Source**: Founder Request (Eddie, 2025-12-30)
-**Impact**: HIGH | **Effort**: L | **Score**: 1.0
-**Sprint Alignment**: AI civilization infrastructure
-
-**Problem**: No autonomous system watching for anomalies. Founder must manually check everything.
-
-**Vision**: An AI agent that continuously monitors Quoted and surfaces issues proactively.
-
-**Proposed Work**:
-1. **Monitoring Agent Architecture**
-   - Scheduled runs (every 15 min for critical, hourly for trends)
-   - State persistence (knows what's "normal")
-   - Alert throttling (don't spam)
-
-2. **Health Checks**:
-   - API response times (alert if >2s average)
-   - Error rates (alert if >1% of requests)
-   - Demo generation success rate
-   - PDF generation success rate
-   - Payment processing health
-
-3. **Business Metrics Watch**:
-   - Traffic anomalies (up or down)
-   - Conversion rate changes
-   - Revenue alerts (payment failures)
-   - Churn signals (users deleting accounts)
-
-4. **Competitive Intelligence**:
-   - Monitor competitor pricing changes
-   - Track competitor feature releases
-   - Alert on industry news mentioning "quoting"
-
-5. **Weekly Summary Email**:
-   - Key metrics vs. previous week
-   - Anomalies detected
-   - Recommended actions
-
-**Success Metric**: Founder wakes up to a briefing, not a crisis
-
----
-
-### DISC-144: Evolve Landing Page Messaging - Voice Hook + Depth Reveal 🎯 GROWTH (COMPLETE)
+**⚠️ PR #43 Open** - Awaiting preview test and merge
 
 **Source**: Founder Request (Eddie, 2026-01-04)
 **Impact**: HIGH | **Effort**: M | **Score**: 1.5
@@ -408,6 +375,72 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 - YES to concrete benefits (time, money, confidence)
 
 **Success Metric**: CTR improvement on image ads; conversion rate improvement from ad → demo; identify top 3 performing hooks
+
+---
+
+### DISC-155: Demo Tour Polish - Scroll Lock + Edit Clarity 🎯 UX (READY)
+
+**Source**: Founder Request (Eddie, 2026-01-05)
+**Impact**: HIGH | **Effort**: S | **Score**: 3.0
+**Sprint Alignment**: Demo conversion polish - first impression quality
+
+**Problem**: The demo tour (Shepherd.js) on try.html has usability issues that undermine the polished impression we want to create:
+1. **Sloppy navigation** - Tour transitions feel janky/unpolished
+2. **Background scrolling** - User can scroll behind tour, causing highlight boxes to misalign with their targets
+3. **Edit confusion** - Tour makes it seem like editing works in demo mode, but learning only happens in real accounts. This misleads users about what they're experiencing.
+
+**Why This Matters**: The demo is the critical conversion moment. If it feels rough or confusing, users won't believe the real product is polished. Every demo visitor should feel "this is professional software."
+
+**Proposed Work**:
+
+1. **Lock scroll during tour** - Prevent background scrolling while tour is active
+   - Add `overflow: hidden` to body during tour
+   - Remove on tour completion/dismissal
+
+2. **Smooth transitions** - Review and fix janky navigation
+   - Ensure proper scrollTo behavior before showing each step
+   - Add slight delay if needed for DOM to settle
+   - Test on mobile (375px) and desktop
+
+3. **Clarify edit limitations** - Make it clear that:
+   - "Editing requires a free account"
+   - "Sign up to see the learning system in action"
+   - Either disable edit buttons in demo OR show clear messaging when clicked
+
+4. **Polish tour copy** - Review each step for clarity and professionalism
+
+**Technical Notes**:
+- Tour library: Shepherd.js
+- Key file: `frontend/try.html`
+- Test on both desktop and mobile viewports
+
+**Success Metric**: Tour feels smooth and professional; no misaligned highlights; users understand demo vs. full account capabilities
+
+---
+
+### DISC-156: Self-Improvement Evolution - Claude Code Level Autonomy 🧠🚀 INFRASTRUCTURE (DEPLOYED)
+
+**Source**: Founder Request (Eddie, 2026-01-05)
+**Impact**: HIGH | **Effort**: XL | **Score**: Strategic (foundational capability)
+**Sprint Alignment**: Autonomous operations - the path to 100% AI-written commits
+
+**Problem**: Current `/ai-run-deep` is 90% of the way to Boris Chernney-level autonomy (100% AI commits over 30 days). The missing 10% is the intelligence layer - self-evaluation, learning from outcomes, and self-modification. The system runs but doesn't get smarter.
+
+**Directive**:
+1. Read `docs/SELF_IMPROVEMENT_EVOLUTION.md` in full
+2. Assess current state of `ai-run-deep.md` and agent infrastructure
+3. Design your own implementation approach based on the 5 gaps identified
+4. Execute phase by phase, starting with highest-impact/lowest-risk
+
+**The roadmap document outlines**:
+- 5 gaps to close (quality gate, outcome memory, self-modifying specs, work-based stops, baton pass)
+- Suggested phasing (but you decide the actual approach)
+- Success metrics to track progress
+- Questions to resolve during implementation
+
+**Decision Authority**: Full autonomy on HOW to implement. The roadmap describes WHAT and WHY - you decide the execution.
+
+**Goal**: Become a fully autonomous, self-improving system that learns from itself, proves itself, and writes all its own code.
 
 ---
 
@@ -707,7 +740,7 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 ---
 
-### DISC-149: Payment Failure Email Notifications 📧 BILLING (COMPLETE)
+### DISC-149: Payment Failure Email Notifications 📧 BILLING (DEPLOYED)
 
 **Summary**: Wired up `invoice.payment_failed` Stripe webhook to notify users and founder:
 - User email: "Your payment failed - please update your card" with retry date and CTA
@@ -718,7 +751,7 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 ---
 
-### DISC-151: Demo Generation Database Tracking 📊 ANALYTICS (COMPLETE)
+### DISC-151: Demo Generation Database Tracking 📊 ANALYTICS (DEPLOYED)
 
 **Summary**: Database tracking for demo quote generations enabling accurate conversion measurement:
 - Added `DemoGeneration` model to track IP, transcription hash, quote metadata, UTM params
@@ -726,6 +759,21 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 - Updated marketing_analytics.py to query actual count instead of hardcoded 0
 
 **PR**: [#40](https://github.com/eddiesanjuan/quotedIT/pull/40)
+
+---
+
+### DISC-140: Autonomous Monitoring Agent 🤖 INFRASTRUCTURE (PR_PENDING)
+
+**⚠️ PR #42 Open** - Awaiting preview test and merge
+
+**Summary**: Comprehensive autonomous monitoring system that proactively watches Quoted:
+- Critical health checks every 15 minutes (API latency, error rates, database, external services)
+- Business metrics monitoring hourly at :45 (traffic anomalies, signup velocity, conversion rates)
+- Daily summary email at 8:15am UTC with system health, metrics vs baselines, alerts, recommendations
+- Alert deduplication (1hr warning, 15min critical)
+- Leverages existing infrastructure: health.py, alerts.py, marketing_analytics.py, traffic_spike_alerts.py
+
+**Files**: `backend/services/monitoring_agent.py`, `backend/services/scheduler.py`, `.ai-company/agents/monitoring/AGENT.md`, `.ai-company/agents/monitoring/state.md`
 
 ---
 
