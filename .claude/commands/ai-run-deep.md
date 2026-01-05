@@ -55,6 +55,12 @@ Parse from $ARGUMENTS:
 - `--no-bundle`: Force separate PRs per ticket (disable auto-bundling)
 - `--skip-prod-test`: Skip production testing after merge (minor changes only)
 
+### Extended Runtime Flags (DISC-156):
+- `--infinite`: Disable iteration limits, run until work complete or critical failure
+- `--resume`: Resume from latest checkpoint file
+- `--resume=FILE`: Resume from specific checkpoint file
+- `--checkpoint-interval=HOURS`: Override default checkpoint interval (default: 8 for normal, 4 for infinite)
+
 **Note**: Full autonomy (test preview → merge → test production → update backlog) is the DEFAULT. Bundling is AUTOMATIC when sensible. Use escape hatches only when you need less automation.
 
 ## Usage Examples
@@ -88,6 +94,11 @@ Parse from $ARGUMENTS:
 # === FULL COMPANY RUNS ===
 /ai-run-deep full --no-skip                        # Force run all agents regardless of queue
 /ai-run-deep overnight                             # Extended overnight run
+
+# === EXTENDED RUNTIME (DISC-156) ===
+/ai-run-deep code --infinite                       # Run until work complete (no iteration limit)
+/ai-run-deep code --resume                         # Resume from latest checkpoint
+/ai-run-deep overnight --infinite                  # Full overnight with infinite runtime
 ```
 
 ## Priority Tiers (Code Agent)
@@ -105,24 +116,234 @@ When processing work, Code Agent follows this priority order:
 
 ## Completion Promises (from Constitution Article IX)
 
-| Agent | Completion Promise | Max Iterations |
-|-------|-------------------|----------------|
-| support | `INBOX PROCESSED AND ESCALATIONS HANDLED` | 5 |
-| ops | `HEALTH GREEN AND INCIDENTS RESOLVED` | 10 |
-| code | `CODE QUEUE DEPLOYED AND PRODUCTION VERIFIED` | 10 |
-| code (--pr-only) | `CODE QUEUE EMPTY AND PRS CREATED` | 3 |
-| growth | `CONTENT QUEUE PROCESSED` | 5 |
-| meta | `WEEKLY ANALYSIS COMPLETE` | 2 |
-| finance | `FINANCIAL SYNC COMPLETE` | 3 |
-| discovery | `DISCOVERY CYCLE COMPLETE` | 3 |
+| Agent | Completion Promise | Default Max | Work-Based Override |
+|-------|-------------------|-------------|---------------------|
+| support | `INBOX PROCESSED AND ESCALATIONS HANDLED` | 5 | Until inbox empty |
+| ops | `HEALTH GREEN AND INCIDENTS RESOLVED` | 10 | Until health green |
+| code | `CODE QUEUE DEPLOYED AND PRODUCTION VERIFIED` | 10 | Until READY queue empty |
+| code (--pr-only) | `CODE QUEUE EMPTY AND PRS CREATED` | 3 | Until READY queue empty |
+| growth | `CONTENT QUEUE PROCESSED` | 5 | Until content queue empty |
+| meta | `WEEKLY ANALYSIS COMPLETE` | 2 | Fixed (weekly cadence) |
+| finance | `FINANCIAL SYNC COMPLETE` | 3 | Fixed (deterministic) |
+| discovery | `DISCOVERY CYCLE COMPLETE` | 3 | Fixed (bounded exploration) |
 
 **Note**: Code agent default is full autonomy (10 iterations) to allow for preview testing, merging, and production verification. Use `--pr-only` for faster runs that just create PRs.
 
 ---
 
+## Work-Based Stop Conditions (DISC-156)
+
+> **Philosophy**: The system should stop when done, not when tired. Boris Chernney's Claude Code ran for days - ours should too.
+
+### Stop Condition Hierarchy
+
+**OLD (Iteration-Based)**:
+```
+Stop when: iteration >= MAX_ITERATIONS
+Problem: May stop with work remaining
+```
+
+**NEW (Work-Based)**:
+```
+Stop when: work is genuinely complete OR critical failure OR human interrupt
+Continue while: work remains AND no critical failures
+```
+
+### Work-Based Logic
+
+```python
+def should_continue(agent, current_iteration):
+    # ALWAYS STOP if:
+    if emergency_stop_file_exists():
+        return False, "EMERGENCY_STOP"
+    if critical_failure_detected():
+        return False, "CRITICAL_FAILURE"
+    if daily_budget_exceeded():  # $50/day limit
+        return False, "BUDGET_EXCEEDED"
+
+    # WORK-BASED CHECKS by agent:
+    if agent == "code":
+        ready_queue = count_ready_tickets()
+        open_prs = count_open_prs()
+        if ready_queue == 0 and open_prs == 0:
+            return False, "WORK_COMPLETE"
+        return True, f"{ready_queue} tickets, {open_prs} PRs remaining"
+
+    if agent == "support":
+        inbox_count = count_inbox_items()
+        if inbox_count == 0:
+            return False, "INBOX_EMPTY"
+        return True, f"{inbox_count} items in inbox"
+
+    if agent == "ops":
+        health_status = check_production_health()
+        if health_status == "GREEN":
+            return False, "HEALTH_GREEN"
+        return True, f"Health: {health_status}"
+
+    # FALLBACK to iteration limit for bounded agents:
+    if current_iteration >= MAX_ITERATIONS[agent]:
+        return False, "MAX_ITERATIONS"
+
+    return True, "Continuing"
+```
+
+### Discovery Fallback
+
+When the code agent's READY queue is empty:
+
+```markdown
+## Empty Queue Handling
+
+IF ready_queue == 0 AND open_prs == 0:
+    1. Check when discovery last ran
+    2. IF discovery ran < 1 hour ago:
+       - Work is genuinely complete
+       - Output completion promise
+    3. IF discovery ran >= 1 hour ago:
+       - Run discovery agent first
+       - Check if new tickets were created
+       - IF new tickets: Continue processing
+       - IF no new tickets: Work complete
+```
+
+This prevents the system from stopping when there might be discoverable work.
+
+### Long-Run Checkpointing
+
+For runs exceeding 8 hours:
+
+```markdown
+## Checkpoint Protocol
+
+CHECKPOINT TRIGGER: Running > 8 hours continuously
+
+CHECKPOINT ACTIONS:
+1. Save full state to `.ai-company/state/CHECKPOINT-{timestamp}.md`
+2. Include:
+   - Current phase and progress
+   - Tickets completed this run
+   - Tickets remaining
+   - Open PRs and their status
+   - Quality evaluation scores
+   - Any blockers or issues
+3. Log checkpoint event
+4. Continue running (checkpoint is a save, not a stop)
+
+RESUME CAPABILITY:
+/ai-run-deep code --resume
+
+This reads the latest checkpoint and continues from that state.
+```
+
+### Checkpoint File Format
+
+```markdown
+# AI Civilization Checkpoint - {timestamp}
+
+## Run Metadata
+- Started: {original start time}
+- Checkpoint Time: {now}
+- Duration: {hours:minutes}
+- Agent: {agent name}
+- Mode: {full-autonomy/pr-only/etc}
+
+## Progress Summary
+- Tickets Completed: {N}
+- Tickets Remaining: {M}
+- PRs Created: {list}
+- PRs Merged: {list}
+- Quality Scores: {avg}
+
+## Current State
+- Active Ticket: DISC-XXX
+- Active Phase: {IMPLEMENTATION/PREVIEW/QUALITY/MERGE/PRODUCTION}
+- Last Action: {description}
+
+## Work Queue (Remaining)
+1. DISC-YYY: {title} - {status}
+2. DISC-ZZZ: {title} - {status}
+
+## To Resume
+1. Read this checkpoint
+2. Continue from Active Phase
+3. Process remaining work queue
+
+## Files Modified Since Checkpoint
+{list of files touched}
+```
+
+### Resume Command
+
+```bash
+# Resume from latest checkpoint
+/ai-run-deep code --resume
+
+# Resume from specific checkpoint
+/ai-run-deep code --resume=CHECKPOINT-20260105-143022.md
+```
+
+Resume logic:
+1. Find latest (or specified) checkpoint file
+2. Load state: current ticket, phase, remaining queue
+3. Skip already-completed work
+4. Continue from interrupted point
+
+### Stop Condition Summary
+
+| Condition | Action | Can Resume? |
+|-----------|--------|-------------|
+| Work complete | Output promise, stop gracefully | N/A (done) |
+| EMERGENCY_STOP | Stop immediately | Yes, after stop cleared |
+| Critical failure | Stop, alert founder | Yes, after fix |
+| Budget exceeded | Stop, wait for reset | Yes, next day |
+| Checkpoint (8hr) | Save state, continue | N/A (doesn't stop) |
+| Human interrupt | Stop, save state | Yes |
+
+### Infinite Runtime Mode
+
+For overnight/weekend runs with `--infinite`:
+
+```bash
+/ai-run-deep code --infinite
+```
+
+This mode:
+1. Disables iteration limits entirely
+2. Runs until work complete OR critical failure OR human stop
+3. Checkpoints every 4 hours (instead of 8)
+4. Sends status update emails every 8 hours (if configured)
+5. Automatically runs discovery when queue empty
+6. Only stops for: EMERGENCY_STOP, budget, or genuine completion
+
+**Constitutional Override**: Even in infinite mode, the $50/day budget limit applies. This prevents runaway costs.
+
+---
+
 ## Instructions
 
-### Step 0: Handle Existing Open PRs (Priority)
+### Step 0: Session Initialization
+
+**BEFORE any work, load session context and check system state.**
+
+#### 0.0 Load Baton Pass
+
+Read `BATON_PASS.md` for accumulated wisdom:
+
+```bash
+# Read the full baton pass document
+cat BATON_PASS.md
+
+# Key sections to absorb:
+# - "Context for Next Session" → What was the last session working on?
+# - "Known Gotchas" → What to avoid?
+# - "Eddie's Preferences" → What matters most?
+# - "Warnings for Next Session" → Any blockers?
+```
+
+**Why This Matters**: The baton pass contains hard-won lessons from previous sessions. Not reading it means potentially repeating mistakes or missing context.
+
+#### 0.1 Handle Existing Open PRs (Priority)
 
 **BEFORE processing any new work, check for and handle existing open PRs.**
 
@@ -336,6 +557,20 @@ You are executing the Quoted {Agent} Agent in deep mode.
 ## Current Iteration
 [Contents of iteration.md or "iteration: 1"]
 
+## Relevant Learnings (from LEARNING_MEMORY.md)
+[Inject relevant sections based on agent type and current task]
+
+### For Code Agent, include:
+- Recent Quality Evaluation failures (avoid repeating)
+- Successful patterns for similar ticket types
+- Any failed patterns to avoid
+- Eddie's relevant preferences
+
+### For Other Agents, include:
+- Agent-specific performance trends
+- Recent failures in their domain
+- Triggered improvement actions
+
 ## Priority Queue (Code Agent only)
 [Sorted list of work items by priority tier]
 
@@ -347,7 +582,8 @@ You are executing the Quoted {Agent} Agent in deep mode.
 ## Your Task
 Execute your responsibilities until complete. When genuinely finished:
 1. Update your state.md with results
-2. Output your completion promise: <promise>{COMPLETION_PROMISE}</promise>
+2. Log outcome to LEARNING_MEMORY.md (success/failure with context)
+3. Output your completion promise: <promise>{COMPLETION_PROMISE}</promise>
 
 If NOT complete after this iteration:
 1. Update state.md with progress
@@ -359,7 +595,44 @@ If NOT complete after this iteration:
 - Only output <promise>...</promise> when work is GENUINELY complete
 - False promises violate Constitution Article IX
 - Iteration files track progress across context resets
+- Always log outcomes to LEARNING_MEMORY.md for future learning
 ```
+
+### Step 7.1: Learning Memory Injection
+
+Before each agent run, extract relevant learnings:
+
+```bash
+# Read LEARNING_MEMORY.md and extract relevant sections
+
+## For Code Agent:
+1. Read "Quality Evaluation History" - last 5 evaluations
+2. Read "Failed Patterns" - any patterns related to current ticket type
+3. Read "Successful Patterns" - applicable approaches
+4. Read "Eddie's Preferences" - always relevant
+
+## Injection Format:
+RELEVANT_LEARNINGS=$(cat <<'EOF'
+### From Recent Quality Evaluations
+- DISC-XXX: Scored 3/5 on Testing - "forgot edge case for empty input"
+- DISC-YYY: Scored 2/5 on Scope - "added unnecessary abstraction"
+
+### Patterns to AVOID (Failed Before)
+- Adding helper functions for one-time operations
+- Over-engineering simple features
+
+### Patterns to FOLLOW (Worked Before)
+- Test edge cases explicitly before creating PR
+- Keep scope minimal - do only what ticket requires
+
+### Eddie's Preferences
+- Mobile-first design (test at 375px)
+- Safe DOM manipulation (createElement, not innerHTML)
+EOF
+)
+```
+
+This creates a feedback loop where past performance influences future behavior.
 
 ### Step 8: Invoke Ralph Wiggum Loop
 
@@ -540,9 +813,151 @@ If ANY preview test fails:
 5. Re-run preview tests
 6. Repeat until all tests pass OR max iterations reached
 
+### Step 9.5: Quality Evaluation (LLM-as-Judge)
+
+**CRITICAL**: Before merge, evaluate implementation quality. This catches architectural mistakes that pass functional tests.
+
+#### 9.5.1 Quality Rubric
+
+Score each dimension 1-5:
+
+```markdown
+## QUALITY EVALUATION - PR #{number}
+
+### 1. COMPLETENESS (1-5)
+Does it fully address the ticket requirements?
+- 5: All requirements met, edge cases handled
+- 4: Core requirements met, minor gaps
+- 3: Most requirements met, some gaps
+- 2: Partial implementation, significant gaps
+- 1: Incomplete, major requirements missing
+
+Score: __
+
+### 2. CODE QUALITY (1-5)
+Clean, readable, maintainable, follows conventions?
+- 5: Excellent - could be a code example
+- 4: Good - follows patterns, minor issues
+- 3: Acceptable - works but could be cleaner
+- 2: Below average - technical debt introduced
+- 1: Poor - hard to read, doesn't follow conventions
+
+Score: __
+
+### 3. SCOPE DISCIPLINE (1-5)
+Stayed focused or over-engineered?
+- 5: Perfect scope - only what was needed
+- 4: Minimal scope creep, justified additions
+- 3: Some unnecessary additions
+- 2: Significant over-engineering
+- 1: Massive scope creep, unrelated changes
+
+Score: __
+
+### 4. EDGE CASES (1-5)
+Error states and boundaries handled?
+- 5: All edge cases considered and handled
+- 4: Most edge cases handled
+- 3: Common edge cases handled
+- 2: Some edge cases missed
+- 1: Edge cases ignored
+
+Score: __
+
+### 5. TESTING (1-5)
+Right things tested at right level?
+- 5: Comprehensive, appropriate test coverage
+- 4: Good coverage, minor gaps
+- 3: Basic happy path tested
+- 2: Minimal testing
+- 1: No tests or broken tests
+
+Score: __
+
+---
+**TOTAL**: __/25
+**THRESHOLD**: 18/25 minimum to proceed
+**VERDICT**: PASS/FAIL
+```
+
+#### 9.5.2 Evaluation Process
+
+```markdown
+BEFORE merging any PR:
+
+1. READ the full diff: `gh pr diff {number}`
+2. REVIEW against the ticket requirements
+3. SCORE each dimension honestly (be critical, not generous)
+4. IF total >= 18: Proceed to merge
+5. IF total < 18: Return to implementation with specific feedback
+
+SCORING NOTES:
+- Be honest, not optimistic. Underscoring is better than overscoring.
+- A "3" is acceptable, not a failure. 4-5 are for genuinely good work.
+- Score what IS, not what you intended.
+```
+
+#### 9.5.3 Quality Failure Handling
+
+If score < 18:
+
+```markdown
+## Quality Evaluation Failed - PR #{number}
+
+**Total Score**: {score}/25 (below 18 threshold)
+**Weakest Dimension**: {dimension with lowest score}
+
+### Specific Issues:
+1. {Issue 1 with line reference}
+2. {Issue 2 with line reference}
+...
+
+### Required Improvements:
+1. {What must change to pass}
+2. {What must change to pass}
+...
+
+### Action:
+1. Do NOT merge
+2. Return to IMPLEMENTATION phase
+3. Fix the specific issues above
+4. Push new commits to same branch
+5. Re-run preview tests
+6. Re-evaluate quality
+7. Retry counter: {N}/3 (max 3 attempts per ticket)
+
+If retry counter = 3 and still failing:
+- Mark ticket as BLOCKED
+- Escalate to founder with quality analysis
+- Continue with other tickets
+```
+
+#### 9.5.4 Quality Logging
+
+Log ALL evaluations to `LEARNING_MEMORY.md` (created in Phase 2):
+
+```markdown
+## [YYYY-MM-DD] DISC-XXX Quality Evaluation
+
+| Dimension | Score | Notes |
+|-----------|-------|-------|
+| Completeness | X | {brief note} |
+| Code Quality | X | {brief note} |
+| Scope Discipline | X | {brief note} |
+| Edge Cases | X | {brief note} |
+| Testing | X | {brief note} |
+| **TOTAL** | **X/25** | **{PASS/FAIL}** |
+
+{If failed: What was the issue? What was the fix?}
+```
+
+This creates a dataset for the meta-agent to analyze patterns.
+
+---
+
 ### Step 10: Merge to Production
 
-Only after preview tests pass:
+Only after preview tests pass AND quality evaluation passes (>= 18/25):
 
 ```bash
 # Merge the PR
@@ -722,11 +1137,12 @@ This is the **DEFAULT** behavior for all code agent runs. Use `--pr-only` to dis
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                    FULL AUTONOMY ORCHESTRATION FLOW                          │
+│                    FULL AUTONOMY ORCHESTRATION FLOW (v3.0)                   │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                              │
 │  PHASE 1: IMPLEMENTATION                                                     │
 │  ├── Read READY queue from DISCOVERY_BACKLOG.md                             │
+│  ├── Inject relevant learnings from LEARNING_MEMORY.md                      │
 │  ├── For each ticket (or bundle if --bundle):                               │
 │  │   ├── Create feature branch                                              │
 │  │   ├── Implement the feature                                              │
@@ -741,10 +1157,21 @@ This is the **DEFAULT** behavior for all code agent runs. Use `--pr-only` to dis
 │  │   ├── Run Playwright test suite on preview URL                           │
 │  │   ├── If FAIL: Fix, push, re-test (up to 3 attempts)                     │
 │  │   └── Record test results in run state file                              │
-│  └── All PRs must pass preview tests before Phase 3                         │
+│  └── All PRs must pass preview tests before Phase 2.5                       │
+│                                                                              │
+│  PHASE 2.5: QUALITY EVALUATION (LLM-as-Judge) **NEW**                       │
+│  ├── For each PR that passed preview tests:                                 │
+│  │   ├── Read full diff: gh pr diff {number}                                │
+│  │   ├── Score against rubric (Completeness, Code Quality, Scope,           │
+│  │   │                         Edge Cases, Testing) - 1-5 each              │
+│  │   ├── THRESHOLD: 18/25 minimum                                           │
+│  │   ├── If score < 18: Return to IMPLEMENTATION with feedback              │
+│  │   ├── Log evaluation to LEARNING_MEMORY.md                               │
+│  │   └── Max 3 retry attempts per ticket                                    │
+│  └── Only PRs scoring ≥18/25 proceed to Phase 3                             │
 │                                                                              │
 │  PHASE 3: MERGE                                                              │
-│  ├── For each PR that passed preview tests:                                 │
+│  ├── For each PR that passed quality evaluation:                            │
 │  │   ├── Merge to main (squash)                                             │
 │  │   ├── Wait for production deployment                                     │
 │  │   └── Record merge in run state file                                     │
@@ -755,7 +1182,8 @@ This is the **DEFAULT** behavior for all code agent runs. Use `--pr-only` to dis
 │  ├── Run Playwright test suite on production                                │
 │  ├── Verify all features work                                               │
 │  ├── If FAIL: Create rollback/hotfix ticket, escalate                       │
-│  └── Record production test results                                         │
+│  ├── Record production test results                                         │
+│  └── Log outcome (success/rollback) to LEARNING_MEMORY.md                   │
 │                                                                              │
 │  PHASE 5: FINALIZATION                                                       │
 │  ├── Batch update DISCOVERY_BACKLOG.md:                                     │
@@ -763,6 +1191,7 @@ This is the **DEFAULT** behavior for all code agent runs. Use `--pr-only` to dis
 │  │   ├── Update summary counts                                              │
 │  │   └── Single commit                                                      │
 │  ├── Move DEPLOYED tickets to DISCOVERY_ARCHIVE.md                          │
+│  ├── Update BATON_PASS.md with session learnings                            │
 │  ├── Update agent state file with final results                             │
 │  └── Output completion promise                                              │
 │                                                                              │
@@ -780,6 +1209,9 @@ This is the **DEFAULT** behavior for all code agent runs. Use `--pr-only` to dis
 | Implementation | Can't implement | Mark ticket BLOCKED, continue others |
 | Preview Test | Feature broken | Fix on branch, push, re-test |
 | Preview Test | 3 attempts fail | Skip ticket, escalate to founder |
+| Quality Eval | Score < 18/25 | Return to implementation with specific feedback |
+| Quality Eval | 3 retries fail | Mark BLOCKED, escalate with quality analysis |
+| Quality Eval | Pattern detected | Log to LEARNING_MEMORY.md for meta-agent analysis |
 | Merge | Conflict | Rebase, resolve, retry |
 | Production Test | Feature broken | Rollback via feature flag or revert |
 | Production Test | Critical failure | EMERGENCY_STOP, alert founder |
@@ -892,6 +1324,10 @@ Backlog Updated: YES (single batch commit)
 | PR only (skip test/merge) | `/ai-run-deep code --pr-only` |
 | Force separate PRs | `/ai-run-deep code --no-bundle` |
 | Skip production testing | `/ai-run-deep code --skip-prod-test` |
+| **Extended Runtime (DISC-156)** | |
+| Run until work complete | `/ai-run-deep code --infinite` |
+| Resume from checkpoint | `/ai-run-deep code --resume` |
+| Long overnight run | `/ai-run-deep overnight --infinite` |
 
 ---
 

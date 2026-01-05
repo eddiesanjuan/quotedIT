@@ -34,10 +34,10 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 | Status | Count |
 |--------|-------|
 | PR_PENDING | 4 |
-| READY | 7 |
+| READY | 8 |
 | DISCOVERED | 18 |
 | COMPLETE | 7 |
-| **Active Total** | **36** |
+| **Active Total** | **37** |
 | Archived (DEPLOYED) | 96+ |
 
 **PR_PENDING (Priority)**: DISC-103 (#41), DISC-134 (#44), DISC-140 (#42), DISC-144 (#43)
@@ -414,6 +414,32 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 - Test on both desktop and mobile viewports
 
 **Success Metric**: Tour feels smooth and professional; no misaligned highlights; users understand demo vs. full account capabilities
+
+---
+
+### DISC-156: Self-Improvement Evolution - Claude Code Level Autonomy 🧠🚀 INFRASTRUCTURE (READY)
+
+**Source**: Founder Request (Eddie, 2026-01-05)
+**Impact**: HIGH | **Effort**: XL | **Score**: Strategic (foundational capability)
+**Sprint Alignment**: Autonomous operations - the path to 100% AI-written commits
+
+**Problem**: Current `/ai-run-deep` is 90% of the way to Boris Chernney-level autonomy (100% AI commits over 30 days). The missing 10% is the intelligence layer - self-evaluation, learning from outcomes, and self-modification. The system runs but doesn't get smarter.
+
+**Directive**:
+1. Read `docs/SELF_IMPROVEMENT_EVOLUTION.md` in full
+2. Assess current state of `ai-run-deep.md` and agent infrastructure
+3. Design your own implementation approach based on the 5 gaps identified
+4. Execute phase by phase, starting with highest-impact/lowest-risk
+
+**The roadmap document outlines**:
+- 5 gaps to close (quality gate, outcome memory, self-modifying specs, work-based stops, baton pass)
+- Suggested phasing (but you decide the actual approach)
+- Success metrics to track progress
+- Questions to resolve during implementation
+
+**Decision Authority**: Full autonomy on HOW to implement. The roadmap describes WHAT and WHY - you decide the execution.
+
+**Goal**: Become a fully autonomous, self-improving system that learns from itself, proves itself, and writes all its own code.
 
 ---
 
