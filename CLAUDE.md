@@ -99,7 +99,41 @@ Always read these before making changes:
 - **DISCOVERED**: AI-proposed, awaiting founder review
 - **READY**: Approved for implementation (includes founder-requested via `/add-ticket`)
 - **COMPLETE**: Implemented, pending deploy
-- **DEPLOYED**: Live in production
+- **DEPLOYED**: Live in production (move to DISCOVERY_ARCHIVE.md)
+
+## Backlog Hygiene Protocol - CRITICAL
+
+**The backlog must ALWAYS reflect reality.** This is non-negotiable.
+
+### When to Update DISCOVERY_BACKLOG.md
+
+Update the backlog whenever you:
+1. **Implement a ticket** → Change status to COMPLETE
+2. **Deploy code** → Change status to DEPLOYED, then move to DISCOVERY_ARCHIVE.md
+3. **Do ad-hoc work** → If it relates to a ticket, update that ticket's status
+4. **Fix bugs or make improvements** → Create a ticket if one doesn't exist, mark appropriately
+5. **End a session** → Verify any work done is reflected in backlog
+
+### Before Every Commit
+
+Ask yourself: *"Does DISCOVERY_BACKLOG.md accurately reflect what I just did?"*
+
+If you implemented DISC-XXX, that ticket should be COMPLETE.
+If you deployed something, those tickets should be DEPLOYED → archived.
+
+### Session-End Checklist
+
+Before the conversation ends (user says thanks, goodbye, or moves on):
+1. List any work completed this session
+2. Verify each piece of work is reflected in DISCOVERY_BACKLOG.md
+3. If counts changed, update the Summary section
+4. If DEPLOYED tickets exist in backlog, migrate to DISCOVERY_ARCHIVE.md
+
+### The Golden Rule
+
+**If code was committed, the backlog MUST be updated in the same session.**
+
+No exceptions. No "I'll do it later." The backlog is the source of truth for what's done and what's pending.
 
 ## External Services
 
