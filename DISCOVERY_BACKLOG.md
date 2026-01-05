@@ -32,9 +32,9 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 | Status | Count |
 |--------|-------|
-| READY | 11 |
+| READY | 10 |
 | DISCOVERED | 18 |
-| COMPLETE | 10 |
+| COMPLETE | 11 |
 | **Active Total** | **39** |
 | Archived (DEPLOYED) | 92+ |
 
@@ -222,7 +222,6 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 ---
 
-
 ### DISC-140: Autonomous Monitoring Agent 🤖 INFRASTRUCTURE (READY)
 
 **Source**: Founder Request (Eddie, 2025-12-30)
@@ -266,7 +265,7 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 ---
 
-### DISC-144: Evolve Landing Page Messaging - Voice Hook + Depth Reveal 🎯 GROWTH (READY)
+### DISC-144: Evolve Landing Page Messaging - Voice Hook + Depth Reveal 🎯 GROWTH (COMPLETE)
 
 **Source**: Founder Request (Eddie, 2026-01-04)
 **Impact**: HIGH | **Effort**: M | **Score**: 1.5
