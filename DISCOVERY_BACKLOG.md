@@ -1,6 +1,6 @@
 # Discovery Backlog
 
-**Last Updated**: 2026-01-04
+**Last Updated**: 2026-01-05
 **Source**: `/quoted-discover` autonomous discovery cycles
 
 ---
@@ -32,13 +32,13 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 | Status | Count |
 |--------|-------|
-| READY | 18 |
+| READY | 15 |
 | DISCOVERED | 15 |
-| COMPLETE | 9 |
+| COMPLETE | 12 |
 | **Active Total** | **42** |
 | Archived (DEPLOYED) | 66+ |
 
-**Autonomous AI Infrastructure**: DISC-101 COMPLETE, DISC-102-106 READY
+**Autonomous AI Infrastructure**: DISC-101 COMPLETE, DISC-102/104/106 COMPLETE (PRs #36-38), DISC-103/105 READY
 **Agent Reliability Engineering**: DISC-107, DISC-108 COMPLETE, DISC-109 DISCOVERED
 **UX Excellence Fixes**: DISC-114-123, DISC-125-130 - DEPLOYED (backlog reconciliation 2025-12-30)
 **Phase II Voice Control**: DISC-042 through DISC-049 (8 tickets) - DISCOVERED, awaiting founder review
@@ -154,18 +154,17 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 ---
 
-### DISC-102: Suggestions vs Updates Framework - Action Risk Classification 🛡️ INFRASTRUCTURE (READY)
+### DISC-102: Suggestions vs Updates Framework - Action Risk Classification 🛡️ INFRASTRUCTURE (COMPLETE)
 
 **Source**: Founder Request (Eddie, 2025-12-21) - Transcript Insights Analysis
 **Impact**: HIGH | **Effort**: M | **Score**: 1.5
+**PR**: #38
 
-**Problem**: Current autonomous execution is binary (execute or don't). Need risk classification.
-
-**Risk Classification**:
-- **LOW**: Internal analysis, drafts, DB reads → Auto-execute
-- **MEDIUM**: Content updates, comms to known contacts → Execute + log
-- **HIGH**: External comms, financial, publishing → Suggest only
-- **PROHIBITED**: Security changes, credentials → Block + alert
+**Implementation Summary**:
+- Added docs/ACTION_RISK_CLASSIFICATION.md with full framework
+- Added .ai-company/config/risk_overrides.yaml for pattern-based overrides
+- 4-level classification: PROHIBITED, HIGH, MEDIUM, LOW
+- Integrates with DISC-101 (LLM-Judge) and DISC-106 (Safety Net)
 
 ---
 
@@ -180,14 +179,17 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 ---
 
-### DISC-104: Work Isolation via Git Worktrees 🌳 INFRASTRUCTURE (READY)
+### DISC-104: Work Isolation via Git Worktrees 🌳 INFRASTRUCTURE (COMPLETE)
 
 **Source**: Founder Request (Eddie, 2025-12-21) - Transcript Insights Analysis
 **Impact**: HIGH | **Effort**: L | **Score**: 2.0
+**PR**: #36
 
-**Problem**: Tasks execute in shared context. Failures contaminate other work. Can't run parallel.
-
-**Solution**: Each task gets isolated git worktree. Merge only on success. Easy rollback.
+**Implementation Summary**:
+- Added docs/GIT_WORKTREE_ISOLATION.md with complete guide
+- Added scripts/worktree.sh helper script (create/complete/abort/list/prune)
+- Enables parallel agent execution in isolated directories
+- Instant rollback by deleting worktree
 
 ---
 
@@ -202,14 +204,20 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 ---
 
-### DISC-106: Safety Net Architecture - Defense in Depth 🛡️ INFRASTRUCTURE (READY)
+### DISC-106: Safety Net Architecture - Defense in Depth 🛡️ INFRASTRUCTURE (COMPLETE)
 
 **Source**: Founder Request (Eddie, 2025-12-21) - Transcript Insights Analysis
 **Impact**: HIGH | **Effort**: L | **Score**: 2.0
+**PR**: #37
 
-**Problem**: Autonomous systems need defense-in-depth.
-
-**Five Layers**: Cooldowns, Threshold Scores, Version History, Human Override, Anomaly Detection
+**Implementation Summary**:
+- Added docs/SAFETY_NET_ARCHITECTURE.md with complete 5-layer design
+- Added scripts/safety_check.sh pre-action validator
+- Layer 1: Cooldowns & Rate Limits
+- Layer 2: Threshold Scores (integrates with DISC-101)
+- Layer 3: Version History (git-based rollback)
+- Layer 4: Human Override (EMERGENCY_STOP, /ai-stop)
+- Layer 5: Anomaly Detection
 
 ---
 
