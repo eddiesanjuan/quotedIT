@@ -22,6 +22,9 @@ This document is **different from LEARNING_MEMORY.md**:
 | 2026-01-05 | LEARNING_MEMORY.md in project root | In .ai-company/, in docs/ | Maximum visibility, all agents read | Never (it's fine here) |
 | 2026-01-05 | Quality Gate threshold 18/25 | 15, 20 | 18 = "B grade" - not perfect but solid | If too many false negatives |
 | 2026-01-05 | 5 quality dimensions (1-5 each) | 3 dimensions, 10-point scale | Granular enough, fast to score | If missing important aspects |
+| 2026-01-05 | Decay scoring (weekly -1) | No decay, faster decay | Weekly is observable, patterns stay ~5 weeks | If patterns age too fast/slow |
+| 2026-01-05 | Category-based retrieval | Semantic search, full injection | Simple, no infra, deterministic | If categories don't capture relevance |
+| 2026-01-05 | 15 patterns per agent limit | 10, 25, unlimited | 15 is enough history without bloat | If running out of space for valuable patterns |
 
 ### Why These Decisions Matter
 
@@ -151,6 +154,29 @@ If not all three → Don't change it.
 
 > Last 5 sessions: what was done, what was learned. Newest first.
 
+### Session 6: 2026-01-05 (Guardrails) - COMPLETE
+
+**Goal**: Add decay scoring, size limits, and category-based retrieval to prevent learning memory bloat
+
+**Accomplished**:
+1. LEARNING_MEMORY.md v2.0: Added scoring system (1-10), category-based sections, hard limits per section
+2. Created LEARNING_ARCHIVE.md for aged-out patterns
+3. Added Step 0.5 (Maintenance) to ai-run-deep.md: Weekly decay, pruning, limit enforcement
+4. Updated Step 7.1 (Injection): Category-based retrieval with score filtering and token limits
+
+**Learned**:
+- Original implementation had no mechanism to prevent unlimited growth → Now has explicit limits
+- "Inject relevant patterns" was too vague → Now has concrete scoring rules and category matching
+- Decay scoring (weekly -1) ensures only genuinely useful patterns stay active
+- Architecture decision: Keep markdown-based (auditable, git-friendly) vs database/vector store
+
+**Carry Forward**:
+- Watch first maintenance run (due 2026-01-12) to validate decay works correctly
+- Observe pattern score evolution over 2-3 weeks
+- May need to tune limits (15 per agent, 20 evaluations, 30 sessions) based on actual usage
+
+---
+
 ### Session 5: 2026-01-05 (DISC-156) - COMPLETE
 
 **Goal**: Implement self-improvement evolution (5 gaps to close)
@@ -203,33 +229,32 @@ If not all three → Don't change it.
 
 ### Immediate Context
 
-**Last Worked On**: DISC-156 (Self-Improvement Evolution)
-**Status**: DEPLOYED - All 5 phases implemented, PR merged to main
+**Last Worked On**: Learning Memory Guardrails (decay scoring, size limits, retrieval)
+**Status**: COMPLETE - All guardrails implemented and committed
 **Open PRs**: 4 (DISC-134 #44, DISC-144 #43, DISC-140 #42, DISC-103 #41)
 
 ### What To Do Next
 
 1. Address 4 older open PRs (prioritize by age: DISC-103 oldest)
 2. Test quality gate on a simple READY ticket to validate rubric
-3. Monitor first meta-agent self-improvement trigger
-4. Run `/ai-run-deep` to see new quality gate in action
+3. Watch first maintenance run (due 2026-01-12) - validates decay scoring
+4. Run `/ai-run-deep` to see full system in action
 
 ### Important Files Modified This Session
 
 | File | Change | Status |
 |------|--------|--------|
-| .claude/commands/ai-run-deep.md | Quality gate, learning injection, work-based stops | Modified |
-| LEARNING_MEMORY.md | New file - outcome memory system | Created |
-| BATON_PASS.md | New file - cross-session wisdom | Created |
-| .ai-company/agents/meta/AGENT.md | Self-modifying spec capability | Modified |
-| docs/SELF_IMPROVEMENT_EVOLUTION.md | Implementation notes | Modified |
+| LEARNING_MEMORY.md | v2.0 - Added decay scoring, categories, hard limits | Modified |
+| LEARNING_ARCHIVE.md | New file - cold storage for aged-out patterns | Created |
+| .claude/commands/ai-run-deep.md | Step 0.5 (Maintenance), Step 7.1 (Category retrieval) | Modified |
+| BATON_PASS.md | Session 6 summary added | Modified |
 
 ### Warnings for Next Session
 
-- 4 older open PRs may have merge conflicts with main (DISC-156 just merged)
-- Quality gate hasn't been tested yet - first `/ai-run-deep` run is the real test
-- Self-modifying agent capability is new - monitor first trigger closely
-- DISC-156 scored 23/25 on quality gate meta-test (validated the rubric works)
+- 4 older open PRs may have merge conflicts with main
+- First maintenance run due 2026-01-12 - watch for decay scoring issues
+- Limits (15 per agent, 20 evaluations) are untested - may need tuning
+- Category-based retrieval logic is new - verify it selects relevant patterns
 
 ---
 

@@ -383,6 +383,64 @@ These tickets have open PRs and should be processed before READY tickets.
 1. PR_PENDING tickets (existing PRs needing test/merge)
 2. READY tickets (new implementation work)
 
+#### 0.5 Learning Memory Maintenance
+
+**Weekly maintenance prevents bloat and keeps patterns relevant.**
+
+```bash
+# Read maintenance metadata from LEARNING_MEMORY.md
+LAST_MAINTENANCE=$(grep "last_maintenance:" LEARNING_MEMORY.md | cut -d: -f2 | xargs)
+NEXT_DUE=$(grep "next_maintenance_due:" LEARNING_MEMORY.md | cut -d: -f2 | xargs)
+TODAY=$(date +%Y-%m-%d)
+
+# Check if maintenance is due (7+ days since last)
+if [[ "$TODAY" > "$NEXT_DUE" ]] || [[ "$TODAY" == "$NEXT_DUE" ]]; then
+  echo "Learning memory maintenance due - running cleanup"
+  MAINTENANCE_REQUIRED=true
+else
+  echo "Learning memory maintenance not due until $NEXT_DUE"
+  MAINTENANCE_REQUIRED=false
+fi
+```
+
+**IF MAINTENANCE_REQUIRED:**
+
+1. **Decay Pattern Scores**:
+   - For each pattern in "Successful Patterns" sections:
+     - Subtract 1 from Score column
+     - If Score <= 0: Move to LEARNING_ARCHIVE.md
+
+2. **Enforce Section Limits**:
+   ```
+   | Section | Limit | Action if Exceeded |
+   |---------|-------|-------------------|
+   | Successful Patterns (per agent) | 15 | Archive lowest-scored |
+   | Failed Patterns (per type) | 15 | Archive oldest |
+   | Quality Evaluation History | 20 | Archive oldest |
+   | Session Outcomes | 30 | Archive oldest |
+   ```
+
+3. **Archive Process**:
+   ```markdown
+   # Move to LEARNING_ARCHIVE.md with format:
+   | Archived Date | Original Date | Category | Pattern | Final Score | Reason |
+   | {today} | {original_date} | {category} | {pattern} | {score} | Decay/Limit |
+   ```
+
+4. **Update Metadata**:
+   ```yaml
+   last_maintenance: {today}
+   next_maintenance_due: {today + 7 days}
+   total_entries: {count}
+   archive_count: {count}
+   ```
+
+5. **Reset Quality Dimension Counters** (if 30+ days old):
+   - Reset "Fail Count (30 days)" to 0 for all dimensions
+   - Clear "Last Failed" dates older than 30 days
+
+**WHY THIS MATTERS**: Without maintenance, LEARNING_MEMORY.md grows unbounded. Decay scoring ensures only relevant patterns remain active while preserving historical data in the archive.
+
 ---
 
 ### Step 1: Parse Arguments
@@ -600,39 +658,109 @@ If NOT complete after this iteration:
 
 ### Step 7.1: Learning Memory Injection
 
-Before each agent run, extract relevant learnings:
+**Category-based retrieval ensures relevant patterns without context bloat.**
+
+Before each agent run, extract relevant learnings using these rules:
+
+#### Determine Ticket Category
+
+First, classify the current ticket:
+
+```
+TICKET_CATEGORIES = {
+  "Frontend/UX": keywords like "button", "modal", "CSS", "landing", "mobile", "UI"
+  "Backend/API": keywords like "endpoint", "API", "database", "webhook", "server"
+  "PDF/Formatting": keywords like "PDF", "quote", "invoice", "template", "format"
+  "Auth/Billing": keywords like "login", "Stripe", "payment", "subscription", "auth"
+  "Infrastructure/Meta": keywords like "deploy", "CI", "agent", "config", "system"
+}
+
+# Match ticket description to category
+CURRENT_CATEGORY = best_match(ticket_description, TICKET_CATEGORIES)
+CURRENT_AGENT = agent_type  # code, discovery, ops, etc.
+```
+
+#### Score-Based Retrieval
+
+```
+RETRIEVAL RULES (from LEARNING_MEMORY.md):
+
+1. HIGH_VALUE patterns (Score >= 7):
+   → ALWAYS inject regardless of category
+
+2. MEDIUM_VALUE patterns (Score 4-6):
+   → Inject ONLY IF:
+     - Pattern is from same agent type (e.g., Code Agent patterns for code work), OR
+     - Pattern is from same ticket category (e.g., PDF patterns for PDF ticket)
+
+3. LOW_VALUE patterns (Score 1-3):
+   → Inject ONLY IF:
+     - Pattern directly mentions current ticket ID, OR
+     - Pattern description contains exact keyword match to ticket
+
+4. ARCHIVED patterns (Score 0):
+   → NEVER inject (these are in LEARNING_ARCHIVE.md)
+```
+
+#### What to Extract
 
 ```bash
-# Read LEARNING_MEMORY.md and extract relevant sections
+# From LEARNING_MEMORY.md, extract:
 
-## For Code Agent:
-1. Read "Quality Evaluation History" - last 5 evaluations
-2. Read "Failed Patterns" - any patterns related to current ticket type
-3. Read "Successful Patterns" - applicable approaches
-4. Read "Eddie's Preferences" - always relevant
+## ALWAYS INJECT (regardless of score):
+- "Eddie's Preferences (Inferred)" table → All rows marked "Always Inject: Yes"
+- "Quality Dimension Failures" → Any dimension with Fail Count >= 2
+- Last 3 entries from "Quality Evaluation History"
 
-## Injection Format:
+## CATEGORY-FILTERED:
+- "Successful Patterns > By Agent Type > {CURRENT_AGENT}" → Score >= 4 patterns
+- "Successful Patterns > By Ticket Category > {CURRENT_CATEGORY}" → Score >= 4 patterns
+- "Failed Patterns > By Failure Type" → Any with Repeat Count >= 2
+
+## CONTEXT LIMIT:
+- Max 10 patterns total (prioritize by score, then recency)
+- Max 500 tokens for injection block
+```
+
+#### Injection Format
+
+```markdown
 RELEVANT_LEARNINGS=$(cat <<'EOF'
-### From Recent Quality Evaluations
-- DISC-XXX: Scored 3/5 on Testing - "forgot edge case for empty input"
-- DISC-YYY: Scored 2/5 on Scope - "added unnecessary abstraction"
-
-### Patterns to AVOID (Failed Before)
-- Adding helper functions for one-time operations
-- Over-engineering simple features
-
-### Patterns to FOLLOW (Worked Before)
-- Test edge cases explicitly before creating PR
-- Keep scope minimal - do only what ticket requires
-
-### Eddie's Preferences
+### ALWAYS APPLY (Eddie's Preferences)
 - Mobile-first design (test at 375px)
 - Safe DOM manipulation (createElement, not innerHTML)
+- Avoid over-engineering - only make requested changes
+- Lean, maintainable systems
+
+### QUALITY WARNINGS (Recent Issues)
+{If any dimension has Fail Count >= 2}
+- ⚠️ {Dimension}: Failed {N} times recently. Pay extra attention.
+
+### PATTERNS TO FOLLOW (Score {N}/10)
+{From matching agent + category, highest scored first}
+- {Pattern}: {Why it worked}
+
+### PATTERNS TO AVOID (Repeat Count: {N})
+{From failed patterns with repeat count >= 2}
+- {Failure}: {Lesson learned}
+
+### RECENT EVALUATIONS (Context)
+{Last 3 quality evaluations, summarized}
+- DISC-XXX: {score}/25 - {key takeaway}
 EOF
 )
 ```
 
-This creates a feedback loop where past performance influences future behavior.
+#### Why Category-Based Retrieval Matters
+
+| Old Approach | New Approach |
+|--------------|--------------|
+| Read everything | Filter by relevance |
+| All patterns injected | Only Score >= 4 for category |
+| Context bloat over time | Max 10 patterns, 500 tokens |
+| No decay | Weekly decay keeps fresh |
+
+This creates a focused feedback loop where relevant past performance influences future behavior without overwhelming context.
 
 ### Step 8: Invoke Ralph Wiggum Loop
 
