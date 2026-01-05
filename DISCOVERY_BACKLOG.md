@@ -32,13 +32,13 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 | Status | Count |
 |--------|-------|
-| READY | 11 |
+| READY | 10 |
 | DISCOVERED | 18 |
-| COMPLETE | 10 |
+| COMPLETE | 11 |
 | **Active Total** | **39** |
 | Archived (DEPLOYED) | 92+ |
 
-**Autonomous AI Infrastructure**: DISC-101/102/104/106 DEPLOYED, DISC-103/105 READY
+**Autonomous AI Infrastructure**: DISC-101/102/104/106 DEPLOYED, DISC-103 COMPLETE, DISC-105 READY
 **Agent Reliability Engineering**: DISC-107/108 DEPLOYED, DISC-109 DISCOVERED
 **Analytics Pipeline**: DISC-136/137/138/139/141/142/149/151 ALL DEPLOYED (Jan 3-5)
 **Phase II Voice Control**: DISC-042 through DISC-049 (8 tickets) - DISCOVERED, awaiting founder review
@@ -155,18 +155,6 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 ---
 
 
-### DISC-103: Smart Complexity Detection for Task Routing 🎯 INFRASTRUCTURE (READY)
-
-**Source**: Founder Request (Eddie, 2025-12-21) - Transcript Insights Analysis
-**Impact**: MEDIUM | **Effort**: M | **Score**: 1.0
-
-**Problem**: All tasks treated similarly. Simple tasks over-engineered, complex tasks under-scoped.
-
-**Routing**: 85%+ confidence → Execute directly | 60-85% → Checkpoints | <60% → Plan first
-
----
-
-
 ### DISC-105: Learning Memory System - Dual Architecture 🧠 INFRASTRUCTURE (READY)
 
 **Source**: Founder Request (Eddie, 2025-12-21) - Transcript Insights Analysis
@@ -197,7 +185,7 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 
 
-### DISC-134: Social Login (Google, Apple, etc.) 🔐 AUTH (READY)
+### DISC-134: Social Login (Google, Apple, etc.) 🔐 AUTH (COMPLETE)
 
 **Source**: Founder Request (Eddie, 2025-12-30)
 **Impact**: MEDIUM | **Effort**: M | **Score**: 1.0
@@ -205,12 +193,20 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 **Problem**: Currently users must use magic link (email-based) authentication. While frictionless, many users expect and prefer OAuth/social login options they use everywhere else. "Sign in with Google" is often perceived as faster and more trustworthy than entering an email address.
 
-**Proposed Work**:
-1. **Google OAuth Integration** - Add "Sign in with Google" button to auth flow (highest priority, most common)
-2. **Apple Sign In** - Add Apple OAuth for iOS users (required for App Store if we ever go mobile)
-3. **UI Updates** - Auth form redesign with social buttons + "or continue with email" divider
-4. **Account Linking** - Handle edge case where user has both email and social accounts
-5. **PostHog Tracking** - Track auth method chosen to measure adoption
+**Implementation** (2026-01-05):
+1. **Backend**: `backend/api/social_auth.py` - Google OAuth endpoint with JWT verification
+2. **Frontend**: Updated `frontend/start.html` with Google Sign-In button + "or continue with email" divider
+3. **Config**: Added `GOOGLE_OAUTH_CLIENT_ID` environment variable
+4. **Analytics**: PostHog tracking for google_signin_clicked, google_signup_completed, google_login_completed
+
+**To Enable**:
+1. Create OAuth 2.0 credentials in Google Cloud Console
+2. Add `GOOGLE_OAUTH_CLIENT_ID` to Railway environment variables
+3. Configure authorized JavaScript origins (https://quoted.it.com)
+
+**Future Work** (not in this PR):
+- Apple Sign In for iOS users
+- Account linking for existing email users
 
 **Technical Notes**:
 - Google: OAuth 2.0 via Google Cloud Console
@@ -581,6 +577,16 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 ---
 
 ## COMPLETE - Pending Deploy
+
+### DISC-103: Smart Complexity Detection for Task Routing 🎯 INFRASTRUCTURE (COMPLETE)
+
+**Summary**: Implemented complexity scoring system that analyzes task descriptions for complexity signals. Returns confidence score (0-100) and recommended approach. Routing: 85%+ confidence = direct execution, 60-85% = checkpoints, <60% = plan first.
+
+**Files**:
+- `.ai-company/config/complexity_detection.py` - Scoring engine with `score_task_complexity()` function
+- `.ai-company/config/complexity_signals.yaml` - Configurable signal patterns and weights
+
+---
 
 ### DISC-101: LLM-as-Judge for Autonomous Cycles 🧠 INFRASTRUCTURE (COMPLETE)
 
