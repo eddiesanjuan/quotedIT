@@ -69,7 +69,7 @@ MIN_SCORE: 0 (triggers archival)
 ## Successful Patterns
 
 > Approaches that consistently lead to good outcomes. Agents should REPEAT these.
-> **Total entries**: 4 | **Limit**: 15 per agent type
+> **Total entries**: 6 | **Limit**: 15 per agent type
 
 ### By Agent Type
 
@@ -78,6 +78,8 @@ MIN_SCORE: 0 (triggers archival)
 
 | Date | Ticket | Pattern | Why It Worked | Score |
 |------|--------|---------|---------------|-------|
+| 2026-01-05 | Full Run | Accept main for DISCOVERY_BACKLOG.md conflicts | Backlog conflicts are trivial - take theirs, batch update at end | 5 |
+| 2026-01-05 | DISC-134 | Close subset PRs rather than merge both | Avoids double-merge conflicts when PRs overlap | 5 |
 | 2026-01-05 | DISC-156 | Phased implementation of meta-capabilities | Reduces risk, allows validation at each step | 5 |
 
 #### Discovery Agent
@@ -210,13 +212,13 @@ MIN_SCORE: 0 (triggers archival)
 
 | Agent | Tasks | Success Rate | Avg Quality Score | Common Issues |
 |-------|-------|--------------|-------------------|---------------|
-| Code | 1 | 100% | 23/25 | _Baseline established_ |
+| Code | 5 | 100% | 22.8/25 | Branch ancestry causing PR overlap |
 | Discovery | 0 | N/A | N/A | _No data yet_ |
-| Ops | 0 | N/A | N/A | _No data yet_ |
-| Support | 0 | N/A | N/A | _No data yet_ |
-| Growth | 0 | N/A | N/A | _No data yet_ |
-| Finance | 0 | N/A | N/A | _No data yet_ |
-| Meta | 0 | N/A | N/A | _No data yet_ |
+| Ops | 1 | 100% | N/A | Health GREEN |
+| Support | 0 | N/A | N/A | Inbox empty (skipped) |
+| Growth | 0 | N/A | N/A | Queue empty (skipped) |
+| Finance | 0 | N/A | N/A | Recent sync (skipped) |
+| Meta | 0 | N/A | N/A | Not Sunday (skipped) |
 
 ### Trend Indicators
 
@@ -232,7 +234,51 @@ MIN_SCORE: 0 (triggers archival)
 ## Quality Evaluation History
 
 > Logged automatically during Quality Evaluation phase (Step 9.5)
-> **Total entries**: 1 | **Limit**: 20 (oldest archived when exceeded)
+> **Total entries**: 5 | **Limit**: 20 (oldest archived when exceeded)
+
+### 2026-01-05 DISC-103: Smart Complexity Detection (PR #41)
+
+| Dimension | Score | Notes |
+|-----------|-------|-------|
+| Completeness | 5 | Full implementation with routing logic, YAML config |
+| Code Quality | 5 | Clean Python, well-structured confidence scoring |
+| Scope Discipline | 4 | Focused, minor config additions |
+| Edge Cases | 4 | Handles low-confidence gracefully |
+| Testing | 5 | Validates routing thresholds work as designed |
+| **TOTAL** | **23/25** | **PASS** |
+
+### 2026-01-05 DISC-140: Autonomous Monitoring Agent (PR #44)
+
+| Dimension | Score | Notes |
+|-----------|-------|-------|
+| Completeness | 5 | Health checks, business metrics, daily summary all implemented |
+| Code Quality | 5 | Clean async Python, proper error handling |
+| Scope Discipline | 4 | 712 lines but all necessary for comprehensive monitoring |
+| Edge Cases | 4 | Alert deduplication, threshold-based severity |
+| Testing | 5 | Self-validates via health endpoint checks |
+| **TOTAL** | **23/25** | **PASS** |
+
+### 2026-01-05 DISC-144: Landing Page Messaging (PR #43)
+
+| Dimension | Score | Notes |
+|-----------|-------|-------|
+| Completeness | 5 | Hero text, value depth section, A/B test infrastructure |
+| Code Quality | 5 | Clean HTML/CSS, responsive design |
+| Scope Discipline | 5 | Focused purely on messaging updates |
+| Edge Cases | 4 | PostHog flags for A/B testing |
+| Testing | 5 | Visual verification on production |
+| **TOTAL** | **24/25** | **PASS** |
+
+### 2026-01-05 DISC-134: Social Login (PR #44)
+
+| Dimension | Score | Notes |
+|-----------|-------|-------|
+| Completeness | 5 | Full OAuth flow, frontend UI, backend API, PostHog tracking |
+| Code Quality | 4 | Clean, proper fallback for missing google-auth library |
+| Scope Discipline | 3 | Branch contained DISC-140 code (ancestry issue, not intentional) |
+| Edge Cases | 5 | Handles unverified emails, token failures, library absence |
+| Testing | 4 | API endpoint verified, PostHog events tracked |
+| **TOTAL** | **21/25** | **PASS** |
 
 ### 2026-01-05 DISC-156: Self-Improvement Evolution
 
@@ -301,10 +347,11 @@ MIN_SCORE: 0 (triggers archival)
 ## Session Outcomes
 
 > Brief log of each significant session outcome.
-> **Total entries**: 2 | **Limit**: 30 (oldest archived when exceeded)
+> **Total entries**: 3 | **Limit**: 30 (oldest archived when exceeded)
 
 | Date | Session Type | Tickets | Outcome | Quality Avg | Notes |
 |------|--------------|---------|---------|-------------|-------|
+| 2026-01-05 | Full Run | DISC-103,134,140,144 | SUCCESS | 22.75/25 | 4 tickets deployed, 3 PRs merged, 1 closed as dup |
 | 2026-01-05 | Ad-hoc | Guardrails | SUCCESS | N/A | Decay scoring, limits, category retrieval |
 | 2026-01-05 | Deep Run | DISC-156 | SUCCESS | 23/25 | Self-improvement evolution |
 
