@@ -34,9 +34,10 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 | Status | Count |
 |--------|-------|
 | PR_PENDING | 4 |
-| READY | 8 |
+| READY | 7 |
 | DISCOVERED | 18 |
 | COMPLETE | 7 |
+| DEPLOYED | 1 |
 | **Active Total** | **37** |
 | Archived (DEPLOYED) | 96+ |
 
@@ -417,7 +418,7 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 ---
 
-### DISC-156: Self-Improvement Evolution - Claude Code Level Autonomy 🧠🚀 INFRASTRUCTURE (READY)
+### DISC-156: Self-Improvement Evolution - Claude Code Level Autonomy 🧠🚀 INFRASTRUCTURE (DEPLOYED)
 
 **Source**: Founder Request (Eddie, 2026-01-05)
 **Impact**: HIGH | **Effort**: XL | **Score**: Strategic (foundational capability)
