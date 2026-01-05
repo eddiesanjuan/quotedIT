@@ -587,8 +587,41 @@ def start_scheduler():
         max_instances=1,
     )
 
+    # DISC-140: Monitoring Agent - Critical health checks every 15 minutes
+    from .monitoring_agent import (
+        run_critical_health_checks,
+        run_business_metrics_check,
+        run_daily_monitoring_summary,
+    )
+
+    scheduler.add_job(
+        run_critical_health_checks,
+        trigger=IntervalTrigger(minutes=15),
+        id="monitoring_critical_health",
+        replace_existing=True,
+        max_instances=1,
+    )
+
+    # DISC-140: Monitoring Agent - Business metrics check hourly at :45
+    scheduler.add_job(
+        run_business_metrics_check,
+        trigger=CronTrigger(minute=45),
+        id="monitoring_business_metrics",
+        replace_existing=True,
+        max_instances=1,
+    )
+
+    # DISC-140: Monitoring Agent - Daily summary at 8:15am UTC (after marketing report)
+    scheduler.add_job(
+        run_daily_monitoring_summary,
+        trigger=CronTrigger(hour=8, minute=15),
+        id="monitoring_daily_summary",
+        replace_existing=True,
+        max_instances=1,
+    )
+
     scheduler.start()
-    logger.info("Background scheduler started with jobs: task_reminders (5min), quote_followups (daily 9am UTC), smart_followups (15min), invoice_reminders (daily 10am UTC), marketing_report (daily 8am UTC), exit_survey_digest (daily 8:30am UTC), traffic_spike_check (hourly :30), feedback_drip (daily 2pm UTC), daily_health_check (daily 6am UTC)")
+    logger.info("Background scheduler started with jobs: task_reminders (5min), quote_followups (daily 9am UTC), smart_followups (15min), invoice_reminders (daily 10am UTC), marketing_report (daily 8am UTC), exit_survey_digest (daily 8:30am UTC), traffic_spike_check (hourly :30), feedback_drip (daily 2pm UTC), daily_health_check (daily 6am UTC), monitoring_critical_health (15min), monitoring_business_metrics (hourly :45), monitoring_daily_summary (daily 8:15am UTC)")
 
 
 def stop_scheduler():

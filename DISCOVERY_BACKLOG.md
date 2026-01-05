@@ -32,9 +32,9 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 | Status | Count |
 |--------|-------|
-| READY | 11 |
+| READY | 10 |
 | DISCOVERED | 18 |
-| COMPLETE | 10 |
+| COMPLETE | 11 |
 | **Active Total** | **39** |
 | Archived (DEPLOYED) | 92+ |
 
@@ -219,50 +219,6 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 - Consider: passkey support for future (WebAuthn)
 
 **Success Metric**: 30%+ of new signups use social login within 30 days of launch
-
----
-
-
-### DISC-140: Autonomous Monitoring Agent 🤖 INFRASTRUCTURE (READY)
-
-**Source**: Founder Request (Eddie, 2025-12-30)
-**Impact**: HIGH | **Effort**: L | **Score**: 1.0
-**Sprint Alignment**: AI civilization infrastructure
-
-**Problem**: No autonomous system watching for anomalies. Founder must manually check everything.
-
-**Vision**: An AI agent that continuously monitors Quoted and surfaces issues proactively.
-
-**Proposed Work**:
-1. **Monitoring Agent Architecture**
-   - Scheduled runs (every 15 min for critical, hourly for trends)
-   - State persistence (knows what's "normal")
-   - Alert throttling (don't spam)
-
-2. **Health Checks**:
-   - API response times (alert if >2s average)
-   - Error rates (alert if >1% of requests)
-   - Demo generation success rate
-   - PDF generation success rate
-   - Payment processing health
-
-3. **Business Metrics Watch**:
-   - Traffic anomalies (up or down)
-   - Conversion rate changes
-   - Revenue alerts (payment failures)
-   - Churn signals (users deleting accounts)
-
-4. **Competitive Intelligence**:
-   - Monitor competitor pricing changes
-   - Track competitor feature releases
-   - Alert on industry news mentioning "quoting"
-
-5. **Weekly Summary Email**:
-   - Key metrics vs. previous week
-   - Anomalies detected
-   - Recommended actions
-
-**Success Metric**: Founder wakes up to a briefing, not a crisis
 
 ---
 
@@ -714,6 +670,19 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 - Updated marketing_analytics.py to query actual count instead of hardcoded 0
 
 **PR**: [#40](https://github.com/eddiesanjuan/quotedIT/pull/40)
+
+---
+
+### DISC-140: Autonomous Monitoring Agent 🤖 INFRASTRUCTURE (COMPLETE)
+
+**Summary**: Comprehensive autonomous monitoring system that proactively watches Quoted:
+- Critical health checks every 15 minutes (API latency, error rates, database, external services)
+- Business metrics monitoring hourly at :45 (traffic anomalies, signup velocity, conversion rates)
+- Daily summary email at 8:15am UTC with system health, metrics vs baselines, alerts, recommendations
+- Alert deduplication (1hr warning, 15min critical)
+- Leverages existing infrastructure: health.py, alerts.py, marketing_analytics.py, traffic_spike_alerts.py
+
+**Files**: `backend/services/monitoring_agent.py`, `backend/services/scheduler.py`, `.ai-company/agents/monitoring/AGENT.md`, `.ai-company/agents/monitoring/state.md`
 
 ---
 
