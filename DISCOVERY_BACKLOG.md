@@ -988,6 +988,43 @@ Landing → Try Page View → Input/Recording Started → Quote Generated (or Ab
 
 ---
 
+### DISC-146: Founder Activity Notifications 📬 OPERATIONS (COMPLETE)
+
+**Summary**: Comprehensive founder visibility into all Quoted activity:
+- Email deliverability fix (removed emojis from subjects, added plain text alternatives)
+- Quote creation notifications to founder (every real quote generated)
+- Signup notifications (already existed, improved)
+- Demo notifications (already existed, improved)
+
+**Files**: `backend/services/email.py`, `backend/api/quotes.py`
+
+---
+
+### DISC-147: Automated Feedback Follow-up Drip 💭 RETENTION (COMPLETE)
+
+**Summary**: Thoughtful pulse to gather product feedback from new users:
+- Day 3: First impressions email
+- Day 7: Workflow integration email
+- Personal tone from Eddie, reply-to goes to founder
+- Tracks `feedback_email_sent` on Contractor model
+
+**Schedule**: Daily at 2pm UTC (9am EST)
+**Files**: `backend/services/email.py`, `backend/services/scheduler.py`, `backend/models/database.py`
+
+---
+
+### DISC-148: Daily Quote Health Checks 🏥 MONITORING (COMPLETE)
+
+**Summary**: Synthetic monitoring to catch quote generation failures before users do:
+- Daily synthetic quote test via demo endpoint
+- Validates line items and total returned
+- Alerts founder immediately if anything fails
+
+**Schedule**: Daily at 6am UTC (1am EST)
+**Files**: `backend/services/scheduler.py`
+
+---
+
 ## Closed (Previously Tracked)
 
 See `DISCOVERY_ARCHIVE.md` for full history of 45+ deployed tickets including:

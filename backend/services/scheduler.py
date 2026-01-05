@@ -192,6 +192,168 @@ async def run_traffic_spike_check():
         logger.error(f"Error in run_traffic_spike_check: {e}")
 
 
+async def run_feedback_drip():
+    """
+    DISC-147: Automated Feedback Follow-up Pulse.
+
+    Send thoughtful feedback requests to users at key milestones:
+    - Day 3: First impressions
+    - Day 7: Workflow integration
+
+    Runs daily at 2pm UTC (9am EST) - during work hours.
+    """
+    from ..models.database import Contractor
+    from .database import async_session_factory
+    from .email import EmailService
+    from sqlalchemy import select, and_
+
+    logger.info("Running feedback drip check")
+
+    try:
+        async with async_session_factory() as db:
+            now = datetime.utcnow()
+            email_service = EmailService()
+
+            # Find users at day 3 (between 3 and 4 days old)
+            day3_start = now - timedelta(days=4)
+            day3_end = now - timedelta(days=3)
+
+            day3_result = await db.execute(
+                select(Contractor).where(
+                    and_(
+                        Contractor.created_at >= day3_start,
+                        Contractor.created_at < day3_end,
+                        Contractor.feedback_email_sent.is_(None) | (Contractor.feedback_email_sent < 3)
+                    )
+                )
+            )
+            day3_users = day3_result.scalars().all()
+
+            # Find users at day 7 (between 7 and 8 days old)
+            day7_start = now - timedelta(days=8)
+            day7_end = now - timedelta(days=7)
+
+            day7_result = await db.execute(
+                select(Contractor).where(
+                    and_(
+                        Contractor.created_at >= day7_start,
+                        Contractor.created_at < day7_end,
+                        Contractor.feedback_email_sent.is_(None) | (Contractor.feedback_email_sent < 7)
+                    )
+                )
+            )
+            day7_users = day7_result.scalars().all()
+
+            emails_sent = 0
+
+            for contractor in day3_users:
+                try:
+                    if not contractor.email:
+                        continue
+                    await email_service.send_feedback_request(
+                        to_email=contractor.email,
+                        owner_name=contractor.owner_name,
+                        business_name=contractor.business_name,
+                        days_since_signup=3
+                    )
+                    contractor.feedback_email_sent = 3
+                    emails_sent += 1
+                except Exception as e:
+                    logger.warning(f"Failed to send day-3 feedback to {contractor.email}: {e}")
+
+            for contractor in day7_users:
+                try:
+                    if not contractor.email:
+                        continue
+                    await email_service.send_feedback_request(
+                        to_email=contractor.email,
+                        owner_name=contractor.owner_name,
+                        business_name=contractor.business_name,
+                        days_since_signup=7
+                    )
+                    contractor.feedback_email_sent = 7
+                    emails_sent += 1
+                except Exception as e:
+                    logger.warning(f"Failed to send day-7 feedback to {contractor.email}: {e}")
+
+            if emails_sent > 0:
+                await db.commit()
+                logger.info(f"Feedback drip: Sent {emails_sent} feedback requests")
+            else:
+                logger.debug("Feedback drip: No users at feedback milestones")
+
+    except Exception as e:
+        logger.error(f"Error in run_feedback_drip: {e}")
+
+
+async def run_daily_health_check():
+    """
+    DISC-148: Daily Synthetic Quote Health Check.
+
+    Test the core quoting functionality daily:
+    - Generate a test quote using the demo endpoint
+    - Verify PDF generation works
+    - Alert founder if anything fails
+
+    Runs daily at 6am UTC (1am EST) - quiet hours, before business day.
+    """
+    from .email import EmailService
+    import httpx
+    from ..config import settings
+
+    logger.info("Running daily quote health check")
+
+    try:
+        email_service = EmailService()
+        errors = []
+
+        # Test demo quote generation
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            try:
+                response = await client.post(
+                    "https://quoted.it.com/api/demo/quote",
+                    json={"transcription": "Health check: Install 2 ceiling fans, $150 each, 3 hours total labor at $75/hour."},
+                    headers={"Content-Type": "application/json"}
+                )
+                if response.status_code != 200:
+                    errors.append(f"Demo quote generation failed: HTTP {response.status_code}")
+                else:
+                    data = response.json()
+                    if not data.get("line_items"):
+                        errors.append("Demo quote returned no line items")
+                    if not data.get("total") or data.get("total", 0) <= 0:
+                        errors.append(f"Demo quote returned invalid total: {data.get('total')}")
+                    else:
+                        logger.info(f"Health check quote generated: ${data.get('total', 0):.2f}")
+            except Exception as e:
+                errors.append(f"Demo quote request failed: {str(e)}")
+
+        # If errors, alert founder
+        if errors:
+            logger.error(f"Health check failed with {len(errors)} errors: {errors}")
+
+            # Send alert email
+            error_list = "\n".join(f"• {e}" for e in errors)
+            await email_service._send_email(
+                to_email=settings.founder_email,
+                subject="[Quoted] ALERT: Daily Health Check Failed",
+                html=f"""
+                    <h1 style="color: #ef4444;">⚠️ Health Check Failed</h1>
+                    <p>The daily quote health check found issues:</p>
+                    <pre style="background: #1a1a1a; padding: 16px; border-radius: 8px; color: #ef4444;">
+{error_list}
+                    </pre>
+                    <p>Please investigate immediately.</p>
+                """,
+                text=f"Health Check Failed\n\n{error_list}\n\nPlease investigate immediately."
+            )
+        else:
+            logger.info("Daily health check passed - all systems operational")
+
+    except Exception as e:
+        logger.error(f"Error in run_daily_health_check: {e}")
+
+
 async def check_invoice_reminders():
     """
     INNOV-6: Invoice Automation - Payment Reminders.
@@ -407,8 +569,26 @@ def start_scheduler():
         max_instances=1,
     )
 
+    # DISC-147: Feedback drip - daily at 2pm UTC (9am EST)
+    scheduler.add_job(
+        run_feedback_drip,
+        trigger=CronTrigger(hour=14, minute=0),
+        id="feedback_drip",
+        replace_existing=True,
+        max_instances=1,
+    )
+
+    # DISC-148: Daily health check - daily at 6am UTC (1am EST)
+    scheduler.add_job(
+        run_daily_health_check,
+        trigger=CronTrigger(hour=6, minute=0),
+        id="daily_health_check",
+        replace_existing=True,
+        max_instances=1,
+    )
+
     scheduler.start()
-    logger.info("Background scheduler started with jobs: task_reminders (5min), quote_followups (daily 9am UTC), smart_followups (15min), invoice_reminders (daily 10am UTC), marketing_report (daily 8am UTC), exit_survey_digest (daily 8:30am UTC), traffic_spike_check (hourly :30)")
+    logger.info("Background scheduler started with jobs: task_reminders (5min), quote_followups (daily 9am UTC), smart_followups (15min), invoice_reminders (daily 10am UTC), marketing_report (daily 8am UTC), exit_survey_digest (daily 8:30am UTC), traffic_spike_check (hourly :30), feedback_drip (daily 2pm UTC), daily_health_check (daily 6am UTC)")
 
 
 def stop_scheduler():

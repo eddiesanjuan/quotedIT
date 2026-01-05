@@ -35,6 +35,7 @@ from ..services import (
 from ..services.auth import get_current_user, get_db
 from ..services.billing import BillingService
 from ..services.analytics import analytics_service
+from ..services.email import email_service
 from ..models.database import Quote
 from ..services.database import async_session_factory
 
@@ -627,6 +628,19 @@ async def generate_quote(
             )
         except Exception as e:
             print(f"Warning: Failed to track quote generation: {e}")
+
+        # DISC-146: Send founder notification for quote creation (non-blocking)
+        try:
+            await email_service.send_founder_quote_notification(
+                business_name=contractor.business_name,
+                user_email=current_user.get("email", "unknown"),
+                quote_total=quote_data.get("subtotal", 0),
+                customer_name=quote_data.get("customer_name"),
+                job_type=detected_job_type,
+                line_item_count=len(quote_data.get("line_items", []))
+            )
+        except Exception as e:
+            print(f"Warning: Failed to send founder quote notification: {e}")
 
         # DISC-018: Add billing info to response for frontend warnings
         response = quote_to_response(quote)

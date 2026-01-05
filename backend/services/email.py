@@ -1434,8 +1434,9 @@ class EmailService:
                 partial(resend.Emails.send, {
                     "from": EmailService.FROM_EMAIL,
                     "to": settings.founder_email,
-                    "subject": f"🎉 New Signup: {business_name}",
+                    "subject": f"[Quoted] New Signup: {business_name}",
                     "html": html,
+                    "text": f"New Signup: {business_name}\n\nOwner: {owner_name or 'Not provided'}\nEmail: {user_email}\nTrade: {primary_trade or 'Not specified'}\n\nThis is an automated notification from Quoted.",
                 })
             )
             logger.info(f"Founder signup notification sent for {user_email}")
@@ -1508,14 +1509,191 @@ class EmailService:
                 partial(resend.Emails.send, {
                     "from": EmailService.FROM_EMAIL,
                     "to": settings.founder_email,
-                    "subject": f"👀 Demo: {formatted_total} quote generated",
+                    "subject": f"[Quoted] Demo: {formatted_total} quote generated",
                     "html": html,
+                    "text": f"Demo Quote Generated\n\nJob: {job_display}\nTotal: {formatted_total}\nLine Items: {line_item_count}\nIP: {ip_address or 'Unknown'}\n\nThis is an automated notification from Quoted.",
                 })
             )
             logger.info(f"Founder demo notification sent for {formatted_total} quote")
             return response
         except Exception as e:
             logger.error(f"Failed to send founder demo notification", exc_info=True)
+            raise
+
+    @staticmethod
+    async def send_founder_quote_notification(
+        business_name: str,
+        user_email: str,
+        quote_total: float,
+        customer_name: Optional[str],
+        job_type: Optional[str],
+        line_item_count: int
+    ) -> Dict[str, Any]:
+        """
+        Send notification to founder when a real user creates a quote (DISC-146).
+
+        Args:
+            business_name: User's business name
+            user_email: User's email address
+            quote_total: Quote total amount
+            customer_name: Customer name on the quote
+            job_type: Type of job
+            line_item_count: Number of line items
+
+        Returns:
+            Resend API response
+        """
+        formatted_total = f"${quote_total:,.2f}"
+
+        content = f"""
+            <h1>Quote Created</h1>
+
+            <div class="stat-box" style="margin: 24px 0;">
+                <div style="color: #ffffff; font-size: 20px; font-weight: 600; margin-bottom: 16px;">
+                    {business_name}
+                </div>
+                <div style="color: #e0e0e0; font-size: 15px; line-height: 1.8;">
+                    <strong>For:</strong> {customer_name or 'Not specified'}<br>
+                    <strong>Job:</strong> {job_type or 'Not specified'}<br>
+                </div>
+            </div>
+
+            <div class="stats-grid" style="margin: 24px 0;">
+                <div class="stat-box">
+                    <div class="stat-value">{formatted_total}</div>
+                    <div class="stat-label">Quote Total</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value">{line_item_count}</div>
+                    <div class="stat-label">Line Items</div>
+                </div>
+            </div>
+
+            <p class="muted">This is an automated notification from Quoted.</p>
+        """
+
+        html = EmailService._get_base_template().replace('{content}', content)
+
+        plain_text = f"Quote Created by {business_name}\n\nFor: {customer_name or 'Not specified'}\nJob: {job_type or 'Not specified'}\nTotal: {formatted_total}\nLine Items: {line_item_count}\n\nThis is an automated notification from Quoted."
+
+        try:
+            loop = asyncio.get_event_loop()
+            response = await loop.run_in_executor(
+                None,
+                partial(resend.Emails.send, {
+                    "from": EmailService.FROM_EMAIL,
+                    "to": settings.founder_email,
+                    "subject": f"[Quoted] Quote: {formatted_total} by {business_name}",
+                    "html": html,
+                    "text": plain_text,
+                })
+            )
+            logger.info(f"Founder quote notification sent for {user_email}: {formatted_total}")
+            return response
+        except Exception as e:
+            logger.error(f"Failed to send founder quote notification for {user_email}", exc_info=True)
+            raise
+
+    @staticmethod
+    async def send_feedback_request(
+        to_email: str,
+        owner_name: Optional[str],
+        business_name: str,
+        days_since_signup: int
+    ) -> Dict[str, Any]:
+        """
+        Send thoughtful feedback request to users (DISC-147).
+
+        Part of automated follow-up pulse for gathering product feedback.
+
+        Args:
+            to_email: User's email
+            owner_name: User's name
+            business_name: Business name
+            days_since_signup: Days since they signed up
+
+        Returns:
+            Resend API response
+        """
+        greeting = f"Hi {owner_name}," if owner_name else "Hi there,"
+
+        if days_since_signup <= 3:
+            # Early feedback - first impressions
+            subject = "Quick question about your first Quoted experience"
+            body_intro = "You've had a few days to try Quoted, and I'd love to hear your honest first impressions."
+            questions = """
+                <ul style="color: #e0e0e0; line-height: 2;">
+                    <li>Was the setup process smooth?</li>
+                    <li>Did the AI understand your pricing well?</li>
+                    <li>Any features you wish existed?</li>
+                </ul>
+            """
+        elif days_since_signup <= 7:
+            # Week-in feedback - usage patterns
+            subject = "How's Quoted working for your workflow?"
+            body_intro = "You've been using Quoted for about a week now. I'm curious how it's fitting into your daily workflow."
+            questions = """
+                <ul style="color: #e0e0e0; line-height: 2;">
+                    <li>How many quotes have you generated?</li>
+                    <li>Is the AI getting better at your pricing?</li>
+                    <li>What's the biggest time-saver so far?</li>
+                </ul>
+            """
+        else:
+            # Deeper feedback - value assessment
+            subject = "Is Quoted delivering value for you?"
+            body_intro = "You've been with us for a few weeks now. I want to make sure Quoted is genuinely helping your business."
+            questions = """
+                <ul style="color: #e0e0e0; line-height: 2;">
+                    <li>Has Quoted changed how you handle quotes?</li>
+                    <li>What would make it indispensable?</li>
+                    <li>Would you recommend it to other contractors?</li>
+                </ul>
+            """
+
+        content = f"""
+            <p style="color: #e0e0e0; font-size: 16px; line-height: 1.7;">
+                {greeting}
+            </p>
+
+            <p style="color: #e0e0e0; font-size: 16px; line-height: 1.7;">
+                {body_intro}
+            </p>
+
+            {questions}
+
+            <p style="color: #e0e0e0; font-size: 16px; line-height: 1.7;">
+                Just hit reply - I read every response personally. Your feedback directly shapes what we build next.
+            </p>
+
+            <p style="color: #a0a0a0; font-size: 14px; margin-top: 32px;">
+                Thanks for being an early user,<br>
+                <strong style="color: #ffffff;">Eddie</strong><br>
+                Founder, Quoted
+            </p>
+        """
+
+        html = EmailService._get_base_template().replace('{content}', content)
+
+        plain_text = f"{greeting}\n\n{body_intro}\n\nJust hit reply - I read every response personally.\n\nThanks,\nEddie\nFounder, Quoted"
+
+        try:
+            loop = asyncio.get_event_loop()
+            response = await loop.run_in_executor(
+                None,
+                partial(resend.Emails.send, {
+                    "from": "Eddie from Quoted <hello@quoted.it.com>",
+                    "to": to_email,
+                    "reply_to": "eddie@granular.tools",
+                    "subject": subject,
+                    "html": html,
+                    "text": plain_text,
+                })
+            )
+            logger.info(f"Feedback request sent to {to_email} (day {days_since_signup})")
+            return response
+        except Exception as e:
+            logger.error(f"Failed to send feedback request to {to_email}", exc_info=True)
             raise
 
 

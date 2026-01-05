@@ -104,6 +104,9 @@ class Contractor(Base):
     invoice_due_days = Column(Integer, default=30)  # Days until invoice is due
     send_invoice_reminders = Column(Boolean, default=True)  # Send payment reminder emails
 
+    # DISC-147: Feedback Drip Tracking
+    feedback_email_sent = Column(Integer, nullable=True)  # Day number of last feedback email (3, 7, etc.)
+
     # Relationships - all scoped to this contractor
     user = relationship("User", back_populates="contractor")
     pricing_model = relationship("PricingModel", back_populates="contractor", uselist=False)
