@@ -197,7 +197,7 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 
 
-### DISC-134: Social Login (Google, Apple, etc.) 🔐 AUTH (READY)
+### DISC-134: Social Login (Google, Apple, etc.) 🔐 AUTH (COMPLETE)
 
 **Source**: Founder Request (Eddie, 2025-12-30)
 **Impact**: MEDIUM | **Effort**: M | **Score**: 1.0
@@ -206,17 +206,30 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 **Problem**: Currently users must use magic link (email-based) authentication. While frictionless, many users expect and prefer OAuth/social login options they use everywhere else. "Sign in with Google" is often perceived as faster and more trustworthy than entering an email address.
 
 **Proposed Work**:
-1. **Google OAuth Integration** - Add "Sign in with Google" button to auth flow (highest priority, most common)
-2. **Apple Sign In** - Add Apple OAuth for iOS users (required for App Store if we ever go mobile)
-3. **UI Updates** - Auth form redesign with social buttons + "or continue with email" divider
-4. **Account Linking** - Handle edge case where user has both email and social accounts
-5. **PostHog Tracking** - Track auth method chosen to measure adoption
+1. **Google OAuth Integration** - Add "Sign in with Google" button to auth flow (highest priority, most common) [DONE]
+2. **Apple Sign In** - Add Apple OAuth for iOS users (required for App Store if we ever go mobile) [FUTURE]
+3. **UI Updates** - Auth form redesign with social buttons + "or continue with email" divider [DONE]
+4. **Account Linking** - Handle edge case where user has both email and social accounts [DONE - uses same email]
+5. **PostHog Tracking** - Track auth method chosen to measure adoption [DONE]
 
 **Technical Notes**:
 - Google: OAuth 2.0 via Google Cloud Console
 - Apple: Sign in with Apple SDK
 - Backend: Store OAuth provider + provider_id in contractor model
 - Consider: passkey support for future (WebAuthn)
+
+**Implementation**:
+- Created `backend/api/social_auth.py` with Google OAuth endpoint (`POST /api/auth/google`)
+- Added `google_oauth_client_id` config setting
+- Updated `frontend/start.html` with Google Sign-In button and handlers
+- Button gracefully hides if Google client ID not configured
+- Tracks `google_signin_clicked`, `google_signup_completed`, `google_login_completed` events
+
+**To Enable**:
+1. Create Google Cloud Console project
+2. Enable OAuth 2.0 and get Client ID
+3. Set `GOOGLE_OAUTH_CLIENT_ID` in Railway environment variables
+4. Add authorized origins: `https://quoted.it.com`, `https://www.quoted.it.com`
 
 **Success Metric**: 30%+ of new signups use social login within 30 days of launch
 

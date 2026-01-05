@@ -28,7 +28,7 @@ configure_logging(
 )
 logger = get_logger("quoted.main")
 
-from .api import quotes, contractors, onboarding, auth, billing, pricing_brain, demo, referral, share, testimonials, learning, invoices, customers, tasks, followup, ai_events, analytics
+from .api import quotes, contractors, onboarding, auth, billing, pricing_brain, demo, referral, share, testimonials, learning, invoices, customers, tasks, followup, ai_events, analytics, social_auth
 
 # Initialize Sentry if DSN is configured
 if settings.sentry_dsn:
@@ -171,6 +171,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
+app.include_router(social_auth.router, prefix="/api/auth", tags=["Social Authentication"])  # DISC-134
 app.include_router(quotes.router, prefix="/api/quotes", tags=["Quotes"])
 app.include_router(contractors.router, prefix="/api/contractors", tags=["Contractors"])
 app.include_router(onboarding.router, prefix="/api/onboarding", tags=["Onboarding"])
@@ -310,6 +311,7 @@ if frontend_path.exists():
             "posthog_api_key": settings.posthog_api_key,
             "sentry_dsn": settings.sentry_dsn,
             "environment": settings.environment,
+            "google_oauth_client_id": settings.google_oauth_client_id,  # DISC-134
         })
 
     @app.get("/shared/{token}", response_class=HTMLResponse)
