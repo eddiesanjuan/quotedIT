@@ -102,10 +102,13 @@ Focus areas:
    - Score each: Impact / Effort ratio
    - Sort by score (highest first)
 
-5. WRITE TO BACKLOG
+5. WRITE TO BACKLOG (MANDATORY - DO NOT SKIP)
    - Assign next DISC-XXX numbers
-   - Write to DISCOVERY_BACKLOG.md
+   - Write to DISCOVERY_BACKLOG.md IN THE "DISCOVERED" SECTION
+   - Update summary counts at top of backlog file
    - All new items get status: DISCOVERED
+   - **CRITICAL**: state.md update is NOT ENOUGH - backlog.md MUST be updated
+   - **2026-01-05 INCIDENT**: Agent wrote to state.md but skipped backlog, causing 5 discoveries to be invisible
 
 6. REPORT
    - Summary of new discoveries
@@ -243,9 +246,20 @@ Status: IDLE | RUNNING | COMPLETE
 **Output this promise ONLY when ALL of these are TRUE:**
 - All three discovery specialists have returned results
 - Results have been synthesized and deduplicated
-- New discoveries written to DISCOVERY_BACKLOG.md
+- **NEW discoveries written to DISCOVERY_BACKLOG.md** (verify with `git diff DISCOVERY_BACKLOG.md`)
+- Summary counts in backlog updated (DISCOVERED count increased)
 - State file updated with run summary
 - No unprocessed discoveries remaining
+
+**VERIFICATION BEFORE PROMISE:**
+```bash
+# Run these checks before outputting completion promise:
+# 1. Backlog was actually modified
+git diff HEAD~1 DISCOVERY_BACKLOG.md | grep -c "^+" # Should be > 0 if discoveries found
+
+# 2. New DISC entries exist in backlog
+grep -c "DISC-" DISCOVERY_BACKLOG.md # Should match state.md count
+```
 
 **DO NOT output this promise if:**
 - Any specialist agent failed

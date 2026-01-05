@@ -279,6 +279,67 @@ The loop will:
 4. If not found: Continue next iteration
 5. If max iterations reached: Stop loop, escalate
 
+### Step 8.5: VERIFY SPEC COMPLIANCE (CRITICAL)
+
+**After EVERY agent run, verify the agent actually followed its spec.**
+
+Run these checks based on agent type:
+
+#### Discovery Agent Verification
+```bash
+# 1. Check DISCOVERY_BACKLOG.md was modified
+git diff HEAD~1 DISCOVERY_BACKLOG.md | head -20
+
+# 2. If state.md shows "New Discoveries: N" but backlog unchanged → FAIL
+grep "New Discoveries" .ai-company/agents/discovery/state.md
+git diff HEAD~1 DISCOVERY_BACKLOG.md | wc -l
+```
+
+**FAILURE MODE**: If state.md shows discoveries were found but DISCOVERY_BACKLOG.md wasn't updated, the discovery agent violated its spec. DO NOT accept completion promise. Force another iteration with explicit instruction to write to backlog.
+
+#### Code Agent Verification
+```bash
+# 1. Check PRs were created for completed work
+gh pr list --state open --author "@me"
+
+# 2. If tickets marked COMPLETE, PRs should exist
+grep "COMPLETE" DISCOVERY_BACKLOG.md
+
+# 3. Verify tests pass
+pytest -x --tb=short 2>/dev/null || echo "No pytest"
+```
+
+**FAILURE MODE**: If tickets marked COMPLETE but no PR exists, or tests failing, don't accept completion promise.
+
+#### Ops Agent Verification
+```bash
+# 1. Health endpoint returns 200
+curl -s https://quoted.it.com/health | jq .status
+
+# 2. Check for unacknowledged errors in logs
+railway logs -n 50 | grep -i error | head -5
+```
+
+**FAILURE MODE**: If health is not GREEN but agent claimed completion, don't accept.
+
+#### Full Run Verification
+After all agents complete, run final verification:
+```bash
+# 1. Production is healthy
+curl -s https://quoted.it.com/health
+
+# 2. All open PRs are reviewed/merged or have clear status
+gh pr list --state open
+
+# 3. State files are in sync with reality
+cat .ai-company/agents/*/state.md | grep -E "(Status|Last Run)"
+```
+
+**IF VERIFICATION FAILS**: Do NOT report success. Instead:
+1. Log the verification failure
+2. Force another agent iteration with explicit fix instruction
+3. Or escalate to founder if max iterations reached
+
 ### Step 9: Report Results
 
 ```
