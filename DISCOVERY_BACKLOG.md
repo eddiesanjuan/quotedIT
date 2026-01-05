@@ -32,15 +32,15 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 | Status | Count |
 |--------|-------|
-| READY | 11 |
-| DISCOVERED | 19 |
-| COMPLETE | 13 |
-| **Active Total** | **43** |
-| Archived (DEPLOYED) | 88+ |
+| READY | 14 |
+| DISCOVERED | 18 |
+| COMPLETE | 14 |
+| **Active Total** | **46** |
+| Archived (DEPLOYED) | 85+ |
 
 **Autonomous AI Infrastructure**: DISC-101 COMPLETE, DISC-102/104/106 DEPLOYED (PRs #36-38), DISC-103/105 READY
 **Agent Reliability Engineering**: DISC-107, DISC-108 COMPLETE, DISC-109 DISCOVERED
-**Analytics Pipeline**: DISC-136, DISC-141, DISC-142 COMPLETE (awaiting deploy), DISC-137/138/139 DEPLOYED
+**Analytics Pipeline**: DISC-136, DISC-141, DISC-142, DISC-149, DISC-151 COMPLETE (PRs #39-40 pending)
 **Phase II Voice Control**: DISC-042 through DISC-049 (8 tickets) - DISCOVERED, awaiting founder review
 **Competitive Defense**: DISC-060 through DISC-062 - DISCOVERED
 
@@ -52,11 +52,11 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 | Ticket | Title | Deployed |
 |--------|-------|----------|
-| DISC-139 | Real-Time Traffic Spike Alerts | 2026-01-03 |
-| DISC-138 | Google Ads Conversion Funnel Dashboard | 2026-01-03 |
-| DISC-137 | Exit Intent Survey Reporting | 2026-01-03 |
 | DISC-135 | Post-Job Pricing Reflection Loop + Conversion Tracking | 2025-12-31 |
 | DISC-133 | Clarification Answers Feed Into Learning System | 2025-12-30 |
+| DISC-132 | Interactive Clarifying Questions for Demo | 2025-12-30 |
+| DISC-131 | Demo Page Dictation Examples | 2025-12-30 |
+| DISC-113 | Time Savings Calculator (partial) | 2025-12-30 |
 
 *Full deployment history: See DISCOVERY_ARCHIVE.md*
 
@@ -223,6 +223,86 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 ---
 
 
+### DISC-137: Exit Intent Survey Reporting 📧 ANALYTICS (READY)
+
+**Source**: Founder Request (Eddie, 2025-12-30)
+**Impact**: MEDIUM | **Effort**: S | **Score**: 2.0
+**Sprint Alignment**: Understand why users leave
+
+**Problem**: Exit intent survey data goes to PostHog but founder has to manually check. Need proactive reporting.
+
+**Current State**:
+- `exit_survey_completed` captures reasons and other_text
+- Data exists but requires PostHog dashboard login
+
+**Proposed Work**:
+1. Daily email digest: "Yesterday's Exit Survey Summary"
+   - Count by reason (Not my industry, Too expensive, etc.)
+   - Any verbatim "Other" responses (most valuable)
+   - Trend vs. previous day/week
+2. Instant alert for specific keywords ("bug", "broken", "doesn't work")
+3. Add to founder notification service (alongside DISC-128)
+
+**Success Metric**: Founder receives daily exit survey digest; can read user feedback without logging into PostHog
+
+---
+
+### DISC-138: Google Ads → Conversion Funnel Dashboard 📈 ANALYTICS (READY)
+
+**Source**: Founder Request (Eddie, 2025-12-30)
+**Impact**: HIGH | **Effort**: M | **Score**: 1.5
+**Sprint Alignment**: Understand paid acquisition performance
+
+**Problem**: 80 ad clicks, 4000 impressions, 0 conversions. No visibility into where users drop off.
+
+**Proposed Work**:
+1. **PostHog Dashboard**: Create "Acquisition Funnel" dashboard
+   - Landing page views (by UTM source)
+   - CTA clicks (Try Demo vs Sign Up)
+   - Try page views
+   - Demo generation attempts
+   - Demo completions
+   - Signup attempts
+   - Signup completions
+2. **Conversion Tracking Integration**
+   - Verify Google Ads conversion pixel fires on signup
+   - Add conversion tracking for demo completion (micro-conversion)
+3. **Funnel Visualization**
+   - Step-by-step drop-off visualization
+   - Segment by ad campaign, device, time of day
+
+**Success Metric**: Can answer "where do ad visitors drop off?" in 30 seconds
+
+---
+
+### DISC-139: Real-Time Traffic Spike Alerts 🚨 MONITORING (READY)
+
+**Source**: Founder Request (Eddie, 2025-12-30)
+**Impact**: HIGH | **Effort**: M | **Score**: 1.5
+**Sprint Alignment**: Don't miss viral moments
+
+**Problem**: If Quoted goes viral (HN, Reddit, tweet), founder needs to know immediately to:
+- Monitor for issues
+- Engage with community
+- Scale infrastructure if needed
+
+**Proposed Work**:
+1. **Hourly traffic check** (backend scheduler)
+   - Compare current hour page views to 7-day average
+   - If 3x+ normal: send founder alert
+2. **Demo generation spike alert**
+   - If 5+ demo quotes in an hour (vs. typical ~1)
+   - Immediate Slack/email notification
+3. **Signup velocity alert**
+   - Any signup triggers notification (DISC-128 already does this)
+   - But also alert on 3+ signups in an hour = potential viral
+4. **Infrastructure pre-emptive warning**
+   - Monitor Railway metrics
+   - Alert if approaching limits
+
+**Success Metric**: Founder knows within 1 hour if traffic spikes 3x or more
+
+---
 
 ### DISC-140: Autonomous Monitoring Agent 🤖 INFRASTRUCTURE (READY)
 
@@ -505,29 +585,6 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 ---
 
-### DISC-151: Demo Generation Database Tracking 📊 ANALYTICS (DISCOVERED)
-
-**Source**: Code analysis - marketing_analytics.py line 98 has `# TODO: Track demo generations in database (DISC-142)`
-**Impact**: MEDIUM | **Effort**: S | **Score**: 2.0
-**Sprint Alignment**: Marketing visibility, conversion tracking
-
-**Problem**: Demo quote generations are tracked in PostHog but NOT in the database. This makes it impossible to:
-- Query demo volume via API
-- Include demo counts in daily marketing reports
-- Compare demo-to-signup conversion accurately
-
-**Current State**: `demos_generated = 0` is hardcoded in marketing report because no DB tracking exists.
-
-**Proposed Work**:
-1. Create `demo_generations` table (ip_address, transcription_hash, total, created_at)
-2. Insert record on each demo.py quote generation
-3. Update marketing_analytics.py to query actual count
-4. Add to daily report
-
-**Success Metric**: Demo volume trackable via API; accurate marketing reports
-
----
-
 ### DISC-152: Win Factors Tracking for Quotes 📈 LEARNING (DISCOVERED)
 
 **Source**: Code analysis - quotes.py line 3004 has `top_win_factors=[],  # TODO: Track win factors`
@@ -605,17 +662,6 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 ---
 
 ## COMPLETE - Pending Deploy
-
-### DISC-149: Payment Failure Email Notifications 📧 BILLING (COMPLETE)
-
-**Summary**: Implemented payment failure webhook handling in billing.py:
-- Sends notification to user with retry date and update payment CTA
-- Alerts founder with customer details and Stripe link for churn visibility
-- Uses existing `send_payment_failed_notification()` email template
-
-**PR**: quoted-run/DISC-149
-
----
 
 ### DISC-101: LLM-as-Judge for Autonomous Cycles 🧠 INFRASTRUCTURE (COMPLETE)
 
@@ -727,6 +773,28 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 - Endpoints: `/api/analytics/funnel` and `/api/analytics/traffic-sources`
 - Currently using database fallback
 - Full 7-step funnel visibility requires `POSTHOG_READ_API_KEY` env var in Railway
+
+---
+
+### DISC-149: Payment Failure Email Notifications 📧 BILLING (COMPLETE)
+
+**Summary**: Wired up `invoice.payment_failed` Stripe webhook to notify users and founder:
+- User email: "Your payment failed - please update your card" with retry date and CTA
+- Founder alert: Customer details with Stripe dashboard link
+- Uses existing `EmailService.send_payment_failed_notification()` method
+
+**PR**: [#39](https://github.com/eddiesanjuan/quotedIT/pull/39)
+
+---
+
+### DISC-151: Demo Generation Database Tracking 📊 ANALYTICS (COMPLETE)
+
+**Summary**: Database tracking for demo quote generations enabling accurate conversion measurement:
+- Added `DemoGeneration` model to track IP, transcription hash, quote metadata, UTM params
+- Updated demo.py to insert records after quote generation
+- Updated marketing_analytics.py to query actual count instead of hardcoded 0
+
+**PR**: [#40](https://github.com/eddiesanjuan/quotedIT/pull/40)
 
 ---
 
