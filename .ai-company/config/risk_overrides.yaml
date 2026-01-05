@@ -1,0 +1,180 @@
+# Risk Classification Overrides
+# DISC-102: Custom risk level assignments for specific action patterns
+#
+# Format:
+#   - pattern: "regex pattern to match action description"
+#     level: PROHIBITED | HIGH | MEDIUM | LOW
+#     reason: "Why this override exists"
+#
+# Patterns are matched case-insensitively against action descriptions.
+# More specific patterns should come before general ones.
+
+overrides:
+  # ============================================
+  # PROHIBITED - Never execute autonomously
+  # ============================================
+
+  - pattern: "delete.*customer"
+    level: PROHIBITED
+    reason: "Customer data deletion requires explicit approval"
+
+  - pattern: "delete.*user"
+    level: PROHIBITED
+    reason: "User data deletion requires explicit approval"
+
+  - pattern: "drop.*(table|database)"
+    level: PROHIBITED
+    reason: "Database structure changes require explicit approval"
+
+  - pattern: "(password|secret|credential|api_key|token).*="
+    level: PROHIBITED
+    reason: "Security credential changes require explicit approval"
+
+  - pattern: "git.*push.*--force"
+    level: PROHIBITED
+    reason: "Force push can destroy history"
+
+  - pattern: "modify.*(constitution|config/risk)"
+    level: PROHIBITED
+    reason: "Meta-level changes require explicit approval"
+
+  - pattern: "(impersonate|pretend.*to.*be|pose.*as)"
+    level: PROHIBITED
+    reason: "Impersonation is never allowed"
+
+  # ============================================
+  # HIGH RISK - Suggest only, queue for approval
+  # ============================================
+
+  - pattern: "email.*customer"
+    level: HIGH
+    reason: "All customer emails require founder approval"
+
+  - pattern: "send.*(email|message|notification).*external"
+    level: HIGH
+    reason: "External communications require approval"
+
+  - pattern: "merge.*main"
+    level: HIGH
+    reason: "Production deployments require approval"
+
+  - pattern: "refund"
+    level: HIGH
+    reason: "All refunds require approval"
+
+  - pattern: "discount|promo|coupon"
+    level: HIGH
+    reason: "Pricing changes require approval"
+
+  - pattern: "publish.*blog"
+    level: HIGH
+    reason: "Public content requires approval"
+
+  - pattern: "post.*(twitter|linkedin|reddit|social)"
+    level: HIGH
+    reason: "Social media requires approval"
+
+  - pattern: "invoice.*>.*100"
+    level: HIGH
+    reason: "Large invoices require approval"
+
+  - pattern: "schema.*change|migration"
+    level: HIGH
+    reason: "Database changes require approval"
+
+  - pattern: "billing.*change|subscription.*change"
+    level: HIGH
+    reason: "Billing changes require approval"
+
+  - pattern: "partner|vendor|contract"
+    level: HIGH
+    reason: "Business relationships require approval"
+
+  # ============================================
+  # MEDIUM RISK - Execute with logging
+  # ============================================
+
+  - pattern: "create.*pr|pull.*request"
+    level: MEDIUM
+    reason: "PRs can be reviewed before merging"
+
+  - pattern: "update.*documentation"
+    level: MEDIUM
+    reason: "Internal docs can be updated with logging"
+
+  - pattern: "create.*ticket|create.*issue"
+    level: MEDIUM
+    reason: "Internal tickets can be created with logging"
+
+  - pattern: "send.*internal"
+    level: MEDIUM
+    reason: "Internal communications are lower risk"
+
+  - pattern: "generate.*quote"
+    level: MEDIUM
+    reason: "Core product function, well-tested"
+
+  - pattern: "update.*state.*file"
+    level: MEDIUM
+    reason: "State updates are routine"
+
+  - pattern: "run.*tests"
+    level: MEDIUM
+    reason: "Tests don't affect production"
+
+  # ============================================
+  # LOW RISK - Auto-execute
+  # ============================================
+
+  - pattern: "read.*file"
+    level: LOW
+    reason: "Reading is always safe"
+
+  - pattern: "analyze|research|investigate"
+    level: LOW
+    reason: "Analysis doesn't modify anything"
+
+  - pattern: "draft.*email|draft.*content"
+    level: LOW
+    reason: "Drafts don't get sent"
+
+  - pattern: "generate.*report"
+    level: LOW
+    reason: "Internal reports are safe"
+
+  - pattern: "list|view|show|display"
+    level: LOW
+    reason: "Viewing data is always safe"
+
+  - pattern: "query.*database.*select"
+    level: LOW
+    reason: "Read-only queries are safe"
+
+# ============================================
+# Agent-Specific Overrides
+# ============================================
+
+agent_overrides:
+  support:
+    # Support agent has stricter rules for customer contact
+    - pattern: ".*customer.*"
+      level: HIGH
+      reason: "Support actions affecting customers need approval"
+
+  code:
+    # Code agent can create PRs freely
+    - pattern: "create.*pr"
+      level: MEDIUM
+      reason: "PRs require review anyway"
+
+  ops:
+    # Ops can run diagnostics freely
+    - pattern: "diagnostic|health.*check|monitor"
+      level: LOW
+      reason: "Monitoring is always safe"
+
+  growth:
+    # Growth needs approval for external content
+    - pattern: "publish|post|send"
+      level: HIGH
+      reason: "Growth content needs brand approval"
