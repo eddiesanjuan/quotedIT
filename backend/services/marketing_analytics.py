@@ -93,9 +93,18 @@ class MarketingAnalyticsService:
         )
         quotes_generated = quotes_result.scalar() or 0
 
-        # Count demo quotes (no contractor_id, generated via demo endpoint)
-        # Note: Demo quotes don't persist to database currently, so we estimate from logs
-        demos_generated = 0  # TODO: Track demo generations in database (DISC-142)
+        # DISC-151: Count demo generations from database
+        from ..models.database import DemoGeneration
+
+        demos_result = await db.execute(
+            select(func.count(DemoGeneration.id)).where(
+                and_(
+                    DemoGeneration.created_at >= start_of_day,
+                    DemoGeneration.created_at < end_of_day
+                )
+            )
+        )
+        demos_generated = demos_result.scalar() or 0
 
         # Conversions (users who signed up after using demo)
         # Note: Requires tracking in signup flow - utm_source or referrer

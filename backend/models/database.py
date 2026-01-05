@@ -1004,6 +1004,38 @@ class Testimonial(Base):
     approved_by = Column(String(255), nullable=True)
 
 
+class DemoGeneration(Base):
+    """
+    DISC-151: Track demo quote generations for marketing analytics.
+
+    Each row represents a demo quote generation event.
+    Used to calculate demo-to-signup conversion rate.
+    """
+    __tablename__ = "demo_generations"
+
+    id = Column(String, primary_key=True, default=generate_uuid)
+    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+
+    # Tracking info
+    ip_address = Column(String(45), nullable=True, index=True)  # IPv4 or IPv6
+    transcription_hash = Column(String(64), nullable=True)  # SHA-256 hash to detect duplicates
+
+    # Quote metadata
+    job_type = Column(String(255), nullable=True)
+    quote_total = Column(Integer, nullable=True)  # Cents
+    line_item_count = Column(Integer, default=0)
+
+    # UTM tracking for attribution
+    utm_source = Column(String(255), nullable=True)
+    utm_medium = Column(String(255), nullable=True)
+    utm_campaign = Column(String(255), nullable=True)
+
+    # Conversion tracking (updated if user signs up)
+    converted_to_signup = Column(Boolean, default=False)
+    converted_at = Column(DateTime, nullable=True)
+    converted_user_id = Column(String, ForeignKey("users.id"), nullable=True)
+
+
 # Database initialization
 def get_database_url(async_mode: bool = True) -> str:
     """Get database URL from config. Supports SQLite and PostgreSQL."""
