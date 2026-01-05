@@ -32,19 +32,19 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 | Status | Count |
 |--------|-------|
-| READY | 15 |
+| READY | 14 |
 | DISCOVERED | 20 |
 | COMPLETE | 12 |
-| **Active Total** | **47** |
-| Archived (DEPLOYED) | 66+ |
+| **Active Total** | **46** |
+| Archived (DEPLOYED) | 85+ |
 
-**Autonomous AI Infrastructure**: DISC-101 COMPLETE, DISC-102/104/106 DEPLOYED (PRs #36-38 merged 2026-01-05), DISC-103/105 READY
+**Autonomous AI Infrastructure**: DISC-101 COMPLETE, DISC-102/104/106 DEPLOYED (PRs #36-38), DISC-103/105 READY
 **Agent Reliability Engineering**: DISC-107, DISC-108 COMPLETE, DISC-109 DISCOVERED
-**UX Excellence Fixes**: DISC-114-123, DISC-125-130 - DEPLOYED (backlog reconciliation 2025-12-30)
+**Analytics Pipeline**: DISC-136, DISC-141, DISC-142 COMPLETE (awaiting deploy)
 **Phase II Voice Control**: DISC-042 through DISC-049 (8 tickets) - DISCOVERED, awaiting founder review
 **Competitive Defense**: DISC-060 through DISC-062 - DISCOVERED
 
-**Note**: State hygiene pending - 15 DEPLOYED tickets in file need migration to DISCOVERY_ARCHIVE.md
+*Last hygiene: 2026-01-05. DEPLOYED tickets migrated to DISCOVERY_ARCHIVE.md*
 
 ---
 
@@ -64,10 +64,10 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 ## READY - Approved for Implementation
 
-### DISC-113: "Handyman Mike" Workflow Storytelling System 🎬 CONVERSION (DEPLOYED - partial)
+### DISC-113: "Handyman Mike" Workflow Storytelling System 🎬 CONVERSION (READY)
 
-**Deployed**: 2025-12-30 - Time Savings Calculator component only
-**Remaining**: Story-based tour, pre-seeded demo data, workflow animation, marketing assets
+**Partial Deploy**: 2025-12-30 - Time Savings Calculator component only
+**Remaining Work**: Story-based tour, pre-seeded demo data, workflow animation, marketing assets
 
 **Source**: Founder Request (Eddie, 2025-12-27)
 **Impact**: HIGH | **Effort**: L | **Score**: 1.5
@@ -154,19 +154,6 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 ---
 
-### DISC-102: Suggestions vs Updates Framework - Action Risk Classification 🛡️ INFRASTRUCTURE (DEPLOYED)
-
-**Source**: Founder Request (Eddie, 2025-12-21) - Transcript Insights Analysis
-**Impact**: HIGH | **Effort**: M | **Score**: 1.5
-**PR**: #38
-
-**Implementation Summary**:
-- Added docs/ACTION_RISK_CLASSIFICATION.md with full framework
-- Added .ai-company/config/risk_overrides.yaml for pattern-based overrides
-- 4-level classification: PROHIBITED, HIGH, MEDIUM, LOW
-- Integrates with DISC-101 (LLM-Judge) and DISC-106 (Safety Net)
-
----
 
 ### DISC-103: Smart Complexity Detection for Task Routing 🎯 INFRASTRUCTURE (READY)
 
@@ -179,19 +166,6 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 ---
 
-### DISC-104: Work Isolation via Git Worktrees 🌳 INFRASTRUCTURE (DEPLOYED)
-
-**Source**: Founder Request (Eddie, 2025-12-21) - Transcript Insights Analysis
-**Impact**: HIGH | **Effort**: L | **Score**: 2.0
-**PR**: #36
-
-**Implementation Summary**:
-- Added docs/GIT_WORKTREE_ISOLATION.md with complete guide
-- Added scripts/worktree.sh helper script (create/complete/abort/list/prune)
-- Enables parallel agent execution in isolated directories
-- Instant rollback by deleting worktree
-
----
 
 ### DISC-105: Learning Memory System - Dual Architecture 🧠 INFRASTRUCTURE (READY)
 
@@ -204,301 +178,24 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 ---
 
-### DISC-106: Safety Net Architecture - Defense in Depth 🛡️ INFRASTRUCTURE (DEPLOYED)
 
-**Source**: Founder Request (Eddie, 2025-12-21) - Transcript Insights Analysis
-**Impact**: HIGH | **Effort**: L | **Score**: 2.0
-**PR**: #37
 
-**Implementation Summary**:
-- Added docs/SAFETY_NET_ARCHITECTURE.md with complete 5-layer design
-- Added scripts/safety_check.sh pre-action validator
-- Layer 1: Cooldowns & Rate Limits
-- Layer 2: Threshold Scores (integrates with DISC-101)
-- Layer 3: Version History (git-based rollback)
-- Layer 4: Human Override (EMERGENCY_STOP, /ai-stop)
-- Layer 5: Anomaly Detection
 
----
 
-### DISC-114: Add Terms/Privacy to Quick Signup Form ⚖️ LEGAL (DEPLOYED)
 
-**Source**: Founder Request (Eddie, 2025-12-27) - UX Excellence Audit
-**Impact**: HIGH | **Effort**: S | **Score**: 4.0
-**Sprint Alignment**: Critical legal exposure fix
-**Deployed**: 2025-12-27 | **PR**: #22
 
-**Implementation Summary**: Added Terms/Privacy links to `/start` signup form with required acknowledgment checkbox.
 
----
 
-### DISC-115: Display Loyalty Tier Badges on CRM Cards 🏅 CRM (DEPLOYED)
 
-**Source**: Founder Request (Eddie, 2025-12-27) - UX Excellence Audit
-**Impact**: MEDIUM | **Effort**: S | **Score**: 3.0
-**Sprint Alignment**: CRM polish for retention
-**Deployed**: 2025-12-27 | **PR**: #22
 
-**Implementation Summary**: Added color-coded loyalty tier badges to CRM cards (list and detail views).
 
----
 
-### DISC-116: Add Outstanding Invoices Dashboard Widget 💰 DASHBOARD (DEPLOYED)
 
-**Source**: Founder Request (Eddie, 2025-12-27) - UX Excellence Audit
-**Impact**: HIGH | **Effort**: S | **Score**: 4.0
-**Sprint Alignment**: Revenue visibility
-**Deployed**: 2025-12-27 | **PR**: #22
 
-**Implementation Summary**: Added Outstanding Invoices widget to dashboard showing count, total amount, and oldest overdue.
 
----
 
-### DISC-117: Send Quote Rejection Notifications Always 📧 QUOTES (DEPLOYED)
 
-**Deployed**: Already implemented (verified 2025-12-30) - Rejection email sent in share.py line 298
 
-**Source**: Founder Request (Eddie, 2025-12-27) - UX Excellence Audit
-**Impact**: MEDIUM | **Effort**: S | **Score**: 3.0
-**Sprint Alignment**: User feedback improvement
-
-**Problem**: Rejection email only sent if customer provides a reason. Silent rejections = missed market intelligence. Contractors don't know a quote was rejected.
-
-**Proposed Work**:
-1. Modify rejection handler to always send notification email
-2. Email content: "Quote rejected" with or without reason
-3. Track rejection analytics
-
-**Success Metric**: 100% of rejections trigger notification
-
----
-
-### DISC-118: Add og:image Tags to Blog Articles 🖼️ SEO (DEPLOYED)
-
-**Source**: Founder Request (Eddie, 2025-12-27) - UX Excellence Audit
-**Impact**: MEDIUM | **Effort**: S | **Score**: 3.0
-**Sprint Alignment**: SEO & social sharing
-**Deployed**: 2025-12-27 | **PR**: #22
-
-**Implementation Summary**: Added og:image meta tags to all 8 blog articles for social media preview images.
-
----
-
-### DISC-119: Mobile WCAG 2.5.5 Touch Target Compliance 📱 ACCESSIBILITY (DEPLOYED)
-
-**Source**: Founder Request (Eddie, 2025-12-27) - UX Excellence Audit
-**Impact**: HIGH | **Effort**: M | **Score**: 2.0
-**Sprint Alignment**: Critical accessibility fix - legal risk
-**Deployed**: 2025-12-27 | **PR**: #22
-
-**Implementation Summary**: Added 44x44px minimum touch targets via CSS for all interactive elements at mobile breakpoints.
-
----
-
-### DISC-120: Unified Auth Flow with Legal Compliance 🔐 AUTH (DEPLOYED)
-
-**Source**: Founder Request (Eddie, 2025-12-27) - UX Excellence Audit
-**Impact**: HIGH | **Effort**: M | **Score**: 2.0
-**Sprint Alignment**: Critical legal and UX fix
-**Deployed**: 2025-12-27 | **PR**: #22
-
-**Implementation Summary**: Added password strength indicator and legal compliance to auth flows.
-
----
-
-### DISC-121: Learning System Outcome Loop (Win/Loss Tracking) 📊 LEARNING (DEPLOYED)
-
-**Source**: Founder Request (Eddie, 2025-12-27) - UX Excellence Audit
-**Impact**: HIGH | **Effort**: L | **Score**: 1.5
-**Sprint Alignment**: Core moat enhancement
-**Deployed**: 2025-12-27 | **PR**: #22
-
-**Implementation Summary**: Added outcome tracking (won/lost), win rate per category in Pricing Brain, outcome boost/penalty for learning. Database tracks won_count, lost_count, win_rate per category.
-
----
-
-### DISC-122: Delete Line Item with Learning 🗑️🧠 BUG (DEPLOYED)
-
-**Source**: Founder Request (Eddie, 2025-12-27) - Testing
-**Impact**: HIGH | **Effort**: M | **Score**: 2.0
-**Sprint Alignment**: Core functionality + learning fix
-**Deployed**: 2025-12-27 | **PR**: #22
-
-**Implementation Summary**: Added delete button to line items with tracking for learning. Deleted items are tracked in corrections for future quote improvement.
-
----
-
-### DISC-123: Quantity/Unit Edits Should Trigger Learning + Save 🧠 BUG (DEPLOYED)
-
-**Source**: Founder Request (Eddie, 2025-12-27) - Testing
-**Impact**: HIGH | **Effort**: M | **Score**: 2.0
-**Sprint Alignment**: Core learning system fix
-**Deployed**: 2025-12-27 | **PR**: #22
-
-**Implementation Summary**: Quantity/unit changes now tracked in corrections and included in learning prompt. Format: `[qty: X → Y, unit: 'A' → 'B']`
-
----
-
-### DISC-126: Customer Identification UX - Bulletproof Matching 🎯 VOICE/CRM (DEPLOYED)
-
-**Source**: Founder Request (Eddie, 2025-12-28) - Voice workflow friction concern
-**Impact**: HIGH | **Effort**: M | **Score**: 2.0
-**Sprint Alignment**: Voice-first UX excellence, CRM reliability
-**Deployed**: 2025-12-29 | **PR**: #25
-
-**Implementation Summary**:
-- Phone-based customer matching with confidence scoring
-- Auto-link on high confidence (≥0.95), confirmation modal on moderate (0.70-0.95)
-- Fuzzy name matching via Levenshtein distance
-- Safe DOM manipulation (no innerHTML for user data)
-
-**Backend Changes**:
-- `customer_service.py`: `find_customer_matches()`, `link_quote_to_customer_explicit()`, `get_recent_customers()`
-- `customers.py`: POST `/customers/match`, GET `/customers/recent`
-- `quotes.py`: POST `/quotes/{id}/link-customer`, POST `/quotes/{id}/check-customer-match`
-
-**Frontend Changes**:
-- Customer Match Confirmation Modal
-- Repeat Customer Picker Modal
-- Customer link status indicator ("✓ Linked" badge)
-
-**Production Verified**: Phone matching correctly deduplicates customers (tested with same phone, different names → single customer with 2 quotes)
-
----
-
-### DISC-127: Logo Aspect Ratio Squished on Upload 🐛 BUG (DEPLOYED)
-
-**Source**: Founder Request (Eddie, 2025-12-28) - User testing
-**Impact**: MEDIUM | **Effort**: S | **Score**: 2.0
-**Sprint Alignment**: Professional branding - logos must look correct on quotes
-**Deployed**: 2025-12-28 | **PR**: #26
-
-**Implementation Summary**: Fixed logo aspect ratio with `object-fit: contain` in UI and proportional scaling in PDF output.
-
----
-
-### DISC-128: Founder Notifications for Signups & Demo Usage 📬 GROWTH (DEPLOYED)
-
-**Source**: Founder Request (Eddie, 2025-12-29)
-**Impact**: HIGH | **Effort**: S | **Score**: 3.0
-**Sprint Alignment**: Early-stage founder visibility into user acquisition
-**Deployed**: 2025-12-30
-
-**Implementation Summary**:
-- `send_founder_signup_notification()` - Emails on new account creation (email, business name, trade)
-- `send_founder_demo_notification()` - Emails on demo quote generation (job description, total, line items, IP)
-- Integrated into auth.py (signup) and demo.py (quote generation)
-- Sends to `eddie@granular.tools` via Resend
-
-**Note**: Emails landing in spam - may need SPF/DKIM review for improved deliverability
-
----
-
-### DISC-131: Demo Page Dictation Examples 🎤 CONVERSION (DEPLOYED)
-
-**Deployed**: 2025-12-30 - Added "What Should You Say?" section with 3 example prompts (Simple, Detailed, Pro Tip)
-
-**Source**: Founder Request (Eddie, 2025-12-29)
-**Impact**: MEDIUM | **Effort**: S | **Score**: 2.0
-**Sprint Alignment**: Demo conversion optimization
-
-**Problem**: Most users don't realize the level of detail they can provide when dictating a quote. They give minimal input ("bathroom remodel") when they could give rich context (customer name, address, specific materials, timeline, etc.) that would produce more accurate quotes and better demonstrate the product's value.
-
-**Proposed Work**:
-1. Add 2-3 example dictation prompts on demo.html
-2. Show range from simple ("Install ceiling fan in bedroom") to detailed ("Install 52-inch Hunter ceiling fan for Mrs. Johnson at 123 Oak Street, includes running new wire from switch, budget around $400, can start Tuesday")
-3. Position examples near or below the voice input area
-4. Make examples clickable to auto-fill as starter text (optional)
-
-**Success Metric**: Higher quality demo inputs; demo-to-signup conversion rate improvement
-
----
-
-### DISC-132: Interactive Clarifying Questions 🎯 PRODUCT (DEPLOYED)
-
-**Deployed**: 2025-12-30 - Backend /api/demo/regenerate endpoint, frontend interactive inputs with regenerate button
-
-**Source**: Founder Request (Eddie, 2025-12-29)
-**Impact**: HIGH | **Effort**: L | **Score**: 1.5
-**Sprint Alignment**: Core product differentiation, learning system enhancement
-
-**Problem**: The AI generates "Clarifying Questions" at the bottom of each quote, but they're currently static/informational only. Users can't answer them to improve the quote. This is a missed opportunity for accuracy improvement and learning system enhancement.
-
-**Vision**: Transform static questions into an interactive refinement loop. User answers questions → quote regenerates with additional context → responses feed into learning system for future quotes.
-
-**Proposed Work**:
-1. Make clarifying questions section interactive (input fields or buttons)
-2. Allow users to answer each question with text input
-3. On submit, regenerate quote with answers added to original context
-4. Track which questions get answered and what answers are given
-5. Feed Q&A pairs into learning system for future quote generation
-6. Show before/after comparison (optional: "Your answers improved this quote")
-
-**Example Flow**:
-> AI asks: "What brand of faucet do you want to install?"
-> User answers: "Moen Align in brushed nickel"
-> Quote regenerates with specific Moen Align pricing instead of generic faucet
-
-**Success Metric**: Quote accuracy improvement (fewer post-generation edits); learning system captures Q&A pairs; user engagement with clarifying questions
-
----
-
-### DISC-130: PDF Line Spacing Polish - Improved Text Readability 📄 UX (DEPLOYED)
-
-**Source**: Founder Request (Eddie, 2025-12-29)
-**Impact**: MEDIUM | **Effort**: M | **Score**: 1.0
-**Sprint Alignment**: Professional polish for customer-facing documents
-**Deployed**: 2025-12-30 | **PR**: #29
-
-**Implementation Summary**:
-Improved line spacing across PDF text sections for better readability:
-- QuoteBody: leading 18→20pt (1.82x ratio for 11pt font)
-- QuoteBodyLight: leading 18→20pt with spaceAfter 4→6pt
-- LineItem ItemCell: leading 14→16pt for multi-line descriptions
-- FinePrint: leading 11→13pt for comfortable legal text reading
-
-Changes apply to all PDFs (quotes, invoices, demo) while maintaining compact template behavior.
-
----
-
-### DISC-129: Demo Premium Template - Ultra-Polished First Impression ✨ CONVERSION (DEPLOYED)
-
-**Source**: Founder Request (Eddie, 2025-12-29)
-**Impact**: HIGH | **Effort**: M | **Score**: 2.0
-**Sprint Alignment**: Demo conversion optimization - first impression is everything
-**Deployed**: 2025-12-29
-
-**Implementation Summary**:
-- Created `DemoPremiumLogo` Flowable class with navy hexagon + gold diamond geometric design
-- Added `demo_premium` template to PDF_TEMPLATES with deep navy header (#1a365d) and gold accents (#d69e2e)
-- Updated demo API endpoints to use premium template
-- Typography: "YOUR BUSINESS" with letter-spacing + "Professional Services" tagline
-
-**Outcome**: Demo PDFs now render with sophisticated agency-quality placeholder design
-
----
-
-### DISC-125: Blog Article Formatting Fixes 📝 UX (DEPLOYED)
-
-**Source**: Founder Request (Eddie, 2025-12-28) - Blog QA review
-**Impact**: MEDIUM | **Effort**: S | **Score**: 2.0
-**Sprint Alignment**: Professional content presentation for SEO/credibility
-
-**Problem**: Blog articles have two formatting issues that hurt polish:
-1. **Blank CTA buttons**: "Try Now" buttons in article body appear empty/blank (no text visible)
-2. **TOC overlap**: The "In This Guide" table of contents covers too much of the top content area, obscuring article text
-
-**Note**: Overall design looks good - just these specific polish items need fixing.
-
-**Proposed Work**:
-1. Find and fix blank CTA buttons in blog article templates - add "Try Now" or appropriate text
-2. Adjust TOC positioning/sizing to not obscure article content
-3. Test on multiple blog articles to ensure consistent fix
-4. Verify mobile rendering of both fixes
-
-**Success Metric**: Blog CTA buttons display text; TOC doesn't obscure article content
-
----
 
 ### DISC-134: Social Login (Google, Apple, etc.) 🔐 AUTH (READY)
 
@@ -525,59 +222,6 @@ Changes apply to all PDFs (quotes, invoices, demo) while maintaining compact tem
 
 ---
 
-### DISC-135: Post-Job Pricing Reflection Loop 💰🧠 LEARNING (DEPLOYED)
-
-**Source**: Founder Request (Eddie, 2025-12-30)
-**Impact**: HIGH | **Effort**: M | **Score**: 1.5
-**Sprint Alignment**: Learning system excellence, Anthropic showcase quality
-
-**Problem**: Current learning captures quote acceptance/rejection (DISC-121), but not actual job profitability. A quote can be accepted but leave money on the table, or be accepted but take longer than expected. The contractor knows this after the job - we should capture it.
-
-**The Insight**: Contractors always know in hindsight "I should have charged more for that" or "that was perfect pricing." This is the most valuable signal possible for the learning system - real profit margin feedback, not just acceptance rates.
-
-**Proposed Work**:
-1. **Post-Invoice Prompt** - After invoice is marked paid (or 7 days after creation), trigger reflection UI
-2. **Simple 3-Option UI** - "How did this pricing feel?" → "Too Low (left money)" | "Just Right" | "Too High (lucky it sold)"
-3. **Optional Numeric Input** - "What would you price this at next time?" → captures ideal price
-4. **Learning Integration** - Feed reflection data into category-specific pricing adjustments
-5. **Dashboard Insight** - Show pattern: "Your bathroom remodels tend to be underpriced by ~15%"
-
-**Why This Is Unique**:
-- No competitor does this - they all stop at "quote sent"
-- Creates compounding accuracy over time
-- Contractors WANT to tell you this (it's cathartic)
-- Anthropic showcase: Human-AI collaboration at its finest
-
-**Technical Notes**:
-- New table: `pricing_reflections` (invoice_id, feeling, ideal_price, created_at)
-- Trigger: Invoice status change to "paid" or age > 7 days
-- Learning weight: Higher than acceptance signal (actual outcome vs. customer behavior)
-
-**Success Metric**: 40%+ reflection completion rate; measurable improvement in pricing confidence scores for categories with 5+ reflections
-
----
-
-### DISC-136: Try Page Analytics Gaps 📊 ANALYTICS (COMPLETE)
-
-**Source**: Founder Request (Eddie, 2025-12-30)
-**Impact**: HIGH | **Effort**: S | **Score**: 3.0
-**Sprint Alignment**: CRITICAL - 80 clicks, 0 conversions, blind to funnel
-
-**Problem**: try.html (demo page) had no page view event. Couldn't see funnel.
-
-**Implementation (2025-12-31)**:
-- ✅ `try_page_viewed` - fires on load with referrer, UTM params, gclid
-- ✅ `demo_input_started` - fires when user starts typing (text mode)
-- ✅ `demo_recording_started` - fires when user starts voice recording
-- ✅ `demo_quote_generated` - fires on successful quote with total, line items
-- ✅ `demo_abandoned` - fires on page unload if left without generating
-
-**Full Funnel Now Visible**:
-Landing → Try Page View → Input/Recording Started → Quote Generated (or Abandoned)
-
-**Files Modified**: `frontend/try.html`
-
----
 
 ### DISC-137: Exit Intent Survey Reporting 📧 ANALYTICS (READY)
 
@@ -703,39 +347,6 @@ Landing → Try Page View → Input/Recording Started → Quote Generated (or Ab
 
 ---
 
-### DISC-141: Google Ads Intelligence Agent 📈🤖 GROWTH (COMPLETE - Phase 1)
-
-**Source**: Founder Request (Eddie, 2025-12-31)
-**Impact**: HIGH | **Effort**: M | **Score**: 2.0
-**Sprint Alignment**: Paid acquisition optimization, autonomous marketing
-
-**Problem**: 80 clicks, 4000 impressions, 0 conversions. No automated system to:
-- Track ad spend vs. conversions in real-time
-- Detect when ads are underperforming
-- Recommend bid/targeting adjustments
-- Alert when cost-per-acquisition is too high
-
-**PHASE 1 COMPLETE** (2025-12-31):
-- ✅ `backend/services/marketing_analytics.py` - Daily metrics service
-- ✅ Scheduled job: Daily marketing report at 8am UTC (3am EST)
-- ✅ Email report: Signups, quotes, 7-day trend, sparkline visualization
-- ✅ Config: `MARKETING_REPORTS_ENABLED` toggle
-
-**First report**: Tomorrow 8am UTC (3am EST)
-
-**PHASE 2 (Pending - requires API keys)**:
-- PostHog read API key (`POSTHOG_READ_API_KEY=phx_*`) - enables funnel tracking
-- Google Ads API integration - enables spend correlation
-
-**PHASE 3 (Future)**:
-- Automated bid/targeting recommendations
-- Anomaly detection alerts
-- Weekly strategy memos
-
-**Success Metric**: CPA (cost per acquisition) improves 50% within 30 days; founder receives actionable recommendations, not just data
-
----
-
 ### DISC-144: Evolve Landing Page Messaging - Voice Hook + Depth Reveal 🎯 GROWTH (READY)
 
 **Source**: Founder Request (Eddie, 2026-01-04)
@@ -808,6 +419,64 @@ Landing → Try Page View → Input/Recording Started → Quote Generated (or Ab
 4. Cross-post/promote on relevant channels
 
 **Success Metric**: Blog traffic diversity (not just SEO); social shares; time-on-page > existing articles
+
+---
+
+### DISC-154: Google Ads Creative Refresh - AI Learning + Tire Kicker Messaging 🎨📈 GROWTH (READY)
+
+**Source**: Founder Request (Eddie, 2026-01-05)
+**Impact**: HIGH | **Effort**: L | **Score**: 1.5
+**Sprint Alignment**: Paid acquisition optimization, messaging evolution
+**Related**: DISC-144 (Landing Page Messaging Evolution)
+
+**Problem**: Current Google Ads creative doesn't communicate the evolved value proposition. Image ads perform best, but existing imagery focuses on generic "quoting" rather than the differentiating AI learning system and tire-kicker elimination. Need fresh creative that aligns with the messaging evolution strategy.
+
+**Strategic Messaging Shift**:
+- From: "Voice to Quote" (feature)
+- To: "AI That Learns Your Pricing" + "Eliminate Tire Kickers" (outcomes)
+
+**Hook Concepts to Test**:
+
+| Hook | Pain Point | Angle |
+|------|------------|-------|
+| "Stop Chasing Tire Kickers" | Wasted time on unserious leads | Qualification/filtering |
+| "Your Pricing Brain" | Uncertainty, leaving money on table | AI learning, confidence |
+| "Quote in 30 Seconds, From Your Truck" | Time spent on admin | Speed + mobility |
+| "AI That Learns How YOU Price" | Generic tools don't fit | Personalization |
+| "Win More Jobs with Smarter Quotes" | Low close rates | Outcome focus |
+| "Professional Quotes Without the Paperwork" | Admin burden | Ease/simplicity |
+
+**Visual Concepts**:
+
+1. **Before/After Split**: Messy handwritten estimate vs. clean professional PDF
+2. **Time Visualization**: Clock/calendar showing hours saved per week
+3. **Brain/Learning Visual**: Abstract AI learning graphic (not cheesy robot)
+4. **Filter Funnel**: Tire kickers being filtered out, serious customers passing through
+5. **Contractor on Job Site**: Relatable imagery - phone in hand, work truck background
+6. **Money Stack**: Pricing confidence, "stop leaving money on the table"
+7. **Speed Blur**: 30-second transformation from voice to PDF
+
+**Google Ads Image Specifications**:
+- Square: 1200x1200 (responsive display)
+- Landscape: 1200x628 (standard display)
+- Portrait: 960x1200 (mobile-optimized)
+
+**Proposed Work**:
+1. **Audit current creative** - What's running, performing, missing
+2. **Design 10-15 image variations** across hook concepts
+3. **Write headline/description copy** to match each visual theme
+4. **Create A/B test structure** in Google Ads
+5. **Align with DISC-144** - Ensure ad creative matches landing page messaging
+
+**Creative Principles**:
+- Show outcomes, not features
+- Contractor-relatable imagery (not stock photo corporate)
+- Bold, readable text overlays
+- Clear value prop in first 2 seconds
+- NO generic "AI" imagery (robots, neural networks)
+- YES to concrete benefits (time, money, confidence)
+
+**Success Metric**: CTR improvement on image ads; conversion rate improvement from ad → demo; identify top 3 performing hooks
 
 ---
 
@@ -998,27 +667,6 @@ Landing → Try Page View → Input/Recording Started → Quote Generated (or Ab
 
 ---
 
-### DISC-142: Configure PostHog Read API Key 🔑 ANALYTICS (COMPLETE)
-
-**Source**: DISC-138 deployment verification (2025-01-04)
-**Impact**: LOW | **Effort**: XS | **Score**: 3.0
-
-**Problem**: The funnel analytics endpoints (DISC-138) are deployed and working, but return `posthog_configured: false`. Full funnel visibility requires a PostHog Read API key.
-
-**Proposed Work**:
-1. Generate PostHog Personal API Key with read-only access from PostHog dashboard
-2. Add `POSTHOG_READ_API_KEY` environment variable to Railway production
-3. Verify funnel endpoint returns real data: `GET /api/analytics/funnel?days=7`
-
-**Current State**:
-- Endpoints work: `/api/analytics/funnel` and `/api/analytics/traffic-sources`
-- Database fallback active (only shows signups/quotes, not page views)
-- Full funnel (landing → CTA → demo → signup) requires PostHog API
-
-**Success Metric**: `posthog_configured: true` in API response; full 7-step funnel visible.
-
----
-
 ### Phase II Voice Control (8 tickets)
 
 | Ticket | Title | Effort |
@@ -1138,15 +786,49 @@ Landing → Try Page View → Input/Recording Started → Quote Generated (or Ab
 
 ---
 
+### DISC-136: Try Page Analytics Gaps 📊 ANALYTICS (COMPLETE)
+
+**Summary**: Full PostHog funnel tracking on try.html (demo page):
+- `try_page_viewed` - fires on load with referrer, UTM params, gclid
+- `demo_input_started` - fires when user starts typing (text mode)
+- `demo_recording_started` - fires when user starts voice recording
+- `demo_quote_generated` - fires on successful quote
+- `demo_abandoned` - fires on page unload without generating
+
+**Files**: `frontend/try.html`
+
+---
+
+### DISC-141: Google Ads Intelligence Agent 📈🤖 GROWTH (COMPLETE - Phase 1)
+
+**Summary**: Phase 1 complete - daily marketing reports:
+- `backend/services/marketing_analytics.py` - Daily metrics service
+- Scheduled job: Daily at 8am UTC (3am EST)
+- Email report: Signups, quotes, 7-day trend, sparkline visualization
+- Config: `MARKETING_REPORTS_ENABLED` toggle
+
+**Phase 2** requires PostHog read API key and Google Ads API credentials.
+
+---
+
+### DISC-142: Configure PostHog Read API Key 🔑 ANALYTICS (COMPLETE)
+
+**Summary**: Funnel analytics endpoints deployed and working:
+- Endpoints: `/api/analytics/funnel` and `/api/analytics/traffic-sources`
+- Currently using database fallback
+- Full 7-step funnel visibility requires `POSTHOG_READ_API_KEY` env var in Railway
+
+---
+
 ## Closed (Previously Tracked)
 
-See `DISCOVERY_ARCHIVE.md` for full history of 45+ deployed tickets including:
+See `DISCOVERY_ARCHIVE.md` for full history of 85+ deployed tickets including:
+- UX Excellence Sprint (DISC-114-123, DISC-125-132, DISC-135)
+- Autonomous Infrastructure (DISC-102, 104, 106)
 - CRM System (DISC-085-092)
-- Learning System (DISC-052, DISC-054, DISC-068)
-- PDF & Templates (DISC-028, DISC-067, DISC-072)
-- Infrastructure (DISC-077, DISC-078, DISC-079)
+- Proposify Domination Waves 1-3
 - And more...
 
 ---
 
-*File size target: <800 lines. Current: ~200 lines. If this file exceeds 500 lines, run state hygiene.*
+*Last hygiene: 2026-01-05. File size: ~775 lines.*

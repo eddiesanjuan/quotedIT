@@ -193,12 +193,62 @@ Production-readiness hardening: security, caching, storage, audit logging.
 
 ---
 
+### UX Excellence Sprint (DISC-114 through DISC-123, DISC-125-130) - Dec 27-30, 2025
+
+Major UX audit and fixes batch deployed.
+
+| Ticket | Title | Deployed |
+|--------|-------|----------|
+| DISC-114 | Add Terms/Privacy to Quick Signup Form | 2025-12-27 |
+| DISC-115 | Display Loyalty Tier Badges on CRM Cards | 2025-12-27 |
+| DISC-116 | Add Outstanding Invoices Dashboard Widget | 2025-12-27 |
+| DISC-117 | Send Quote Rejection Notifications Always | 2025-12-27 |
+| DISC-118 | Add og:image Tags to Blog Articles | 2025-12-27 |
+| DISC-119 | Mobile WCAG 2.5.5 Touch Target Compliance | 2025-12-27 |
+| DISC-120 | Unified Auth Flow with Legal Compliance | 2025-12-27 |
+| DISC-121 | Learning System Outcome Loop (Win/Loss Tracking) | 2025-12-27 |
+| DISC-122 | Delete Line Item with Learning | 2025-12-27 |
+| DISC-123 | Quantity/Unit Edits Should Trigger Learning + Save | 2025-12-27 |
+| DISC-125 | Blog Article Formatting Fixes | 2025-12-28 |
+| DISC-126 | Customer Identification UX - Bulletproof Matching | 2025-12-29 |
+| DISC-127 | Logo Aspect Ratio Squished on Upload | 2025-12-28 |
+| DISC-128 | Founder Notifications for Signups & Demo Usage | 2025-12-30 |
+| DISC-129 | Demo Premium Template - Ultra-Polished First Impression | 2025-12-29 |
+| DISC-130 | PDF Line Spacing Polish - Improved Text Readability | 2025-12-30 |
+| DISC-131 | Demo Page Dictation Examples | 2025-12-30 |
+| DISC-132 | Interactive Clarifying Questions | 2025-12-30 |
+| DISC-135 | Post-Job Pricing Reflection Loop | 2025-12-31 |
+
+---
+
+### Autonomous Infrastructure (DISC-102, 104, 106) - Jan 5, 2026
+
+Git worktree isolation and safety frameworks for autonomous operations.
+
+| Ticket | Title | PR | Deployed |
+|--------|-------|-----|----------|
+| DISC-102 | Action Risk Classification Framework | #38 | 2026-01-05 |
+| DISC-104 | Git Worktree Isolation for Autonomous Ops | #36 | 2026-01-05 |
+| DISC-106 | Safety Net Architecture - 5-Layer Defense | #37 | 2026-01-05 |
+
+---
+
+### Handyman Mike Storytelling (DISC-113) - Partial Dec 30, 2025
+
+| Ticket | Title | Status |
+|--------|-------|--------|
+| DISC-113 | Handyman Mike Workflow Storytelling | Partial - Time Savings Calculator only |
+
+Remaining work: Story-based tour, pre-seeded demo data, workflow animation, marketing assets.
+
+---
+
 ## Full Ticket Count by Status
 
 | Status | Count | Notes |
 |--------|-------|-------|
-| DEPLOYED | 60+ | All in this archive (45 original + Wave 1-3 + DISC-101/107/108/110/112 + PRs 9-13 + SEO) |
-| Remaining Active | 25 | In DISCOVERY_BACKLOG.md (includes recovered DISC-111) |
+| DEPLOYED | 85+ | All in this archive |
+| Remaining Active | 45 | In DISCOVERY_BACKLOG.md (READY + DISCOVERED + COMPLETE) |
 
 ---
 
