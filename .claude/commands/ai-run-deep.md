@@ -2,6 +2,42 @@
 
 Execute an agent in a self-healing loop using Ralph Wiggum plugin. Supports direct task execution, ticket targeting, and smart queue management.
 
+**v2.0 - Full Autonomy Mode**: Now supports end-to-end autonomous deployment with Railway preview testing, production testing, and batched backlog updates.
+
+---
+
+## Core Philosophy: True Autonomy
+
+The `/ai-run-deep` command should run until **ALL work is deployed, merged, and tested**. This means:
+
+1. **Don't stop at PR creation** - PRs are intermediate artifacts, not completion
+2. **Test on Railway preview** - Every PR gets browser-tested on its preview deployment
+3. **Merge only after preview passes** - No untested code reaches production
+4. **Test production after merge** - Verify the merge didn't break anything
+5. **Batch backlog updates** - Update DISCOVERY_BACKLOG.md ONCE at the end to avoid git conflicts
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    FULL AUTONOMY LOOP                                │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│   ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐     │
+│   │ Implement │ -> │ Create   │ -> │ Wait for │ -> │ Test on  │     │
+│   │ Tickets   │    │ PR       │    │ Preview  │    │ Preview  │     │
+│   └──────────┘    └──────────┘    └──────────┘    └──────────┘     │
+│                                           │                          │
+│                                           v                          │
+│   ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐     │
+│   │ Update   │ <- │ Test on  │ <- │ Merge    │ <- │ Pass?    │     │
+│   │ Backlog  │    │ Prod     │    │ to Main  │    │ Y/N      │     │
+│   └──────────┘    └──────────┘    └──────────┘    └──────────┘     │
+│        │                                                             │
+│        v                                                             │
+│   COMPLETE (all tickets deployed, tested, backlog updated)          │
+│                                                                      │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
 ---
 
 ## Arguments
@@ -14,29 +50,43 @@ Parse from $ARGUMENTS:
 - `--urgent`: Priority tier 1 (founder-urgent)
 - `--skip-empty`: Skip agents with empty queues (default for full/overnight)
 
+### Escape Hatches (reduce automation when needed):
+- `--pr-only`: Stop after PR creation, skip testing/merging (for manual review)
+- `--no-bundle`: Force separate PRs per ticket (disable auto-bundling)
+- `--skip-prod-test`: Skip production testing after merge (minor changes only)
+
+**Note**: Full autonomy (test preview → merge → test production → update backlog) is the DEFAULT. Bundling is AUTOMATIC when sensible. Use escape hatches only when you need less automation.
+
 ## Usage Examples
 
 ```bash
 # === DIRECT TASK EXECUTION (Founder Fast Path) ===
-/ai-run-deep code "add duplicate quote button"     # Immediate implementation
-/ai-run-deep code "fix login bug" --urgent         # Highest priority
-/ai-run-deep code "add dark mode" --track          # Creates DISC-XXX and implements
+/ai-run-deep code "add duplicate quote button"     # Full cycle: implement → test → merge → verify
+/ai-run-deep code "fix login bug" --urgent         # Highest priority, full cycle
+/ai-run-deep code "add dark mode" --track          # Creates DISC-XXX, full cycle
 
 # === TICKET TARGETING ===
-/ai-run-deep code DISC-113                         # Implement specific ticket
-/ai-run-deep code DISC-113,DISC-114,DISC-115       # Multiple tickets
+/ai-run-deep code DISC-113                         # Full cycle for specific ticket
+/ai-run-deep code DISC-113,DISC-114,DISC-115       # Auto-bundles into 1-2 PRs, full cycle
 
-# === STANDARD AGENT RUNS ===
+# === STANDARD AGENT RUNS (Full Autonomy is Default) ===
+/ai-run-deep code                                  # Process READY queue → test → merge → verify all
+/ai-run-deep code --max=5                          # Custom iteration limit, still full cycle
+/ai-run-deep full                                  # All agents with full deployment testing
+
+# === OTHER AGENTS ===
 /ai-run-deep support                               # Clear support inbox
 /ai-run-deep ops                                   # Health check
-/ai-run-deep code                                  # Process READY queue by priority
-/ai-run-deep code --max=5                          # Custom iteration limit
 /ai-run-deep discovery                             # Find new opportunities
 /ai-run-deep growth                                # Process content queue
 
+# === ESCAPE HATCHES (when you need less automation) ===
+/ai-run-deep code --pr-only                        # Just create PRs, don't test/merge (manual review)
+/ai-run-deep code DISC-113 --no-bundle             # Force separate PR even if bundling makes sense
+/ai-run-deep code --skip-prod-test                 # Skip production testing (minor changes)
+
 # === FULL COMPANY RUNS ===
-/ai-run-deep full                                  # All agents, smart skip
-/ai-run-deep full --no-skip                        # Force run all agents
+/ai-run-deep full --no-skip                        # Force run all agents regardless of queue
 /ai-run-deep overnight                             # Extended overnight run
 ```
 
@@ -59,15 +109,60 @@ When processing work, Code Agent follows this priority order:
 |-------|-------------------|----------------|
 | support | `INBOX PROCESSED AND ESCALATIONS HANDLED` | 5 |
 | ops | `HEALTH GREEN AND INCIDENTS RESOLVED` | 10 |
-| code | `CODE QUEUE EMPTY AND TESTS PASSING` | 3 |
+| code | `CODE QUEUE DEPLOYED AND PRODUCTION VERIFIED` | 10 |
+| code (--pr-only) | `CODE QUEUE EMPTY AND PRS CREATED` | 3 |
 | growth | `CONTENT QUEUE PROCESSED` | 5 |
 | meta | `WEEKLY ANALYSIS COMPLETE` | 2 |
 | finance | `FINANCIAL SYNC COMPLETE` | 3 |
 | discovery | `DISCOVERY CYCLE COMPLETE` | 3 |
 
+**Note**: Code agent default is full autonomy (10 iterations) to allow for preview testing, merging, and production verification. Use `--pr-only` for faster runs that just create PRs.
+
 ---
 
 ## Instructions
+
+### Step 0: Handle Existing Open PRs (Priority)
+
+**BEFORE processing any new work, check for and handle existing open PRs.**
+
+```bash
+# Check for open PRs from previous runs
+OPEN_PRS=$(gh pr list --state open --json number,title,headRefName --jq '.[] | "\(.number)|\(.title)|\(.headRefName)"')
+
+if [ -n "$OPEN_PRS" ]; then
+  echo "Found open PRs from previous runs - these take priority"
+fi
+```
+
+#### 0.1 PR_PENDING Priority Queue
+
+Open PRs represent work that's 90% done - just needs testing and merging. Process these FIRST:
+
+1. **List open PRs**: `gh pr list --state open`
+2. **For each open PR**:
+   - Get preview URL from Railway
+   - Wait for preview deployment
+   - Run Playwright tests
+   - If tests PASS → Merge PR
+   - If tests FAIL → Fix on branch, push, retry (up to 3x)
+3. **After all PRs handled** → Continue to new work
+
+#### 0.2 Backlog Sync
+
+Check DISCOVERY_BACKLOG.md for `PR_PENDING` status tickets:
+
+```bash
+grep "PR_PENDING" DISCOVERY_BACKLOG.md
+```
+
+These tickets have open PRs and should be processed before READY tickets.
+
+**Priority Order**:
+1. PR_PENDING tickets (existing PRs needing test/merge)
+2. READY tickets (new implementation work)
+
+---
 
 ### Step 1: Parse Arguments
 
@@ -340,7 +435,389 @@ cat .ai-company/agents/*/state.md | grep -E "(Status|Last Run)"
 2. Force another agent iteration with explicit fix instruction
 3. Or escalate to founder if max iterations reached
 
-### Step 9: Report Results
+### Step 9: Railway Preview Testing (v2.0)
+
+**CRITICAL**: PRs are NOT complete until tested on Railway preview deployment.
+
+#### 9.1 Get Preview URL
+
+After PR creation, Railway automatically creates a preview deployment. Get the URL:
+
+```bash
+# Get PR preview URL from Railway
+PR_NUMBER=$(gh pr view --json number -q .number)
+PREVIEW_URL=$(railway status --json | jq -r '.environments[] | select(.name | contains("pr-'$PR_NUMBER'")) | .url')
+
+# Or construct from convention: pr-{number}-quoted-it.up.railway.app
+PREVIEW_URL="https://pr-${PR_NUMBER}-quoted-it.up.railway.app"
+
+# Wait for deployment to be ready (up to 5 minutes)
+for i in {1..30}; do
+  if curl -s -o /dev/null -w "%{http_code}" "$PREVIEW_URL/health" | grep -q "200"; then
+    echo "Preview ready at $PREVIEW_URL"
+    break
+  fi
+  echo "Waiting for preview deployment... ($i/30)"
+  sleep 10
+done
+```
+
+#### 9.2 Run Playwright Tests on Preview
+
+Use Playwright browser automation to test the preview deployment:
+
+```markdown
+## Preview Test Suite
+
+For each PR, run these tests on the preview URL:
+
+### Authentication Flow
+1. Navigate to {PREVIEW_URL}
+2. Click "Get Started" button
+3. Enter test email (use disposable: test+{timestamp}@quoted.it.com)
+4. Verify magic link is sent (check Resend logs or use webhook)
+5. Complete auth flow
+6. Verify dashboard loads
+
+### Core Feature Tests
+1. **Quote Creation**:
+   - Click "New Quote"
+   - Enter voice input (or text fallback)
+   - Verify quote generates
+   - Verify PDF downloads
+
+2. **Settings**:
+   - Navigate to Settings
+   - Verify logo upload works
+   - Verify profile save works
+
+3. **Feature-Specific Tests**:
+   - Test whatever feature the PR implements
+   - E.g., if DISC-134 (Social Login), test Google OAuth button
+
+### Smoke Test (Minimum)
+1. Landing page loads (200 OK)
+2. Health endpoint returns healthy
+3. Can reach auth page
+4. JavaScript console has no errors
+```
+
+#### 9.3 Playwright Integration
+
+Use the MCP Playwright tools for browser testing:
+
+```javascript
+// Example: Test quote creation flow
+await mcp__plugin_playwright_playwright__browser_navigate({ url: PREVIEW_URL });
+await mcp__plugin_playwright_playwright__browser_snapshot({});
+// Look for "Get Started" button in snapshot
+await mcp__plugin_playwright_playwright__browser_click({ element: "Get Started button", ref: "..." });
+// Continue through flow...
+```
+
+**Test Results Logging**:
+```markdown
+## Preview Test Results - PR #{number}
+
+| Test | Status | Notes |
+|------|--------|-------|
+| Landing loads | ✅ PASS | 200 OK in 1.2s |
+| Health check | ✅ PASS | All services healthy |
+| Auth flow | ✅ PASS | Magic link sent |
+| Quote creation | ✅ PASS | PDF generated |
+| Feature: {specific} | ✅ PASS | Working as expected |
+
+**Overall**: PASS - Ready for merge
+```
+
+#### 9.4 Preview Test Failure Handling
+
+If ANY preview test fails:
+1. DO NOT merge the PR
+2. Log the failure with screenshots
+3. Create fix commit on the same branch
+4. Push and wait for new preview deployment
+5. Re-run preview tests
+6. Repeat until all tests pass OR max iterations reached
+
+### Step 10: Merge to Production
+
+Only after preview tests pass:
+
+```bash
+# Merge the PR
+gh pr merge $PR_NUMBER --squash --delete-branch
+
+# Wait for production deployment (Railway auto-deploys main)
+echo "Waiting for production deployment..."
+for i in {1..30}; do
+  DEPLOY_STATUS=$(railway status --json | jq -r '.deployments[0].status')
+  if [ "$DEPLOY_STATUS" = "SUCCESS" ]; then
+    echo "Production deployment complete"
+    break
+  fi
+  echo "Deploying... ($i/30)"
+  sleep 10
+done
+```
+
+### Step 11: Production Testing (v2.0)
+
+**CRITICAL**: After merge, verify production is healthy.
+
+#### 11.1 Production Smoke Test
+
+```bash
+PROD_URL="https://quoted.it.com"
+
+# 1. Health check
+curl -s "$PROD_URL/health" | jq .
+
+# 2. Landing page
+curl -s -o /dev/null -w "%{http_code}" "$PROD_URL"
+
+# 3. API status
+curl -s "$PROD_URL/api/status" | jq .
+```
+
+#### 11.2 Production Browser Tests
+
+Run the same Playwright test suite on production:
+
+```markdown
+## Production Test Suite
+
+1. Navigate to https://quoted.it.com
+2. Verify landing page loads correctly
+3. Test auth flow (use test account or create new)
+4. Verify feature from merged PR works
+5. Check console for errors
+6. Verify PostHog events are firing
+```
+
+#### 11.3 Production Test Failure Handling
+
+If production tests fail after merge:
+1. **CRITICAL**: This is a production incident
+2. Check if rollback is needed (feature flag disable or revert commit)
+3. Log the incident in `.ai-company/incidents/`
+4. Create hotfix ticket if needed
+5. Alert founder via escalation
+
+### Step 12: Automatic PR Bundling (v2.0)
+
+Bundling is **AUTOMATIC** when it makes sense. Use `--no-bundle` to disable.
+
+#### 12.1 When to Auto-Bundle
+
+The orchestrator automatically bundles tickets when:
+
+```markdown
+## Auto-Bundle Triggers
+
+1. **Multiple tickets in same run**
+   - Processing 2+ tickets from READY queue → consider bundling
+
+2. **Same-area tickets** (highest priority for bundling):
+   - Multiple frontend-only changes → bundle into 1 PR
+   - Multiple backend-only changes → bundle into 1 PR
+   - Mixed frontend+backend → separate PRs (safer)
+
+3. **Related functionality**:
+   - Tickets that touch same files → bundle
+   - Tickets that depend on each other → bundle in order
+
+4. **Explicit targeting**:
+   - `/ai-run-deep code DISC-113,DISC-114` → always bundles these together
+```
+
+#### 12.2 Bundle Rules
+
+```markdown
+## Bundle Limits
+
+1. **Max 3 tickets per PR** (keeps reviews manageable)
+2. **Max 500 lines changed per PR** (larger = split)
+3. **Never bundle across unrelated domains** (auth + PDF = separate)
+
+## Bundle Naming
+- Branch: `quoted-run/bundle-{timestamp}`
+- PR Title: "Bundle: DISC-XXX, DISC-YYY, DISC-ZZZ"
+- Each ticket gets its own commit within the bundle
+```
+
+#### 12.2 Bundle Implementation
+
+```bash
+# Create bundle branch
+git checkout -b quoted-run/bundle-$(date +%s) main
+
+# Implement all tickets on same branch
+# ... code changes for DISC-113 ...
+git add . && git commit -m "feat(DISC-113): {description}"
+
+# ... code changes for DISC-114 ...
+git add . && git commit -m "feat(DISC-114): {description}"
+
+# Create single PR for bundle
+gh pr create --title "Bundle: DISC-113, DISC-114" --body "..."
+```
+
+#### 12.3 Bundle Testing
+
+Each ticket in bundle must be individually testable:
+1. Test each feature separately on preview
+2. Test features don't conflict
+3. Only merge if ALL features pass
+
+### Step 13: Batched Backlog Updates (v2.0)
+
+**CRITICAL**: To avoid git conflicts when running parallel agents, update DISCOVERY_BACKLOG.md only ONCE at the end.
+
+#### 13.1 Track Completed Work In-Memory
+
+During the run, track completed tickets in state file only:
+
+```markdown
+## .ai-company/state/run-{timestamp}.md
+
+### Completed Tickets (Pending Backlog Update)
+| Ticket | PR # | Status | Merged |
+|--------|------|--------|--------|
+| DISC-113 | #45 | TESTED | ✅ |
+| DISC-114 | #45 | TESTED | ✅ |
+| DISC-115 | #46 | TESTED | ✅ |
+```
+
+#### 13.2 Batch Update at End
+
+Only after ALL work is merged and tested:
+
+```markdown
+## Backlog Update Script
+
+1. Read run state file
+2. For each completed ticket:
+   - Change status from READY → DEPLOYED
+3. Update summary counts
+4. Move DEPLOYED tickets to DISCOVERY_ARCHIVE.md
+5. Single commit: "chore: Batch backlog update - DISC-113, 114, 115 deployed"
+```
+
+#### 13.3 Why Batched Updates
+
+Previous failure mode:
+- 4 parallel agents each try to update DISCOVERY_BACKLOG.md
+- Git conflicts on every push
+- Agents get stuck in conflict resolution loops
+
+New approach:
+- Agents write to their own state files (no conflicts)
+- Single backlog update at orchestration end
+- Clean git history
+
+### Step 14: Full Autonomy Execution Flow (v2.0)
+
+This is the **DEFAULT** behavior for all code agent runs. Use `--pr-only` to disable.
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    FULL AUTONOMY ORCHESTRATION FLOW                          │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  PHASE 1: IMPLEMENTATION                                                     │
+│  ├── Read READY queue from DISCOVERY_BACKLOG.md                             │
+│  ├── For each ticket (or bundle if --bundle):                               │
+│  │   ├── Create feature branch                                              │
+│  │   ├── Implement the feature                                              │
+│  │   ├── Run local tests (pytest)                                           │
+│  │   ├── Create PR                                                          │
+│  │   └── Record in run state file (NOT backlog yet)                         │
+│  └── Continue until READY queue exhausted OR max iterations                 │
+│                                                                              │
+│  PHASE 2: PREVIEW TESTING                                                    │
+│  ├── For each open PR:                                                       │
+│  │   ├── Wait for Railway preview deployment                                │
+│  │   ├── Run Playwright test suite on preview URL                           │
+│  │   ├── If FAIL: Fix, push, re-test (up to 3 attempts)                     │
+│  │   └── Record test results in run state file                              │
+│  └── All PRs must pass preview tests before Phase 3                         │
+│                                                                              │
+│  PHASE 3: MERGE                                                              │
+│  ├── For each PR that passed preview tests:                                 │
+│  │   ├── Merge to main (squash)                                             │
+│  │   ├── Wait for production deployment                                     │
+│  │   └── Record merge in run state file                                     │
+│  └── All PRs merged sequentially                                            │
+│                                                                              │
+│  PHASE 4: PRODUCTION TESTING                                                 │
+│  ├── Wait for all deploys to complete                                       │
+│  ├── Run Playwright test suite on production                                │
+│  ├── Verify all features work                                               │
+│  ├── If FAIL: Create rollback/hotfix ticket, escalate                       │
+│  └── Record production test results                                         │
+│                                                                              │
+│  PHASE 5: FINALIZATION                                                       │
+│  ├── Batch update DISCOVERY_BACKLOG.md:                                     │
+│  │   ├── Change all completed tickets: READY → DEPLOYED                     │
+│  │   ├── Update summary counts                                              │
+│  │   └── Single commit                                                      │
+│  ├── Move DEPLOYED tickets to DISCOVERY_ARCHIVE.md                          │
+│  ├── Update agent state file with final results                             │
+│  └── Output completion promise                                              │
+│                                                                              │
+│  COMPLETION PROMISE (Full Autonomy):                                         │
+│  <promise>CODE QUEUE DEPLOYED AND PRODUCTION VERIFIED</promise>             │
+│                                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+#### Failure Modes & Recovery
+
+| Phase | Failure | Recovery |
+|-------|---------|----------|
+| Implementation | Tests fail | Fix code, retry up to 3x |
+| Implementation | Can't implement | Mark ticket BLOCKED, continue others |
+| Preview Test | Feature broken | Fix on branch, push, re-test |
+| Preview Test | 3 attempts fail | Skip ticket, escalate to founder |
+| Merge | Conflict | Rebase, resolve, retry |
+| Production Test | Feature broken | Rollback via feature flag or revert |
+| Production Test | Critical failure | EMERGENCY_STOP, alert founder |
+
+#### Run State File Format
+
+```markdown
+# Deep Run State - {timestamp}
+
+## Configuration
+- Mode: full-autonomy
+- Flags: --deploy --bundle
+- Max Iterations: 10
+
+## Phase Status
+| Phase | Status | Started | Completed |
+|-------|--------|---------|-----------|
+| Implementation | COMPLETE | 15:00 | 15:45 |
+| Preview Testing | COMPLETE | 15:45 | 16:00 |
+| Merge | COMPLETE | 16:00 | 16:10 |
+| Production Testing | COMPLETE | 16:10 | 16:20 |
+| Finalization | COMPLETE | 16:20 | 16:22 |
+
+## Tickets Processed
+| Ticket | PR # | Preview | Merged | Prod Test |
+|--------|------|---------|--------|-----------|
+| DISC-113 | #45 | ✅ | ✅ | ✅ |
+| DISC-114 | #45 | ✅ | ✅ | ✅ |
+| DISC-115 | #46 | ✅ | ✅ | ✅ |
+
+## Final Status
+- Tickets Completed: 3
+- PRs Merged: 2
+- Production Health: GREEN
+- Backlog Updated: YES
+```
+
+### Step 15: Report Results
 
 ```
 +==============================================================================+
@@ -363,6 +840,23 @@ Status: {COMPLETE / IN_PROGRESS}
 PRs Created: {list}
 Tickets Completed: {list}
 Remaining in Queue: {count}
+
+{If code agent (Full Autonomy - Default)}
+## Deployment Pipeline Results
+| Phase | Status | Duration |
+|-------|--------|----------|
+| Implementation | ✅ COMPLETE | 45 min |
+| Preview Testing | ✅ COMPLETE | 15 min |
+| Merge | ✅ COMPLETE | 10 min |
+| Production Testing | ✅ COMPLETE | 10 min |
+| Finalization | ✅ COMPLETE | 2 min |
+
+PRs Created: {list}
+PRs Merged: {list}
+Preview Tests: {passed}/{total}
+Production Tests: {passed}/{total}
+Tickets Deployed: {list}
+Backlog Updated: YES (single batch commit)
 
 {If full run}
 | Agent | Status | Iterations | Notes |
@@ -394,6 +888,10 @@ Remaining in Queue: {count}
 | Overnight autonomous | `/ai-run-deep overnight` |
 | Find new work | `/ai-run-deep discovery` |
 | Emergency stop | `/ai-stop` |
+| **Escape Hatches** | |
+| PR only (skip test/merge) | `/ai-run-deep code --pr-only` |
+| Force separate PRs | `/ai-run-deep code --no-bundle` |
+| Skip production testing | `/ai-run-deep code --skip-prod-test` |
 
 ---
 
