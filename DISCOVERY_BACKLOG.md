@@ -32,15 +32,15 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 | Status | Count |
 |--------|-------|
-| READY | 14 |
-| DISCOVERED | 20 |
-| COMPLETE | 12 |
-| **Active Total** | **46** |
-| Archived (DEPLOYED) | 85+ |
+| READY | 11 |
+| DISCOVERED | 19 |
+| COMPLETE | 13 |
+| **Active Total** | **43** |
+| Archived (DEPLOYED) | 88+ |
 
 **Autonomous AI Infrastructure**: DISC-101 COMPLETE, DISC-102/104/106 DEPLOYED (PRs #36-38), DISC-103/105 READY
 **Agent Reliability Engineering**: DISC-107, DISC-108 COMPLETE, DISC-109 DISCOVERED
-**Analytics Pipeline**: DISC-136, DISC-141, DISC-142 COMPLETE (awaiting deploy)
+**Analytics Pipeline**: DISC-136, DISC-141, DISC-142 COMPLETE (awaiting deploy), DISC-137/138/139 DEPLOYED
 **Phase II Voice Control**: DISC-042 through DISC-049 (8 tickets) - DISCOVERED, awaiting founder review
 **Competitive Defense**: DISC-060 through DISC-062 - DISCOVERED
 
@@ -52,11 +52,11 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 | Ticket | Title | Deployed |
 |--------|-------|----------|
+| DISC-139 | Real-Time Traffic Spike Alerts | 2026-01-03 |
+| DISC-138 | Google Ads Conversion Funnel Dashboard | 2026-01-03 |
+| DISC-137 | Exit Intent Survey Reporting | 2026-01-03 |
 | DISC-135 | Post-Job Pricing Reflection Loop + Conversion Tracking | 2025-12-31 |
 | DISC-133 | Clarification Answers Feed Into Learning System | 2025-12-30 |
-| DISC-132 | Interactive Clarifying Questions for Demo | 2025-12-30 |
-| DISC-131 | Demo Page Dictation Examples | 2025-12-30 |
-| DISC-113 | Time Savings Calculator (partial) | 2025-12-30 |
 
 *Full deployment history: See DISCOVERY_ARCHIVE.md*
 
@@ -223,86 +223,6 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 ---
 
 
-### DISC-137: Exit Intent Survey Reporting 📧 ANALYTICS (READY)
-
-**Source**: Founder Request (Eddie, 2025-12-30)
-**Impact**: MEDIUM | **Effort**: S | **Score**: 2.0
-**Sprint Alignment**: Understand why users leave
-
-**Problem**: Exit intent survey data goes to PostHog but founder has to manually check. Need proactive reporting.
-
-**Current State**:
-- `exit_survey_completed` captures reasons and other_text
-- Data exists but requires PostHog dashboard login
-
-**Proposed Work**:
-1. Daily email digest: "Yesterday's Exit Survey Summary"
-   - Count by reason (Not my industry, Too expensive, etc.)
-   - Any verbatim "Other" responses (most valuable)
-   - Trend vs. previous day/week
-2. Instant alert for specific keywords ("bug", "broken", "doesn't work")
-3. Add to founder notification service (alongside DISC-128)
-
-**Success Metric**: Founder receives daily exit survey digest; can read user feedback without logging into PostHog
-
----
-
-### DISC-138: Google Ads → Conversion Funnel Dashboard 📈 ANALYTICS (READY)
-
-**Source**: Founder Request (Eddie, 2025-12-30)
-**Impact**: HIGH | **Effort**: M | **Score**: 1.5
-**Sprint Alignment**: Understand paid acquisition performance
-
-**Problem**: 80 ad clicks, 4000 impressions, 0 conversions. No visibility into where users drop off.
-
-**Proposed Work**:
-1. **PostHog Dashboard**: Create "Acquisition Funnel" dashboard
-   - Landing page views (by UTM source)
-   - CTA clicks (Try Demo vs Sign Up)
-   - Try page views
-   - Demo generation attempts
-   - Demo completions
-   - Signup attempts
-   - Signup completions
-2. **Conversion Tracking Integration**
-   - Verify Google Ads conversion pixel fires on signup
-   - Add conversion tracking for demo completion (micro-conversion)
-3. **Funnel Visualization**
-   - Step-by-step drop-off visualization
-   - Segment by ad campaign, device, time of day
-
-**Success Metric**: Can answer "where do ad visitors drop off?" in 30 seconds
-
----
-
-### DISC-139: Real-Time Traffic Spike Alerts 🚨 MONITORING (READY)
-
-**Source**: Founder Request (Eddie, 2025-12-30)
-**Impact**: HIGH | **Effort**: M | **Score**: 1.5
-**Sprint Alignment**: Don't miss viral moments
-
-**Problem**: If Quoted goes viral (HN, Reddit, tweet), founder needs to know immediately to:
-- Monitor for issues
-- Engage with community
-- Scale infrastructure if needed
-
-**Proposed Work**:
-1. **Hourly traffic check** (backend scheduler)
-   - Compare current hour page views to 7-day average
-   - If 3x+ normal: send founder alert
-2. **Demo generation spike alert**
-   - If 5+ demo quotes in an hour (vs. typical ~1)
-   - Immediate Slack/email notification
-3. **Signup velocity alert**
-   - Any signup triggers notification (DISC-128 already does this)
-   - But also alert on 3+ signups in an hour = potential viral
-4. **Infrastructure pre-emptive warning**
-   - Monitor Railway metrics
-   - Alert if approaching limits
-
-**Success Metric**: Founder knows within 1 hour if traffic spikes 3x or more
-
----
 
 ### DISC-140: Autonomous Monitoring Agent 🤖 INFRASTRUCTURE (READY)
 
@@ -562,27 +482,6 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 ---
 
-### DISC-149: Payment Failure Email Notifications 📧 BILLING (DISCOVERED)
-
-**Source**: Code analysis - billing.py line 264 has `# TODO: Send email notification to user`
-**Impact**: MEDIUM | **Effort**: S | **Score**: 2.0
-**Sprint Alignment**: Revenue protection, churn prevention
-
-**Problem**: When a user's payment fails (invoice.payment_failed webhook), the system logs the event but does NOT notify the user. This means:
-- User doesn't know their card failed
-- Subscription may lapse unexpectedly
-- Founder has no visibility into churn risk from payment failures
-
-**Proposed Work**:
-1. Implement `send_payment_failed_notification()` in email service
-2. Send to user: "Your payment failed - please update your card"
-3. Send to founder: Alert about potential churn
-4. Track in analytics for churn prediction
-
-**Success Metric**: 100% of payment failures trigger user notification; reduced involuntary churn
-
----
-
 ### DISC-150: Referral Credit Redemption Mechanism 💳 GROWTH (DISCOVERED)
 
 **Source**: Code analysis - referral.py awards credits but no redemption path
@@ -706,6 +605,17 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 ---
 
 ## COMPLETE - Pending Deploy
+
+### DISC-149: Payment Failure Email Notifications 📧 BILLING (COMPLETE)
+
+**Summary**: Implemented payment failure webhook handling in billing.py:
+- Sends notification to user with retry date and update payment CTA
+- Alerts founder with customer details and Stripe link for churn visibility
+- Uses existing `send_payment_failed_notification()` email template
+
+**PR**: quoted-run/DISC-149
+
+---
 
 ### DISC-101: LLM-as-Judge for Autonomous Cycles 🧠 INFRASTRUCTURE (COMPLETE)
 

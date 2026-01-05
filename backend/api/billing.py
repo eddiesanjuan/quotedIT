@@ -4,13 +4,17 @@ Handles Stripe subscription management, webhooks, and usage status.
 """
 
 from typing import Optional
+from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 from pydantic import BaseModel
 import stripe
 
 from ..services.auth import get_db, get_current_user
 from ..services.billing import BillingService
+from ..services.email import EmailService
+from ..models.database import User, Contractor
 from ..config import settings
 
 router = APIRouter()
@@ -260,9 +264,8 @@ async def stripe_webhook(
                 )
 
         elif event_type == "invoice.payment_failed":
-            # Payment failed
-            # TODO: Send email notification to user
-            pass
+            # DISC-149: Payment failed - notify user and founder
+            await handle_payment_failed(db, event_data, logger)
 
     except Exception as e:
         # Log the error and return 500 so Stripe will retry
@@ -276,6 +279,96 @@ async def stripe_webhook(
 
     # Only return success if we actually processed successfully
     return {"status": "success", "event_type": event_type}
+
+
+async def handle_payment_failed(db: AsyncSession, invoice_data: dict, logger) -> None:
+    """
+    DISC-149: Handle failed payment webhook.
+
+    Sends notification to:
+    1. User - so they can update payment method
+    2. Founder - for churn visibility
+
+    Args:
+        db: Database session
+        invoice_data: Stripe invoice object from webhook
+        logger: Logger instance
+    """
+    try:
+        # Get customer ID from invoice
+        customer_id = invoice_data.get("customer")
+        if not customer_id:
+            logger.warning("Payment failed webhook missing customer ID")
+            return
+
+        # Get customer email from Stripe
+        customer = stripe.Customer.retrieve(customer_id)
+        customer_email = customer.get("email")
+        if not customer_email:
+            logger.warning(f"No email for Stripe customer {customer_id}")
+            return
+
+        # Find user and contractor in our database
+        result = await db.execute(
+            select(User).where(User.stripe_customer_id == customer_id)
+        )
+        user = result.scalar_one_or_none()
+
+        business_name = "your business"  # fallback
+        if user and user.contractor:
+            business_name = user.contractor.business_name or user.contractor.owner_name or "your business"
+
+        # Calculate retry date (Stripe typically retries 3-5 days later)
+        # Using 5 days as a safe estimate
+        retry_date = (datetime.utcnow() + timedelta(days=5)).strftime("%B %d, %Y")
+
+        # Get amount and plan info for logging/founder notification
+        amount_due = invoice_data.get("amount_due", 0)
+        amount_formatted = f"${amount_due / 100:.2f}" if amount_due else "subscription"
+
+        # 1. Send notification to user
+        try:
+            await EmailService.send_payment_failed_notification(
+                to_email=customer_email,
+                business_name=business_name,
+                retry_date=retry_date
+            )
+            logger.info(f"Payment failure notification sent to {customer_email}")
+        except Exception as e:
+            logger.error(f"Failed to send payment failure email to user: {e}")
+
+        # 2. Send alert to founder (churn visibility)
+        try:
+            founder_alert_html = f"""
+                <h1>Payment Failed Alert</h1>
+
+                <p><strong>Business:</strong> {business_name}</p>
+                <p><strong>Email:</strong> {customer_email}</p>
+                <p><strong>Amount:</strong> {amount_formatted}</p>
+                <p><strong>Stripe Customer:</strong> {customer_id}</p>
+
+                <p class="muted">User has been notified and asked to update their payment method.
+                If this is a high-value customer, consider reaching out personally.</p>
+
+                <a href="https://dashboard.stripe.com/customers/{customer_id}" class="button">
+                    View in Stripe
+                </a>
+            """
+
+            await EmailService._send_email(
+                to_email=settings.founder_email,
+                subject=f"[Quoted] Payment Failed: {business_name}",
+                html=founder_alert_html,
+                text=f"Payment failed for {business_name} ({customer_email}). Amount: {amount_formatted}"
+            )
+            logger.info(f"Founder alerted about payment failure for {customer_email}")
+        except Exception as e:
+            logger.error(f"Failed to send payment failure alert to founder: {e}")
+
+    except Exception as e:
+        logger.error(f"Error handling payment failure webhook: {e}", exc_info=True)
+        # Don't raise - we don't want to fail the webhook response
+        # The user notification is best-effort
 
 
 @router.get("/plans")
