@@ -1,0 +1,206 @@
+# Complexity Signals Configuration
+# DISC-103: Smart Complexity Detection for Task Routing
+#
+# This config defines signals that indicate task complexity levels.
+# Used by complexity_detection.py to score tasks and route them appropriately.
+#
+# Routing thresholds:
+#   - 85%+ confidence -> Execute directly (simple, low-risk)
+#   - 60-85% confidence -> Checkpoints (moderate complexity)
+#   - <60% confidence -> Plan first (complex, needs design)
+
+# ============================================
+# HIGH COMPLEXITY SIGNALS
+# Presence of these keywords/patterns lowers confidence
+# ============================================
+
+high_complexity_signals:
+  # Security-sensitive areas (never rush)
+  - pattern: "(auth|authentication|authorization)"
+    weight: 25
+    reason: "Auth changes require careful review"
+
+  - pattern: "(security|permission|access.*control)"
+    weight: 25
+    reason: "Security changes are high-risk"
+
+  # Financial systems (money = risk)
+  - pattern: "(billing|payment|stripe|subscription)"
+    weight: 30
+    reason: "Financial code must be carefully reviewed"
+
+  - pattern: "(refund|charge|invoice|pricing)"
+    weight: 25
+    reason: "Money-related changes are high-risk"
+
+  # Database structural changes
+  - pattern: "(database.*schema|migration|alter.*table)"
+    weight: 30
+    reason: "Schema changes can break production"
+
+  - pattern: "(foreign.*key|index|constraint)"
+    weight: 20
+    reason: "Database structure changes need planning"
+
+  # Multi-file/architectural changes
+  - pattern: "(multiple.*files|across.*files|refactor)"
+    weight: 20
+    reason: "Multi-file changes need coordination"
+
+  - pattern: "(architect|redesign|overhaul)"
+    weight: 35
+    reason: "Architectural changes need design first"
+
+  # Integration points
+  - pattern: "(api.*change|endpoint.*change|breaking)"
+    weight: 25
+    reason: "API changes can break clients"
+
+  - pattern: "(integration|third.*party|external.*service)"
+    weight: 20
+    reason: "Integrations require careful testing"
+
+  # State management
+  - pattern: "(state.*machine|workflow|lifecycle)"
+    weight: 20
+    reason: "State changes can have cascading effects"
+
+  - pattern: "(session|context|persistent)"
+    weight: 15
+    reason: "State management is tricky"
+
+# ============================================
+# MEDIUM COMPLEXITY SIGNALS
+# Moderate confidence impact
+# ============================================
+
+medium_complexity_signals:
+  - pattern: "(new.*feature|add.*feature)"
+    weight: 15
+    reason: "New features need some planning"
+
+  - pattern: "(test|spec|coverage)"
+    weight: 10
+    reason: "Test changes need verification"
+
+  - pattern: "(config|setting|environment)"
+    weight: 10
+    reason: "Config changes can affect behavior"
+
+  - pattern: "(performance|optimize|cache)"
+    weight: 15
+    reason: "Performance work needs benchmarking"
+
+  - pattern: "(email|notification|alert)"
+    weight: 10
+    reason: "Communication features need care"
+
+  - pattern: "(ui.*component|frontend.*change)"
+    weight: 10
+    reason: "UI changes need visual review"
+
+# ============================================
+# LOW COMPLEXITY SIGNALS
+# Presence of these keywords increases confidence
+# ============================================
+
+low_complexity_signals:
+  # Text/content changes
+  - pattern: "(typo|spelling|grammar)"
+    weight: 30
+    reason: "Text fixes are low-risk"
+
+  - pattern: "(comment|documentation|readme)"
+    weight: 25
+    reason: "Doc changes don't affect runtime"
+
+  - pattern: "(update.*text|change.*copy|wording)"
+    weight: 25
+    reason: "Copy changes are safe"
+
+  # Simple fixes
+  - pattern: "(fix.*bug|bugfix|patch)"
+    weight: 15
+    reason: "Bug fixes are usually focused"
+
+  - pattern: "(single.*file|one.*file)"
+    weight: 20
+    reason: "Single-file changes are contained"
+
+  # Cosmetic changes
+  - pattern: "(style|css|color|font)"
+    weight: 20
+    reason: "Styling changes are low-risk"
+
+  - pattern: "(format|indent|whitespace)"
+    weight: 25
+    reason: "Formatting is cosmetic"
+
+  # Read-only operations
+  - pattern: "(read|view|display|show)"
+    weight: 15
+    reason: "Read operations are safe"
+
+  - pattern: "(log|trace|debug.*output)"
+    weight: 20
+    reason: "Logging changes are low-risk"
+
+# ============================================
+# SCOPE MULTIPLIERS
+# Adjust confidence based on scope indicators
+# ============================================
+
+scope_multipliers:
+  # File count impact
+  file_count:
+    1: 1.2      # Single file = boost confidence 20%
+    2-3: 1.0    # Few files = neutral
+    4-5: 0.85   # Multiple files = reduce confidence
+    6+: 0.7     # Many files = significant reduction
+
+  # Change type impact
+  change_type:
+    add: 1.0         # Adding code = neutral
+    modify: 0.95     # Modifying = slight reduction
+    delete: 0.9      # Deleting = more careful
+    refactor: 0.8    # Refactoring = needs review
+
+# ============================================
+# PROTECTED PATHS
+# Files that should ALWAYS require plan-first
+# ============================================
+
+protected_paths:
+  - pattern: "auth\\.py"
+    reason: "Authentication is critical"
+
+  - pattern: "billing\\.py"
+    reason: "Billing code handles money"
+
+  - pattern: "config\\.py"
+    reason: "Config affects entire system"
+
+  - pattern: "models/database\\.py"
+    reason: "Database models are foundational"
+
+  - pattern: "CONSTITUTION\\.md"
+    reason: "AI governance rules"
+
+  - pattern: "risk_overrides\\.yaml"
+    reason: "Risk classification is meta-level"
+
+# ============================================
+# ROUTING THRESHOLDS
+# ============================================
+
+thresholds:
+  direct_execution: 85    # >= 85% confidence: execute directly
+  checkpoint: 60          # 60-84% confidence: execute with checkpoints
+  plan_first: 0           # < 60% confidence: plan before executing
+
+# ============================================
+# BASELINE CONFIDENCE
+# Starting point before signal analysis
+# ============================================
+
+baseline_confidence: 70   # Start at 70%, adjust from there
