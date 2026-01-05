@@ -335,3 +335,19 @@ Output:
 5. Update .ai-company/agents/discovery/state.md
 6. Output completion promise
 7. Report to founder
+
+---
+
+## CRITICAL: BACKLOG SYNC CHECKLIST
+
+**NEVER output completion promise until ALL of these are TRUE:**
+
+- [ ] Each discovery from agent has been written to DISCOVERY_BACKLOG.md
+- [ ] Summary counts at top of backlog are updated
+- [ ] Discovery IDs are unique (check highest existing DISC-XXX)
+- [ ] State file references match backlog IDs
+- [ ] Discoveries appear in "DISCOVERED - Awaiting Founder Review" section
+
+**WHY THIS MATTERS:** If discoveries are written to state.md but NOT to DISCOVERY_BACKLOG.md, the `/ai-run-deep code` command will never see them because it reads from the backlog, not the state file. This causes "ghost discoveries" that exist in agent state but are invisible to the implementation workflow.
+
+**2026-01-05 Incident:** 5 discoveries (DISC-149-153) were recorded in discovery/state.md but never added to DISCOVERY_BACKLOG.md, causing them to be invisible to the code agent and founder review. Fixed by manual sync.

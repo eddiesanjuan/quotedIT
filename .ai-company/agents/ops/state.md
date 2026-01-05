@@ -38,7 +38,7 @@ Status: MONITORING (YELLOW - non-critical alert active)
 
 ## Pending Fixes
 
-- [ ] DISC-150: Add `feedback_email_sent` column to contractors table
+- [ ] DISC-147: Add `feedback_email_sent` column to contractors table (for feedback drip feature)
   - Migration file created: `backend/alembic/add_feedback_email_sent_column.sql`
   - Requires manual execution: `ALTER TABLE contractors ADD COLUMN IF NOT EXISTS feedback_email_sent INTEGER;`
   - Non-critical: Only affects feedback drip emails (day 3, day 7)

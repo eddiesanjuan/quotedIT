@@ -163,3 +163,7 @@ Discovery cycle complete. Focused on TODOs in codebase and functional gaps.
 Key observation: The product is feature-complete for MVP. Most remaining opportunities are polish, analytics depth, and operationalizing existing features (like referral credits).
 
 The 80 Google Ads clicks / 0 conversions problem is well-covered by existing tickets (DISC-136, 138, 141, 143). No additional discovery needed there.
+
+### 2026-01-05 Sync Note
+
+DISC-149 through DISC-153 were originally discovered but NOT added to DISCOVERY_BACKLOG.md (workflow error). Manually synced to backlog with correct format. All 5 discoveries now visible in DISCOVERED section for founder review.
