@@ -117,6 +117,9 @@ class Settings(BaseSettings):
     # Google Ads Scripts Webhook (DISC-141 Phase 2B - Alternative to API)
     google_ads_webhook_secret: str = ""  # Secret for authenticating webhook calls
 
+    # DISC-134: Google OAuth (Social Login)
+    google_oauth_client_id: str = ""  # OAuth2 client ID from Google Cloud Console for Sign-In
+
     # Marketing Analytics (DISC-141)
     marketing_reports_enabled: bool = True  # Enable daily marketing reports to founder
 
