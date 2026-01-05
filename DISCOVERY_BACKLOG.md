@@ -33,15 +33,15 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 | Status | Count |
 |--------|-------|
-| PR_PENDING | 4 |
+| PR_PENDING | 0 |
 | READY | 7 |
 | DISCOVERED | 18 |
 | COMPLETE | 7 |
-| DEPLOYED | 1 |
+| DEPLOYED | 5 |
 | **Active Total** | **37** |
-| Archived (DEPLOYED) | 96+ |
+| Archived (DEPLOYED) | 100+ |
 
-**PR_PENDING (Priority)**: DISC-103 (#41), DISC-134 (#44), DISC-140 (#42), DISC-144 (#43)
+**Just Deployed (2026-01-05)**: DISC-103, DISC-134, DISC-140, DISC-144 (via PRs #41, #43, #44)
 **Autonomous AI Infrastructure**: DISC-101/102/104/106 DEPLOYED, DISC-105 READY
 **Agent Reliability Engineering**: DISC-107/108 DEPLOYED, DISC-109 DISCOVERED
 **Analytics Pipeline**: DISC-136/137/138/139/141/142/149/151 ALL DEPLOYED (Jan 3-5)
@@ -56,11 +56,11 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 | Ticket | Title | Deployed |
 |--------|-------|----------|
+| DISC-103 | Smart Complexity Detection for Task Routing | 2026-01-05 |
+| DISC-134 | Social Login (Google Sign-In) | 2026-01-05 |
+| DISC-140 | Autonomous Monitoring Agent | 2026-01-05 |
+| DISC-144 | Evolve Landing Page Messaging - Voice Hook + Depth Reveal | 2026-01-05 |
 | DISC-135 | Post-Job Pricing Reflection Loop + Conversion Tracking | 2025-12-31 |
-| DISC-133 | Clarification Answers Feed Into Learning System | 2025-12-30 |
-| DISC-132 | Interactive Clarifying Questions for Demo | 2025-12-30 |
-| DISC-131 | Demo Page Dictation Examples | 2025-12-30 |
-| DISC-113 | Time Savings Calculator (partial) | 2025-12-30 |
 
 *Full deployment history: See DISCOVERY_ARCHIVE.md*
 
@@ -159,9 +159,9 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 ---
 
 
-### DISC-103: Smart Complexity Detection for Task Routing 🎯 INFRASTRUCTURE (PR_PENDING)
+### DISC-103: Smart Complexity Detection for Task Routing 🎯 INFRASTRUCTURE (DEPLOYED)
 
-**⚠️ PR #41 Open** - Awaiting preview test and merge
+**✅ Deployed 2026-01-05** via PR #41
 
 **Source**: Founder Request (Eddie, 2025-12-21) - Transcript Insights Analysis
 **Impact**: MEDIUM | **Effort**: M | **Score**: 1.0
@@ -203,9 +203,9 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 
 
-### DISC-134: Social Login (Google, Apple, etc.) 🔐 AUTH (PR_PENDING)
+### DISC-134: Social Login (Google, Apple, etc.) 🔐 AUTH (DEPLOYED)
 
-**⚠️ PR #44 Open** - Awaiting preview test and merge
+**✅ Deployed 2026-01-05** via PR #44
 
 **Source**: Founder Request (Eddie, 2025-12-30)
 **Impact**: MEDIUM | **Effort**: M | **Score**: 1.0
@@ -243,9 +243,9 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 ---
 
-### DISC-144: Evolve Landing Page Messaging - Voice Hook + Depth Reveal 🎯 GROWTH (PR_PENDING)
+### DISC-144: Evolve Landing Page Messaging - Voice Hook + Depth Reveal 🎯 GROWTH (DEPLOYED)
 
-**⚠️ PR #43 Open** - Awaiting preview test and merge
+**✅ Deployed 2026-01-05** via PR #43
 
 **Source**: Founder Request (Eddie, 2026-01-04)
 **Impact**: HIGH | **Effort**: M | **Score**: 1.5
@@ -762,9 +762,9 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 ---
 
-### DISC-140: Autonomous Monitoring Agent 🤖 INFRASTRUCTURE (PR_PENDING)
+### DISC-140: Autonomous Monitoring Agent 🤖 INFRASTRUCTURE (DEPLOYED)
 
-**⚠️ PR #42 Open** - Awaiting preview test and merge
+**✅ Deployed 2026-01-05** via PR #44 (combined with DISC-134)
 
 **Summary**: Comprehensive autonomous monitoring system that proactively watches Quoted:
 - Critical health checks every 15 minutes (API latency, error rates, database, external services)
