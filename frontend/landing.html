@@ -285,6 +285,74 @@
             transform: translateY(-2px);
         }
 
+        /* Hero Subtext (DISC-144) */
+        .hero-subtext {
+            font-size: 1.25rem;
+            color: var(--text-primary);
+            font-weight: 500;
+            max-width: 600px;
+            margin-bottom: 16px;
+            line-height: 1.5;
+            opacity: 0.9;
+        }
+
+        /* Value Depth Section (DISC-144) */
+        .value-depth {
+            background: linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            border-top: 1px solid var(--border);
+            padding: 80px 40px;
+        }
+
+        .value-depth .section-title {
+            margin-bottom: 48px;
+            text-align: center;
+        }
+
+        .value-depth .section-label {
+            text-align: center;
+        }
+
+        .value-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 32px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .value-item {
+            padding: 32px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .value-item:hover {
+            border-color: var(--border-hover);
+            transform: translateY(-4px);
+        }
+
+        .value-icon {
+            font-size: 2.5rem;
+            margin-bottom: 16px;
+        }
+
+        .value-item h3 {
+            font-family: var(--font-serif);
+            font-size: 1.375rem;
+            font-weight: 500;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+        }
+
+        .value-item p {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
         /* How It Works */
         .how-it-works {
             background: var(--bg-secondary);
@@ -938,6 +1006,23 @@
                 padding: 16px 32px;
                 font-size: 0.9375rem;
             }
+
+            /* Value Depth responsive (DISC-144) */
+            .value-depth {
+                padding: 64px 20px;
+            }
+            .value-grid {
+                gap: 20px;
+            }
+            .value-item {
+                padding: 24px;
+            }
+            .value-icon {
+                font-size: 2rem;
+            }
+            .hero-subtext {
+                font-size: 1.1rem;
+            }
         }
 
         /* Responsive - Extra Small Mobile (480px and below) */
@@ -1371,6 +1456,23 @@
             .voice-icon {
                 font-size: 20px;
             }
+
+            /* Value Depth responsive 375px (DISC-144) */
+            .value-depth {
+                padding: 40px 12px;
+            }
+            .value-grid {
+                gap: 16px;
+            }
+            .value-item {
+                padding: 16px;
+            }
+            .value-item h3 {
+                font-size: 1.125rem;
+            }
+            .hero-subtext {
+                font-size: 1rem;
+            }
         }
 
         /* Exit Intent Survey Modal */
@@ -1687,7 +1789,8 @@
                 <div class="hero-logo fade-in" id="heroLogo">
                     quoted<span class="logo-spinner"><span class="logo-spinner-inner" id="spinnerInner"><span class="logo-spinner-item">.lawns</span><span class="logo-spinner-item">.decks</span><span class="logo-spinner-item">.consulting</span><span class="logo-spinner-item">.design</span><span class="logo-spinner-item">.photos</span><span class="logo-spinner-item">.events</span><span class="logo-spinner-item">.coaching</span><span class="logo-spinner-item">.weddings</span><span class="logo-spinner-item">.painting</span><span class="logo-spinner-item">.cleaning</span><span class="logo-spinner-item">.it</span><span class="logo-spinner-item">.moving</span></span></span>
                 </div>
-                <h1 class="fade-in fade-in-delay-1">Talk, don't type.<br>Quote in seconds.</h1>
+                <h1 class="fade-in fade-in-delay-1" id="hero-headline">Talk, don't type.<br>Quote in seconds.</h1>
+                <p class="hero-subtext fade-in fade-in-delay-2">Quoted learns your pricing, tracks your customers, and gets smarter with every job.</p>
                 <p class="fade-in fade-in-delay-2">Turn voice notes into professional budget quotes in seconds. Track customers, set follow-ups, and stop wasting time on tire-kickers.</p>
                 <div class="fade-in fade-in-delay-3" style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
                     <a href="/demo" class="cta-primary" id="hero-demo-cta">Try It Now — No Signup</a>
@@ -1698,6 +1801,32 @@
                     See how it works for your industry
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                 </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Value Depth Section (DISC-144) -->
+    <section class="value-depth">
+        <div class="container">
+            <p class="section-label fade-in">More Than Just Quick Quotes</p>
+            <h2 class="section-title fade-in fade-in-delay-1">A quoting system that actually thinks</h2>
+
+            <div class="value-grid">
+                <div class="value-item fade-in fade-in-delay-1">
+                    <div class="value-icon">&#129504;</div>
+                    <h3>Learns Your Pricing</h3>
+                    <p>Gets smarter with every quote you send. No more second-guessing.</p>
+                </div>
+                <div class="value-item fade-in fade-in-delay-2">
+                    <div class="value-icon">&#128101;</div>
+                    <h3>Knows Your Customers</h3>
+                    <p>Remembers repeat customers and their preferences automatically.</p>
+                </div>
+                <div class="value-item fade-in fade-in-delay-3">
+                    <div class="value-icon">&#128200;</div>
+                    <h3>Tracks What Wins</h3>
+                    <p>Learn from quote outcomes to improve your close rate.</p>
+                </div>
             </div>
         </div>
     </section>
@@ -2337,6 +2466,31 @@
                 }
             });
         });
+
+        // A/B Test: Headline Variants (DISC-144)
+        // Structure for future headline testing - enable via PostHog feature flags
+        (function() {
+            const heroHeadline = document.getElementById('hero-headline');
+            if (!heroHeadline || !window.posthog) return;
+
+            // Check for headline variant feature flag
+            posthog.onFeatureFlags(function() {
+                // Variant B: More outcome-focused headline
+                if (posthog.isFeatureEnabled('landing_headline_test_b')) {
+                    heroHeadline.innerHTML = 'Stop guessing.<br>Start closing.';
+                    posthog.capture('headline_variant_shown', { variant: 'B' });
+                }
+                // Variant C: AI-focused headline
+                else if (posthog.isFeatureEnabled('landing_headline_test_c')) {
+                    heroHeadline.innerHTML = 'Your pricing brain,<br>in your pocket.';
+                    posthog.capture('headline_variant_shown', { variant: 'C' });
+                }
+                // Default (Variant A): Current headline
+                else {
+                    posthog.capture('headline_variant_shown', { variant: 'A' });
+                }
+            });
+        })();
         {% endif %}
 
         // Exit Intent Survey
