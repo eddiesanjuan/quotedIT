@@ -38,7 +38,7 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 | **Active Total** | **42** |
 | Archived (DEPLOYED) | 66+ |
 
-**Autonomous AI Infrastructure**: DISC-101 COMPLETE, DISC-102/104/106 COMPLETE (PRs #36-38), DISC-103/105 READY
+**Autonomous AI Infrastructure**: DISC-101 COMPLETE, DISC-102/104/106 DEPLOYED (PRs #36-38 merged 2026-01-05), DISC-103/105 READY
 **Agent Reliability Engineering**: DISC-107, DISC-108 COMPLETE, DISC-109 DISCOVERED
 **UX Excellence Fixes**: DISC-114-123, DISC-125-130 - DEPLOYED (backlog reconciliation 2025-12-30)
 **Phase II Voice Control**: DISC-042 through DISC-049 (8 tickets) - DISCOVERED, awaiting founder review
@@ -154,7 +154,7 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 ---
 
-### DISC-102: Suggestions vs Updates Framework - Action Risk Classification 🛡️ INFRASTRUCTURE (COMPLETE)
+### DISC-102: Suggestions vs Updates Framework - Action Risk Classification 🛡️ INFRASTRUCTURE (DEPLOYED)
 
 **Source**: Founder Request (Eddie, 2025-12-21) - Transcript Insights Analysis
 **Impact**: HIGH | **Effort**: M | **Score**: 1.5
@@ -179,7 +179,7 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 ---
 
-### DISC-104: Work Isolation via Git Worktrees 🌳 INFRASTRUCTURE (COMPLETE)
+### DISC-104: Work Isolation via Git Worktrees 🌳 INFRASTRUCTURE (DEPLOYED)
 
 **Source**: Founder Request (Eddie, 2025-12-21) - Transcript Insights Analysis
 **Impact**: HIGH | **Effort**: L | **Score**: 2.0
@@ -204,7 +204,7 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 ---
 
-### DISC-106: Safety Net Architecture - Defense in Depth 🛡️ INFRASTRUCTURE (COMPLETE)
+### DISC-106: Safety Net Architecture - Defense in Depth 🛡️ INFRASTRUCTURE (DEPLOYED)
 
 **Source**: Founder Request (Eddie, 2025-12-21) - Transcript Insights Analysis
 **Impact**: HIGH | **Effort**: L | **Score**: 2.0
