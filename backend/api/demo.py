@@ -15,6 +15,7 @@ import os
 import io
 import base64
 import tempfile
+import hashlib
 from typing import Optional
 from datetime import datetime
 
@@ -29,6 +30,8 @@ from ..services import get_transcription_service, get_sanity_check_service, get_
 from ..services.quote_generator import QUOTE_GENERATION_TOOL
 from ..services.email import email_service
 from ..services.logging import get_api_logger
+from ..services.database import async_session_factory
+from ..models.database import DemoGeneration
 from ..prompts import get_demo_quote_prompt, get_demo_regenerate_prompt
 from ..config import settings
 
@@ -58,6 +61,51 @@ DEMO_TERMS = {
     "labor_warranty_years": 1,
     "accepted_payment_methods": ["Cash", "Check", "Credit Card"],
 }
+
+
+async def track_demo_generation(
+    request: Request,
+    transcription: str,
+    quote_data: dict,
+) -> None:
+    """
+    DISC-151: Track demo generation in database for marketing analytics.
+
+    Runs async in background - failures are logged but don't block response.
+    """
+    try:
+        # Create hash of transcription to detect duplicates
+        transcription_hash = hashlib.sha256(transcription.encode()).hexdigest()
+
+        # Extract UTM params from query string
+        utm_source = request.query_params.get("utm_source")
+        utm_medium = request.query_params.get("utm_medium")
+        utm_campaign = request.query_params.get("utm_campaign")
+
+        # Get client IP
+        ip_address = request.client.host if request.client else None
+
+        # Create the record
+        demo_gen = DemoGeneration(
+            ip_address=ip_address,
+            transcription_hash=transcription_hash,
+            job_type=quote_data.get("job_type"),
+            quote_total=int(quote_data.get("subtotal", 0) * 100),  # Store in cents
+            line_item_count=len(quote_data.get("line_items", [])),
+            utm_source=utm_source,
+            utm_medium=utm_medium,
+            utm_campaign=utm_campaign,
+        )
+
+        # Save to database
+        async with async_session_factory() as db:
+            db.add(demo_gen)
+            await db.commit()
+            logger.debug(f"Tracked demo generation: {demo_gen.id}")
+
+    except Exception as e:
+        # Don't let tracking failures break the demo experience
+        logger.warning(f"Failed to track demo generation: {e}")
 
 
 # Request/Response models
@@ -318,6 +366,9 @@ async def generate_demo_quote(
         except Exception as e:
             # Log the error but don't block demo
             logger.warning(f"Failed to send founder demo notification: {e}")
+
+        # DISC-151: Track demo generation for marketing analytics (non-blocking)
+        await track_demo_generation(request, transcription_text, quote_data)
 
         # Build response
         return DemoQuoteResponse(
