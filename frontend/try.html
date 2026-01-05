@@ -2748,6 +2748,7 @@
         var tourCurrentStep = 0;
         var tourShownThisSession = false;
 
+        {% raw %}
         // Helper to create text with highlighted portions
         // Format: "Regular text {{highlighted text}} more regular text"
         function createHighlightedText(text) {
@@ -2852,6 +2853,7 @@
                 ]
             }
         ];
+        {% endraw %}
 
         // Tour DOM elements
         var tourOverlay = document.getElementById('tourOverlay');
