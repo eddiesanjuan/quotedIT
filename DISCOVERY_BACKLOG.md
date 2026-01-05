@@ -32,15 +32,15 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 | Status | Count |
 |--------|-------|
-| READY | 14 |
+| READY | 11 |
 | DISCOVERED | 18 |
-| COMPLETE | 14 |
-| **Active Total** | **46** |
-| Archived (DEPLOYED) | 85+ |
+| COMPLETE | 10 |
+| **Active Total** | **39** |
+| Archived (DEPLOYED) | 92+ |
 
-**Autonomous AI Infrastructure**: DISC-101 COMPLETE, DISC-102/104/106 DEPLOYED (PRs #36-38), DISC-103/105 READY
-**Agent Reliability Engineering**: DISC-107, DISC-108 COMPLETE, DISC-109 DISCOVERED
-**Analytics Pipeline**: DISC-136, DISC-141, DISC-142, DISC-149, DISC-151 COMPLETE (PRs #39-40 pending)
+**Autonomous AI Infrastructure**: DISC-101/102/104/106 DEPLOYED, DISC-103/105 READY
+**Agent Reliability Engineering**: DISC-107/108 DEPLOYED, DISC-109 DISCOVERED
+**Analytics Pipeline**: DISC-136/137/138/139/141/142/149/151 ALL DEPLOYED (Jan 3-5)
 **Phase II Voice Control**: DISC-042 through DISC-049 (8 tickets) - DISCOVERED, awaiting founder review
 **Competitive Defense**: DISC-060 through DISC-062 - DISCOVERED
 
@@ -222,87 +222,6 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 ---
 
-
-### DISC-137: Exit Intent Survey Reporting 📧 ANALYTICS (READY)
-
-**Source**: Founder Request (Eddie, 2025-12-30)
-**Impact**: MEDIUM | **Effort**: S | **Score**: 2.0
-**Sprint Alignment**: Understand why users leave
-
-**Problem**: Exit intent survey data goes to PostHog but founder has to manually check. Need proactive reporting.
-
-**Current State**:
-- `exit_survey_completed` captures reasons and other_text
-- Data exists but requires PostHog dashboard login
-
-**Proposed Work**:
-1. Daily email digest: "Yesterday's Exit Survey Summary"
-   - Count by reason (Not my industry, Too expensive, etc.)
-   - Any verbatim "Other" responses (most valuable)
-   - Trend vs. previous day/week
-2. Instant alert for specific keywords ("bug", "broken", "doesn't work")
-3. Add to founder notification service (alongside DISC-128)
-
-**Success Metric**: Founder receives daily exit survey digest; can read user feedback without logging into PostHog
-
----
-
-### DISC-138: Google Ads → Conversion Funnel Dashboard 📈 ANALYTICS (READY)
-
-**Source**: Founder Request (Eddie, 2025-12-30)
-**Impact**: HIGH | **Effort**: M | **Score**: 1.5
-**Sprint Alignment**: Understand paid acquisition performance
-
-**Problem**: 80 ad clicks, 4000 impressions, 0 conversions. No visibility into where users drop off.
-
-**Proposed Work**:
-1. **PostHog Dashboard**: Create "Acquisition Funnel" dashboard
-   - Landing page views (by UTM source)
-   - CTA clicks (Try Demo vs Sign Up)
-   - Try page views
-   - Demo generation attempts
-   - Demo completions
-   - Signup attempts
-   - Signup completions
-2. **Conversion Tracking Integration**
-   - Verify Google Ads conversion pixel fires on signup
-   - Add conversion tracking for demo completion (micro-conversion)
-3. **Funnel Visualization**
-   - Step-by-step drop-off visualization
-   - Segment by ad campaign, device, time of day
-
-**Success Metric**: Can answer "where do ad visitors drop off?" in 30 seconds
-
----
-
-### DISC-139: Real-Time Traffic Spike Alerts 🚨 MONITORING (READY)
-
-**Source**: Founder Request (Eddie, 2025-12-30)
-**Impact**: HIGH | **Effort**: M | **Score**: 1.5
-**Sprint Alignment**: Don't miss viral moments
-
-**Problem**: If Quoted goes viral (HN, Reddit, tweet), founder needs to know immediately to:
-- Monitor for issues
-- Engage with community
-- Scale infrastructure if needed
-
-**Proposed Work**:
-1. **Hourly traffic check** (backend scheduler)
-   - Compare current hour page views to 7-day average
-   - If 3x+ normal: send founder alert
-2. **Demo generation spike alert**
-   - If 5+ demo quotes in an hour (vs. typical ~1)
-   - Immediate Slack/email notification
-3. **Signup velocity alert**
-   - Any signup triggers notification (DISC-128 already does this)
-   - But also alert on 3+ signups in an hour = potential viral
-4. **Infrastructure pre-emptive warning**
-   - Monitor Railway metrics
-   - Alert if approaching limits
-
-**Success Metric**: Founder knows within 1 hour if traffic spikes 3x or more
-
----
 
 ### DISC-140: Autonomous Monitoring Agent 🤖 INFRASTRUCTURE (READY)
 
