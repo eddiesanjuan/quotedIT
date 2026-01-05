@@ -20,7 +20,7 @@ This file is the AI company's institutional memory. It enables:
 ```yaml
 last_maintenance: 2026-01-05
 next_maintenance_due: 2026-01-12
-total_entries: 8
+total_entries: 10
 archive_count: 0
 ```
 
@@ -69,7 +69,7 @@ MIN_SCORE: 0 (triggers archival)
 ## Successful Patterns
 
 > Approaches that consistently lead to good outcomes. Agents should REPEAT these.
-> **Total entries**: 3 | **Limit**: 15 per agent type
+> **Total entries**: 4 | **Limit**: 15 per agent type
 
 ### By Agent Type
 
@@ -108,6 +108,7 @@ MIN_SCORE: 0 (triggers archival)
 
 | Date | Ticket | Pattern | Why It Worked | Score |
 |------|--------|---------|---------------|-------|
+| 2026-01-05 | Guardrails | Proactively identify scaling gaps before they become problems | Eddie asked "what prevents bloat?" - good question to anticipate | 5 |
 | 2026-01-05 | DISC-156 | Implement in phases, validate each before next | Catches issues early, easier rollback | 5 |
 
 #### Frontend/UX
@@ -300,11 +301,12 @@ MIN_SCORE: 0 (triggers archival)
 ## Session Outcomes
 
 > Brief log of each significant session outcome.
-> **Total entries**: 1 | **Limit**: 30 (oldest archived when exceeded)
+> **Total entries**: 2 | **Limit**: 30 (oldest archived when exceeded)
 
 | Date | Session Type | Tickets | Outcome | Quality Avg | Notes |
 |------|--------------|---------|---------|-------------|-------|
-| 2026-01-05 | Deep Run | DISC-156 | SUCCESS | 23/25 | Self-improvement evolution + guardrails |
+| 2026-01-05 | Ad-hoc | Guardrails | SUCCESS | N/A | Decay scoring, limits, category retrieval |
+| 2026-01-05 | Deep Run | DISC-156 | SUCCESS | 23/25 | Self-improvement evolution |
 
 ---
 
