@@ -2614,18 +2614,44 @@
             font-size: 1.25rem;
         }
 
-        /* Save Changes Button */
+        /* DISC-159: Floating Save Dialogue */
         .save-changes-section {
-            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            display: flex;
             flex-direction: column;
             gap: 12px;
-            margin-top: 24px;
-            padding-top: 24px;
+            padding: 20px;
+            background: var(--bg-elevated);
             border-top: 1px solid var(--border);
+            box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.15);
+            transform: translateY(100%);
+            opacity: 0;
+            transition: transform 0.3s ease, opacity 0.3s ease;
         }
 
         .save-changes-section.active {
-            display: flex;
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        /* Desktop: Constrain width and center */
+        @media (min-width: 768px) {
+            .save-changes-section {
+                left: 50%;
+                right: auto;
+                transform: translateX(-50%) translateY(100%);
+                max-width: 500px;
+                border-radius: 16px 16px 0 0;
+                padding: 24px;
+            }
+
+            .save-changes-section.active {
+                transform: translateX(-50%) translateY(0);
+            }
         }
 
         .correction-notes-input {
@@ -2638,12 +2664,13 @@
             font-family: var(--font-sans);
             font-size: 0.875rem;
             resize: none;
-            min-height: 60px;
+            min-height: 50px;
         }
 
         .correction-notes-input:focus {
             outline: none;
-            border-color: var(--text-primary);
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px rgba(var(--accent-rgb), 0.2);
         }
 
         .correction-notes-label {
@@ -2659,12 +2686,17 @@
             gap: 12px;
         }
 
+        .save-actions .btn {
+            flex: 1;
+        }
+
         .changes-summary {
             font-size: 0.8125rem;
             color: var(--text-secondary);
             padding: 8px 12px;
             background: var(--bg-secondary);
             border-radius: 6px;
+            text-align: center;
         }
 
         /* Issue Reporter */
@@ -6207,18 +6239,18 @@
                     </div>
                 </div>
 
-                <!-- Save Changes Section -->
+                <!-- DISC-159: Floating Save Changes Dialogue -->
                 <div class="save-changes-section" id="saveChangesSection">
                     <div class="changes-summary" id="changesSummary">
-                        No changes made
+                        Unsaved changes
                     </div>
                     <div>
-                        <label class="correction-notes-label">Why did you make these changes? (helps AI learn)</label>
-                        <textarea class="correction-notes-input" id="correctionNotes" placeholder="e.g., 'Labor costs are higher in this area' or 'Customer wants premium materials'"></textarea>
+                        <label class="correction-notes-label">Why? (helps AI learn your pricing)</label>
+                        <textarea class="correction-notes-input" id="correctionNotes" placeholder="e.g., 'Labor rates are higher here' or 'Premium materials'"  rows="2"></textarea>
                     </div>
                     <div class="save-actions">
-                        <button class="btn btn-secondary" onclick="cancelQuoteEdit()">Cancel</button>
-                        <button class="btn btn-primary" id="saveChangesBtn" onclick="saveQuoteChanges()" disabled>Save Changes</button>
+                        <button class="btn btn-secondary" onclick="cancelQuoteEdit()">Discard</button>
+                        <button class="btn btn-primary" id="saveChangesBtn" onclick="saveQuoteChanges()" disabled>💾 Save</button>
                     </div>
                 </div>
 
@@ -8846,11 +8878,16 @@
                 }
             }
 
-            // Cmd/Ctrl + E: Edit current quote (if in detail view)
+            // Cmd/Ctrl + E: Focus first editable field (if in detail view)
             else if (modifier && e.key === 'e') {
                 e.preventDefault();
-                if (currentView === 'quoteDetail' && currentQuoteId) {
-                    toggleEditMode();
+                if (currentView === 'quoteDetail' && currentDetailQuote) {
+                    // Focus the first editable input in the line items
+                    const firstInput = document.querySelector('#detailLineItems .line-item-name-input');
+                    if (firstInput) {
+                        firstInput.focus();
+                        firstInput.select();
+                    }
                 }
             }
 
@@ -8866,10 +8903,10 @@
                 }
             }
 
-            // Cmd/Ctrl + S: Save (if in edit mode)
+            // Cmd/Ctrl + S: Save (if there are unsaved changes)
             else if (modifier && e.key === 's') {
                 e.preventDefault();
-                if (isEditMode && currentView === 'quoteDetail') {
+                if (hasUnsavedChanges && currentView === 'quoteDetail') {
                     saveQuoteChanges();
                 }
             }
@@ -13549,7 +13586,7 @@
             document.getElementById('saveChangesSection').classList.remove('active');
             document.getElementById('saveChangesBtn').disabled = true;
             document.getElementById('correctionNotes').value = '';
-            document.getElementById('changesSummary').textContent = 'No changes made';
+            document.getElementById('changesSummary').textContent = 'Unsaved changes';
 
             // INNOV-1: Update outcome tracking section
             updateOutcomeTracking(quote);
@@ -13720,10 +13757,10 @@
             const deletedAmount = deletedItem.amount || 0;
 
             // Track deletion for learning
-            if (!currentQuote.deletedItems) {
-                currentQuote.deletedItems = [];
+            if (!currentDetailQuote.deletedItems) {
+                currentDetailQuote.deletedItems = [];
             }
-            currentQuote.deletedItems.push({
+            currentDetailQuote.deletedItems.push({
                 name: deletedName,
                 amount: deletedAmount,
                 reason: 'user_deleted'
@@ -13737,7 +13774,7 @@
             updateEditTotal();
 
             // Mark as having changes
-            currentQuote.hasEdits = true;
+            currentDetailQuote.hasEdits = true;
 
             showLearningToast(`Removed: ${deletedName}`, '🗑️');
         }
@@ -13870,7 +13907,7 @@
                 editBanner.classList.remove('active');
                 saveSection.classList.remove('active');
                 saveBtn.disabled = true;
-                summary.textContent = 'No changes made';
+                summary.textContent = 'Unsaved changes';
             }
         }
 
@@ -13907,7 +13944,7 @@
                         timeline_text: document.getElementById('detailTimelineText').value || null,
                         terms_text: document.getElementById('detailTermsText').value || null,
                         // DISC-122: Include deleted items for learning
-                        deleted_items: currentQuote.deletedItems || []
+                        deleted_items: currentDetailQuote.deletedItems || []
                     })
                 });
 
