@@ -34,14 +34,14 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 | Status | Count |
 |--------|-------|
 | PR_PENDING | 0 |
-| READY | 6 |
+| READY | 5 |
 | DISCOVERED | 18 |
-| COMPLETE | 8 |
-| DEPLOYED | 8 |
+| COMPLETE | 7 |
+| DEPLOYED | 10 |
 | **Active Total** | **40** |
 | Archived (DEPLOYED) | 100+ |
 
-**Just Deployed (2026-01-06)**: DISC-157 (PRs #47, #48), DISC-145 (PR #49)
+**Just Deployed (2026-01-06)**: DISC-158 & DISC-159 (PR #50), DISC-157 (PRs #47, #48), DISC-145 (PR #49)
 **Deployed (2026-01-05)**: DISC-103, DISC-134, DISC-140, DISC-144, DISC-155 (PRs #41, #43, #44, #46)
 **Autonomous AI Infrastructure**: DISC-101/102/104/106 DEPLOYED, DISC-105 READY
 **Agent Reliability Engineering**: DISC-107/108 DEPLOYED, DISC-109 DISCOVERED
@@ -57,11 +57,11 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 | Ticket | Title | Deployed |
 |--------|-------|----------|
+| DISC-158/159 | Quote Edits Bug Fix + Floating Save UX Redesign | 2026-01-06 |
 | DISC-145 | Fresh Blog Content - 3 Articles (Pricing Psychology, Mistakes, Founder Story) | 2026-01-06 |
 | DISC-157 | Demo Tour Critical Fixes - Dialog Positioning + Scroll Fix | 2026-01-06 |
 | DISC-103 | Smart Complexity Detection for Task Routing | 2026-01-05 |
 | DISC-134 | Social Login (Google Sign-In) | 2026-01-05 |
-| DISC-140 | Autonomous Monitoring Agent | 2026-01-05 |
 
 *Full deployment history: See DISCOVERY_ARCHIVE.md*
 
@@ -159,7 +159,9 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 ---
 
-### DISC-158: Quote Edits Not Saving - Critical Bug 🐛 BUG (COMPLETE)
+### DISC-158: Quote Edits Not Saving - Critical Bug 🐛 BUG (DEPLOYED)
+
+**✅ Deployed 2026-01-06** via PR #50
 
 **Source**: Founder Request (Eddie, 2026-01-06)
 **Impact**: HIGH | **Effort**: M | **Score**: 2.0
@@ -178,12 +180,15 @@ Found TWO bugs causing this issue:
    - Lines 8849-8880: Fixed Cmd+E to focus first editable input, Cmd+S to use `hasUnsavedChanges`
 
 **Files Modified**: `frontend/index.html`
+**Quality Evaluation**: 21/25 PASS
 
 **Success Metric**: Quote edits save successfully and persist on reload
 
 ---
 
-### DISC-159: Quote Edit Dialogue UX Redesign - Floating Save 🎨 UX (READY)
+### DISC-159: Quote Edit Dialogue UX Redesign - Floating Save 🎨 UX (DEPLOYED)
+
+**✅ Deployed 2026-01-06** via PR #50
 
 **Source**: Founder Request (Eddie, 2026-01-06)
 **Impact**: MEDIUM | **Effort**: M | **Score**: 1.0
@@ -191,22 +196,16 @@ Found TWO bugs causing this issue:
 
 **Problem**: The bottom section of the quote edit dialogue is cluttered and cramped. The save button, reason field, and other controls are competing for space. Need a cleaner UX pattern.
 
-**Proposed Design**:
-1. **Floating Save Dialogue**: When user makes an edit, a floating modal/toast appears
-2. **Reason Field Integration**: The "reason for edit" field appears within the floating dialogue
-3. **Clear Action**: Single prominent "Save Changes" button
-4. **Escape Hatch**: Cancel/dismiss option to discard changes
-5. **Mobile-First**: Must work well on 375px viewport
+**Implementation (2026-01-06)**:
+1. **Floating Save Dialogue**: Created fixed-bottom panel that slides up when changes are detected
+2. **Reason Field Integration**: Textarea for correction notes included in floating dialogue
+3. **Clear Action**: "💾 Save" button with Discard option
+4. **Escape Hatch**: Cancel button discards unsaved changes
+5. **Mobile-First**: Full-width on mobile, 500px centered card on desktop
+6. **Animation**: CSS transform/opacity transitions (0.3s ease) for smooth entrance/exit
 
-**UX Pattern Reference**: Similar to how Notion shows "Unsaved changes" with save/discard, or how Google Docs shows auto-save status
-
-**Proposed Work**:
-1. Audit current edit dialogue layout and identify clutter sources
-2. Design floating save component (sketch/wireframe)
-3. Implement floating save dialogue with reason field
-4. Animate entrance/exit for polish
-5. Test on mobile and desktop viewports
-6. Ensure accessibility (keyboard nav, screen reader)
+**Files Modified**: `frontend/index.html` (CSS lines 2617-2700, HTML lines 6242-6255)
+**Quality Evaluation**: 21/25 PASS (bundled with DISC-158)
 
 **Success Metric**: Edit flow feels cleaner; user can easily find and use save functionality; mobile UX improved
 

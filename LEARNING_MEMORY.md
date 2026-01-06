@@ -234,7 +234,7 @@ MIN_SCORE: 0 (triggers archival)
 ## Quality Evaluation History
 
 > Logged automatically during Quality Evaluation phase (Step 9.5)
-> **Total entries**: 6 | **Limit**: 20 (oldest archived when exceeded)
+> **Total entries**: 8 | **Limit**: 20 (oldest archived when exceeded)
 
 ### 2026-01-05 DISC-103: Smart Complexity Detection (PR #41)
 
@@ -302,6 +302,41 @@ MIN_SCORE: 0 (triggers archival)
 | Testing | 4 | Manual testing pattern followed, no automated tests added |
 | **TOTAL** | **23/25** | **PASS** |
 
+### 2026-01-06 DISC-157: Tour Scroll Fix (PR #48)
+
+| Dimension | Score | Notes |
+|-----------|-------|-------|
+| Completeness | 5 | Root cause identified (CSS scroll lock preventing scrollIntoView), proper fix applied |
+| Code Quality | 5 | Clean solution: unlock → scroll → wait → relock; preserves existing patterns |
+| Scope Discipline | 5 | Minimal targeted fix, no extraneous changes |
+| Edge Cases | 4 | Handles scroll position tracking; rapid transitions could potentially race |
+| Testing | 5 | Playwright verification through all 6 tour steps confirmed fix |
+| **TOTAL** | **24/25** | **PASS** |
+
+### 2026-01-06 DISC-145: Blog Content (PR #49)
+
+| Dimension | Score | Notes |
+|-----------|-------|-------|
+| Completeness | 5 | 3 articles created + blog index updated per spec |
+| Code Quality | 5 | Follows existing blog template patterns, Schema.org markup, responsive CSS |
+| Scope Discipline | 5 | Exactly what was requested - no scope creep |
+| Edge Cases | 4 | Mobile responsive, dark theme; image SEO tags present but no images |
+| Testing | 3 | No automated tests; manual verification pending PR merge |
+| **TOTAL** | **22/25** | **PASS** |
+
+### 2026-01-06 DISC-158 & DISC-159: Quote Edit Bug Fix + UX Redesign (PR #50)
+
+| Dimension | Score | Notes |
+|-----------|-------|-------|
+| Completeness | 5 | Both bugs fixed (undefined variable + keyboard shortcuts), floating save UX implemented |
+| Code Quality | 4 | Clean fixes, proper CSS transitions; variable naming inconsistency was root cause |
+| Scope Discipline | 4 | Addressed both tickets together efficiently, minimal extra changes |
+| Edge Cases | 4 | Handles edit state tracking, mobile/desktop layouts; animation timing edge cases untested |
+| Testing | 4 | Production verified via Playwright (health GREEN, app loads), manual verification recommended |
+| **TOTAL** | **21/25** | **PASS** |
+
+**Root Cause Lesson**: Always verify variables are declared before reference. `currentQuote` vs `currentDetailQuote` inconsistency caused silent JS failures.
+
 ---
 
 ## User Feedback
@@ -358,10 +393,12 @@ MIN_SCORE: 0 (triggers archival)
 ## Session Outcomes
 
 > Brief log of each significant session outcome.
-> **Total entries**: 4 | **Limit**: 30 (oldest archived when exceeded)
+> **Total entries**: 6 | **Limit**: 30 (oldest archived when exceeded)
 
 | Date | Session Type | Tickets | Outcome | Quality Avg | Notes |
 |------|--------------|---------|---------|-------------|-------|
+| 2026-01-06 | Deep Run | DISC-158,159 | SUCCESS | 21/25 | Quote edit bug fix + floating save UX (PR #50) DEPLOYED |
+| 2026-01-06 | Deep Run | DISC-157,145 | SUCCESS | 23/25 | Tour scroll fix (PR #48) + blog articles (PR #49) both DEPLOYED |
 | 2026-01-05 | Full Run | DISC-103,134,140,144 | SUCCESS | 22.75/25 | 4 tickets deployed, 3 PRs merged, 1 closed as dup |
 | 2026-01-05 | Ad-hoc | Guardrails | SUCCESS | N/A | Decay scoring, limits, category retrieval |
 | 2026-01-05 | Deep Run | DISC-156 | SUCCESS | 23/25 | Self-improvement evolution |

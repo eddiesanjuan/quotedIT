@@ -25,6 +25,8 @@ This document is **different from LEARNING_MEMORY.md**:
 | 2026-01-05 | Decay scoring (weekly -1) | No decay, faster decay | Weekly is observable, patterns stay ~5 weeks | If patterns age too fast/slow |
 | 2026-01-05 | Category-based retrieval | Semantic search, full injection | Simple, no infra, deterministic | If categories don't capture relevance |
 | 2026-01-05 | 15 patterns per agent limit | 10, 25, unlimited | 15 is enough history without bloat | If running out of space for valuable patterns |
+| 2026-01-05 | External forcing function for autonomy | Self-enforced stop conditions | LLMs rationalize stopping early; external wrapper verifies reality | Never (fundamental insight) |
+| 2026-01-05 | Belt-and-suspenders enforcement | External only, Hook only | Hook catches Claude, wrapper catches hook failures | If causing issues |
 
 ### Why These Decisions Matter
 
@@ -60,6 +62,8 @@ If not all three → Don't change it.
 | Backlog | DISCOVERY_BACKLOG.md conflicts | Multiple agents updating | Batch updates at session end |
 | Testing | Playwright requires browser MCP profile | Different MCP config | Switch profile before testing |
 | Commits | Always use heredoc for messages | Special characters break | See CLAUDE.md example |
+| Autonomy | Claude rationalizes stopping early | Optimizes for "looking done" | Use external wrapper to verify reality |
+| Autonomy | Stop hooks only work once per session | `stop_hook_active` prevents loops | Wrapper re-invokes with continuation prompt |
 
 ### Integration Gotchas
 
@@ -153,6 +157,52 @@ If not all three → Don't change it.
 ## Recent Session Summaries
 
 > Last 5 sessions: what was done, what was learned. Newest first.
+
+### Session 9: 2026-01-06 (DISC-158/159) - COMPLETE
+
+**Goal**: Fix quote edit bug and implement floating save UX
+
+**Accomplished**:
+1. Fixed ROOT CAUSE bug: `currentQuote` → `currentDetailQuote` in removeLineItem() and saveQuoteChanges()
+2. Fixed keyboard shortcuts referencing undefined functions
+3. Implemented floating save dialogue with CSS animation (transform/opacity transitions)
+4. Followed full autonomy workflow: PR #50 → Quality eval (21/25) → Merge → Production test
+
+**Learned**:
+- Variable reference errors cause silent JS failures - always verify variables are declared
+- User emphasized following proper deployment workflows (`/quoted-run`, `/ai-run-deep` skills)
+- Railway preview URLs not always available - proceed with code-based quality eval
+
+**Carry Forward**:
+- 5 READY tickets remain in queue
+- Floating save UX should be manually tested by founder on production
+
+---
+
+### Session 8: 2026-01-05 (Autonomous Architecture) - COMPLETE
+
+**Goal**: Build infrastructure for truly autonomous operation (inspired by Auto-Claude)
+
+**Accomplished**:
+1. Created `run_quoted_autonomous.sh` - external forcing function that keeps invoking Claude until work genuinely complete
+2. Created `check-work-complete.py` - Stop hook that blocks premature stopping
+3. Added `.claude/settings.json` with Stop hook configuration
+4. Created `AUTONOMOUS_ARCHITECTURE.md` documentation
+5. Analyzed Auto-Claude architecture from video transcript
+
+**Learned**:
+- **Critical insight**: LLMs rationalize stopping early. Self-enforced stop conditions fail.
+- External wrapper checks reality (READY count, PR count) not Claude's claims
+- Claude Code Stop hooks can block stopping, but `stop_hook_active` prevents infinite loops
+- Belt-and-suspenders: Hook catches Claude, wrapper catches hook failures, wrapper re-invokes
+- Auto-Claude uses worktree isolation per task - future enhancement for us
+
+**Carry Forward**:
+- Test autonomous runner: `./.ai-company/scripts/run_quoted_autonomous.sh 1 code`
+- The Stop hook only activates when `autonomous-checkpoint.md` exists (autonomous mode flag)
+- Future: Add worktree isolation, AI merge conflict resolution, semantic memory
+
+---
 
 ### Session 7: 2026-01-05 (Full Run - PR Cleanup) - COMPLETE
 
@@ -254,40 +304,54 @@ If not all three → Don't change it.
 
 ### Immediate Context
 
-**Last Worked On**: Full Run - cleared 4 PR_PENDING tickets
-**Status**: COMPLETE - 4 tickets deployed to production
+**Last Worked On**: DISC-158 (Quote edit bug fix) + DISC-159 (Floating save UX)
+**Status**: DEPLOYED - PR #50 merged, production verified GREEN
 **Open PRs**: 0 (all cleared)
 
 ### What To Do Next
 
-1. Run `/ai-run-deep code` to process 7 READY tickets
-2. Configure Google OAuth (set GOOGLE_OAUTH_CLIENT_ID in Railway)
-3. Watch first maintenance run (due 2026-01-12) - validates decay scoring
-4. Test monitoring agent daily summary email (8:15 UTC)
+1. **5 READY tickets remain in queue** - Continue processing backlog:
+   - DISC-113: Handyman Mike Workflow (L effort, HIGH impact)
+   - DISC-033: Reddit Launch Post (M effort, FOUNDER ACTION)
+   - DISC-070: Voice-Driven PDF Templates (XL effort)
+   - DISC-074: Alternative Acquisition Channels (BRAINSTORM)
+   - DISC-081: QuickBooks Integration (BRAINSTORM)
+   - DISC-105: Learning Memory System - Dual Architecture (XL effort)
+   - DISC-154: Google Ads Creative Refresh (L effort)
+2. Test the autonomous runner: `./.ai-company/scripts/run_quoted_autonomous.sh 1 code`
+3. Consider testing the floating save UX on production manually
 
 ### Important Files Modified This Session
 
-| File | Change | Status |
-|------|--------|--------|
-| DISCOVERY_BACKLOG.md | 4 tickets marked DEPLOYED | Committed |
-| LEARNING_MEMORY.md | 4 quality evaluations logged, patterns added | Committed |
-| BATON_PASS.md | Session 7 summary | This commit |
+| File | Purpose | Status |
+|------|---------|--------|
+| `frontend/index.html` | Bug fix (currentQuote→currentDetailQuote) + Floating Save UX | DEPLOYED |
+| `DISCOVERY_BACKLOG.md` | Updated DISC-158/159 to DEPLOYED | Complete |
+| `LEARNING_MEMORY.md` | Logged quality evaluation (21/25) | Complete |
 
-### Deployed This Session
+### Autonomous Infrastructure Overview
 
-| Ticket | Feature | PR |
-|--------|---------|-----|
-| DISC-103 | Smart Complexity Detection | #41 |
-| DISC-134 | Google Sign-In OAuth | #44 |
-| DISC-140 | Autonomous Monitoring Agent | #44 |
-| DISC-144 | Landing Page Messaging Evolution | #43 |
+```
+┌─────────────────────────────────────────────────────────┐
+│  run_quoted_autonomous.sh (External Wrapper)            │
+│  ├── Checks: READY tickets, open PRs, PR_PENDING        │
+│  ├── Loops until: work genuinely complete               │
+│  ├── Re-invokes Claude with continuation prompts        │
+│  └── Logs to: .ai-company/logs/                         │
+├─────────────────────────────────────────────────────────┤
+│  check-work-complete.py (Stop Hook - Belt)              │
+│  ├── Only active when: autonomous-checkpoint.md exists  │
+│  ├── Blocks stopping if: work remains                   │
+│  └── Allows stop if: genuinely complete                 │
+└─────────────────────────────────────────────────────────┘
+```
 
 ### Warnings for Next Session
 
-- Google OAuth button hidden until GOOGLE_OAUTH_CLIENT_ID set
-- Monitoring agent scheduler starts at :15/:45 marks - may not fire immediately
-- First maintenance run due 2026-01-12 - watch for decay scoring issues
-- Quality gate threshold is 18/25 - all 4 PRs passed easily (21-24)
+- Stop hook requires restart of Claude Code to take effect (hook captured at startup)
+- The hook only activates in autonomous mode (when checkpoint file exists)
+- Budget limit is $50/day - hardcoded in wrapper script
+- Consecutive failure limit is 3 - then it stops to avoid infinite loops
 
 ---
 
