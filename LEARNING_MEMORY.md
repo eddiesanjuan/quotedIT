@@ -234,7 +234,7 @@ MIN_SCORE: 0 (triggers archival)
 ## Quality Evaluation History
 
 > Logged automatically during Quality Evaluation phase (Step 9.5)
-> **Total entries**: 5 | **Limit**: 20 (oldest archived when exceeded)
+> **Total entries**: 6 | **Limit**: 20 (oldest archived when exceeded)
 
 ### 2026-01-05 DISC-103: Smart Complexity Detection (PR #41)
 
@@ -289,6 +289,17 @@ MIN_SCORE: 0 (triggers archival)
 | Scope Discipline | 4 | Stayed focused, minor additions for completeness |
 | Edge Cases | 4 | Covered main scenarios, some edge cases implicit |
 | Testing | 5 | Meta-tested quality gate on itself |
+| **TOTAL** | **23/25** | **PASS** |
+
+### 2026-01-06 DISC-155: Demo Tour Polish (PR #46)
+
+| Dimension | Score | Notes |
+|-----------|-------|-------|
+| Completeness | 5 | All three requirements addressed: scroll lock, smoother transitions, edit clarity |
+| Code Quality | 5 | Clean CSS and JS, follows existing patterns, uses safe DOM manipulation |
+| Scope Discipline | 5 | Focused purely on tour polish - no scope creep |
+| Edge Cases | 4 | Handles scroll position restoration; rapid step navigation untested |
+| Testing | 4 | Manual testing pattern followed, no automated tests added |
 | **TOTAL** | **23/25** | **PASS** |
 
 ---
@@ -347,13 +358,14 @@ MIN_SCORE: 0 (triggers archival)
 ## Session Outcomes
 
 > Brief log of each significant session outcome.
-> **Total entries**: 3 | **Limit**: 30 (oldest archived when exceeded)
+> **Total entries**: 4 | **Limit**: 30 (oldest archived when exceeded)
 
 | Date | Session Type | Tickets | Outcome | Quality Avg | Notes |
 |------|--------------|---------|---------|-------------|-------|
 | 2026-01-05 | Full Run | DISC-103,134,140,144 | SUCCESS | 22.75/25 | 4 tickets deployed, 3 PRs merged, 1 closed as dup |
 | 2026-01-05 | Ad-hoc | Guardrails | SUCCESS | N/A | Decay scoring, limits, category retrieval |
 | 2026-01-05 | Deep Run | DISC-156 | SUCCESS | 23/25 | Self-improvement evolution |
+| 2026-01-06 | Full Run | DISC-155 | SUCCESS | 23/25 | Demo tour polish - scroll lock + edit clarity |
 
 ---
 

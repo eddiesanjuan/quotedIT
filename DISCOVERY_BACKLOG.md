@@ -34,10 +34,10 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 | Status | Count |
 |--------|-------|
 | PR_PENDING | 0 |
-| READY | 7 |
+| READY | 6 |
 | DISCOVERED | 18 |
 | COMPLETE | 7 |
-| DEPLOYED | 5 |
+| DEPLOYED | 6 |
 | **Active Total** | **37** |
 | Archived (DEPLOYED) | 100+ |
 
@@ -378,43 +378,21 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 ---
 
-### DISC-155: Demo Tour Polish - Scroll Lock + Edit Clarity 🎯 UX (READY)
+### DISC-155: Demo Tour Polish - Scroll Lock + Edit Clarity 🎯 UX (DEPLOYED)
+
+**✅ Deployed 2026-01-06** via PR #46
 
 **Source**: Founder Request (Eddie, 2026-01-05)
 **Impact**: HIGH | **Effort**: S | **Score**: 3.0
-**Sprint Alignment**: Demo conversion polish - first impression quality
 
-**Problem**: The demo tour (Shepherd.js) on try.html has usability issues that undermine the polished impression we want to create:
-1. **Sloppy navigation** - Tour transitions feel janky/unpolished
-2. **Background scrolling** - User can scroll behind tour, causing highlight boxes to misalign with their targets
-3. **Edit confusion** - Tour makes it seem like editing works in demo mode, but learning only happens in real accounts. This misleads users about what they're experiencing.
+**Implementation**:
+- Added `body.tour-active` CSS class to lock scroll during tour
+- Preserve and restore scroll position when tour closes
+- Added `.tour-demo-note` styled callout for demo-specific clarifications
+- Updated first tour step to clarify "In your account, tap any line to edit..."
+- Smoother spotlight transitions with opacity fade before repositioning
 
-**Why This Matters**: The demo is the critical conversion moment. If it feels rough or confusing, users won't believe the real product is polished. Every demo visitor should feel "this is professional software."
-
-**Proposed Work**:
-
-1. **Lock scroll during tour** - Prevent background scrolling while tour is active
-   - Add `overflow: hidden` to body during tour
-   - Remove on tour completion/dismissal
-
-2. **Smooth transitions** - Review and fix janky navigation
-   - Ensure proper scrollTo behavior before showing each step
-   - Add slight delay if needed for DOM to settle
-   - Test on mobile (375px) and desktop
-
-3. **Clarify edit limitations** - Make it clear that:
-   - "Editing requires a free account"
-   - "Sign up to see the learning system in action"
-   - Either disable edit buttons in demo OR show clear messaging when clicked
-
-4. **Polish tour copy** - Review each step for clarity and professionalism
-
-**Technical Notes**:
-- Tour library: Shepherd.js
-- Key file: `frontend/try.html`
-- Test on both desktop and mobile viewports
-
-**Success Metric**: Tour feels smooth and professional; no misaligned highlights; users understand demo vs. full account capabilities
+**Quality Evaluation**: 23/25 PASS
 
 ---
 
