@@ -3033,19 +3033,33 @@
                     tourSpotlight.classList.remove('active');
                     tourSpotlight.style.opacity = '0';
 
-                    // Scroll target element into view first
+                    // DISC-157 FIX: Temporarily unlock scroll so scrollIntoView works
+                    // The body.tour-active locks scroll, preventing auto-scroll between steps
+                    var currentScrollY = parseInt(document.body.style.top || '0', 10) * -1;
+                    document.body.classList.remove('tour-active');
+                    document.body.style.top = '';
+                    window.scrollTo(0, currentScrollY); // Restore position before smooth scroll
+
+                    // Now scroll target element into view (this actually works now)
                     targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
-                    // DISC-155: Wait for scroll animation, then smoothly reveal spotlight
+                    // DISC-157: Wait for scroll, re-lock body, then position elements
                     setTimeout(function() {
+                        // Re-lock scroll at new position
+                        tourScrollPosition = window.scrollY;
+                        document.body.classList.add('tour-active');
+                        document.body.style.top = '-' + tourScrollPosition + 'px';
+
+                        // Now position spotlight and tooltip (getBoundingClientRect works with fixed body)
                         positionSpotlight(targetEl);
                         positionTooltip(targetEl);
+
                         // Add slight delay before revealing for smoother transition
                         requestAnimationFrame(function() {
                             tourSpotlight.style.opacity = '';
                             tourSpotlight.classList.add('active');
                         });
-                    }, 450);
+                    }, 500);
                 } else {
                     tourSpotlight.classList.remove('active');
                     centerTooltip();
@@ -3053,15 +3067,25 @@
             } else {
                 // Visual-only step - hide spotlight
                 tourSpotlight.classList.remove('active');
+
+                // DISC-157 FIX: Temporarily unlock scroll for visual-only steps too
+                var currentScrollY = parseInt(document.body.style.top || '0', 10) * -1;
+                document.body.classList.remove('tour-active');
+                document.body.style.top = '';
+                window.scrollTo(0, currentScrollY);
+
                 // Scroll results section into view for context
                 var resultsEl = document.getElementById('resultsSection');
                 if (resultsEl) {
                     resultsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }
-                // Wait for scroll, then center tooltip
+                // Wait for scroll, re-lock, then center tooltip
                 setTimeout(function() {
+                    tourScrollPosition = window.scrollY;
+                    document.body.classList.add('tour-active');
+                    document.body.style.top = '-' + tourScrollPosition + 'px';
                     centerTooltip();
-                }, 400);
+                }, 450);
             }
         }
 
