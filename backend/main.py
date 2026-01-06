@@ -101,7 +101,7 @@ async def lifespan(app: FastAPI):
     os.makedirs("./data/uploads", exist_ok=True)
     os.makedirs("./data/pdfs", exist_ok=True)
 
-    # Initialize database
+    # Initialize database (includes auto-migrations)
     await init_db()
     logger.info("Database initialized")
 

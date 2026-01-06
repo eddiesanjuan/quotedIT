@@ -1516,6 +1516,16 @@ async def run_migrations(engine):
             """,
             "alter_sql": "ALTER TABLE contractors ADD COLUMN send_invoice_reminders BOOLEAN DEFAULT TRUE"
         },
+        # DISC-147: Feedback email drip tracking
+        {
+            "table": "contractors",
+            "column": "feedback_email_sent",
+            "check_sql": """
+                SELECT column_name FROM information_schema.columns
+                WHERE table_name = 'contractors' AND column_name = 'feedback_email_sent'
+            """,
+            "alter_sql": "ALTER TABLE contractors ADD COLUMN feedback_email_sent INTEGER"
+        },
         # INNOV-6: Invoice Automation columns on invoices table
         {
             "table": "invoices",
