@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Why I Built Quoted — Quoted</title>
+    <meta name="description" content="The story behind Quoted: how watching contractors struggle with quotes led to building an AI that actually understands how they price jobs.">
+    <meta name="keywords" content="quoted story, contractor software, AI quoting, founder story, startup story">
+    <meta name="author" content="Eddie San Juan">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://quoted.it.com/blog/why-i-built-quoted.html">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230a0a0a'/%3E%3Ctext x='16' y='23' font-family='serif' font-size='20' font-weight='600' fill='white' text-anchor='middle'%3EQ%3C/text%3E%3C/svg%3E">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Why I Built Quoted">
+    <meta property="og:description" content="The story behind Quoted—how watching contractors struggle with quotes led to building something better.">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://quoted.it.com/blog/why-i-built-quoted.html">
+    <meta name="twitter:card" content="summary_large_image">
+
+    <!-- Schema.org Article -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Why I Built Quoted",
+        "description": "The founder story behind Quoted—how watching contractors struggle with quotes led to building an AI that learns how they price.",
+        "author": {"@type": "Person", "name": "Eddie San Juan"},
+        "publisher": {"@type": "Organization", "name": "Quoted", "url": "https://quoted.it.com"},
+        "datePublished": "2026-01-06",
+        "dateModified": "2026-01-06"
+    }
+    </script>
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-17836503504"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'AW-17836503504');
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #141414;
+            --bg-card: #1a1a1a;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --text-muted: #666666;
+            --border: rgba(255, 255, 255, 0.1);
+            --border-hover: rgba(255, 255, 255, 0.2);
+            --font-serif: 'Playfair Display', Georgia, serif;
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { font-size: 16px; scroll-behavior: smooth; }
+
+        body {
+            font-family: var(--font-sans);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        nav.site-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            padding: 24px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(to bottom, var(--bg-primary) 0%, transparent 100%);
+        }
+
+        .logo {
+            font-family: var(--font-serif);
+            font-size: 1.5rem;
+            font-weight: 500;
+            letter-spacing: -0.02em;
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+
+        .logo span { font-style: italic; }
+
+        .nav-links {
+            display: flex;
+            gap: 32px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover { color: var(--text-primary); }
+
+        .nav-cta {
+            padding: 12px 24px;
+            background: transparent;
+            border: 1px solid var(--text-primary);
+            color: var(--text-primary) !important;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .nav-cta:hover {
+            background: var(--text-primary);
+            color: var(--bg-primary) !important;
+        }
+
+        .article-header {
+            padding: 160px 40px 60px;
+            max-width: 720px;
+            margin: 0 auto;
+        }
+
+        .back-link {
+            display: inline-block;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.875rem;
+            margin-bottom: 40px;
+            transition: color 0.2s;
+        }
+
+        .back-link:hover { color: var(--text-primary); }
+
+        .article-category {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+
+        .article-title {
+            font-family: var(--font-serif);
+            font-size: 2.75rem;
+            font-weight: 500;
+            line-height: 1.2;
+            letter-spacing: -0.02em;
+            margin-bottom: 24px;
+        }
+
+        .article-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 32px;
+        }
+
+        .article-meta {
+            display: flex;
+            gap: 24px;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .article-content {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 0 40px 80px;
+        }
+
+        .article-content p {
+            font-size: 1.125rem;
+            line-height: 1.8;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+        }
+
+        .article-content h2 {
+            font-family: var(--font-serif);
+            font-size: 1.75rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin: 56px 0 24px;
+            padding-top: 32px;
+            border-top: 1px solid var(--border);
+        }
+
+        .article-content h2:first-of-type {
+            border-top: none;
+            padding-top: 0;
+            margin-top: 0;
+        }
+
+        .article-content h3 {
+            font-family: var(--font-serif);
+            font-size: 1.35rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin: 40px 0 16px;
+        }
+
+        .article-content ul, .article-content ol {
+            margin: 0 0 24px 24px;
+            color: var(--text-secondary);
+        }
+
+        .article-content li {
+            font-size: 1.125rem;
+            line-height: 1.8;
+            margin-bottom: 12px;
+        }
+
+        .article-content strong {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .article-content em {
+            font-style: italic;
+        }
+
+        .article-content a {
+            color: var(--text-primary);
+            text-decoration: underline;
+            text-underline-offset: 3px;
+            transition: opacity 0.2s;
+        }
+
+        .article-content a:hover { opacity: 0.7; }
+
+        .pullquote {
+            font-family: var(--font-serif);
+            font-size: 1.5rem;
+            font-style: italic;
+            color: var(--text-primary);
+            border-left: 3px solid var(--text-primary);
+            padding-left: 24px;
+            margin: 40px 0;
+            line-height: 1.5;
+        }
+
+        .callout {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            padding: 24px 28px;
+            margin: 32px 0;
+        }
+
+        .callout-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .callout p { margin-bottom: 0; font-size: 1rem; }
+        .callout.insight { border-left: 3px solid var(--text-primary); }
+
+        .cta-box {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            padding: 40px;
+            margin: 48px 0;
+            text-align: center;
+        }
+
+        .cta-box h3 {
+            font-family: var(--font-serif);
+            font-size: 1.5rem;
+            font-weight: 500;
+            margin-bottom: 12px;
+        }
+
+        .cta-box p {
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+            font-size: 1rem;
+        }
+
+        .cta-button {
+            display: inline-block;
+            padding: 14px 32px;
+            background: var(--text-primary);
+            color: #0a0a0a !important;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px rgba(255,255,255,0.1);
+            opacity: 1;
+        }
+
+        .signature {
+            margin-top: 48px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border);
+        }
+
+        .signature-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .signature-title {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 48px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .footer-logo {
+            font-family: var(--font-serif);
+            font-size: 1.25rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+
+        .footer-logo span { font-style: italic; }
+
+        .footer-links {
+            display: flex;
+            gap: 32px;
+        }
+
+        .footer-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.875rem;
+            transition: color 0.2s;
+        }
+
+        .footer-links a:hover { color: var(--text-primary); }
+        .footer-copy { color: var(--text-muted); font-size: 0.875rem; }
+
+        @media (max-width: 768px) {
+            nav { padding: 20px 24px; }
+            .nav-links a:not(.nav-cta) { display: none; }
+            .article-header { padding: 140px 24px 40px; }
+            .article-title { font-size: 2rem; }
+            .article-content { padding: 40px 24px 80px; }
+            .article-meta { flex-direction: column; gap: 8px; }
+            .pullquote { font-size: 1.25rem; }
+            footer {
+                flex-direction: column;
+                gap: 24px;
+                text-align: center;
+            }
+            .footer-links { flex-wrap: wrap; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="site-nav">
+        <a href="/" class="logo">quoted.<span>it</span></a>
+        <div class="nav-links">
+            <a href="/use-cases">Use Cases</a>
+            <a href="/blog/">Blog</a>
+            <a href="/app" class="nav-cta">Start Quoting</a>
+        </div>
+    </nav>
+
+    <header class="article-header">
+        <a href="/blog/" class="back-link">&larr; Back to Blog</a>
+        <p class="article-category">Founder Story</p>
+        <h1 class="article-title">Why I Built Quoted</h1>
+        <p class="article-subtitle">The real story behind building an AI that learns how contractors price—and why I think it matters.</p>
+        <div class="article-meta">
+            <span>Eddie San Juan</span>
+            <span>January 2026</span>
+            <span>7 min read</span>
+        </div>
+    </header>
+
+    <article class="article-content">
+        <p>A few years ago, I watched my friend lose a $12,000 job because he took four days to send a quote.</p>
+
+        <p>He's a fantastic contractor. Twenty years in the business. Beautiful tile work. The kind of guy who takes pride in every detail. But he was running three jobs at once, and by the time he sat down to write up the estimate, the homeowner had already signed with someone else.</p>
+
+        <p>"I knew the numbers," he told me. "I just didn't have time to put it together."</p>
+
+        <p>That conversation stuck with me.</p>
+
+        <h2>The Gap I Kept Seeing</h2>
+
+        <p>Over the next year, I talked to more contractors. Not just my friend—dozens of them. Plumbers, electricians, painters, general contractors. I wanted to understand how they ran their businesses.</p>
+
+        <p>What I found was a pattern: the ones who were great at their trade were often terrible at the business side. Not because they were incapable—because they didn't have time. They were too busy doing the actual work.</p>
+
+        <p class="pullquote">The contractors who are best at their trade are often worst at finding time to quote jobs.</p>
+
+        <p>Quoting was the bottleneck. Every contractor I talked to had the same story: jobs lost to slow quotes, evenings spent writing estimates, weekends catching up on paperwork. The administrative burden was crushing people who just wanted to build things.</p>
+
+        <h2>Why Existing Tools Didn't Work</h2>
+
+        <p>I looked at the software that existed. There were plenty of options. Quoting apps, invoicing tools, CRM systems. But they all had the same problem: <strong>they didn't actually save time</strong>.</p>
+
+        <p>They were just fancier ways to type numbers into boxes.</p>
+
+        <p>You still had to figure out the price. You still had to write the scope of work. You still had to manually create each quote from scratch. The software just made the typing look prettier.</p>
+
+        <p>For a contractor standing in a customer's kitchen at 6pm, trying to give a price before heading to the next job, that wasn't helpful. They needed something that could think with them, not just transcribe what they already knew.</p>
+
+        <h2>The AI Question</h2>
+
+        <p>Around this time, AI was getting genuinely good. Not the hype-cycle stuff—actually useful. I'd been building software for years, and for the first time, it felt like AI could do more than party tricks.</p>
+
+        <p>So I started asking: what if AI could learn how a specific contractor prices jobs?</p>
+
+        <p>Not generic pricing. Not "industry averages." The actual way this particular electrician thinks about panel upgrades. The factors this specific painter considers for exterior jobs. The logic that lives in their head, accumulated over years of experience.</p>
+
+        <div class="callout insight">
+            <p class="callout-title">The insight</p>
+            <p>Every experienced contractor has a pricing model in their head. They just can't articulate it in a way a computer understands. What if the computer could learn it by watching them work?</p>
+        </div>
+
+        <p>That's where Quoted started. Not as a "quoting app" but as an attempt to capture expertise.</p>
+
+        <h2>Building Something Different</h2>
+
+        <p>The first version was rough. Really rough. But something interesting happened when contractors used it.</p>
+
+        <p>A bathroom remodel that usually took 30 minutes to quote? Done in 60 seconds. And not because the AI was guessing—because it had learned from the contractor's previous quotes. It knew that this contractor charges more for second-floor bathrooms. It knew they add a premium for older homes with potential hidden issues. It had absorbed the wisdom that takes years to develop.</p>
+
+        <p>Contractors started telling me: "It's like having someone who knows how I think."</p>
+
+        <p>That's when I knew we were onto something.</p>
+
+        <h2>What We're Actually Building</h2>
+
+        <p>Quoted isn't about replacing contractor judgment. That would be both impossible and wrong. The goal has always been to amplify it.</p>
+
+        <p>When you describe a job to Quoted—by voice, by text, however you want—it's drawing on everything you've taught it about how you price. Your materials preferences. Your labor rates. Your approach to contingencies. The subtle factors that make your quotes yours.</p>
+
+        <p>Then it generates a professional quote in seconds. Not a template. A quote that reflects your expertise, formatted professionally, ready to send before you've left the job site.</p>
+
+        <p>The AI isn't doing the thinking. <strong>You did the thinking—over years of experience. The AI just makes it fast.</strong></p>
+
+        <h2>Why This Matters</h2>
+
+        <p>Here's what I believe: contractors are the backbone of the economy. The people who build, fix, and maintain the physical world deserve tools as good as what office workers have.</p>
+
+        <p>For too long, "business software" meant software for people who sit at desks. Contractors got stuck with tools designed for a different world—tools that assumed you had time to sit down and type, time to learn complex interfaces, time to manage administrative overhead.</p>
+
+        <p>That's backwards. The people with the least time for paperwork are the ones who need the best tools.</p>
+
+        <p>Quoted is my attempt to fix that. To give contractors the same technological leverage that's been transforming other industries. To let expertise scale.</p>
+
+        <h2>Where We're Going</h2>
+
+        <p>We're still early. The product keeps getting better as more contractors use it and teach it how they work. Every quote makes the system smarter—not just for that contractor, but (in anonymized ways) for everyone.</p>
+
+        <p>The vision is a world where quoting takes seconds, not hours. Where every contractor can be as professionally polished as a big company, while staying as agile as an independent. Where the administrative burden that crushes small businesses just... disappears.</p>
+
+        <p>We're not there yet. But every day, we get a little closer.</p>
+
+        <div class="cta-box">
+            <h3>See For Yourself</h3>
+            <p>Try Quoted free. No credit card, no commitment. Just describe a job and see what happens.</p>
+            <a href="/demo" class="cta-button">Try the Demo</a>
+        </div>
+
+        <h2>A Note to Contractors</h2>
+
+        <p>If you've read this far, you're probably wondering if this thing actually works.</p>
+
+        <p>The honest answer: it works really well for some jobs and okay for others. The more you use it, the better it gets. Some contractors are generating quotes in under a minute that used to take them 30 minutes. Others take a few weeks to train it before they see that level of accuracy.</p>
+
+        <p>It's not magic. It's software that learns. And like any learning system, the quality of the output depends on the quality of the input.</p>
+
+        <p>If you're skeptical, that's fine. You should be skeptical of anyone promising to solve your problems with AI. But if you're curious—if you've ever wished you could quote faster without sacrificing accuracy—I think it's worth a look.</p>
+
+        <p>The worst case is you waste five minutes on the demo. The best case is you get your evenings back.</p>
+
+        <div class="signature">
+            <p class="signature-name">Eddie San Juan</p>
+            <p class="signature-title">Founder, Quoted</p>
+        </div>
+
+        <hr style="border: none; border-top: 1px solid var(--border); margin: 48px 0;">
+
+        <p><em>Questions? I read every email: <a href="mailto:eddie@quoted.it.com">eddie@quoted.it.com</a></em></p>
+    </article>
+
+    <footer>
+        <a href="/" class="footer-logo">quoted.<span>it</span></a>
+        <div class="footer-links">
+            <a href="/use-cases">Use Cases</a>
+            <a href="/blog/">Blog</a>
+            <a href="/help">Help</a>
+            <a href="/privacy">Privacy</a>
+            <a href="/terms">Terms</a>
+        </div>
+        <p class="footer-copy">&copy; 2026 Quoted, Inc.</p>
+    </footer>
+</body>
+</html>
