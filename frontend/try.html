@@ -1096,6 +1096,13 @@
             pointer-events: auto;
         }
 
+        /* DISC-155: Lock body scroll during tour */
+        body.tour-active {
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+        }
+
         /* Tour Spotlight - cuts through overlay */
         .tour-spotlight {
             position: fixed;
@@ -1165,6 +1172,18 @@
         .tour-tooltip-highlight {
             color: var(--success);
             font-weight: 500;
+        }
+
+        /* DISC-155: Demo note styling - clarifies demo vs account features */
+        .tour-demo-note {
+            margin-top: 12px;
+            padding: 10px 12px;
+            background: rgba(99, 102, 241, 0.1);
+            border-left: 3px solid var(--primary);
+            border-radius: 0 6px 6px 0;
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+            font-style: italic;
         }
 
         /* Tour Navigation */
@@ -2747,6 +2766,7 @@
         // Tour state
         var tourCurrentStep = 0;
         var tourShownThisSession = false;
+        var tourScrollPosition = 0; // DISC-155: Store scroll position for restoration
 
         {% raw %}
         // Helper to create text with highlighted portions
@@ -2801,9 +2821,10 @@
             {
                 target: '#lineItems',
                 badge: 'Learning AI',
-                title: 'Edit = Teaching',
-                body: 'Tap any line item to edit. Every change you make {{trains the AI on YOUR pricing}}. After a few corrections, it learns exactly how you price jobs.',
-                preview: null
+                title: 'Your Pricing, Learned',
+                body: 'In your account, tap any line to edit. {{Every change trains the AI on YOUR pricing}}. After a few corrections, it learns exactly how you price jobs.',
+                preview: null,
+                demoNote: 'Start your free trial to unlock editing and learning'
             },
             {
                 target: '#downloadPdfBtn',
@@ -2891,6 +2912,11 @@
                 posthog.capture('tour_prompt_shown', { page: 'demo_try' });
             }
 
+            // DISC-155: Lock body scroll and preserve position
+            tourScrollPosition = window.scrollY;
+            document.body.classList.add('tour-active');
+            document.body.style.top = '-' + tourScrollPosition + 'px';
+
             // Show overlay and welcome
             tourOverlay.classList.add('active');
             tourWelcome.classList.add('active');
@@ -2932,6 +2958,14 @@
             clearChildren(tourBody);
             tourBody.appendChild(createHighlightedText(step.body));
 
+            // DISC-155: Show demo note if present (clarifies demo vs full account)
+            if (step.demoNote) {
+                var noteEl = document.createElement('div');
+                noteEl.className = 'tour-demo-note';
+                noteEl.textContent = step.demoNote;
+                tourBody.appendChild(noteEl);
+            }
+
             // Update preview using safe DOM methods
             clearChildren(tourPreview);
             if (step.preview) {
@@ -2952,14 +2986,23 @@
             if (step.target) {
                 var targetEl = document.querySelector(step.target);
                 if (targetEl) {
+                    // DISC-155: Hide spotlight during transition for smoother feel
+                    tourSpotlight.classList.remove('active');
+                    tourSpotlight.style.opacity = '0';
+
                     // Scroll target element into view first
                     targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    // Wait for scroll animation, then position spotlight and tooltip
+
+                    // DISC-155: Wait for scroll animation, then smoothly reveal spotlight
                     setTimeout(function() {
                         positionSpotlight(targetEl);
                         positionTooltip(targetEl);
-                        tourSpotlight.classList.add('active');
-                    }, 400);
+                        // Add slight delay before revealing for smoother transition
+                        requestAnimationFrame(function() {
+                            tourSpotlight.style.opacity = '';
+                            tourSpotlight.classList.add('active');
+                        });
+                    }, 450);
                 } else {
                     tourSpotlight.classList.remove('active');
                     centerTooltip();
@@ -3117,6 +3160,11 @@
             tourSpotlight.classList.remove('active');
             tourFinal.classList.remove('active');
             tourCurrentStep = 0;
+
+            // DISC-155: Restore body scroll
+            document.body.classList.remove('tour-active');
+            document.body.style.top = '';
+            window.scrollTo(0, tourScrollPosition);
         }
 
         // Event listeners for tour
