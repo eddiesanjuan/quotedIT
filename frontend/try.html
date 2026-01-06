@@ -1498,6 +1498,33 @@
             color: var(--text-secondary);
         }
 
+        /* DISC-157: Tour Restart Button */
+        .tour-restart-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--text-secondary);
+            font-size: 0.8125rem;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: transparent;
+            border: none;
+            margin-top: 16px;
+        }
+
+        .tour-restart-link:hover {
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .tour-restart-link svg {
+            width: 14px;
+            height: 14px;
+            opacity: 0.7;
+        }
+
         /* Mobile Tour Styles */
         @media (max-width: 768px) {
             .tour-tooltip {
@@ -1542,6 +1569,11 @@
 
             .tour-nav-buttons .tour-btn {
                 flex: 1;
+            }
+
+            .tour-restart-link {
+                width: 100%;
+                justify-content: center;
             }
         }
     </style>
@@ -1755,6 +1787,16 @@
                             Try Another Quote
                         </button>
                     </div>
+
+                    <!-- DISC-157: Tour restart capability -->
+                    <button class="tour-restart-link" id="tourRestartBtn" style="display: none;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                            <circle cx="12" cy="17" r="0.5" fill="currentColor"/>
+                        </svg>
+                        Take the Tour
+                    </button>
                 </div>
             </div>
 
@@ -2893,6 +2935,7 @@
         var tourPrevBtn = document.getElementById('tourPrevBtn');
         var tourCloseBtn = document.getElementById('tourCloseBtn');
         var tourSignupBtn = document.getElementById('tourSignupBtn');
+        var tourRestartBtn = document.getElementById('tourRestartBtn'); // DISC-157
 
         // Check if tour should be shown
         function shouldShowTour() {
@@ -3048,37 +3091,62 @@
             tourSpotlight.style.height = (rect.height + padding * 2) + 'px';
         }
 
-        // Position tooltip near target element
+        // DISC-157: Position tooltip near target element with proper viewport constraints
         function positionTooltip(targetEl) {
             var rect = targetEl.getBoundingClientRect();
-            var tooltipRect = tourTooltip.getBoundingClientRect();
             var isMobile = window.innerWidth <= 768;
+            var padding = 20; // Min distance from viewport edge
+            var tooltipWidth = 340;
+            var tooltipHeight = 280; // Approximate max height
 
-            // Reset transform from centerTooltip
+            // Reset transform and position from centerTooltip
             tourTooltip.style.transform = '';
+            tourTooltip.style.right = '';
 
             if (isMobile) {
                 // Mobile: bottom sheet style (handled by CSS)
                 tourTooltip.style.top = 'auto';
                 tourTooltip.style.left = '0';
                 tourTooltip.style.right = '0';
+                tourTooltip.style.bottom = '0';
             } else {
-                // Desktop: position below target
-                var top = rect.bottom + 20;
-                var left = rect.left + (rect.width / 2) - (340 / 2);
+                // Desktop: position below target by default
+                var top = rect.bottom + padding;
+                var left = rect.left + (rect.width / 2) - (tooltipWidth / 2);
 
-                // Keep within viewport
-                if (left < 20) left = 20;
-                if (left + 340 > window.innerWidth - 20) {
-                    left = window.innerWidth - 360;
+                // Constrain horizontal position within viewport
+                if (left < padding) {
+                    left = padding;
                 }
-                if (top + tooltipRect.height > window.innerHeight - 20) {
-                    // Position above if no room below
-                    top = rect.top - tooltipRect.height - 20;
+                if (left + tooltipWidth > window.innerWidth - padding) {
+                    left = window.innerWidth - tooltipWidth - padding;
                 }
+
+                // Check if tooltip fits below the target
+                var fitsBelow = (top + tooltipHeight) <= (window.innerHeight - padding);
+                var fitsAbove = (rect.top - tooltipHeight - padding) >= padding;
+
+                if (!fitsBelow && fitsAbove) {
+                    // Position above if no room below but room above
+                    top = rect.top - tooltipHeight - padding;
+                } else if (!fitsBelow && !fitsAbove) {
+                    // DISC-157: Neither above nor below works - center vertically
+                    // This handles edge cases where target is in middle of small viewport
+                    var viewportCenter = window.innerHeight / 2;
+                    top = viewportCenter - (tooltipHeight / 2);
+                    // Ensure still within bounds
+                    if (top < padding) top = padding;
+                    if (top + tooltipHeight > window.innerHeight - padding) {
+                        top = window.innerHeight - tooltipHeight - padding;
+                    }
+                }
+
+                // Final safety check: ensure top is never negative
+                if (top < padding) top = padding;
 
                 tourTooltip.style.top = top + 'px';
                 tourTooltip.style.left = left + 'px';
+                tourTooltip.style.bottom = 'auto';
             }
         }
 
@@ -3167,6 +3235,21 @@
             window.scrollTo(0, tourScrollPosition);
         }
 
+        // DISC-157: Restart tour from beginning (bypasses session/localStorage check)
+        function restartTour() {
+            // Clear any previous dismissal so tour can be re-shown
+            localStorage.removeItem('quoted_demo_tour_dismissed');
+            tourShownThisSession = false;
+
+            // Track restart
+            if (typeof posthog !== 'undefined') {
+                posthog.capture('tour_restarted', { page: 'demo_try' });
+            }
+
+            // Show tour welcome prompt directly
+            showTourPrompt();
+        }
+
         // Event listeners for tour
         tourStartBtn.addEventListener('click', function() {
             startTour();
@@ -3207,6 +3290,11 @@
             }
         });
 
+        // DISC-157: Restart tour button click handler
+        tourRestartBtn.addEventListener('click', function() {
+            restartTour();
+        });
+
         // Keyboard navigation for tour
         document.addEventListener('keydown', function(e) {
             if (!tourOverlay.classList.contains('active')) return;
@@ -3231,7 +3319,10 @@
         displayResults = function(data) {
             originalDisplayResults(data);
 
-            // Show tour prompt after a brief delay
+            // DISC-157: Always show tour restart button in results section
+            tourRestartBtn.style.display = 'inline-flex';
+
+            // Show tour prompt after a brief delay (only if not dismissed)
             setTimeout(function() {
                 showTourPrompt();
             }, 1500);
