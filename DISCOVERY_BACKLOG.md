@@ -1,6 +1,6 @@
 # Discovery Backlog
 
-**Last Updated**: 2026-01-05
+**Last Updated**: 2026-01-06
 **Source**: `/quoted-discover` autonomous discovery cycles
 
 ---
@@ -36,12 +36,13 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 | PR_PENDING | 0 |
 | READY | 6 |
 | DISCOVERED | 18 |
-| COMPLETE | 7 |
-| DEPLOYED | 6 |
-| **Active Total** | **37** |
+| COMPLETE | 8 |
+| DEPLOYED | 8 |
+| **Active Total** | **40** |
 | Archived (DEPLOYED) | 100+ |
 
-**Just Deployed (2026-01-05)**: DISC-103, DISC-134, DISC-140, DISC-144 (via PRs #41, #43, #44)
+**Just Deployed (2026-01-06)**: DISC-157 (PRs #47, #48), DISC-145 (PR #49)
+**Deployed (2026-01-05)**: DISC-103, DISC-134, DISC-140, DISC-144, DISC-155 (PRs #41, #43, #44, #46)
 **Autonomous AI Infrastructure**: DISC-101/102/104/106 DEPLOYED, DISC-105 READY
 **Agent Reliability Engineering**: DISC-107/108 DEPLOYED, DISC-109 DISCOVERED
 **Analytics Pipeline**: DISC-136/137/138/139/141/142/149/151 ALL DEPLOYED (Jan 3-5)
@@ -56,11 +57,11 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 | Ticket | Title | Deployed |
 |--------|-------|----------|
+| DISC-145 | Fresh Blog Content - 3 Articles (Pricing Psychology, Mistakes, Founder Story) | 2026-01-06 |
+| DISC-157 | Demo Tour Critical Fixes - Dialog Positioning + Scroll Fix | 2026-01-06 |
 | DISC-103 | Smart Complexity Detection for Task Routing | 2026-01-05 |
 | DISC-134 | Social Login (Google Sign-In) | 2026-01-05 |
 | DISC-140 | Autonomous Monitoring Agent | 2026-01-05 |
-| DISC-144 | Evolve Landing Page Messaging - Voice Hook + Depth Reveal | 2026-01-05 |
-| DISC-135 | Post-Job Pricing Reflection Loop + Conversion Tracking | 2025-12-31 |
 
 *Full deployment history: See DISCOVERY_ARCHIVE.md*
 
@@ -158,6 +159,58 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 ---
 
+### DISC-158: Quote Edits Not Saving - Critical Bug 🐛 BUG (COMPLETE)
+
+**Source**: Founder Request (Eddie, 2026-01-06)
+**Impact**: HIGH | **Effort**: M | **Score**: 2.0
+**Sprint Alignment**: Core functionality - broken editing blocks user workflow
+
+**Problem**: When editing a quote in the app (logged-in user), edits do not save. User can make changes but they don't persist. This is blocking core product functionality.
+
+**Root Cause Analysis (2026-01-06)**:
+Found TWO bugs causing this issue:
+
+1. **Undefined variable bug (ROOT CAUSE)**: `currentQuote` was referenced in `removeLineItem()` and `saveQuoteChanges()` but never declared. Should be `currentDetailQuote`. This caused JS errors when deleting line items, breaking the entire edit flow.
+   - Lines 13728-13745: `currentQuote.deletedItems` → `currentDetailQuote.deletedItems`
+   - Line 13915: Same fix in save payload
+
+2. **Keyboard shortcuts bug**: `toggleEditMode()` and `isEditMode` were referenced in keyboard shortcuts (Cmd+E, Cmd+S) but never defined.
+   - Lines 8849-8880: Fixed Cmd+E to focus first editable input, Cmd+S to use `hasUnsavedChanges`
+
+**Files Modified**: `frontend/index.html`
+
+**Success Metric**: Quote edits save successfully and persist on reload
+
+---
+
+### DISC-159: Quote Edit Dialogue UX Redesign - Floating Save 🎨 UX (READY)
+
+**Source**: Founder Request (Eddie, 2026-01-06)
+**Impact**: MEDIUM | **Effort**: M | **Score**: 1.0
+**Sprint Alignment**: UX polish for core workflow
+
+**Problem**: The bottom section of the quote edit dialogue is cluttered and cramped. The save button, reason field, and other controls are competing for space. Need a cleaner UX pattern.
+
+**Proposed Design**:
+1. **Floating Save Dialogue**: When user makes an edit, a floating modal/toast appears
+2. **Reason Field Integration**: The "reason for edit" field appears within the floating dialogue
+3. **Clear Action**: Single prominent "Save Changes" button
+4. **Escape Hatch**: Cancel/dismiss option to discard changes
+5. **Mobile-First**: Must work well on 375px viewport
+
+**UX Pattern Reference**: Similar to how Notion shows "Unsaved changes" with save/discard, or how Google Docs shows auto-save status
+
+**Proposed Work**:
+1. Audit current edit dialogue layout and identify clutter sources
+2. Design floating save component (sketch/wireframe)
+3. Implement floating save dialogue with reason field
+4. Animate entrance/exit for polish
+5. Test on mobile and desktop viewports
+6. Ensure accessibility (keyboard nav, screen reader)
+
+**Success Metric**: Edit flow feels cleaner; user can easily find and use save functionality; mobile UX improved
+
+---
 
 ### DISC-103: Smart Complexity Detection for Task Routing 🎯 INFRASTRUCTURE (DEPLOYED)
 
@@ -283,38 +336,17 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 ---
 
-### DISC-145: Fresh Blog Content Round - Organic Voice, Living Blog 📝 GROWTH (READY)
+### DISC-145: Fresh Blog Content Round - Organic Voice, Living Blog 📝 GROWTH (DEPLOYED)
 
+**PR**: #49 (merged 2026-01-06)
+**Deployed**: 2026-01-06
 **Source**: Founder Request (Eddie, 2026-01-04)
 **Impact**: MEDIUM | **Effort**: L | **Score**: 1.0
-**Sprint Alignment**: Content marketing, SEO diversification, brand authenticity
 
-**Problem**: Current blog articles are SEO-optimized guides (useful but formulaic). The blog feels like a static SEO farm rather than a living publication. Need fresh content with varied tones to build authentic brand voice and attract different audience segments.
-
-**Content Strategy Shift**:
-- Move from "Ultimate Guide to X" formula to varied, authentic content
-- Include founder perspective, industry insights, real contractor stories
-- Create content people actually want to read (not just rank for)
-
-**Proposed Topics** (3-5 articles):
-1. **"Pricing Psychology: Why Contractors Undercharge"** - Behavioral insights, real data from learning system patterns
-2. **"Lessons From Our First 100 Quotes"** - Founder perspective, what we learned building Quoted
-3. **"The 5 Quoting Mistakes That Cost You Jobs"** - Practical, shareable, contractor voice
-4. **"Seasonal Job Trends: What's Hot in Q1"** - Timely, industry insight piece
-5. **"Why I Built a Voice-to-Quote App"** - Founder story, origin, vision
-
-**Tone Guidelines**:
-- Authentic, not corporate
-- Opinionated where appropriate
-- Include real examples/data when possible
-- Varied lengths (some short takes, some deep dives)
-- NO buzzword-heavy AI hype
-
-**Proposed Work**:
-1. Outline 3-5 article topics with angles
-2. Write articles with varied tones/lengths
-3. Add to blog with proper og:image tags
-4. Cross-post/promote on relevant channels
+**Live Articles**:
+- https://quoted.it.com/blog/why-contractors-undercharge.html
+- https://quoted.it.com/blog/quoting-mistakes-that-cost-jobs.html
+- https://quoted.it.com/blog/why-i-built-quoted.html
 
 **Success Metric**: Blog traffic diversity (not just SEO); social shares; time-on-page > existing articles
 
@@ -393,6 +425,24 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 - Smoother spotlight transitions with opacity fade before repositioning
 
 **Quality Evaluation**: 23/25 PASS
+
+---
+
+### DISC-157: Demo Tour Critical Fixes - Dialog Positioning + Persistence 🎯 UX (DEPLOYED)
+
+**✅ Deployed 2026-01-06** via PR #47
+
+**Source**: Founder Request (Eddie, 2026-01-06)
+**Impact**: HIGH | **Effort**: M | **Score**: 2.0
+
+**Implementation**:
+- Rewrote `positionTooltip()` with proper viewport boundary constraints
+- Added center fallback when neither above nor below target position works
+- Added "Take the Tour" restart button visible in results section after quote generation
+- Added `restartTour()` function that clears localStorage/session state
+- PostHog tracking: `tour_restarted` event
+
+**Quality Evaluation**: Pending formal score
 
 ---
 
