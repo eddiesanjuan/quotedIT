@@ -286,6 +286,163 @@ async def run_feedback_drip():
         logger.error(f"Error in run_feedback_drip: {e}")
 
 
+async def check_trial_reminders():
+    """
+    DISC-161: Trial System Reminder Emails.
+
+    Check for users whose trial is ending and send reminders:
+    - 3 days before trial ends: Send trial ending reminder (once)
+    - Day of expiration: Send trial expired email
+
+    Runs daily at 11am UTC (6am EST) - during morning hours.
+    """
+    from ..models.database import User, Contractor
+    from .database import async_session_factory
+    from .email import EmailService
+    from sqlalchemy import select, and_
+
+    logger.info("Running trial reminder check")
+
+    try:
+        async with async_session_factory() as db:
+            now = datetime.utcnow()
+            email_service = EmailService()
+            reminders_sent = 0
+            expiry_emails_sent = 0
+
+            # --- 3-day reminder: Users whose trial ends in 3-4 days ---
+            # Window: trial_ends_at between 3 and 4 days from now
+            reminder_start = now + timedelta(days=3)
+            reminder_end = now + timedelta(days=4)
+
+            reminder_result = await db.execute(
+                select(User).where(
+                    and_(
+                        User.trial_ends_at >= reminder_start,
+                        User.trial_ends_at < reminder_end,
+                        User.plan_tier == "trial",
+                        User.trial_reminder_sent == False
+                    )
+                )
+            )
+            reminder_users = reminder_result.scalars().all()
+
+            for user in reminder_users:
+                try:
+                    # Get contractor for business name and quote count
+                    contractor_result = await db.execute(
+                        select(Contractor).where(Contractor.user_id == user.id)
+                    )
+                    contractor = contractor_result.scalar_one_or_none()
+
+                    if not contractor:
+                        logger.warning(f"No contractor found for user {user.id}")
+                        continue
+
+                    # Calculate days left
+                    days_left = (user.trial_ends_at - now).days
+
+                    # Count quotes generated
+                    quotes_generated = user.quotes_used or 0
+
+                    await email_service.send_trial_ending_reminder(
+                        to_email=user.email,
+                        business_name=contractor.business_name,
+                        days_left=days_left,
+                        quotes_generated=quotes_generated
+                    )
+
+                    # Mark reminder as sent
+                    user.trial_reminder_sent = True
+                    reminders_sent += 1
+
+                    # PostHog tracking
+                    try:
+                        from .posthog import track_event
+                        track_event(
+                            user.id,
+                            "trial_reminder_sent",
+                            {
+                                "days_left": days_left,
+                                "quotes_generated": quotes_generated,
+                                "email": user.email
+                            }
+                        )
+                    except Exception as ph_error:
+                        logger.debug(f"PostHog tracking failed: {ph_error}")
+
+                    logger.info(f"Sent trial reminder to {user.email} ({days_left} days left)")
+
+                except Exception as e:
+                    logger.warning(f"Failed to send trial reminder to {user.email}: {e}")
+
+            # --- Expiration email: Users whose trial ended today ---
+            # Window: trial_ends_at between yesterday and now
+            expiry_start = now - timedelta(days=1)
+            expiry_end = now
+
+            expiry_result = await db.execute(
+                select(User).where(
+                    and_(
+                        User.trial_ends_at >= expiry_start,
+                        User.trial_ends_at < expiry_end,
+                        User.plan_tier == "trial"  # Still on trial tier (didn't upgrade)
+                    )
+                )
+            )
+            expiry_users = expiry_result.scalars().all()
+
+            for user in expiry_users:
+                try:
+                    # Get contractor for business name
+                    contractor_result = await db.execute(
+                        select(Contractor).where(Contractor.user_id == user.id)
+                    )
+                    contractor = contractor_result.scalar_one_or_none()
+
+                    if not contractor:
+                        logger.warning(f"No contractor found for user {user.id}")
+                        continue
+
+                    quotes_generated = user.quotes_used or 0
+
+                    await email_service.send_trial_expired_email(
+                        to_email=user.email,
+                        business_name=contractor.business_name,
+                        quotes_generated=quotes_generated
+                    )
+
+                    expiry_emails_sent += 1
+
+                    # PostHog tracking
+                    try:
+                        from .posthog import track_event
+                        track_event(
+                            user.id,
+                            "trial_expired",
+                            {
+                                "quotes_generated": quotes_generated,
+                                "email": user.email
+                            }
+                        )
+                    except Exception as ph_error:
+                        logger.debug(f"PostHog tracking failed: {ph_error}")
+
+                    logger.info(f"Sent trial expired email to {user.email}")
+
+                except Exception as e:
+                    logger.warning(f"Failed to send trial expired email to {user.email}: {e}")
+
+            if reminders_sent > 0 or expiry_emails_sent > 0:
+                await db.commit()
+                logger.info(f"Trial reminders: {reminders_sent} reminder(s), {expiry_emails_sent} expiry email(s) sent")
+            else:
+                logger.debug("Trial reminders: No users need trial emails today")
+
+    except Exception as e:
+        logger.error(f"Error in check_trial_reminders: {e}")
+
+
 async def run_daily_health_check():
     """
     DISC-148: Daily Synthetic Quote Health Check.
@@ -578,6 +735,15 @@ def start_scheduler():
         max_instances=1,
     )
 
+    # DISC-161: Trial reminders - daily at 11am UTC (6am EST)
+    scheduler.add_job(
+        check_trial_reminders,
+        trigger=CronTrigger(hour=11, minute=0),
+        id="trial_reminders",
+        replace_existing=True,
+        max_instances=1,
+    )
+
     # DISC-148: Daily health check - daily at 6am UTC (1am EST)
     scheduler.add_job(
         run_daily_health_check,
@@ -621,7 +787,7 @@ def start_scheduler():
     )
 
     scheduler.start()
-    logger.info("Background scheduler started with jobs: task_reminders (5min), quote_followups (daily 9am UTC), smart_followups (15min), invoice_reminders (daily 10am UTC), marketing_report (daily 8am UTC), exit_survey_digest (daily 8:30am UTC), traffic_spike_check (hourly :30), feedback_drip (daily 2pm UTC), daily_health_check (daily 6am UTC), monitoring_critical_health (15min), monitoring_business_metrics (hourly :45), monitoring_daily_summary (daily 8:15am UTC)")
+    logger.info("Background scheduler started with jobs: task_reminders (5min), quote_followups (daily 9am UTC), smart_followups (15min), invoice_reminders (daily 10am UTC), marketing_report (daily 8am UTC), exit_survey_digest (daily 8:30am UTC), traffic_spike_check (hourly :30), feedback_drip (daily 2pm UTC), trial_reminders (daily 11am UTC), daily_health_check (daily 6am UTC), monitoring_critical_health (15min), monitoring_business_metrics (hourly :45), monitoring_daily_summary (daily 8:15am UTC)")
 
 
 def stop_scheduler():

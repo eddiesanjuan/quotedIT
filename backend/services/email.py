@@ -437,11 +437,11 @@ class EmailService:
 
             <p>You've generated {quotes_generated} quote{"s" if quotes_generated != 1 else ""} during your trial. Nice work!</p>
 
-            <p>To keep using Quoted after your trial ends, choose a plan:</p>
+            <p>To keep using Quoted after your trial ends:</p>
 
             <div class="stats-grid">
                 <div class="stat-box">
-                    <div class="stat-value">$29</div>
+                    <div class="stat-value">$9</div>
                     <div class="stat-label">Per Month</div>
                 </div>
                 <div class="stat-box">
@@ -450,7 +450,9 @@ class EmailService:
                 </div>
             </div>
 
-            <a href="https://quoted.it.com/app?upgrade=true" class="button">Choose Your Plan</a>
+            <p>Or save with annual billing: <strong>$59/year</strong> (save 45%)</p>
+
+            <a href="https://quoted.it.com/app?upgrade=true" class="button">Subscribe Now</a>
 
             <p class="muted">Cancel anytime. No questions asked.</p>
         """
@@ -467,6 +469,63 @@ class EmailService:
             return response
         except Exception as e:
             logger.error(f"Failed to send trial ending reminder to {to_email}", exc_info=True)
+            raise
+
+    @staticmethod
+    async def send_trial_expired_email(
+        to_email: str,
+        business_name: str,
+        quotes_generated: int
+    ) -> Dict[str, Any]:
+        """
+        Send email when trial expires (DISC-161).
+
+        Args:
+            to_email: Recipient email address
+            business_name: Name of the business
+            quotes_generated: Total quotes generated during trial
+
+        Returns:
+            Resend API response
+        """
+        content = f"""
+            <h1>Your Trial Has Ended</h1>
+
+            <p>Hi there! Your 7-day Quoted trial has ended.</p>
+
+            <p>During your trial, you generated {quotes_generated} quote{"s" if quotes_generated != 1 else ""}.
+            {"Great progress!" if quotes_generated > 0 else "Ready to give it another shot?"}</p>
+
+            <p>Subscribe now to continue creating professional quotes with AI:</p>
+
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div class="stat-value">$9</div>
+                    <div class="stat-label">Per Month</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value">$59</div>
+                    <div class="stat-label">Per Year (Save 45%)</div>
+                </div>
+            </div>
+
+            <a href="https://quoted.it.com/app?upgrade=true" class="button">Subscribe Now</a>
+
+            <p class="muted">Questions? Just reply to this email.</p>
+        """
+
+        html = EmailService._get_base_template().replace('{content}', content)
+
+        try:
+            response = resend.Emails.send({
+                "from": EmailService.FROM_EMAIL,
+                "to": to_email,
+                "subject": "Your Quoted trial has ended",
+                "html": html,
+            })
+            return response
+        except Exception as e:
+            logger.error(f"Failed to send trial expired email to {to_email}", exc_info=True)
             raise
 
     @staticmethod
