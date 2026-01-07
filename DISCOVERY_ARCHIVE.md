@@ -243,6 +243,23 @@ Remaining work: Story-based tour, pre-seeded demo data, workflow animation, mark
 
 ---
 
+### Trial System Audit (DISC-161) - Jan 7, 2026
+
+Production-ready trial enforcement with automated email reminders.
+
+| Ticket | Title | PR | Deployed |
+|--------|-------|-----|----------|
+| DISC-161 | Trial System Audit - Production-Ready Enforcement | #51 | 2026-01-07 |
+
+**Changes**:
+- Fixed trial reminder email pricing ($29 → $9/month)
+- Added `send_trial_expired_email` function
+- Added `check_trial_reminders` scheduler job (daily 11am UTC)
+- Added `trial_reminder_sent` column to User model
+- Added PostHog tracking for `trial_reminder_sent` and `trial_expired` events
+
+---
+
 ## Full Ticket Count by Status
 
 | Status | Count | Notes |

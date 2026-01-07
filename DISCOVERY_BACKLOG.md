@@ -1,6 +1,6 @@
 # Discovery Backlog
 
-**Last Updated**: 2026-01-06
+**Last Updated**: 2026-01-07
 **Source**: `/quoted-discover` autonomous discovery cycles
 
 ---
@@ -34,11 +34,11 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 | Status | Count |
 |--------|-------|
 | PR_PENDING | 0 |
-| READY | 5 |
-| DISCOVERED | 18 |
+| READY | 6 |
+| DISCOVERED | 19 |
 | COMPLETE | 7 |
 | DEPLOYED | 10 |
-| **Active Total** | **40** |
+| **Active Total** | **42** |
 | Archived (DEPLOYED) | 100+ |
 
 **Just Deployed (2026-01-06)**: DISC-158 & DISC-159 (PR #50), DISC-157 (PRs #47, #48), DISC-145 (PR #49)
@@ -235,6 +235,8 @@ Found TWO bugs causing this issue:
 **Architecture**: Graph Memory (entities, relationships) + Semantic RAG (past decisions, outcomes)
 
 ---
+
+<!-- DISC-161 DEPLOYED 2026-01-07 - moved to DISCOVERY_ARCHIVE.md -->
 
 
 
@@ -649,6 +651,51 @@ Found TWO bugs causing this issue:
 |--------|-------|--------|
 | DISC-037 | Demo-to-Referral Incentive Bridge | S |
 | DISC-039 | "Voice Quote" Category Positioning | M |
+
+---
+
+### DISC-160: Support Agent Infrastructure 🛠️ OPERATIONS (DISCOVERED)
+
+**Source**: Support Agent (AI-Run-Deep, 2026-01-06)
+**Impact**: MEDIUM | **Effort**: M | **Score**: 1.0
+**Sprint Alignment**: Autonomous operations, customer support
+
+**Problem**: The Support Agent currently has no way to receive or process customer communications. While outbound email via Resend works perfectly (magic links, quote shares, etc.), there's no infrastructure for INCOMING emails, support tickets, or customer feedback to reach the agent.
+
+**Current State**:
+✅ Outbound email working (`backend/services/email.py` + Resend)
+✅ Support agent spec exists (`.ai-company/agents/support/AGENT.md`)
+✅ Autonomy boundaries defined (what can be automated vs needs approval)
+
+❌ No Resend webhook endpoint for incoming emails
+❌ No support ticket database table
+❌ No queue/inbox file system
+❌ No sentiment classification
+❌ No escalation workflow
+
+**Proposed Work** (Lean MVP):
+1. **Resend Webhook Endpoint**: `POST /api/webhooks/resend` to capture incoming emails
+2. **Simple Queue File**: `.ai-company/agents/support/inbox.md` (markdown-based, no DB complexity)
+3. **Classification Logic**: Use Claude API to classify: type (question/bug/feedback), urgency, sentiment
+4. **Escalation Format**: Queue items that need founder review in structured markdown
+5. **Auto-Responses**: For FAQ matches >90% confidence, draft response for approval
+
+**Why File-Based**:
+- Consistent with agent architecture (state files already in git)
+- Auditable (every support interaction in version control)
+- No database migration overhead
+- Easy founder review (just read inbox.md)
+
+**Success Metric**:
+- Support agent can receive customer emails
+- Automatically classifies and triages
+- Drafts FAQ responses for 1-click approval
+- Founder spends <5 min/day on support instead of checking multiple inboxes
+
+**Non-Goals** (Future):
+- Full CRM integration (overkill for current scale)
+- AI-generated responses without review (safety boundary)
+- Multi-channel support (just email for now)
 
 ---
 
