@@ -49,6 +49,7 @@ class User(Base):
     billing_cycle_start = Column(DateTime, nullable=True)  # Start of current billing period
     trial_ends_at = Column(DateTime, nullable=True)  # When trial expires
     grace_quotes_used = Column(Integer, default=0)  # DISC-018: Grace quotes used after trial limit (max 3)
+    trial_reminder_sent = Column(Boolean, default=False)  # DISC-161: True if 3-day reminder email was sent
 
     # Referrals (GROWTH-002)
     referral_code = Column(String(20), unique=True, nullable=True, index=True)  # User's unique referral code (e.g., JOHN-A3X9)
@@ -1141,6 +1142,16 @@ async def run_migrations(engine):
                 WHERE table_name = 'users' AND column_name = 'trial_ends_at'
             """,
             "alter_sql": "ALTER TABLE users ADD COLUMN trial_ends_at TIMESTAMP"
+        },
+        # Trial reminder tracking (DISC-161)
+        {
+            "table": "users",
+            "column": "trial_reminder_sent",
+            "check_sql": """
+                SELECT column_name FROM information_schema.columns
+                WHERE table_name = 'users' AND column_name = 'trial_reminder_sent'
+            """,
+            "alter_sql": "ALTER TABLE users ADD COLUMN trial_reminder_sent BOOLEAN DEFAULT FALSE"
         },
         # Referral columns (GROWTH-002)
         {
