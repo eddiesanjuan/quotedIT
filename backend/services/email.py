@@ -648,6 +648,65 @@ class EmailService:
             raise
 
     @staticmethod
+    async def send_referral_credit_applied_notification(
+        to_email: str,
+        business_name: str,
+        credits_remaining: int,
+        billing_period: str
+    ) -> Dict[str, Any]:
+        """
+        DISC-150: Send notification when a referral credit is applied to a subscription.
+
+        Args:
+            to_email: Recipient email address
+            business_name: Name of the business
+            credits_remaining: Number of credits remaining after this one
+            billing_period: The billing period covered (e.g., "January 2026")
+
+        Returns:
+            Resend API response
+        """
+        # Calculate plural form
+        credits_text = "1 credit" if credits_remaining == 1 else f"{credits_remaining} credits"
+        remaining_msg = f"You have {credits_text} remaining." if credits_remaining > 0 else "That was your last credit. Keep referring to earn more!"
+
+        content = f"""
+            <h1>Referral Credit Applied</h1>
+
+            <p>Great news! We just applied one of your referral credits to your subscription.</p>
+
+            <div style="background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%); padding: 24px; border-radius: 12px; border-left: 4px solid #22c55e; margin: 24px 0;">
+                <div style="font-size: 1.1rem; color: #22c55e; font-weight: 600; margin-bottom: 8px;">This Month is Free</div>
+                <div style="color: #999;">Your subscription for {billing_period} is covered by a referral credit.</div>
+            </div>
+
+            <p>{remaining_msg}</p>
+
+            <p style="color: #999; font-size: 0.9rem;">Every friend you refer who subscribes earns you another free month. Share your referral link from your account settings.</p>
+
+            <a href="https://quoted.it.com/app?tab=referrals" class="button">View Your Referrals</a>
+
+            <p class="muted">Thank you for spreading the word about Quoted!</p>
+        """
+
+        html = EmailService._get_base_template().replace('{content}', content)
+        text = f"Referral Credit Applied - Your subscription for {billing_period} is covered by a referral credit. {remaining_msg}"
+
+        try:
+            response = resend.Emails.send({
+                "from": EmailService.FROM_EMAIL,
+                "to": to_email,
+                "subject": f"Referral credit applied - {billing_period} is free",
+                "html": html,
+                "text": text,
+            })
+            logger.info(f"Referral credit notification sent to {to_email}")
+            return response
+        except Exception as e:
+            logger.error(f"Failed to send referral credit notification to {to_email}", exc_info=True)
+            raise
+
+    @staticmethod
     async def send_quote_email(
         to_email: str,
         contractor_name: str,

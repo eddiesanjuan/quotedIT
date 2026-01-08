@@ -10,6 +10,7 @@ from typing import Optional
 
 from ..services.auth import get_db, get_current_user
 from ..services.referral import ReferralService
+from ..services.billing import BillingService
 
 router = APIRouter()
 
@@ -31,6 +32,14 @@ class ReferralStatsResponse(BaseModel):
 class ApplyReferralRequest(BaseModel):
     """Request model for applying a referral code."""
     referral_code: str
+
+
+class ReferralCreditInfoResponse(BaseModel):
+    """DISC-150: Response model for referral credit information."""
+    credits_available: int
+    credits_redeemed: int
+    value_per_credit: float
+    total_savings: float
 
 
 @router.get("/code", response_model=ReferralCodeResponse)
@@ -95,4 +104,23 @@ async def get_referral_link(
     return ReferralCodeResponse(
         referral_code=stats["referral_code"],
         shareable_link=stats["shareable_link"],
+    )
+
+
+@router.get("/credits", response_model=ReferralCreditInfoResponse)
+async def get_referral_credits(
+    user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    DISC-150: Get referral credit information for the current user.
+    Shows how many credits are available, how many have been redeemed, and total savings.
+    """
+    credit_info = await BillingService.get_referral_credit_info(db, user["id"])
+
+    return ReferralCreditInfoResponse(
+        credits_available=credit_info["credits_available"],
+        credits_redeemed=credit_info["credits_redeemed"],
+        value_per_credit=credit_info["value_per_credit"],
+        total_savings=credit_info["total_savings"],
     )

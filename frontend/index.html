@@ -6817,8 +6817,23 @@
                             </div>
                             <div>
                                 <div style="font-size: 2rem; font-weight: 700; color: var(--success);" id="referral-credits">0</div>
-                                <div style="font-size: 0.8rem; color: var(--text-muted);">Months Earned</div>
+                                <div style="font-size: 0.8rem; color: var(--text-muted);">Credits Available</div>
                             </div>
+                            <div>
+                                <div style="font-size: 2rem; font-weight: 700; color: var(--text-secondary);" id="referral-savings">$0</div>
+                                <div style="font-size: 0.8rem; color: var(--text-muted);">Total Saved</div>
+                            </div>
+                        </div>
+
+                        <!-- Credit Info Banner (DISC-150) -->
+                        <div id="credit-info-banner" style="display: none; background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(34, 197, 94, 0.05) 100%); border: 1px solid rgba(34, 197, 94, 0.3); border-radius: 8px; padding: 12px 16px; margin-bottom: 16px;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span style="font-size: 1.2rem;">&#127873;</span>
+                                <span id="credit-info-text" style="color: var(--success); font-size: 0.9rem; font-weight: 500;">Your next billing cycle is free!</span>
+                            </div>
+                            <p style="color: var(--text-secondary); font-size: 0.8rem; margin: 8px 0 0 0;">
+                                Credits are automatically applied to your next billing cycle. Each credit covers 1 month ($9 value).
+                            </p>
                         </div>
 
                         <!-- Referral Link -->
@@ -14832,11 +14847,18 @@
         // Referral functions
         async function loadReferralStats() {
             try {
-                const response = await fetch(`${API_BASE}/referral/stats`, {
-                    headers: { 'Authorization': `Bearer ${authToken}` }
-                });
-                if (response.ok) {
-                    const data = await response.json();
+                // Fetch both stats and credit info in parallel
+                const [statsResponse, creditsResponse] = await Promise.all([
+                    fetch(`${API_BASE}/referral/stats`, {
+                        headers: { 'Authorization': `Bearer ${authToken}` }
+                    }),
+                    fetch(`${API_BASE}/referral/credits`, {
+                        headers: { 'Authorization': `Bearer ${authToken}` }
+                    })
+                ]);
+
+                if (statsResponse.ok) {
+                    const data = await statsResponse.json();
                     document.getElementById('referral-count').textContent = data.referral_count || 0;
                     document.getElementById('referral-credits').textContent = data.referral_credits || 0;
                     // API returns shareable_link, not referral_link
@@ -14852,9 +14874,41 @@
                     console.error('Failed to load referral stats');
                     document.getElementById('referral-link').value = 'Error loading link';
                 }
+
+                // DISC-150: Load and display credit info
+                if (creditsResponse.ok) {
+                    const creditData = await creditsResponse.json();
+                    updateReferralCreditDisplay(creditData);
+                }
             } catch (error) {
                 console.error('Error loading referral stats:', error);
                 document.getElementById('referral-link').value = 'Error loading link';
+            }
+        }
+
+        // DISC-150: Update referral credit display
+        function updateReferralCreditDisplay(creditData) {
+            const savingsEl = document.getElementById('referral-savings');
+            const bannerEl = document.getElementById('credit-info-banner');
+            const textEl = document.getElementById('credit-info-text');
+
+            // Update total savings display
+            if (savingsEl) {
+                savingsEl.textContent = `$${creditData.total_savings.toFixed(0)}`;
+            }
+
+            // Show/hide and update credit info banner
+            if (bannerEl && textEl) {
+                if (creditData.credits_available > 0) {
+                    bannerEl.style.display = 'block';
+                    if (creditData.credits_available === 1) {
+                        textEl.textContent = 'Your next billing cycle is free!';
+                    } else {
+                        textEl.textContent = `Your next ${creditData.credits_available} billing cycles are free!`;
+                    }
+                } else {
+                    bannerEl.style.display = 'none';
+                }
             }
         }
 
