@@ -35,9 +35,9 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 |--------|-------|
 | PR_PENDING | 0 |
 | READY | 5 |
-| DISCOVERED | 18 |
+| DISCOVERED | 17 |
 | COMPLETE | 7 |
-| DEPLOYED | 12 |
+| DEPLOYED | 13 |
 | **Active Total** | **42** |
 | Archived (DEPLOYED) | 100+ |
 
@@ -57,11 +57,11 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 | Ticket | Title | Deployed |
 |--------|-------|----------|
+| DISC-150 | Referral Credit Redemption Mechanism | 2026-01-08 |
 | DISC-154 | Google Ads Creative Refresh - AI Learning + Tire Kicker Messaging | 2026-01-08 |
 | DISC-158/159 | Quote Edits Bug Fix + Floating Save UX Redesign | 2026-01-06 |
 | DISC-145 | Fresh Blog Content - 3 Articles (Pricing Psychology, Mistakes, Founder Story) | 2026-01-06 |
 | DISC-157 | Demo Tour Critical Fixes - Dialog Positioning + Scroll Fix | 2026-01-06 |
-| DISC-103 | Smart Complexity Detection for Task Routing | 2026-01-05 |
 
 *Full deployment history: See DISCOVERY_ARCHIVE.md*
 
@@ -557,24 +557,27 @@ Found TWO bugs causing this issue:
 
 ---
 
-### DISC-150: Referral Credit Redemption Mechanism 💳 GROWTH (DISCOVERED)
+### DISC-150: Referral Credit Redemption Mechanism 💳 GROWTH (DEPLOYED)
+
+**✅ Deployed 2026-01-08** via PR #54
 
 **Source**: Code analysis - referral.py awards credits but no redemption path
 **Impact**: HIGH | **Effort**: M | **Score**: 1.5
 **Sprint Alignment**: Referral system completion, user trust
 
-**Problem**: The referral system awards `referral_credits` (1 month credit) when a referee subscribes, but there's no mechanism to REDEEM these credits against their subscription. This means:
-- Users refer friends expecting rewards
-- Credits accumulate but provide no value
-- Referral incentive is effectively broken
+**Implementation**:
+- Stripe webhook handler for `invoice.created` event auto-applies referral credits
+- Creates negative Stripe InvoiceItem to discount subscription renewal
+- New endpoint: `GET /api/referral/credits` shows credits available, redeemed, total savings
+- Frontend: Referral section shows "Credits Available" and "Total Saved" with info banner
+- Email notification when credit is applied
 
-**Current State**: `credit_referrer()` increments `referral_credits` counter, but billing system never checks/applies them.
-
-**Proposed Work**:
-1. Add credit redemption check in Stripe checkout/renewal
-2. UI in Account Settings showing available credits
-3. Auto-apply one credit per billing cycle
-4. Notification when credit is applied
+**Files Modified**:
+- `backend/api/billing.py` - Added webhook handler and helper function
+- `backend/api/referral.py` - Added /credits endpoint
+- `backend/services/billing.py` - Added check_and_redeem_referral_credit(), get_referral_credit_info()
+- `backend/services/email.py` - Added send_referral_credit_applied_notification()
+- `frontend/index.html` - Updated referral stats display
 
 **Success Metric**: Referral credits redeemable; referral rate increases
 

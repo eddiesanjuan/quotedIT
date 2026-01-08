@@ -97,3 +97,40 @@ What I Learned:
 - Always proceed with quality eval when previews unavailable (per Session 7 pattern)
 
 TICKET_DEPLOYED: DISC-154
+
+=== 2026-01-07 21:34 - Iteration 1 ===
+TICKET_DEPLOYED: DISC-154
+
+=== 2026-01-08 03:30 - DISC-150 DEPLOYED ===
+Working on: DISC-150 Referral Credit Redemption Mechanism
+Status: COMPLETE - All phases successful
+
+Implementation Summary:
+- Stripe webhook handler for `invoice.created` event (subscription cycle billing)
+- Applies referral credits as negative Stripe InvoiceItem before invoice finalization
+- New endpoint: GET /api/referral/credits with credits_available, credits_redeemed, total_savings
+- Frontend: Referral stats section shows available credits and total saved
+- Email notification via send_referral_credit_applied_notification()
+
+Files Modified:
+- backend/api/billing.py - Added invoice.created handler + handle_referral_credit_for_invoice()
+- backend/api/referral.py - Added /credits endpoint with ReferralCreditInfoResponse model
+- backend/services/billing.py - Added check_and_redeem_referral_credit(), get_referral_credit_info()
+- backend/services/email.py - Added send_referral_credit_applied_notification()
+- frontend/index.html - Updated referral section with credit display and info banner
+
+Deployment Notes:
+- PR #54 created and merged to main
+- Production verification passed:
+  ✅ Health endpoint: 200 OK
+  ✅ Landing page loads correctly
+  ✅ Demo page works
+  ✅ No JavaScript console errors
+  ✅ No new errors in Railway logs
+
+What I Learned:
+- Stripe InvoiceItem API with negative amounts is the correct pattern for credits
+- invoice.created event fires before invoice finalization, perfect timing for credit application
+- Atomic database updates (UPDATE...RETURNING) prevent race conditions on credit decrement
+
+TICKET_DEPLOYED: DISC-150
