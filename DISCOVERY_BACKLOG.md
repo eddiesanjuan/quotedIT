@@ -34,10 +34,10 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 | Status | Count |
 |--------|-------|
 | PR_PENDING | 0 |
-| READY | 6 |
+| READY | 5 |
 | DISCOVERED | 18 |
 | COMPLETE | 7 |
-| DEPLOYED | 11 |
+| DEPLOYED | 12 |
 | **Active Total** | **42** |
 | Archived (DEPLOYED) | 100+ |
 
@@ -57,11 +57,11 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 | Ticket | Title | Deployed |
 |--------|-------|----------|
+| DISC-154 | Google Ads Creative Refresh - AI Learning + Tire Kicker Messaging | 2026-01-08 |
 | DISC-158/159 | Quote Edits Bug Fix + Floating Save UX Redesign | 2026-01-06 |
 | DISC-145 | Fresh Blog Content - 3 Articles (Pricing Psychology, Mistakes, Founder Story) | 2026-01-06 |
 | DISC-157 | Demo Tour Critical Fixes - Dialog Positioning + Scroll Fix | 2026-01-06 |
 | DISC-103 | Smart Complexity Detection for Task Routing | 2026-01-05 |
-| DISC-134 | Social Login (Google Sign-In) | 2026-01-05 |
 
 *Full deployment history: See DISCOVERY_ARCHIVE.md*
 
@@ -353,7 +353,9 @@ Found TWO bugs causing this issue:
 
 ---
 
-### DISC-154: Google Ads Creative Refresh - AI Learning + Tire Kicker Messaging 🎨📈 GROWTH (READY)
+### DISC-154: Google Ads Creative Refresh - AI Learning + Tire Kicker Messaging 🎨📈 GROWTH (DEPLOYED)
+
+**Deployed 2026-01-08** via PR #53
 
 **Source**: Founder Request (Eddie, 2026-01-05)
 **Impact**: HIGH | **Effort**: L | **Score**: 1.5
