@@ -32,6 +32,7 @@ class Settings(BaseSettings):
     anthropic_api_key: str = ""
     openai_api_key: str = ""  # For Whisper transcription
     resend_api_key: str = ""  # For transactional emails
+    resend_webhook_secret: str = ""  # DISC-160: For verifying Resend webhook signatures
 
     # Database - supports both SQLite (dev) and PostgreSQL (prod)
     database_url: str = "sqlite+aiosqlite:///./data/quoted.db"

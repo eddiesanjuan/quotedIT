@@ -28,7 +28,7 @@ configure_logging(
 )
 logger = get_logger("quoted.main")
 
-from .api import quotes, contractors, onboarding, auth, billing, pricing_brain, demo, referral, share, testimonials, learning, invoices, customers, tasks, followup, ai_events, analytics, social_auth
+from .api import quotes, contractors, onboarding, auth, billing, pricing_brain, demo, referral, share, testimonials, learning, invoices, customers, tasks, followup, ai_events, analytics, social_auth, webhooks
 
 # Initialize Sentry if DSN is configured
 if settings.sentry_dsn:
@@ -188,6 +188,7 @@ app.include_router(tasks.router, prefix="/api/tasks", tags=["Tasks"])  # DISC-09
 app.include_router(followup.router, prefix="/api/followup", tags=["Follow-Up"])  # INNOV-3
 app.include_router(ai_events.router)  # AI Company event gateway (feature-flagged)
 app.include_router(analytics.router, prefix="/api/analytics", tags=["Analytics"])  # DISC-137
+app.include_router(webhooks.router, prefix="/api/webhooks", tags=["Webhooks"])  # DISC-160
 
 
 @app.get("/api/info")
