@@ -34,10 +34,10 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 | Status | Count |
 |--------|-------|
 | PR_PENDING | 0 |
-| READY | 7 |
+| READY | 6 |
 | DISCOVERED | 18 |
 | COMPLETE | 7 |
-| DEPLOYED | 10 |
+| DEPLOYED | 11 |
 | **Active Total** | **42** |
 | Archived (DEPLOYED) | 100+ |
 
@@ -654,9 +654,11 @@ Found TWO bugs causing this issue:
 
 ---
 
-### DISC-160: Support Agent Infrastructure 🛠️ OPERATIONS (READY)
+### DISC-160: Support Agent Infrastructure 🛠️ OPERATIONS (DEPLOYED)
 
-**Status**: READY (Founder-requested, 2026-01-07 - moved from DISCOVERED)
+**✅ Deployed 2026-01-08** via PR #52
+
+**Status**: DEPLOYED
 **Source**: Support Agent (AI-Run-Deep, 2026-01-06)
 **Impact**: MEDIUM | **Effort**: M | **Score**: 1.0
 **Sprint Alignment**: Autonomous operations, customer support
