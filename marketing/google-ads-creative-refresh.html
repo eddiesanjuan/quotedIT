@@ -6,22 +6,22 @@
     <title>Quoted - Google Ads Creative Refresh (DISC-154)</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&family=Caveat:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-dark: #0f1419;
-            --bg-card: #1a1f26;
-            --bg-accent: #242b35;
-            --primary: #6366f1;
-            --primary-bright: #818cf8;
-            --success: #10b981;
+            /* Matching quoted.it landing page brand colors */
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #141414;
+            --bg-card: #1a1a1a;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --text-muted: #6b7280;
+            --accent: #ffffff;
+            --success: #22c55e;
             --warning: #f59e0b;
             --danger: #ef4444;
-            --text-primary: #ffffff;
-            --text-secondary: #9ca3af;
-            --text-muted: #6b7280;
-            --brain-purple: #8b5cf6;
-            --brain-blue: #3b82f6;
+            --font-serif: 'Playfair Display', Georgia, serif;
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
         }
 
         * {
@@ -31,17 +31,17 @@
         }
 
         body {
-            background: #0a0a0a;
+            background: var(--bg-primary);
             padding: 40px;
-            font-family: 'Inter', sans-serif;
-            color: white;
+            font-family: var(--font-sans);
+            color: var(--text-primary);
         }
 
         h1 {
-            font-family: 'Bebas Neue', sans-serif;
+            font-family: var(--font-serif);
             font-size: 2.5rem;
             margin-bottom: 10px;
-            letter-spacing: 2px;
+            font-weight: 600;
         }
 
         .subtitle {
@@ -51,21 +51,20 @@
         }
 
         .section-title {
-            font-size: 1rem;
-            color: var(--primary-bright);
+            font-size: 0.9rem;
+            color: var(--text-secondary);
             margin: 50px 0 20px;
             text-transform: uppercase;
             letter-spacing: 3px;
             padding-left: 20px;
-            border-left: 4px solid var(--primary);
+            border-left: 2px solid var(--text-primary);
         }
 
         .hook-category {
-            font-size: 0.9rem;
-            color: var(--success);
-            margin-bottom: 10px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 15px;
+            letter-spacing: 1px;
         }
 
         .ads-grid {
@@ -76,9 +75,10 @@
         }
 
         .ad-container {
-            background: #1a1a1a;
+            background: var(--bg-card);
             padding: 20px;
             border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.05);
         }
 
         .ad-label {
@@ -89,29 +89,29 @@
         }
 
         .copy-section {
-            background: #1a1a1a;
+            background: var(--bg-card);
             padding: 30px;
             border-radius: 12px;
             margin-bottom: 30px;
+            border: 1px solid rgba(255,255,255,0.05);
         }
 
         .copy-section h3 {
-            font-family: 'Bebas Neue', sans-serif;
+            font-family: var(--font-serif);
             font-size: 1.3rem;
             margin-bottom: 15px;
-            letter-spacing: 2px;
-            color: var(--primary-bright);
+            font-weight: 500;
         }
 
         .copy-item {
             padding: 15px;
-            background: rgba(255,255,255,0.03);
+            background: rgba(255,255,255,0.02);
             border-radius: 8px;
             margin-bottom: 10px;
         }
 
         .copy-item .headline {
-            font-weight: 700;
+            font-weight: 600;
             font-size: 1.1rem;
             margin-bottom: 5px;
         }
@@ -150,109 +150,102 @@
             overflow: hidden;
         }
 
-        /* ==================== HOOK 1: AI LEARNING BRAIN ==================== */
+        /* ==================== QUOTED LOGO ==================== */
+
+        .logo-badge {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-square {
+            width: 50px;
+            height: 50px;
+            background: var(--text-primary);
+            color: var(--bg-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-serif);
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+
+        .logo-text {
+            font-family: var(--font-serif);
+            font-size: 1.5rem;
+            font-weight: 500;
+            letter-spacing: 2px;
+        }
+
+        /* ==================== HOOK 1: AI LEARNING ==================== */
 
         .ad-brain {
-            background: linear-gradient(135deg, #0f0f1a 0%, #1a1035 100%);
+            background: var(--bg-primary);
             display: flex;
             align-items: center;
             justify-content: center;
             position: relative;
         }
 
-        .brain-container {
+        .brain-visual {
             position: relative;
-            width: 400px;
-            height: 400px;
-        }
-
-        .brain-glow {
-            position: absolute;
-            inset: -50px;
-            background: radial-gradient(ellipse, rgba(139, 92, 246, 0.3) 0%, transparent 70%);
-            animation: brainPulse 3s ease-in-out infinite;
-        }
-
-        @keyframes brainPulse {
-            0%, 100% { opacity: 0.5; transform: scale(1); }
-            50% { opacity: 1; transform: scale(1.1); }
-        }
-
-        .brain-core {
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(135deg, var(--brain-purple) 0%, var(--brain-blue) 100%);
-            border-radius: 45% 55% 50% 50% / 55% 55% 45% 45%;
+            width: 350px;
+            height: 350px;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow:
-                0 0 60px rgba(139, 92, 246, 0.5),
-                inset 0 0 60px rgba(255, 255, 255, 0.1);
         }
 
-        .brain-lines {
-            position: absolute;
-            inset: 20px;
-            border-radius: 45% 55% 50% 50% / 55% 55% 45% 45%;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .brain-lines::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 10%;
-            right: 10%;
-            height: 2px;
-            background: rgba(255, 255, 255, 0.15);
-        }
-
-        .brain-lines::after {
-            content: '';
-            position: absolute;
-            top: 30%;
-            bottom: 30%;
-            left: 50%;
-            width: 2px;
-            background: rgba(255, 255, 255, 0.15);
-        }
-
-        .brain-icon {
-            font-size: 8rem;
-            filter: drop-shadow(0 0 30px rgba(255,255,255,0.3));
-        }
-
-        .data-orbs {
-            position: absolute;
-            inset: -100px;
-        }
-
-        .data-orb {
-            position: absolute;
-            width: 60px;
-            height: 60px;
-            background: rgba(139, 92, 246, 0.8);
+        .brain-circle {
+            width: 280px;
+            height: 280px;
+            border: 2px solid var(--text-primary);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
-            box-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
-            animation: orbFloat 4s ease-in-out infinite;
+            position: relative;
         }
 
-        .data-orb:nth-child(1) { top: 10%; left: 5%; animation-delay: 0s; }
-        .data-orb:nth-child(2) { top: 5%; right: 10%; animation-delay: 1s; }
-        .data-orb:nth-child(3) { bottom: 15%; left: 0%; animation-delay: 2s; }
-        .data-orb:nth-child(4) { bottom: 10%; right: 5%; animation-delay: 0.5s; }
-        .data-orb:nth-child(5) { top: 45%; left: -5%; animation-delay: 1.5s; }
-        .data-orb:nth-child(6) { top: 40%; right: -5%; animation-delay: 2.5s; }
-
-        @keyframes orbFloat {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
+        .brain-inner {
+            width: 200px;
+            height: 200px;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
+
+        .brain-icon {
+            font-size: 4rem;
+        }
+
+        .data-dots {
+            position: absolute;
+            inset: -40px;
+        }
+
+        .data-dot {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border: 1px solid var(--text-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .data-dot:nth-child(1) { top: 0; left: 50%; transform: translateX(-50%); }
+        .data-dot:nth-child(2) { top: 25%; right: 0; }
+        .data-dot:nth-child(3) { bottom: 25%; right: 0; }
+        .data-dot:nth-child(4) { bottom: 0; left: 50%; transform: translateX(-50%); }
+        .data-dot:nth-child(5) { bottom: 25%; left: 0; }
+        .data-dot:nth-child(6) { top: 25%; left: 0; }
 
         .ad-brain .content {
             position: absolute;
@@ -263,56 +256,28 @@
         }
 
         .ad-brain .headline {
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: 4.5rem;
-            letter-spacing: 4px;
-            line-height: 1;
-            text-shadow: 0 4px 30px rgba(0,0,0,0.5);
-        }
-
-        .ad-brain .headline .accent {
-            color: var(--primary-bright);
+            font-family: var(--font-serif);
+            font-size: 3.5rem;
+            font-weight: 600;
+            line-height: 1.1;
         }
 
         .ad-brain .subline {
-            font-size: 1.3rem;
+            font-size: 1.2rem;
             color: var(--text-secondary);
             margin-top: 15px;
-            letter-spacing: 3px;
-            text-transform: uppercase;
         }
 
         .ad-brain .logo-badge {
             position: absolute;
             top: 40px;
             left: 50px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .logo-icon {
-            width: 50px;
-            height: 50px;
-            background: var(--primary);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: 1.5rem;
-        }
-
-        .logo-text {
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: 1.8rem;
-            letter-spacing: 3px;
         }
 
         /* ==================== HOOK 2: TIRE KICKER FILTER ==================== */
 
         .ad-filter {
-            background: linear-gradient(135deg, #1a0f0f 0%, #2d1f1f 50%, #0f1a0f 100%);
+            background: var(--bg-primary);
             display: flex;
             position: relative;
             overflow: hidden;
@@ -341,107 +306,62 @@
         .filter-divider {
             position: absolute;
             left: 50%;
-            top: 0;
-            bottom: 0;
-            width: 4px;
-            background: linear-gradient(to bottom, transparent, var(--primary), transparent);
+            top: 15%;
+            bottom: 35%;
+            width: 1px;
+            background: rgba(255,255,255,0.2);
         }
 
-        .tire-kicker {
-            width: 200px;
-            height: 200px;
-            background: linear-gradient(135deg, var(--danger) 0%, #b91c1c 100%);
+        .filter-icon-bad {
+            width: 180px;
+            height: 180px;
+            border: 2px dashed rgba(255,255,255,0.3);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             position: relative;
-            animation: shake 0.5s ease-in-out infinite;
-            opacity: 0.6;
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
-        }
-
-        .tire-kicker::before {
-            content: '';
-            position: absolute;
-            inset: -20px;
-            border: 3px dashed var(--danger);
-            border-radius: 50%;
             opacity: 0.5;
         }
 
-        .tire-kicker-icon {
-            font-size: 5rem;
-        }
-
-        .tire-kicker-x {
+        .filter-icon-bad::after {
+            content: '✕';
             position: absolute;
-            font-size: 8rem;
-            color: white;
-            font-weight: 800;
-            text-shadow: 0 0 30px rgba(239, 68, 68, 0.8);
+            font-size: 6rem;
+            color: var(--text-primary);
         }
 
-        .serious-buyer {
-            width: 200px;
-            height: 200px;
-            background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+        .filter-icon-good {
+            width: 180px;
+            height: 180px;
+            border: 2px solid var(--text-primary);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             position: relative;
-            box-shadow: 0 0 60px rgba(16, 185, 129, 0.4);
         }
 
-        .serious-buyer::before {
-            content: '';
-            position: absolute;
-            inset: -20px;
-            border: 3px solid var(--success);
-            border-radius: 50%;
-            opacity: 0.5;
-        }
-
-        .serious-buyer-icon {
+        .filter-icon-good::after {
+            content: '✓';
             font-size: 5rem;
-        }
-
-        .check-badge {
-            position: absolute;
-            bottom: -10px;
-            right: -10px;
-            width: 60px;
-            height: 60px;
-            background: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            color: var(--text-primary);
         }
 
         .filter-label {
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: 2.5rem;
+            font-family: var(--font-serif);
+            font-size: 1.8rem;
             margin-top: 30px;
-            letter-spacing: 3px;
+            letter-spacing: 1px;
         }
 
         .filter-label.bad {
-            color: var(--danger);
+            color: var(--text-secondary);
             text-decoration: line-through;
-            text-decoration-color: white;
         }
 
         .filter-label.good {
-            color: var(--success);
+            color: var(--text-primary);
         }
 
         .ad-filter .main-headline {
@@ -450,19 +370,15 @@
             left: 0;
             right: 0;
             text-align: center;
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: 4rem;
-            letter-spacing: 4px;
-        }
-
-        .ad-filter .main-headline .accent {
-            color: var(--success);
+            font-family: var(--font-serif);
+            font-size: 3rem;
+            font-weight: 600;
         }
 
         /* ==================== HOOK 3: PRICING CONFIDENCE ==================== */
 
         .ad-confidence {
-            background: linear-gradient(180deg, var(--bg-dark) 0%, #1a2332 100%);
+            background: var(--bg-primary);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -471,18 +387,11 @@
             padding: 80px;
         }
 
-        .ad-confidence::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: radial-gradient(ellipse at center, rgba(16, 185, 129, 0.1) 0%, transparent 60%);
-        }
-
-        .money-meter {
-            width: 500px;
-            height: 300px;
+        .confidence-meter {
+            width: 400px;
+            height: 200px;
             position: relative;
-            margin-bottom: 60px;
+            margin-bottom: 80px;
         }
 
         .meter-arc {
@@ -497,204 +406,128 @@
             bottom: 0;
             left: 0;
             right: 0;
-            height: 50%;
-            background: conic-gradient(
-                from 180deg,
-                var(--danger) 0deg,
-                var(--warning) 60deg,
-                var(--success) 120deg,
-                var(--success) 180deg
-            );
-            border-radius: 250px 250px 0 0;
-            opacity: 0.8;
+            height: 100%;
+            border: 2px solid var(--text-primary);
+            border-bottom: none;
+            border-radius: 200px 200px 0 0;
         }
 
         .meter-needle {
             position: absolute;
             bottom: 0;
             left: 50%;
-            width: 8px;
-            height: 180px;
-            background: white;
+            width: 4px;
+            height: 150px;
+            background: var(--text-primary);
             transform-origin: bottom center;
             transform: translateX(-50%) rotate(50deg);
-            border-radius: 4px 4px 0 0;
-            box-shadow: 0 0 20px rgba(255,255,255,0.5);
         }
 
         .meter-center {
             position: absolute;
-            bottom: -15px;
+            bottom: -10px;
             left: 50%;
             transform: translateX(-50%);
-            width: 40px;
-            height: 40px;
-            background: white;
+            width: 24px;
+            height: 24px;
+            background: var(--text-primary);
             border-radius: 50%;
-            box-shadow: 0 0 30px rgba(255,255,255,0.3);
         }
 
         .meter-labels {
             position: absolute;
-            bottom: -50px;
+            bottom: -40px;
             left: 0;
             right: 0;
             display: flex;
             justify-content: space-between;
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: 1.5rem;
-            letter-spacing: 2px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
-
-        .meter-labels .low { color: var(--danger); }
-        .meter-labels .high { color: var(--success); }
 
         .ad-confidence .headline {
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: 5rem;
+            font-family: var(--font-serif);
+            font-size: 4rem;
             text-align: center;
-            letter-spacing: 4px;
+            font-weight: 600;
             line-height: 1.1;
-            position: relative;
-            z-index: 1;
-        }
-
-        .ad-confidence .headline .accent {
-            color: var(--success);
         }
 
         .ad-confidence .subline {
-            font-size: 1.5rem;
+            font-size: 1.3rem;
             color: var(--text-secondary);
             margin-top: 20px;
             text-align: center;
-            position: relative;
-            z-index: 1;
         }
 
         .ad-confidence .logo-badge {
             position: absolute;
-            bottom: 40px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
+            bottom: 60px;
         }
 
         /* ==================== HOOK 4: YOUR PRICING BRAIN ==================== */
 
         .ad-your-brain {
-            background: linear-gradient(135deg, #0a0f1a 0%, #1a1035 100%);
+            background: var(--bg-primary);
             display: flex;
             flex-direction: column;
             padding: 80px;
             position: relative;
         }
 
-        .ad-your-brain::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 600px;
-            height: 600px;
-            background: radial-gradient(ellipse, rgba(139, 92, 246, 0.15) 0%, transparent 70%);
-        }
-
-        .you-vs-ai {
+        .equation-row {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 60px;
+            gap: 40px;
             flex: 1;
         }
 
-        .you-side, .ai-side {
+        .equation-item {
             text-align: center;
         }
 
-        .human-head {
-            width: 200px;
-            height: 200px;
-            background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
+        .equation-circle {
+            width: 180px;
+            height: 180px;
+            border: 2px solid var(--text-primary);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 30px;
-            position: relative;
+            margin: 0 auto 20px;
         }
 
-        .human-head::before {
-            content: '?';
-            font-size: 5rem;
-            color: var(--warning);
-            animation: questionPulse 2s ease-in-out infinite;
+        .equation-circle.filled {
+            background: var(--text-primary);
+            color: var(--bg-primary);
         }
 
-        @keyframes questionPulse {
-            0%, 100% { opacity: 0.5; transform: scale(1); }
-            50% { opacity: 1; transform: scale(1.1); }
+        .equation-icon {
+            font-size: 4rem;
         }
 
-        .ai-head {
-            width: 200px;
-            height: 200px;
-            background: linear-gradient(135deg, var(--brain-purple) 0%, var(--brain-blue) 100%);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 30px;
-            position: relative;
-            box-shadow: 0 0 60px rgba(139, 92, 246, 0.4);
+        .equation-symbol {
+            font-family: var(--font-serif);
+            font-size: 4rem;
+            font-weight: 300;
         }
 
-        .ai-head::before {
-            content: '';
-            font-size: 5rem;
-        }
-
-        .ai-head-icon {
-            font-size: 5rem;
-        }
-
-        .plus-sign {
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: 6rem;
-            color: var(--primary);
-        }
-
-        .side-label {
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: 2rem;
-            letter-spacing: 3px;
+        .equation-label {
+            font-size: 1rem;
             color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 2px;
         }
 
-        .side-label.you { color: var(--warning); }
-        .side-label.ai { color: var(--brain-purple); }
-
-        .equals-result {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .equals-sign {
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: 5rem;
-            color: var(--primary);
-        }
-
-        .result-badge {
-            background: var(--success);
+        .result-box {
             padding: 20px 50px;
-            border-radius: 20px;
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: 2rem;
-            letter-spacing: 3px;
-            box-shadow: 0 0 40px rgba(16, 185, 129, 0.4);
+            border: 2px solid var(--text-primary);
+            font-family: var(--font-serif);
+            font-size: 1.5rem;
+            letter-spacing: 2px;
         }
 
         .ad-your-brain .bottom-content {
@@ -703,38 +536,24 @@
         }
 
         .ad-your-brain .headline {
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: 4rem;
-            letter-spacing: 4px;
-        }
-
-        .ad-your-brain .headline .accent {
-            color: var(--brain-purple);
+            font-family: var(--font-serif);
+            font-size: 3.5rem;
+            font-weight: 600;
         }
 
         .ad-your-brain .subline {
-            font-size: 1.3rem;
+            font-size: 1.2rem;
             color: var(--text-secondary);
             margin-top: 15px;
-            letter-spacing: 2px;
         }
 
-        /* ==================== HOOK 5: SPEED + LEARNING COMBO ==================== */
+        /* ==================== HOOK 5: SPEED + INTELLIGENCE ==================== */
 
         .ad-speed-brain {
-            background: var(--bg-dark);
+            background: var(--bg-primary);
             display: flex;
             position: relative;
             overflow: hidden;
-        }
-
-        .ad-speed-brain::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background:
-                radial-gradient(circle at 25% 50%, rgba(99, 102, 241, 0.1) 0%, transparent 40%),
-                radial-gradient(circle at 75% 50%, rgba(139, 92, 246, 0.1) 0%, transparent 40%);
         }
 
         .speed-side {
@@ -748,35 +567,34 @@
         }
 
         .speed-circle {
-            width: 250px;
-            height: 250px;
-            background: linear-gradient(135deg, var(--primary) 0%, #4f46e5 100%);
+            width: 220px;
+            height: 220px;
+            border: 2px solid var(--text-primary);
             border-radius: 50%;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 0 60px rgba(99, 102, 241, 0.4);
             margin-bottom: 30px;
         }
 
         .speed-number {
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: 7rem;
+            font-family: var(--font-serif);
+            font-size: 5rem;
+            font-weight: 600;
             line-height: 1;
         }
 
         .speed-unit {
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: 2rem;
+            font-size: 1.2rem;
             letter-spacing: 3px;
-            margin-top: -10px;
+            margin-top: 5px;
         }
 
         .speed-label {
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: 2.5rem;
-            letter-spacing: 3px;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
         }
 
         .brain-side {
@@ -789,35 +607,35 @@
             position: relative;
         }
 
-        .mini-brain {
-            width: 250px;
-            height: 250px;
-            background: linear-gradient(135deg, var(--brain-purple) 0%, var(--brain-blue) 100%);
-            border-radius: 45% 55% 50% 50% / 55% 55% 45% 45%;
+        .mini-brain-circle {
+            width: 220px;
+            height: 220px;
+            background: var(--text-primary);
+            color: var(--bg-primary);
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 0 60px rgba(139, 92, 246, 0.4);
             margin-bottom: 30px;
-            font-size: 6rem;
+            font-size: 5rem;
         }
 
         .brain-label {
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: 2.5rem;
-            letter-spacing: 3px;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
             text-align: center;
+            line-height: 1.5;
         }
 
         .ad-speed-brain .center-plus {
             position: absolute;
             left: 50%;
-            top: 50%;
+            top: 40%;
             transform: translate(-50%, -50%);
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: 5rem;
-            color: var(--primary-bright);
-            z-index: 10;
+            font-family: var(--font-serif);
+            font-size: 4rem;
+            font-weight: 300;
         }
 
         .ad-speed-brain .bottom-headline {
@@ -826,19 +644,15 @@
             left: 0;
             right: 0;
             text-align: center;
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: 3rem;
-            letter-spacing: 4px;
-        }
-
-        .ad-speed-brain .bottom-headline .accent {
-            color: var(--primary-bright);
+            font-family: var(--font-serif);
+            font-size: 2.5rem;
+            font-weight: 600;
         }
 
         /* ==================== VERTICAL: PROBLEM AGITATE SOLVE ==================== */
 
         .ad-pas {
-            background: linear-gradient(180deg, #1a0f0f 0%, var(--bg-dark) 40%, #0f1a15 100%);
+            background: var(--bg-primary);
             display: flex;
             flex-direction: column;
             padding: 60px;
@@ -853,63 +667,52 @@
         }
 
         .pas-section.problem {
-            border-bottom: 2px solid rgba(239, 68, 68, 0.3);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
         }
 
         .pas-section.agitate {
-            border-bottom: 2px solid rgba(245, 158, 11, 0.3);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
         }
 
         .pas-label {
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: 1.5rem;
+            font-size: 0.9rem;
             letter-spacing: 4px;
             margin-bottom: 20px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
         }
 
-        .pas-section.problem .pas-label { color: var(--danger); }
-        .pas-section.agitate .pas-label { color: var(--warning); }
-        .pas-section.solve .pas-label { color: var(--success); }
-
         .pas-content {
-            font-size: 2.2rem;
+            font-family: var(--font-serif);
+            font-size: 2rem;
             line-height: 1.4;
         }
 
         .pas-content .highlight {
-            font-weight: 700;
+            font-style: italic;
         }
-
-        .pas-section.problem .highlight { color: var(--danger); }
-        .pas-section.agitate .highlight { color: var(--warning); }
-        .pas-section.solve .highlight { color: var(--success); }
 
         .ad-pas .cta-button {
             margin-top: 40px;
             padding: 25px 60px;
-            background: var(--success);
-            border-radius: 12px;
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: 2rem;
-            letter-spacing: 4px;
+            border: 2px solid var(--text-primary);
+            font-size: 1.2rem;
+            letter-spacing: 3px;
             text-align: center;
             align-self: center;
-            box-shadow: 0 0 40px rgba(16, 185, 129, 0.3);
+            text-transform: uppercase;
         }
 
         .ad-pas .logo-badge {
             position: absolute;
             top: 40px;
             left: 60px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
         }
 
         /* ==================== SQUARE: STATS SHOWCASE ==================== */
 
         .ad-stats {
-            background: linear-gradient(180deg, var(--bg-dark) 0%, #141a24 100%);
+            background: var(--bg-primary);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -921,78 +724,62 @@
         .stats-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 40px;
+            gap: 30px;
             margin-bottom: 60px;
         }
 
         .stat-card {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.15);
             padding: 50px;
             text-align: center;
-            transition: all 0.3s ease;
-        }
-
-        .stat-card:hover {
-            background: rgba(99, 102, 241, 0.1);
-            border-color: rgba(99, 102, 241, 0.3);
         }
 
         .stat-number {
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: 6rem;
+            font-family: var(--font-serif);
+            font-size: 5rem;
+            font-weight: 600;
             line-height: 1;
-            color: var(--primary-bright);
         }
 
         .stat-unit {
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: 2rem;
+            font-size: 1rem;
             color: var(--text-secondary);
             letter-spacing: 2px;
+            margin-top: 5px;
+            text-transform: uppercase;
         }
 
         .stat-label {
-            font-size: 1.2rem;
+            font-size: 1rem;
             color: var(--text-secondary);
             margin-top: 15px;
-            letter-spacing: 1px;
         }
 
         .ad-stats .headline {
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: 4.5rem;
+            font-family: var(--font-serif);
+            font-size: 3.5rem;
             text-align: center;
-            letter-spacing: 4px;
+            font-weight: 600;
             line-height: 1.1;
         }
 
-        .ad-stats .headline .accent {
-            color: var(--primary-bright);
-        }
-
         .ad-stats .subline {
-            font-size: 1.4rem;
+            font-size: 1.3rem;
             color: var(--text-secondary);
             margin-top: 20px;
             text-align: center;
-            letter-spacing: 2px;
         }
 
         .ad-stats .logo-badge {
             position: absolute;
             bottom: 60px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
         }
 
         /* ==================== INSTRUCTIONS ==================== */
 
         .instructions {
-            background: #1a1a1a;
-            border: 1px solid #333;
+            background: var(--bg-card);
+            border: 1px solid rgba(255,255,255,0.1);
             border-radius: 12px;
             padding: 30px;
             margin-bottom: 40px;
@@ -1000,9 +787,9 @@
         }
 
         .instructions h2 {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             margin-bottom: 15px;
-            color: var(--primary-bright);
+            color: var(--text-primary);
         }
 
         .instructions p {
@@ -1012,15 +799,15 @@
         }
 
         .instructions code {
-            background: #2a2a2a;
+            background: rgba(255,255,255,0.05);
             padding: 2px 8px;
             border-radius: 4px;
             font-size: 0.9rem;
         }
 
         .strategy-box {
-            background: linear-gradient(135deg, #1a1f26 0%, #0f1419 100%);
-            border: 2px solid var(--primary);
+            background: var(--bg-card);
+            border: 1px solid rgba(255,255,255,0.15);
             border-radius: 16px;
             padding: 40px;
             margin-bottom: 50px;
@@ -1028,11 +815,9 @@
         }
 
         .strategy-box h2 {
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: 1.8rem;
-            letter-spacing: 3px;
+            font-family: var(--font-serif);
+            font-size: 1.5rem;
             margin-bottom: 25px;
-            color: var(--primary-bright);
         }
 
         .strategy-grid {
@@ -1042,7 +827,7 @@
         }
 
         .strategy-column h3 {
-            font-size: 1rem;
+            font-size: 0.9rem;
             text-transform: uppercase;
             letter-spacing: 2px;
             margin-bottom: 15px;
@@ -1050,27 +835,27 @@
             border-bottom: 1px solid rgba(255,255,255,0.1);
         }
 
-        .strategy-column.old h3 { color: var(--danger); }
-        .strategy-column.new h3 { color: var(--success); }
+        .strategy-column.old h3 { color: var(--text-secondary); }
+        .strategy-column.new h3 { color: var(--text-primary); }
 
         .strategy-item {
             padding: 15px;
-            background: rgba(255,255,255,0.03);
+            background: rgba(255,255,255,0.02);
             border-radius: 8px;
             margin-bottom: 10px;
         }
 
         .strategy-column.old .strategy-item {
-            border-left: 3px solid var(--danger);
+            border-left: 2px solid var(--text-muted);
         }
 
         .strategy-column.new .strategy-item {
-            border-left: 3px solid var(--success);
+            border-left: 2px solid var(--text-primary);
         }
     </style>
 </head>
 <body>
-    <h1>QUOTED GOOGLE ADS CREATIVE REFRESH</h1>
+    <h1>Quoted Google Ads Creative Refresh</h1>
     <p class="subtitle">DISC-154: Strategic messaging shift from features to outcomes</p>
 
     <div class="strategy-box">
@@ -1103,7 +888,7 @@
 
     <!-- ==================== HOOK 1: AI LEARNING ==================== -->
     <p class="section-title">Hook 1: AI That Learns Your Pricing</p>
-    <p class="hook-category">Core Differentiator - Learning System</p>
+    <p class="hook-category">Core Differentiator - The Learning System</p>
 
     <div class="ads-grid">
         <!-- H1: AI Brain Horizontal -->
@@ -1111,25 +896,26 @@
             <div class="ad-label">H1-NEW: AI Learning Brain - 1200x628</div>
             <div class="ad-horizontal ad-brain">
                 <div class="logo-badge">
-                    <div class="logo-icon">Q</div>
-                    <div class="logo-text">QUOTED</div>
+                    <div class="logo-square">Q</div>
+                    <div class="logo-text">Quoted</div>
                 </div>
-                <div class="brain-container">
-                    <div class="brain-glow"></div>
-                    <div class="data-orbs">
-                        <div class="data-orb">$</div>
-                        <div class="data-orb">%</div>
-                        <div class="data-orb">+</div>
-                        <div class="data-orb">$</div>
-                        <div class="data-orb">=</div>
-                        <div class="data-orb">$</div>
+                <div class="brain-visual">
+                    <div class="brain-circle">
+                        <div class="brain-inner">
+                            <span class="brain-icon">🧠</span>
+                        </div>
                     </div>
-                    <div class="brain-core">
-                        <div class="brain-lines"></div>
+                    <div class="data-dots">
+                        <div class="data-dot">$</div>
+                        <div class="data-dot">%</div>
+                        <div class="data-dot">+</div>
+                        <div class="data-dot">$</div>
+                        <div class="data-dot">=</div>
+                        <div class="data-dot">$</div>
                     </div>
                 </div>
                 <div class="content">
-                    <div class="headline">AI THAT LEARNS <span class="accent">YOUR PRICING</span></div>
+                    <div class="headline">AI That Learns Your Pricing</div>
                     <div class="subline">Gets smarter with every quote you send</div>
                 </div>
             </div>
@@ -1138,7 +924,7 @@
 
     <!-- ==================== HOOK 2: TIRE KICKER FILTER ==================== -->
     <p class="section-title">Hook 2: Stop Chasing Tire Kickers</p>
-    <p class="hook-category">Pain Point - Wasted Time on Bad Leads</p>
+    <p class="hook-category">Pain Point - Wasted Time on Unqualified Leads</p>
 
     <div class="ads-grid">
         <!-- H2: Filter Horizontal -->
@@ -1146,19 +932,15 @@
             <div class="ad-label">H2-NEW: Tire Kicker Filter - 1200x628</div>
             <div class="ad-horizontal ad-filter">
                 <div class="filter-left">
-                    <div class="tire-kicker">
-                        <div class="tire-kicker-x">X</div>
-                    </div>
-                    <div class="filter-label bad">TIRE KICKERS</div>
+                    <div class="filter-icon-bad"></div>
+                    <div class="filter-label bad">Time Wasters</div>
                 </div>
                 <div class="filter-divider"></div>
                 <div class="filter-right">
-                    <div class="serious-buyer">
-                        <div class="check-badge">$</div>
-                    </div>
-                    <div class="filter-label good">SERIOUS BUYERS</div>
+                    <div class="filter-icon-good"></div>
+                    <div class="filter-label good">Serious Clients</div>
                 </div>
-                <div class="main-headline">STOP CHASING. <span class="accent">START CLOSING.</span></div>
+                <div class="main-headline">Stop Chasing. Start Closing.</div>
             </div>
         </div>
     </div>
@@ -1172,20 +954,20 @@
         <div class="ad-container">
             <div class="ad-label">S1-NEW: Pricing Confidence Meter - 1200x1200</div>
             <div class="ad-square ad-confidence">
-                <div class="money-meter">
+                <div class="confidence-meter">
                     <div class="meter-arc"></div>
                     <div class="meter-needle"></div>
                     <div class="meter-center"></div>
                     <div class="meter-labels">
-                        <span class="low">UNDERCHARGING</span>
-                        <span class="high">MAXIMIZED</span>
+                        <span>Undercharging</span>
+                        <span>Maximized</span>
                     </div>
                 </div>
-                <div class="headline">STOP LEAVING <span class="accent">MONEY</span><br>ON THE TABLE</div>
+                <div class="headline">Stop Leaving Money<br>on the Table</div>
                 <div class="subline">AI learns from your winning quotes</div>
                 <div class="logo-badge">
-                    <div class="logo-icon">Q</div>
-                    <div class="logo-text">QUOTED</div>
+                    <div class="logo-square">Q</div>
+                    <div class="logo-text">Quoted</div>
                 </div>
             </div>
         </div>
@@ -1200,26 +982,28 @@
         <div class="ad-container">
             <div class="ad-label">S2-NEW: Your Pricing Brain - 1200x1200</div>
             <div class="ad-square ad-your-brain">
-                <div class="you-vs-ai">
-                    <div class="you-side">
-                        <div class="human-head"></div>
-                        <div class="side-label you">YOUR EXPERIENCE</div>
-                    </div>
-                    <div class="plus-sign">+</div>
-                    <div class="ai-side">
-                        <div class="ai-head">
-                            <span class="ai-head-icon"></span>
+                <div class="equation-row">
+                    <div class="equation-item">
+                        <div class="equation-circle">
+                            <span class="equation-icon">👤</span>
                         </div>
-                        <div class="side-label ai">AI LEARNING</div>
+                        <div class="equation-label">Your Experience</div>
                     </div>
-                    <div class="equals-result">
-                        <div class="equals-sign">=</div>
-                        <div class="result-badge">PERFECT PRICING</div>
+                    <div class="equation-symbol">+</div>
+                    <div class="equation-item">
+                        <div class="equation-circle filled">
+                            <span class="equation-icon">🧠</span>
+                        </div>
+                        <div class="equation-label">AI Learning</div>
+                    </div>
+                    <div class="equation-symbol">=</div>
+                    <div class="equation-item">
+                        <div class="result-box">Perfect Pricing</div>
                     </div>
                 </div>
                 <div class="bottom-content">
-                    <div class="headline">YOUR <span class="accent">PRICING BRAIN</span></div>
-                    <div class="subline">AI that learns exactly how YOU price jobs</div>
+                    <div class="headline">Your Pricing Brain</div>
+                    <div class="subline">AI that learns exactly how you price work</div>
                 </div>
             </div>
         </div>
@@ -1237,16 +1021,16 @@
                 <div class="speed-side">
                     <div class="speed-circle">
                         <div class="speed-number">30</div>
-                        <div class="speed-unit">SECONDS</div>
+                        <div class="speed-unit">seconds</div>
                     </div>
-                    <div class="speed-label">VOICE TO QUOTE</div>
+                    <div class="speed-label">Voice to Quote</div>
                 </div>
                 <div class="center-plus">+</div>
                 <div class="brain-side">
-                    <div class="mini-brain"></div>
-                    <div class="brain-label">AI THAT LEARNS<br>YOUR PRICING</div>
+                    <div class="mini-brain-circle">🧠</div>
+                    <div class="brain-label">AI That Learns<br>Your Pricing</div>
                 </div>
-                <div class="bottom-headline">FAST. <span class="accent">AND GETTING SMARTER.</span></div>
+                <div class="bottom-headline">Fast. And Getting Smarter.</div>
             </div>
         </div>
     </div>
@@ -1260,28 +1044,28 @@
             <div class="ad-label">V1-NEW: PAS Framework - 960x1200</div>
             <div class="ad-vertical ad-pas">
                 <div class="logo-badge">
-                    <div class="logo-icon">Q</div>
-                    <div class="logo-text">QUOTED</div>
+                    <div class="logo-square">Q</div>
+                    <div class="logo-text">Quoted</div>
                 </div>
                 <div class="pas-section problem">
-                    <div class="pas-label">THE PROBLEM</div>
+                    <div class="pas-label">The Problem</div>
                     <div class="pas-content">
                         Spending hours writing quotes for leads who <span class="highlight">never respond</span>
                     </div>
                 </div>
                 <div class="pas-section agitate">
-                    <div class="pas-label">THE REALITY</div>
+                    <div class="pas-label">The Reality</div>
                     <div class="pas-content">
                         80% are <span class="highlight">tire kickers</span>. You're pricing blind. And probably <span class="highlight">undercharging</span>.
                     </div>
                 </div>
                 <div class="pas-section solve">
-                    <div class="pas-label">THE SOLUTION</div>
+                    <div class="pas-label">The Solution</div>
                     <div class="pas-content">
-                        AI that learns YOUR pricing, identifies serious buyers, and helps you <span class="highlight">close more jobs</span>.
+                        AI that learns your pricing, identifies serious clients, and helps you <span class="highlight">close more deals</span>.
                     </div>
                 </div>
-                <div class="cta-button">TRY FREE - NO CREDIT CARD</div>
+                <div class="cta-button">Try Free - No Credit Card</div>
             </div>
         </div>
     </div>
@@ -1297,30 +1081,30 @@
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-number">30</div>
-                        <div class="stat-unit">SECONDS</div>
+                        <div class="stat-unit">Seconds</div>
                         <div class="stat-label">Voice to professional quote</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-number">6+</div>
-                        <div class="stat-unit">HOURS</div>
+                        <div class="stat-unit">Hours</div>
                         <div class="stat-label">Saved every week</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-number">100%</div>
-                        <div class="stat-unit">PERSONALIZED</div>
+                        <div class="stat-unit">Personalized</div>
                         <div class="stat-label">AI learns YOUR pricing</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-number">$0</div>
-                        <div class="stat-unit">TO START</div>
+                        <div class="stat-unit">To Start</div>
                         <div class="stat-label">Free trial, no credit card</div>
                     </div>
                 </div>
-                <div class="headline">QUOTE SMARTER. <span class="accent">WIN MORE.</span></div>
-                <div class="subline">AI-powered quoting for contractors</div>
+                <div class="headline">Quote Smarter. Win More.</div>
+                <div class="subline">AI-powered quoting for anyone who prices work</div>
                 <div class="logo-badge">
-                    <div class="logo-icon">Q</div>
-                    <div class="logo-text">QUOTED</div>
+                    <div class="logo-square">Q</div>
+                    <div class="logo-text">Quoted</div>
                 </div>
             </div>
         </div>
@@ -1357,12 +1141,12 @@
             <div class="char-count">21 characters</div>
         </div>
         <div class="copy-item">
-            <div class="headline">Contractors Love This</div>
+            <div class="headline">Freelancers Love This</div>
             <div class="char-count">21 characters</div>
         </div>
         <div class="copy-item">
-            <div class="headline">Win More Jobs</div>
-            <div class="char-count">13 characters</div>
+            <div class="headline">Win More Clients</div>
+            <div class="char-count">16 characters</div>
         </div>
         <div class="copy-item">
             <div class="headline">Smart Quotes, Fast</div>
@@ -1377,8 +1161,8 @@
             <div class="char-count">21 characters</div>
         </div>
         <div class="copy-item">
-            <div class="headline">From Your Truck</div>
-            <div class="char-count">15 characters</div>
+            <div class="headline">Quote From Anywhere</div>
+            <div class="char-count">19 characters</div>
         </div>
         <div class="copy-item">
             <div class="headline">No More Spreadsheets</div>
@@ -1406,28 +1190,28 @@
             <div class="char-count">80 characters</div>
         </div>
         <div class="copy-item">
-            <div class="headline">Voice-to-quote in 30 seconds. AI learns your pricing. Trusted by 500+ contractors.</div>
-            <div class="char-count">85 characters</div>
+            <div class="headline">Voice-to-quote in 30 seconds. AI learns your pricing. Perfect for freelancers.</div>
+            <div class="char-count">80 characters</div>
         </div>
         <div class="copy-item">
-            <div class="headline">Describe the job, get a pro PDF quote. AI remembers how you price. Try it free.</div>
-            <div class="char-count">82 characters</div>
+            <div class="headline">Describe the work, get a pro PDF quote. AI remembers how you price. Try it free.</div>
+            <div class="char-count">83 characters</div>
         </div>
         <div class="copy-item">
             <div class="headline">Stop leaving money on the table. AI helps you price with confidence. No credit card.</div>
             <div class="char-count">86 characters</div>
         </div>
         <div class="copy-item">
-            <div class="headline">Save 6+ hours per week on quotes. AI learns your rates. From your truck, in seconds.</div>
-            <div class="char-count">86 characters</div>
+            <div class="headline">Save 6+ hours per week on quotes. AI learns your rates. From anywhere, in seconds.</div>
+            <div class="char-count">84 characters</div>
         </div>
         <div class="copy-item">
             <div class="headline">Your pricing brain in your pocket. Voice to quote. AI that learns. Try free today.</div>
             <div class="char-count">84 characters</div>
         </div>
         <div class="copy-item">
-            <div class="headline">Contractors: stop guessing what to charge. AI learns from your winning quotes.</div>
-            <div class="char-count">80 characters</div>
+            <div class="headline">Designers, consultants, coaches: stop guessing what to charge. AI learns your rates.</div>
+            <div class="char-count">86 characters</div>
         </div>
     </div>
 
@@ -1436,7 +1220,7 @@
         <p><strong>Test 1 - Hook Concepts:</strong> Run all 5 hooks against each other to find winner</p>
         <p><strong>Test 2 - Visual Style:</strong> Compare illustrated vs. abstract for winning hook</p>
         <p><strong>Test 3 - CTA Variations:</strong> "Try Free" vs "Start Free Trial" vs "See Demo"</p>
-        <p style="margin-top: 15px; color: var(--success);">Start with Hook 1 (AI Learning) and Hook 2 (Tire Kickers) as they represent the strategic shift.</p>
+        <p style="margin-top: 15px; color: var(--text-secondary);">Start with Hook 1 (AI Learning) and Hook 2 (Tire Kickers) as they represent the strategic shift.</p>
     </div>
 
     <div class="instructions">
@@ -1444,7 +1228,18 @@
         <p><strong>New Horizontal (1200x628):</strong> H1 AI Brain, H2 Tire Kicker Filter, H3 Speed+Brain</p>
         <p><strong>New Square (1200x1200):</strong> S1 Confidence Meter, S2 Your Pricing Brain, S3 Stats Showcase</p>
         <p><strong>New Vertical (960x1200):</strong> V1 Problem-Agitate-Solve</p>
-        <p style="margin-top: 15px; color: var(--warning);">These 7 new creatives focus on OUTCOMES over FEATURES per DISC-154 requirements.</p>
+        <p style="margin-top: 15px; color: var(--text-secondary);">These 7 new creatives focus on OUTCOMES over FEATURES per DISC-154 requirements.</p>
+    </div>
+
+    <div class="instructions">
+        <h2>Target Audiences</h2>
+        <p>Quoted is for <strong>anyone who prices work</strong>:</p>
+        <p>• Freelancers (designers, developers, writers, photographers)</p>
+        <p>• Consultants (business, marketing, HR, IT)</p>
+        <p>• Coaches (executive, life, fitness, career)</p>
+        <p>• Service providers (contractors, landscapers, cleaners)</p>
+        <p>• Creative agencies and studios</p>
+        <p style="margin-top: 15px;">Messaging should resonate with anyone who quotes custom work, not just one industry.</p>
     </div>
 
 </body>
