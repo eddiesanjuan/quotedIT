@@ -254,6 +254,12 @@ async def stripe_webhook(
             # Subscription cancelled or expired
             await BillingService.handle_subscription_deleted(db, event_data)
 
+        elif event_type == "invoice.created":
+            # DISC-150: Check for referral credits before invoice is finalized
+            # This fires when Stripe creates an invoice but before charging
+            if event_data.get("subscription") and event_data.get("billing_reason") == "subscription_cycle":
+                await handle_referral_credit_for_invoice(db, event_data, logger)
+
         elif event_type == "invoice.payment_succeeded":
             # Successful payment (recurring or one-time)
             # Reset usage counter if it's a subscription renewal
@@ -369,6 +375,59 @@ async def handle_payment_failed(db: AsyncSession, invoice_data: dict, logger) ->
         logger.error(f"Error handling payment failure webhook: {e}", exc_info=True)
         # Don't raise - we don't want to fail the webhook response
         # The user notification is best-effort
+
+
+async def handle_referral_credit_for_invoice(db: AsyncSession, invoice_data: dict, logger) -> None:
+    """
+    DISC-150: Handle referral credit redemption for subscription renewal invoices.
+
+    This is called when a new invoice is created for a subscription cycle.
+    We check if the user has referral credits and apply one to the invoice.
+
+    The credit is applied as a negative invoice item, reducing the total.
+
+    Args:
+        db: Database session
+        invoice_data: Stripe invoice object from webhook
+        logger: Logger instance
+    """
+    try:
+        subscription_id = invoice_data.get("subscription")
+        customer_id = invoice_data.get("customer")
+
+        if not subscription_id or not customer_id:
+            return
+
+        # Find user by Stripe customer ID
+        result = await db.execute(
+            select(User).where(User.stripe_customer_id == customer_id)
+        )
+        user = result.scalar_one_or_none()
+
+        if not user:
+            logger.debug(f"No user found for customer {customer_id}")
+            return
+
+        # Check if user has referral credits
+        if not user.referral_credits or user.referral_credits <= 0:
+            logger.debug(f"User {user.id} has no referral credits")
+            return
+
+        # Apply the credit to this invoice
+        credit_applied = await BillingService.check_and_redeem_referral_credit(
+            db=db,
+            user=user,
+            subscription_id=subscription_id
+        )
+
+        if credit_applied:
+            logger.info(f"Applied referral credit for user {user.id} on invoice {invoice_data.get('id')}")
+        else:
+            logger.debug(f"Could not apply referral credit for user {user.id}")
+
+    except Exception as e:
+        logger.error(f"Error handling referral credit for invoice: {e}", exc_info=True)
+        # Don't raise - we don't want to fail the webhook response
 
 
 @router.get("/plans")

@@ -13,6 +13,7 @@ from fastapi import HTTPException, status
 from ..config import settings
 from ..models.database import User
 from .analytics import analytics_service
+from .email import EmailService
 
 # Initialize Stripe
 stripe.api_key = settings.stripe_secret_key
@@ -556,6 +557,154 @@ class BillingService:
         user.quotes_used = 0
 
         await db.commit()
+
+    # ========================================
+    # DISC-150: Referral Credit Redemption
+    # ========================================
+
+    @staticmethod
+    async def check_and_redeem_referral_credit(
+        db: AsyncSession,
+        user: User,
+        subscription_id: str
+    ) -> bool:
+        """
+        Check if user has referral credits and apply one to their subscription.
+
+        This method:
+        1. Checks if user has available referral credits
+        2. Creates a Stripe credit note or invoice item for the subscription
+        3. Decrements the user's credit count
+        4. Sends notification email
+
+        Called during subscription renewal (invoice.payment_succeeded webhook).
+
+        Args:
+            db: Database session
+            user: User object with referral_credits
+            subscription_id: Stripe subscription ID
+
+        Returns:
+            bool: True if credit was applied, False otherwise
+        """
+        # Check if user has credits to redeem
+        if not user.referral_credits or user.referral_credits <= 0:
+            return False
+
+        # Get the subscription to find the amount to credit
+        try:
+            subscription = stripe.Subscription.retrieve(subscription_id)
+
+            if subscription.status != "active":
+                return False
+
+            # Get the current plan price (monthly amount in cents)
+            # Handle both single item and multiple items
+            if subscription.items and subscription.items.data:
+                price = subscription.items.data[0].price
+                amount_to_credit = price.unit_amount or 0
+            else:
+                return False
+
+            if amount_to_credit <= 0:
+                return False
+
+            # Create an invoice credit for the next invoice
+            # This will apply the credit to their next billing cycle
+            stripe.InvoiceItem.create(
+                customer=user.stripe_customer_id,
+                amount=-amount_to_credit,  # Negative amount = credit
+                currency="usd",
+                description="Referral credit - 1 free month for referring a friend",
+            )
+
+            # Decrement the user's referral credits atomically
+            stmt = (
+                update(User)
+                .where(User.id == user.id)
+                .values(referral_credits=User.referral_credits - 1)
+                .returning(User)
+            )
+            result = await db.execute(stmt)
+            updated_user = result.scalar_one_or_none()
+            await db.commit()
+
+            credits_remaining = updated_user.referral_credits if updated_user else 0
+
+            # Get billing period for notification
+            billing_period = datetime.utcnow().strftime("%B %Y")
+
+            # Send notification email
+            try:
+                business_name = "your business"
+                if user.contractor:
+                    business_name = user.contractor.business_name or user.contractor.owner_name or "your business"
+
+                await EmailService.send_referral_credit_applied_notification(
+                    to_email=user.email,
+                    business_name=business_name,
+                    credits_remaining=credits_remaining,
+                    billing_period=billing_period
+                )
+            except Exception as e:
+                print(f"Warning: Failed to send referral credit notification: {e}")
+
+            # Track analytics
+            try:
+                analytics_service.track_event(
+                    user_id=str(user.id),
+                    event_name="referral_credit_redeemed",
+                    properties={
+                        "amount_credited_cents": amount_to_credit,
+                        "credits_remaining": credits_remaining,
+                        "billing_period": billing_period,
+                    }
+                )
+            except Exception as e:
+                print(f"Warning: Failed to track referral_credit_redeemed event: {e}")
+
+            return True
+
+        except stripe.error.StripeError as e:
+            print(f"Stripe error applying referral credit: {e}")
+            return False
+        except Exception as e:
+            print(f"Error applying referral credit: {e}")
+            return False
+
+    @staticmethod
+    async def get_referral_credit_info(
+        db: AsyncSession,
+        user_id: str
+    ) -> Dict[str, Any]:
+        """
+        Get referral credit information for a user.
+
+        Returns:
+            Dict with credits_available, credits_redeemed (total referrals - current credits),
+            and value_per_credit
+        """
+        result = await db.execute(select(User).where(User.id == user_id))
+        user = result.scalar_one_or_none()
+
+        if not user:
+            return {
+                "credits_available": 0,
+                "credits_redeemed": 0,
+                "value_per_credit": 9.00,  # $9/month
+                "total_savings": 0.00,
+            }
+
+        credits_available = user.referral_credits or 0
+        total_referrals = user.referral_count or 0
+        credits_redeemed = total_referrals - credits_available  # How many have been used
+
+        return {
+            "credits_available": credits_available,
+            "credits_redeemed": credits_redeemed,
+            "value_per_credit": 9.00,  # $9/month
+            "total_savings": credits_redeemed * 9.00,
+        }
 
     # ========================================
     # INNOV-2: Deposit Payment for Quote Acceptance
