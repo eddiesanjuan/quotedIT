@@ -1,0 +1,1451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quoted - Google Ads Creative Refresh (DISC-154)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&family=Caveat:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0f1419;
+            --bg-card: #1a1f26;
+            --bg-accent: #242b35;
+            --primary: #6366f1;
+            --primary-bright: #818cf8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --text-primary: #ffffff;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+            --brain-purple: #8b5cf6;
+            --brain-blue: #3b82f6;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a0a0a;
+            padding: 40px;
+            font-family: 'Inter', sans-serif;
+            color: white;
+        }
+
+        h1 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+
+        .section-title {
+            font-size: 1rem;
+            color: var(--primary-bright);
+            margin: 50px 0 20px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            padding-left: 20px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .hook-category {
+            font-size: 0.9rem;
+            color: var(--success);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .ads-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin-bottom: 60px;
+        }
+
+        .ad-container {
+            background: #1a1a1a;
+            padding: 20px;
+            border-radius: 12px;
+        }
+
+        .ad-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+            font-family: monospace;
+        }
+
+        .copy-section {
+            background: #1a1a1a;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+
+        .copy-section h3 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            letter-spacing: 2px;
+            color: var(--primary-bright);
+        }
+
+        .copy-item {
+            padding: 15px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .copy-item .headline {
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+
+        .copy-item .description {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .copy-item .char-count {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 5px;
+        }
+
+        /* ==================== AD BASE STYLES ==================== */
+
+        .ad-horizontal {
+            width: 1200px;
+            height: 628px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ad-square {
+            width: 1200px;
+            height: 1200px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ad-vertical {
+            width: 960px;
+            height: 1200px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* ==================== HOOK 1: AI LEARNING BRAIN ==================== */
+
+        .ad-brain {
+            background: linear-gradient(135deg, #0f0f1a 0%, #1a1035 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .brain-container {
+            position: relative;
+            width: 400px;
+            height: 400px;
+        }
+
+        .brain-glow {
+            position: absolute;
+            inset: -50px;
+            background: radial-gradient(ellipse, rgba(139, 92, 246, 0.3) 0%, transparent 70%);
+            animation: brainPulse 3s ease-in-out infinite;
+        }
+
+        @keyframes brainPulse {
+            0%, 100% { opacity: 0.5; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.1); }
+        }
+
+        .brain-core {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, var(--brain-purple) 0%, var(--brain-blue) 100%);
+            border-radius: 45% 55% 50% 50% / 55% 55% 45% 45%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow:
+                0 0 60px rgba(139, 92, 246, 0.5),
+                inset 0 0 60px rgba(255, 255, 255, 0.1);
+        }
+
+        .brain-lines {
+            position: absolute;
+            inset: 20px;
+            border-radius: 45% 55% 50% 50% / 55% 55% 45% 45%;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .brain-lines::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 10%;
+            right: 10%;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .brain-lines::after {
+            content: '';
+            position: absolute;
+            top: 30%;
+            bottom: 30%;
+            left: 50%;
+            width: 2px;
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .brain-icon {
+            font-size: 8rem;
+            filter: drop-shadow(0 0 30px rgba(255,255,255,0.3));
+        }
+
+        .data-orbs {
+            position: absolute;
+            inset: -100px;
+        }
+
+        .data-orb {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: rgba(139, 92, 246, 0.8);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
+            animation: orbFloat 4s ease-in-out infinite;
+        }
+
+        .data-orb:nth-child(1) { top: 10%; left: 5%; animation-delay: 0s; }
+        .data-orb:nth-child(2) { top: 5%; right: 10%; animation-delay: 1s; }
+        .data-orb:nth-child(3) { bottom: 15%; left: 0%; animation-delay: 2s; }
+        .data-orb:nth-child(4) { bottom: 10%; right: 5%; animation-delay: 0.5s; }
+        .data-orb:nth-child(5) { top: 45%; left: -5%; animation-delay: 1.5s; }
+        .data-orb:nth-child(6) { top: 40%; right: -5%; animation-delay: 2.5s; }
+
+        @keyframes orbFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .ad-brain .content {
+            position: absolute;
+            bottom: 60px;
+            left: 0;
+            right: 0;
+            text-align: center;
+        }
+
+        .ad-brain .headline {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 4.5rem;
+            letter-spacing: 4px;
+            line-height: 1;
+            text-shadow: 0 4px 30px rgba(0,0,0,0.5);
+        }
+
+        .ad-brain .headline .accent {
+            color: var(--primary-bright);
+        }
+
+        .ad-brain .subline {
+            font-size: 1.3rem;
+            color: var(--text-secondary);
+            margin-top: 15px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        .ad-brain .logo-badge {
+            position: absolute;
+            top: 40px;
+            left: 50px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 50px;
+            height: 50px;
+            background: var(--primary);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.5rem;
+        }
+
+        .logo-text {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.8rem;
+            letter-spacing: 3px;
+        }
+
+        /* ==================== HOOK 2: TIRE KICKER FILTER ==================== */
+
+        .ad-filter {
+            background: linear-gradient(135deg, #1a0f0f 0%, #2d1f1f 50%, #0f1a0f 100%);
+            display: flex;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .filter-left {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            position: relative;
+        }
+
+        .filter-right {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            position: relative;
+        }
+
+        .filter-divider {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(to bottom, transparent, var(--primary), transparent);
+        }
+
+        .tire-kicker {
+            width: 200px;
+            height: 200px;
+            background: linear-gradient(135deg, var(--danger) 0%, #b91c1c 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            animation: shake 0.5s ease-in-out infinite;
+            opacity: 0.6;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .tire-kicker::before {
+            content: '';
+            position: absolute;
+            inset: -20px;
+            border: 3px dashed var(--danger);
+            border-radius: 50%;
+            opacity: 0.5;
+        }
+
+        .tire-kicker-icon {
+            font-size: 5rem;
+        }
+
+        .tire-kicker-x {
+            position: absolute;
+            font-size: 8rem;
+            color: white;
+            font-weight: 800;
+            text-shadow: 0 0 30px rgba(239, 68, 68, 0.8);
+        }
+
+        .serious-buyer {
+            width: 200px;
+            height: 200px;
+            background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            box-shadow: 0 0 60px rgba(16, 185, 129, 0.4);
+        }
+
+        .serious-buyer::before {
+            content: '';
+            position: absolute;
+            inset: -20px;
+            border: 3px solid var(--success);
+            border-radius: 50%;
+            opacity: 0.5;
+        }
+
+        .serious-buyer-icon {
+            font-size: 5rem;
+        }
+
+        .check-badge {
+            position: absolute;
+            bottom: -10px;
+            right: -10px;
+            width: 60px;
+            height: 60px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+
+        .filter-label {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 2.5rem;
+            margin-top: 30px;
+            letter-spacing: 3px;
+        }
+
+        .filter-label.bad {
+            color: var(--danger);
+            text-decoration: line-through;
+            text-decoration-color: white;
+        }
+
+        .filter-label.good {
+            color: var(--success);
+        }
+
+        .ad-filter .main-headline {
+            position: absolute;
+            bottom: 50px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 4rem;
+            letter-spacing: 4px;
+        }
+
+        .ad-filter .main-headline .accent {
+            color: var(--success);
+        }
+
+        /* ==================== HOOK 3: PRICING CONFIDENCE ==================== */
+
+        .ad-confidence {
+            background: linear-gradient(180deg, var(--bg-dark) 0%, #1a2332 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            padding: 80px;
+        }
+
+        .ad-confidence::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at center, rgba(16, 185, 129, 0.1) 0%, transparent 60%);
+        }
+
+        .money-meter {
+            width: 500px;
+            height: 300px;
+            position: relative;
+            margin-bottom: 60px;
+        }
+
+        .meter-arc {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .meter-arc::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 50%;
+            background: conic-gradient(
+                from 180deg,
+                var(--danger) 0deg,
+                var(--warning) 60deg,
+                var(--success) 120deg,
+                var(--success) 180deg
+            );
+            border-radius: 250px 250px 0 0;
+            opacity: 0.8;
+        }
+
+        .meter-needle {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 8px;
+            height: 180px;
+            background: white;
+            transform-origin: bottom center;
+            transform: translateX(-50%) rotate(50deg);
+            border-radius: 4px 4px 0 0;
+            box-shadow: 0 0 20px rgba(255,255,255,0.5);
+        }
+
+        .meter-center {
+            position: absolute;
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 40px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 0 30px rgba(255,255,255,0.3);
+        }
+
+        .meter-labels {
+            position: absolute;
+            bottom: -50px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-between;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.5rem;
+            letter-spacing: 2px;
+        }
+
+        .meter-labels .low { color: var(--danger); }
+        .meter-labels .high { color: var(--success); }
+
+        .ad-confidence .headline {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 5rem;
+            text-align: center;
+            letter-spacing: 4px;
+            line-height: 1.1;
+            position: relative;
+            z-index: 1;
+        }
+
+        .ad-confidence .headline .accent {
+            color: var(--success);
+        }
+
+        .ad-confidence .subline {
+            font-size: 1.5rem;
+            color: var(--text-secondary);
+            margin-top: 20px;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .ad-confidence .logo-badge {
+            position: absolute;
+            bottom: 40px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* ==================== HOOK 4: YOUR PRICING BRAIN ==================== */
+
+        .ad-your-brain {
+            background: linear-gradient(135deg, #0a0f1a 0%, #1a1035 100%);
+            display: flex;
+            flex-direction: column;
+            padding: 80px;
+            position: relative;
+        }
+
+        .ad-your-brain::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(ellipse, rgba(139, 92, 246, 0.15) 0%, transparent 70%);
+        }
+
+        .you-vs-ai {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 60px;
+            flex: 1;
+        }
+
+        .you-side, .ai-side {
+            text-align: center;
+        }
+
+        .human-head {
+            width: 200px;
+            height: 200px;
+            background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 30px;
+            position: relative;
+        }
+
+        .human-head::before {
+            content: '?';
+            font-size: 5rem;
+            color: var(--warning);
+            animation: questionPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes questionPulse {
+            0%, 100% { opacity: 0.5; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.1); }
+        }
+
+        .ai-head {
+            width: 200px;
+            height: 200px;
+            background: linear-gradient(135deg, var(--brain-purple) 0%, var(--brain-blue) 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 30px;
+            position: relative;
+            box-shadow: 0 0 60px rgba(139, 92, 246, 0.4);
+        }
+
+        .ai-head::before {
+            content: '';
+            font-size: 5rem;
+        }
+
+        .ai-head-icon {
+            font-size: 5rem;
+        }
+
+        .plus-sign {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 6rem;
+            color: var(--primary);
+        }
+
+        .side-label {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 2rem;
+            letter-spacing: 3px;
+            color: var(--text-secondary);
+        }
+
+        .side-label.you { color: var(--warning); }
+        .side-label.ai { color: var(--brain-purple); }
+
+        .equals-result {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .equals-sign {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 5rem;
+            color: var(--primary);
+        }
+
+        .result-badge {
+            background: var(--success);
+            padding: 20px 50px;
+            border-radius: 20px;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 2rem;
+            letter-spacing: 3px;
+            box-shadow: 0 0 40px rgba(16, 185, 129, 0.4);
+        }
+
+        .ad-your-brain .bottom-content {
+            text-align: center;
+            margin-top: 60px;
+        }
+
+        .ad-your-brain .headline {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 4rem;
+            letter-spacing: 4px;
+        }
+
+        .ad-your-brain .headline .accent {
+            color: var(--brain-purple);
+        }
+
+        .ad-your-brain .subline {
+            font-size: 1.3rem;
+            color: var(--text-secondary);
+            margin-top: 15px;
+            letter-spacing: 2px;
+        }
+
+        /* ==================== HOOK 5: SPEED + LEARNING COMBO ==================== */
+
+        .ad-speed-brain {
+            background: var(--bg-dark);
+            display: flex;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ad-speed-brain::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(circle at 25% 50%, rgba(99, 102, 241, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 75% 50%, rgba(139, 92, 246, 0.1) 0%, transparent 40%);
+        }
+
+        .speed-side {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px;
+            position: relative;
+        }
+
+        .speed-circle {
+            width: 250px;
+            height: 250px;
+            background: linear-gradient(135deg, var(--primary) 0%, #4f46e5 100%);
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 60px rgba(99, 102, 241, 0.4);
+            margin-bottom: 30px;
+        }
+
+        .speed-number {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 7rem;
+            line-height: 1;
+        }
+
+        .speed-unit {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 2rem;
+            letter-spacing: 3px;
+            margin-top: -10px;
+        }
+
+        .speed-label {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 2.5rem;
+            letter-spacing: 3px;
+        }
+
+        .brain-side {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px;
+            position: relative;
+        }
+
+        .mini-brain {
+            width: 250px;
+            height: 250px;
+            background: linear-gradient(135deg, var(--brain-purple) 0%, var(--brain-blue) 100%);
+            border-radius: 45% 55% 50% 50% / 55% 55% 45% 45%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 60px rgba(139, 92, 246, 0.4);
+            margin-bottom: 30px;
+            font-size: 6rem;
+        }
+
+        .brain-label {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 2.5rem;
+            letter-spacing: 3px;
+            text-align: center;
+        }
+
+        .ad-speed-brain .center-plus {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 5rem;
+            color: var(--primary-bright);
+            z-index: 10;
+        }
+
+        .ad-speed-brain .bottom-headline {
+            position: absolute;
+            bottom: 50px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 3rem;
+            letter-spacing: 4px;
+        }
+
+        .ad-speed-brain .bottom-headline .accent {
+            color: var(--primary-bright);
+        }
+
+        /* ==================== VERTICAL: PROBLEM AGITATE SOLVE ==================== */
+
+        .ad-pas {
+            background: linear-gradient(180deg, #1a0f0f 0%, var(--bg-dark) 40%, #0f1a15 100%);
+            display: flex;
+            flex-direction: column;
+            padding: 60px;
+        }
+
+        .pas-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 30px 0;
+        }
+
+        .pas-section.problem {
+            border-bottom: 2px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .pas-section.agitate {
+            border-bottom: 2px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .pas-label {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.5rem;
+            letter-spacing: 4px;
+            margin-bottom: 20px;
+        }
+
+        .pas-section.problem .pas-label { color: var(--danger); }
+        .pas-section.agitate .pas-label { color: var(--warning); }
+        .pas-section.solve .pas-label { color: var(--success); }
+
+        .pas-content {
+            font-size: 2.2rem;
+            line-height: 1.4;
+        }
+
+        .pas-content .highlight {
+            font-weight: 700;
+        }
+
+        .pas-section.problem .highlight { color: var(--danger); }
+        .pas-section.agitate .highlight { color: var(--warning); }
+        .pas-section.solve .highlight { color: var(--success); }
+
+        .ad-pas .cta-button {
+            margin-top: 40px;
+            padding: 25px 60px;
+            background: var(--success);
+            border-radius: 12px;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 2rem;
+            letter-spacing: 4px;
+            text-align: center;
+            align-self: center;
+            box-shadow: 0 0 40px rgba(16, 185, 129, 0.3);
+        }
+
+        .ad-pas .logo-badge {
+            position: absolute;
+            top: 40px;
+            left: 60px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* ==================== SQUARE: STATS SHOWCASE ==================== */
+
+        .ad-stats {
+            background: linear-gradient(180deg, var(--bg-dark) 0%, #141a24 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 80px;
+            position: relative;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 60px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 50px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            background: rgba(99, 102, 241, 0.1);
+            border-color: rgba(99, 102, 241, 0.3);
+        }
+
+        .stat-number {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 6rem;
+            line-height: 1;
+            color: var(--primary-bright);
+        }
+
+        .stat-unit {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 2rem;
+            color: var(--text-secondary);
+            letter-spacing: 2px;
+        }
+
+        .stat-label {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-top: 15px;
+            letter-spacing: 1px;
+        }
+
+        .ad-stats .headline {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 4.5rem;
+            text-align: center;
+            letter-spacing: 4px;
+            line-height: 1.1;
+        }
+
+        .ad-stats .headline .accent {
+            color: var(--primary-bright);
+        }
+
+        .ad-stats .subline {
+            font-size: 1.4rem;
+            color: var(--text-secondary);
+            margin-top: 20px;
+            text-align: center;
+            letter-spacing: 2px;
+        }
+
+        .ad-stats .logo-badge {
+            position: absolute;
+            bottom: 60px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* ==================== INSTRUCTIONS ==================== */
+
+        .instructions {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 40px;
+            max-width: 900px;
+        }
+
+        .instructions h2 {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: var(--primary-bright);
+        }
+
+        .instructions p {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .instructions code {
+            background: #2a2a2a;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .strategy-box {
+            background: linear-gradient(135deg, #1a1f26 0%, #0f1419 100%);
+            border: 2px solid var(--primary);
+            border-radius: 16px;
+            padding: 40px;
+            margin-bottom: 50px;
+            max-width: 1000px;
+        }
+
+        .strategy-box h2 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.8rem;
+            letter-spacing: 3px;
+            margin-bottom: 25px;
+            color: var(--primary-bright);
+        }
+
+        .strategy-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .strategy-column h3 {
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .strategy-column.old h3 { color: var(--danger); }
+        .strategy-column.new h3 { color: var(--success); }
+
+        .strategy-item {
+            padding: 15px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .strategy-column.old .strategy-item {
+            border-left: 3px solid var(--danger);
+        }
+
+        .strategy-column.new .strategy-item {
+            border-left: 3px solid var(--success);
+        }
+    </style>
+</head>
+<body>
+    <h1>QUOTED GOOGLE ADS CREATIVE REFRESH</h1>
+    <p class="subtitle">DISC-154: Strategic messaging shift from features to outcomes</p>
+
+    <div class="strategy-box">
+        <h2>Strategic Messaging Shift</h2>
+        <div class="strategy-grid">
+            <div class="strategy-column old">
+                <h3>From (Features)</h3>
+                <div class="strategy-item">"Voice to Quote"</div>
+                <div class="strategy-item">"30 seconds"</div>
+                <div class="strategy-item">"Professional PDFs"</div>
+            </div>
+            <div class="strategy-column new">
+                <h3>To (Outcomes)</h3>
+                <div class="strategy-item">"AI That Learns YOUR Pricing"</div>
+                <div class="strategy-item">"Stop Chasing Tire Kickers"</div>
+                <div class="strategy-item">"Price With Confidence"</div>
+                <div class="strategy-item">"Your Pricing Brain"</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="instructions">
+        <h2>How to Export These</h2>
+        <p>1. Open this file in Chrome browser</p>
+        <p>2. Right-click on each ad, Inspect, find the ad element</p>
+        <p>3. Right-click the element and select "Capture node screenshot"</p>
+        <p>4. Or use a screenshot tool to capture at exact dimensions</p>
+        <p>Sizes: Horizontal <code>1200x628</code> | Square <code>1200x1200</code> | Vertical <code>960x1200</code></p>
+    </div>
+
+    <!-- ==================== HOOK 1: AI LEARNING ==================== -->
+    <p class="section-title">Hook 1: AI That Learns Your Pricing</p>
+    <p class="hook-category">Core Differentiator - Learning System</p>
+
+    <div class="ads-grid">
+        <!-- H1: AI Brain Horizontal -->
+        <div class="ad-container">
+            <div class="ad-label">H1-NEW: AI Learning Brain - 1200x628</div>
+            <div class="ad-horizontal ad-brain">
+                <div class="logo-badge">
+                    <div class="logo-icon">Q</div>
+                    <div class="logo-text">QUOTED</div>
+                </div>
+                <div class="brain-container">
+                    <div class="brain-glow"></div>
+                    <div class="data-orbs">
+                        <div class="data-orb">$</div>
+                        <div class="data-orb">%</div>
+                        <div class="data-orb">+</div>
+                        <div class="data-orb">$</div>
+                        <div class="data-orb">=</div>
+                        <div class="data-orb">$</div>
+                    </div>
+                    <div class="brain-core">
+                        <div class="brain-lines"></div>
+                    </div>
+                </div>
+                <div class="content">
+                    <div class="headline">AI THAT LEARNS <span class="accent">YOUR PRICING</span></div>
+                    <div class="subline">Gets smarter with every quote you send</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== HOOK 2: TIRE KICKER FILTER ==================== -->
+    <p class="section-title">Hook 2: Stop Chasing Tire Kickers</p>
+    <p class="hook-category">Pain Point - Wasted Time on Bad Leads</p>
+
+    <div class="ads-grid">
+        <!-- H2: Filter Horizontal -->
+        <div class="ad-container">
+            <div class="ad-label">H2-NEW: Tire Kicker Filter - 1200x628</div>
+            <div class="ad-horizontal ad-filter">
+                <div class="filter-left">
+                    <div class="tire-kicker">
+                        <div class="tire-kicker-x">X</div>
+                    </div>
+                    <div class="filter-label bad">TIRE KICKERS</div>
+                </div>
+                <div class="filter-divider"></div>
+                <div class="filter-right">
+                    <div class="serious-buyer">
+                        <div class="check-badge">$</div>
+                    </div>
+                    <div class="filter-label good">SERIOUS BUYERS</div>
+                </div>
+                <div class="main-headline">STOP CHASING. <span class="accent">START CLOSING.</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== HOOK 3: PRICING CONFIDENCE ==================== -->
+    <p class="section-title">Hook 3: Price With Confidence</p>
+    <p class="hook-category">Outcome - Stop Undercharging</p>
+
+    <div class="ads-grid">
+        <!-- S1: Confidence Meter Square -->
+        <div class="ad-container">
+            <div class="ad-label">S1-NEW: Pricing Confidence Meter - 1200x1200</div>
+            <div class="ad-square ad-confidence">
+                <div class="money-meter">
+                    <div class="meter-arc"></div>
+                    <div class="meter-needle"></div>
+                    <div class="meter-center"></div>
+                    <div class="meter-labels">
+                        <span class="low">UNDERCHARGING</span>
+                        <span class="high">MAXIMIZED</span>
+                    </div>
+                </div>
+                <div class="headline">STOP LEAVING <span class="accent">MONEY</span><br>ON THE TABLE</div>
+                <div class="subline">AI learns from your winning quotes</div>
+                <div class="logo-badge">
+                    <div class="logo-icon">Q</div>
+                    <div class="logo-text">QUOTED</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== HOOK 4: YOUR PRICING BRAIN ==================== -->
+    <p class="section-title">Hook 4: Your Pricing Brain</p>
+    <p class="hook-category">Personalization - AI That Knows YOU</p>
+
+    <div class="ads-grid">
+        <!-- S2: You + AI Square -->
+        <div class="ad-container">
+            <div class="ad-label">S2-NEW: Your Pricing Brain - 1200x1200</div>
+            <div class="ad-square ad-your-brain">
+                <div class="you-vs-ai">
+                    <div class="you-side">
+                        <div class="human-head"></div>
+                        <div class="side-label you">YOUR EXPERIENCE</div>
+                    </div>
+                    <div class="plus-sign">+</div>
+                    <div class="ai-side">
+                        <div class="ai-head">
+                            <span class="ai-head-icon"></span>
+                        </div>
+                        <div class="side-label ai">AI LEARNING</div>
+                    </div>
+                    <div class="equals-result">
+                        <div class="equals-sign">=</div>
+                        <div class="result-badge">PERFECT PRICING</div>
+                    </div>
+                </div>
+                <div class="bottom-content">
+                    <div class="headline">YOUR <span class="accent">PRICING BRAIN</span></div>
+                    <div class="subline">AI that learns exactly how YOU price jobs</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== HOOK 5: SPEED + INTELLIGENCE ==================== -->
+    <p class="section-title">Hook 5: Fast AND Smart</p>
+    <p class="hook-category">Combo - Speed + Learning</p>
+
+    <div class="ads-grid">
+        <!-- H3: Speed + Brain Horizontal -->
+        <div class="ad-container">
+            <div class="ad-label">H3-NEW: Speed + Intelligence - 1200x628</div>
+            <div class="ad-horizontal ad-speed-brain">
+                <div class="speed-side">
+                    <div class="speed-circle">
+                        <div class="speed-number">30</div>
+                        <div class="speed-unit">SECONDS</div>
+                    </div>
+                    <div class="speed-label">VOICE TO QUOTE</div>
+                </div>
+                <div class="center-plus">+</div>
+                <div class="brain-side">
+                    <div class="mini-brain"></div>
+                    <div class="brain-label">AI THAT LEARNS<br>YOUR PRICING</div>
+                </div>
+                <div class="bottom-headline">FAST. <span class="accent">AND GETTING SMARTER.</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== VERTICAL: PROBLEM-AGITATE-SOLVE ==================== -->
+    <p class="section-title">Vertical: Problem-Agitate-Solve</p>
+    <p class="hook-category">Story Format for Mobile</p>
+
+    <div class="ads-grid">
+        <div class="ad-container">
+            <div class="ad-label">V1-NEW: PAS Framework - 960x1200</div>
+            <div class="ad-vertical ad-pas">
+                <div class="logo-badge">
+                    <div class="logo-icon">Q</div>
+                    <div class="logo-text">QUOTED</div>
+                </div>
+                <div class="pas-section problem">
+                    <div class="pas-label">THE PROBLEM</div>
+                    <div class="pas-content">
+                        Spending hours writing quotes for leads who <span class="highlight">never respond</span>
+                    </div>
+                </div>
+                <div class="pas-section agitate">
+                    <div class="pas-label">THE REALITY</div>
+                    <div class="pas-content">
+                        80% are <span class="highlight">tire kickers</span>. You're pricing blind. And probably <span class="highlight">undercharging</span>.
+                    </div>
+                </div>
+                <div class="pas-section solve">
+                    <div class="pas-label">THE SOLUTION</div>
+                    <div class="pas-content">
+                        AI that learns YOUR pricing, identifies serious buyers, and helps you <span class="highlight">close more jobs</span>.
+                    </div>
+                </div>
+                <div class="cta-button">TRY FREE - NO CREDIT CARD</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== SQUARE: STATS SHOWCASE ==================== -->
+    <p class="section-title">Square: Stats That Sell</p>
+    <p class="hook-category">Social Proof + Outcomes</p>
+
+    <div class="ads-grid">
+        <div class="ad-container">
+            <div class="ad-label">S3-NEW: Stats Showcase - 1200x1200</div>
+            <div class="ad-square ad-stats">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">30</div>
+                        <div class="stat-unit">SECONDS</div>
+                        <div class="stat-label">Voice to professional quote</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">6+</div>
+                        <div class="stat-unit">HOURS</div>
+                        <div class="stat-label">Saved every week</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">100%</div>
+                        <div class="stat-unit">PERSONALIZED</div>
+                        <div class="stat-label">AI learns YOUR pricing</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">$0</div>
+                        <div class="stat-unit">TO START</div>
+                        <div class="stat-label">Free trial, no credit card</div>
+                    </div>
+                </div>
+                <div class="headline">QUOTE SMARTER. <span class="accent">WIN MORE.</span></div>
+                <div class="subline">AI-powered quoting for contractors</div>
+                <div class="logo-badge">
+                    <div class="logo-icon">Q</div>
+                    <div class="logo-text">QUOTED</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== HEADLINE/DESCRIPTION COPY ==================== -->
+    <p class="section-title">Google Ads Copy (Headlines + Descriptions)</p>
+
+    <div class="copy-section">
+        <h3>Headlines (30 characters max)</h3>
+
+        <div class="copy-item">
+            <div class="headline">AI Learns Your Pricing</div>
+            <div class="char-count">21 characters</div>
+        </div>
+        <div class="copy-item">
+            <div class="headline">Stop Chasing Tire Kickers</div>
+            <div class="char-count">25 characters</div>
+        </div>
+        <div class="copy-item">
+            <div class="headline">Quote in 30 Seconds</div>
+            <div class="char-count">19 characters</div>
+        </div>
+        <div class="copy-item">
+            <div class="headline">Your AI Pricing Brain</div>
+            <div class="char-count">21 characters</div>
+        </div>
+        <div class="copy-item">
+            <div class="headline">Stop Undercharging</div>
+            <div class="char-count">18 characters</div>
+        </div>
+        <div class="copy-item">
+            <div class="headline">Voice to Quote - Free</div>
+            <div class="char-count">21 characters</div>
+        </div>
+        <div class="copy-item">
+            <div class="headline">Contractors Love This</div>
+            <div class="char-count">21 characters</div>
+        </div>
+        <div class="copy-item">
+            <div class="headline">Win More Jobs</div>
+            <div class="char-count">13 characters</div>
+        </div>
+        <div class="copy-item">
+            <div class="headline">Smart Quotes, Fast</div>
+            <div class="char-count">18 characters</div>
+        </div>
+        <div class="copy-item">
+            <div class="headline">Price With Confidence</div>
+            <div class="char-count">21 characters</div>
+        </div>
+        <div class="copy-item">
+            <div class="headline">6+ Hours Saved Weekly</div>
+            <div class="char-count">21 characters</div>
+        </div>
+        <div class="copy-item">
+            <div class="headline">From Your Truck</div>
+            <div class="char-count">15 characters</div>
+        </div>
+        <div class="copy-item">
+            <div class="headline">No More Spreadsheets</div>
+            <div class="char-count">20 characters</div>
+        </div>
+        <div class="copy-item">
+            <div class="headline">Professional PDFs</div>
+            <div class="char-count">17 characters</div>
+        </div>
+        <div class="copy-item">
+            <div class="headline">Try Free Today</div>
+            <div class="char-count">14 characters</div>
+        </div>
+    </div>
+
+    <div class="copy-section">
+        <h3>Descriptions (90 characters max)</h3>
+
+        <div class="copy-item">
+            <div class="headline">AI that learns exactly how YOU price. Gets smarter with every quote. Try free.</div>
+            <div class="char-count">81 characters</div>
+        </div>
+        <div class="copy-item">
+            <div class="headline">Stop wasting hours on tire kickers. Send pro quotes in 30 seconds. Free trial.</div>
+            <div class="char-count">80 characters</div>
+        </div>
+        <div class="copy-item">
+            <div class="headline">Voice-to-quote in 30 seconds. AI learns your pricing. Trusted by 500+ contractors.</div>
+            <div class="char-count">85 characters</div>
+        </div>
+        <div class="copy-item">
+            <div class="headline">Describe the job, get a pro PDF quote. AI remembers how you price. Try it free.</div>
+            <div class="char-count">82 characters</div>
+        </div>
+        <div class="copy-item">
+            <div class="headline">Stop leaving money on the table. AI helps you price with confidence. No credit card.</div>
+            <div class="char-count">86 characters</div>
+        </div>
+        <div class="copy-item">
+            <div class="headline">Save 6+ hours per week on quotes. AI learns your rates. From your truck, in seconds.</div>
+            <div class="char-count">86 characters</div>
+        </div>
+        <div class="copy-item">
+            <div class="headline">Your pricing brain in your pocket. Voice to quote. AI that learns. Try free today.</div>
+            <div class="char-count">84 characters</div>
+        </div>
+        <div class="copy-item">
+            <div class="headline">Contractors: stop guessing what to charge. AI learns from your winning quotes.</div>
+            <div class="char-count">80 characters</div>
+        </div>
+    </div>
+
+    <div class="instructions" style="margin-top: 60px;">
+        <h2>A/B Test Structure</h2>
+        <p><strong>Test 1 - Hook Concepts:</strong> Run all 5 hooks against each other to find winner</p>
+        <p><strong>Test 2 - Visual Style:</strong> Compare illustrated vs. abstract for winning hook</p>
+        <p><strong>Test 3 - CTA Variations:</strong> "Try Free" vs "Start Free Trial" vs "See Demo"</p>
+        <p style="margin-top: 15px; color: var(--success);">Start with Hook 1 (AI Learning) and Hook 2 (Tire Kickers) as they represent the strategic shift.</p>
+    </div>
+
+    <div class="instructions">
+        <h2>Upload Checklist</h2>
+        <p><strong>New Horizontal (1200x628):</strong> H1 AI Brain, H2 Tire Kicker Filter, H3 Speed+Brain</p>
+        <p><strong>New Square (1200x1200):</strong> S1 Confidence Meter, S2 Your Pricing Brain, S3 Stats Showcase</p>
+        <p><strong>New Vertical (960x1200):</strong> V1 Problem-Agitate-Solve</p>
+        <p style="margin-top: 15px; color: var(--warning);">These 7 new creatives focus on OUTCOMES over FEATURES per DISC-154 requirements.</p>
+    </div>
+
+</body>
+</html>
