@@ -258,6 +258,8 @@ async def run_feedback_drip():
                     )
                     contractor.feedback_email_sent = 3
                     emails_sent += 1
+                    # Rate limit protection: Resend allows 2 req/sec
+                    await asyncio.sleep(0.6)
                 except Exception as e:
                     logger.warning(f"Failed to send day-3 feedback to {contractor.email}: {e}")
 
@@ -273,6 +275,8 @@ async def run_feedback_drip():
                     )
                     contractor.feedback_email_sent = 7
                     emails_sent += 1
+                    # Rate limit protection: Resend allows 2 req/sec
+                    await asyncio.sleep(0.6)
                 except Exception as e:
                     logger.warning(f"Failed to send day-7 feedback to {contractor.email}: {e}")
 
@@ -280,7 +284,7 @@ async def run_feedback_drip():
                 await db.commit()
                 logger.info(f"Feedback drip: Sent {emails_sent} feedback requests")
             else:
-                logger.debug("Feedback drip: No users at feedback milestones")
+                logger.info(f"Feedback drip: No users at feedback milestones (day3: {len(day3_users)}, day7: {len(day7_users)})")
 
     except Exception as e:
         logger.error(f"Error in run_feedback_drip: {e}")
@@ -372,6 +376,8 @@ async def check_trial_reminders():
                         logger.debug(f"PostHog tracking failed: {ph_error}")
 
                     logger.info(f"Sent trial reminder to {user.email} ({days_left} days left)")
+                    # Rate limit protection: Resend allows 2 req/sec
+                    await asyncio.sleep(0.6)
 
                 except Exception as e:
                     logger.warning(f"Failed to send trial reminder to {user.email}: {e}")
@@ -429,6 +435,8 @@ async def check_trial_reminders():
                         logger.debug(f"PostHog tracking failed: {ph_error}")
 
                     logger.info(f"Sent trial expired email to {user.email}")
+                    # Rate limit protection: Resend allows 2 req/sec
+                    await asyncio.sleep(0.6)
 
                 except Exception as e:
                     logger.warning(f"Failed to send trial expired email to {user.email}: {e}")
@@ -437,7 +445,7 @@ async def check_trial_reminders():
                 await db.commit()
                 logger.info(f"Trial reminders: {reminders_sent} reminder(s), {expiry_emails_sent} expiry email(s) sent")
             else:
-                logger.debug("Trial reminders: No users need trial emails today")
+                logger.info(f"Trial reminders: No users need trial emails today (reminders: {len(reminder_users)}, expiry: {len(expiry_users)})")
 
     except Exception as e:
         logger.error(f"Error in check_trial_reminders: {e}")

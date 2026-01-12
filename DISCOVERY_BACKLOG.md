@@ -1,6 +1,6 @@
 # Discovery Backlog
 
-**Last Updated**: 2026-01-07
+**Last Updated**: 2026-01-12
 **Source**: `/quoted-discover` autonomous discovery cycles
 
 ---
@@ -34,11 +34,11 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 | Status | Count |
 |--------|-------|
 | PR_PENDING | 0 |
-| READY | 5 |
+| READY | 6 |
 | DISCOVERED | 17 |
 | COMPLETE | 7 |
 | DEPLOYED | 13 |
-| **Active Total** | **42** |
+| **Active Total** | **43** |
 | Archived (DEPLOYED) | 100+ |
 
 **Just Deployed (2026-01-06)**: DISC-158 & DISC-159 (PR #50), DISC-157 (PRs #47, #48), DISC-145 (PR #49)
@@ -125,6 +125,72 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 4. Post during peak hours (Tuesday-Thursday 9am-11am EST)
 
 **Success Metric**: 5,000+ impressions; 150 demo views; 22 signups
+
+---
+
+### DISC-162: Demo UX Overhaul - Tap-to-Try Sample Quotes 🎯 CONVERSION (READY)
+
+**Source**: Founder Request (Eddie, 2026-01-12)
+**Impact**: HIGH | **Effort**: M | **Score**: 2.5
+**Sprint Alignment**: Critical conversion optimization - 96% demo drop-off rate
+
+**Problem**: Current demo requires visitors to describe a job (voice or text) before seeing value. This is high friction:
+- Voice recording is intimidating for first-time visitors
+- Typing a job description requires creativity/effort
+- Users bounce before experiencing the "aha moment"
+
+Current funnel shows: 45 try-page views → 2 demo completions (4.4% completion rate)
+
+**Proposed Solution**: Show instant sample quotes for common use cases, THEN invite custom input.
+
+**UX Flow**:
+```
+┌─────────────────────────────────────────────────────────┐
+│          See Quoted in action                           │
+│                                                         │
+│  Pick a specialty to see a sample quote:                │
+│                                                         │
+│  [🔧 Handyman]  [💼 Consultant]  [🎉 Event Planner]     │
+│                                                         │
+│  [🔨 General Contractor]  [🎨 Creative Services]        │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
+                          ↓ (tap)
+┌─────────────────────────────────────────────────────────┐
+│  Sample: Furniture Assembly                             │
+│  "Assemble 2 IKEA chairs and 1 bookshelf"              │
+│                                                         │
+│  [Professional quote appears with line items]           │
+│                                                         │
+│  ✨ Now try YOUR job:                                   │
+│  [🎤 Voice] or [⌨️ Type your own description]           │
+└─────────────────────────────────────────────────────────┘
+```
+
+**Sample Quotes to Pre-build**:
+| Category | Sample Description | Expected Total |
+|----------|-------------------|----------------|
+| Handyman | "Furniture assembly - 2 chairs and 1 bookshelf" | ~$150-250 |
+| Consultant | "Half-day strategy workshop for 5 people" | ~$1,500-3,000 |
+| Event Planner | "Birthday party setup, 30 guests, basic decor" | ~$500-1,000 |
+| General Contractor | "Install new interior door, standard size" | ~$300-500 |
+| Creative Services | "Logo design with 3 concepts and 2 revisions" | ~$400-800 |
+
+**Implementation**:
+1. Pre-generate sample quotes and store as static JSON (no API call needed)
+2. Add "Pick a specialty" UI to try.html above current input
+3. On tap: instantly display pre-built quote with animation
+4. Below quote: "Now try your own" with voice/text input (current flow)
+5. Track PostHog events: `sample_specialty_selected`, `sample_quote_viewed`, `custom_input_started`
+
+**Why This Works**:
+- Zero effort required to see value (just tap)
+- Proves the output quality immediately
+- Psychological commitment: after seeing a quote, users want to try their own
+- Pre-generated = instant load, no waiting
+- Multiple categories = broad appeal
+
+**Success Metric**: Demo completion rate from 4.4% → 25%+; Time-to-first-quote under 5 seconds
 
 ---
 
