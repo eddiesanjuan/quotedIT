@@ -128,24 +128,31 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 ---
 
-### DISC-162: Demo UX Overhaul - Tap-to-Try Sample Quotes 🎯 CONVERSION (DEPLOYED)
-
-**Deployed 2026-01-12** via PR #55
+### DISC-162: Demo UX Overhaul - Sample Prompts v2 🎯 CONVERSION (IN PROGRESS)
 
 **Source**: Founder Request (Eddie, 2026-01-12)
 **Impact**: HIGH | **Effort**: M | **Score**: 2.5
 **Sprint Alignment**: Critical conversion optimization - 96% demo drop-off rate
 
-**Implementation**:
-- Added 5 specialty picker buttons (Handyman, Consultant, Event Planner, General Contractor, Creative Services)
-- Pre-generated sample quotes stored as static JSON (no API call = instant load)
-- "Now try YOUR job" CTA reveals voice/text input section
-- PostHog events: `sample_specialty_selected`, `sample_quote_viewed`, `custom_input_started`
-- Preserves ?prompt= parameter flow (bypasses samples for direct links)
+**v1 (PR #55)**: Static sample quotes - showed fake pre-generated quotes. Founder feedback: needs to show REAL demo flow.
+
+**v2 Design** (approved 2026-01-12):
+- Job-focused cards with preview text (not trade labels)
+  - "Furniture Assembly" - "2 IKEA chairs + bookshelf setup"
+  - "Strategy Workshop" - "Half-day session for leadership team"
+  - "Birthday Party" - "Setup and cleanup for 30 guests"
+  - "Door Installation" - "Interior door with frame and hardware"
+  - "Logo Design" - "Brand package with 3 concepts"
+- Tap card → shows full transcript ("You'd say: ...")
+- Generate button triggers REAL API call
+- User experiences full demo: quote generation, editing, PDF download
+- Header reminder: "When you sign up, Quoted interviews you to learn YOUR pricing"
+
+**Design Doc**: `docs/plans/2026-01-12-demo-sample-prompts-redesign.md`
 
 **Files Modified**: `frontend/try.html`
 
-**Success Metric**: Demo completion rate from 4.4% → 25%+; Time-to-first-quote under 5 seconds
+**Success Metric**: Demo completion rate from 4.4% → 25%+
 
 ---
 
