@@ -2365,9 +2365,10 @@
 
             var transcript = samplePrompts[currentSelectedJob];
 
-            // Show loading state
+            // Show loading state on button AND progress UI
             generateSampleBtn.disabled = true;
             generateSampleBtn.classList.add('loading');
+            showLoading(true); // Show the nice progress animation
 
             // Track generation started
             if (window.posthog) {
@@ -2393,6 +2394,7 @@
 
                 var data = await response.json();
                 currentQuoteData = data;
+                showLoading(false); // Complete the progress animation
                 displayResults(data);
                 if (window.markQuoteGenerated) window.markQuoteGenerated();
 
@@ -2413,6 +2415,7 @@
                 }, 100);
 
             } catch (err) {
+                showLoading(false);
                 showError(err.message);
             } finally {
                 generateSampleBtn.disabled = false;
