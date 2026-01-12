@@ -134,3 +134,46 @@ What I Learned:
 - Atomic database updates (UPDATE...RETURNING) prevent race conditions on credit decrement
 
 TICKET_DEPLOYED: DISC-150
+
+=== 2026-01-12 - DISC-162 DEPLOYED ===
+Working on: DISC-162 Demo UX Overhaul - Tap-to-Try Sample Quotes
+Status: COMPLETE - All phases successful
+
+Implementation Summary:
+- Added 5 specialty picker buttons to try.html (Handyman, Consultant, Event Planner, General Contractor, Creative Services)
+- Pre-generated sample quotes stored as static JSON (instant load, no API call)
+- Smooth animations: fadeSlideIn for quote display, specialty button active states
+- "Now try YOUR job" CTA reveals voice/text input section
+- Safe DOM manipulation using createElement (no innerHTML with user data)
+- Mobile-first responsive design (tested at 375px)
+
+PostHog Events Added:
+- sample_specialty_selected (with specialty parameter)
+- sample_quote_viewed (with specialty and quote_total)
+- custom_input_started
+
+Files Modified:
+- frontend/try.html - Added ~590 lines (CSS, HTML, JavaScript for sample quotes UI)
+
+Deployment Notes:
+- PR #55 created and merged to main
+- Railway preview returned 404 - proceeded with code-based quality eval per BATON_PASS.md Session 7 pattern
+- Production verification passed via Playwright MCP:
+  ✅ Landing page loads correctly
+  ✅ Demo page loads with new sample quotes section
+  ✅ 5 specialty buttons visible and clickable
+  ✅ Sample quote display works (tested Handyman)
+  ✅ Quote total displays correctly ($205)
+  ✅ "Try YOUR job" CTA visible
+
+What I Learned:
+- Static JSON approach for sample quotes = instant UX, no loading state needed
+- Railway preview 404s are common - code-based quality eval is valid alternative
+- PostHog tracking enables A/B testing of specialty engagement later
+
+Target Metrics:
+- Previous: 4.4% demo completion rate (96% drop-off)
+- Goal: 25%+ completion rate
+- Measurement: Watch PostHog funnel over next 7 days
+
+TICKET_DEPLOYED: DISC-162

@@ -128,67 +128,22 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 ---
 
-### DISC-162: Demo UX Overhaul - Tap-to-Try Sample Quotes 🎯 CONVERSION (READY)
+### DISC-162: Demo UX Overhaul - Tap-to-Try Sample Quotes 🎯 CONVERSION (DEPLOYED)
+
+**Deployed 2026-01-12** via PR #55
 
 **Source**: Founder Request (Eddie, 2026-01-12)
 **Impact**: HIGH | **Effort**: M | **Score**: 2.5
 **Sprint Alignment**: Critical conversion optimization - 96% demo drop-off rate
 
-**Problem**: Current demo requires visitors to describe a job (voice or text) before seeing value. This is high friction:
-- Voice recording is intimidating for first-time visitors
-- Typing a job description requires creativity/effort
-- Users bounce before experiencing the "aha moment"
-
-Current funnel shows: 45 try-page views → 2 demo completions (4.4% completion rate)
-
-**Proposed Solution**: Show instant sample quotes for common use cases, THEN invite custom input.
-
-**UX Flow**:
-```
-┌─────────────────────────────────────────────────────────┐
-│          See Quoted in action                           │
-│                                                         │
-│  Pick a specialty to see a sample quote:                │
-│                                                         │
-│  [🔧 Handyman]  [💼 Consultant]  [🎉 Event Planner]     │
-│                                                         │
-│  [🔨 General Contractor]  [🎨 Creative Services]        │
-│                                                         │
-└─────────────────────────────────────────────────────────┘
-                          ↓ (tap)
-┌─────────────────────────────────────────────────────────┐
-│  Sample: Furniture Assembly                             │
-│  "Assemble 2 IKEA chairs and 1 bookshelf"              │
-│                                                         │
-│  [Professional quote appears with line items]           │
-│                                                         │
-│  ✨ Now try YOUR job:                                   │
-│  [🎤 Voice] or [⌨️ Type your own description]           │
-└─────────────────────────────────────────────────────────┘
-```
-
-**Sample Quotes to Pre-build**:
-| Category | Sample Description | Expected Total |
-|----------|-------------------|----------------|
-| Handyman | "Furniture assembly - 2 chairs and 1 bookshelf" | ~$150-250 |
-| Consultant | "Half-day strategy workshop for 5 people" | ~$1,500-3,000 |
-| Event Planner | "Birthday party setup, 30 guests, basic decor" | ~$500-1,000 |
-| General Contractor | "Install new interior door, standard size" | ~$300-500 |
-| Creative Services | "Logo design with 3 concepts and 2 revisions" | ~$400-800 |
-
 **Implementation**:
-1. Pre-generate sample quotes and store as static JSON (no API call needed)
-2. Add "Pick a specialty" UI to try.html above current input
-3. On tap: instantly display pre-built quote with animation
-4. Below quote: "Now try your own" with voice/text input (current flow)
-5. Track PostHog events: `sample_specialty_selected`, `sample_quote_viewed`, `custom_input_started`
+- Added 5 specialty picker buttons (Handyman, Consultant, Event Planner, General Contractor, Creative Services)
+- Pre-generated sample quotes stored as static JSON (no API call = instant load)
+- "Now try YOUR job" CTA reveals voice/text input section
+- PostHog events: `sample_specialty_selected`, `sample_quote_viewed`, `custom_input_started`
+- Preserves ?prompt= parameter flow (bypasses samples for direct links)
 
-**Why This Works**:
-- Zero effort required to see value (just tap)
-- Proves the output quality immediately
-- Psychological commitment: after seeing a quote, users want to try their own
-- Pre-generated = instant load, no waiting
-- Multiple categories = broad appeal
+**Files Modified**: `frontend/try.html`
 
 **Success Metric**: Demo completion rate from 4.4% → 25%+; Time-to-first-quote under 5 seconds
 
