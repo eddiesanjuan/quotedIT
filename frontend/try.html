@@ -163,6 +163,278 @@
             margin: 0 auto 24px;
         }
 
+        /* DISC-162: Sample Quotes - Tap-to-Try */
+        .sample-quotes-section {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .sample-quotes-section h2 {
+            font-family: var(--font-serif);
+            font-size: 1.5rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .sample-quotes-section p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 24px;
+        }
+
+        .specialty-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .specialty-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 20px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+            font-size: 0.9375rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .specialty-btn:hover {
+            border-color: var(--accent);
+            background: rgba(99, 102, 241, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .specialty-btn.active {
+            border-color: var(--accent);
+            background: rgba(99, 102, 241, 0.15);
+        }
+
+        .specialty-btn svg {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+
+        /* Sample Quote Display */
+        .sample-quote-display {
+            display: none;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            margin-top: 24px;
+            text-align: left;
+            animation: fadeSlideIn 0.3s ease;
+        }
+
+        .sample-quote-display.visible {
+            display: block;
+        }
+
+        @keyframes fadeSlideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .sample-quote-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .sample-quote-header h3 {
+            font-family: var(--font-serif);
+            font-size: 1.25rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .sample-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 20px;
+            color: var(--accent);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .sample-quote-description {
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .sample-line-items {
+            margin-bottom: 20px;
+        }
+
+        .sample-line-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .sample-line-item:last-child {
+            border-bottom: none;
+        }
+
+        .sample-line-item-name {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .sample-line-item-amount {
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 1.0625rem;
+        }
+
+        .sample-total {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            background: var(--bg-card);
+            border-radius: 10px;
+            margin-bottom: 24px;
+        }
+
+        .sample-total-label {
+            font-size: 1rem;
+            color: var(--text-secondary);
+        }
+
+        .sample-total-amount {
+            font-family: var(--font-serif);
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* Try Your Own CTA */
+        .try-your-own {
+            background: linear-gradient(135deg, rgba(74, 222, 128, 0.1), rgba(34, 197, 94, 0.05));
+            border: 1px solid rgba(74, 222, 128, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .try-your-own h4 {
+            color: var(--success);
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .try-your-own p {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-bottom: 16px;
+        }
+
+        .try-your-own-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .try-own-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            background: var(--success);
+            border: none;
+            border-radius: 8px;
+            color: var(--bg-primary);
+            font-family: var(--font-sans);
+            font-size: 0.9375rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .try-own-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(74, 222, 128, 0.3);
+        }
+
+        .try-own-btn.secondary {
+            background: transparent;
+            border: 1px solid var(--success);
+            color: var(--success);
+        }
+
+        .try-own-btn.secondary:hover {
+            background: rgba(74, 222, 128, 0.1);
+        }
+
+        .try-own-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* Divider */
+        .section-divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 32px 0;
+        }
+
+        .section-divider::before,
+        .section-divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .section-divider span {
+            padding: 0 16px;
+            color: var(--text-secondary);
+            font-size: 0.8125rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Hide input section initially, show after sample */
+        .input-section.collapsed {
+            display: none;
+        }
+
+        .input-section.revealed {
+            display: block;
+            animation: fadeSlideIn 0.3s ease;
+        }
+
         /* Learning Disclaimer */
         .learning-disclaimer {
             background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
@@ -1600,8 +1872,107 @@
                 </svg>
                 Demo Mode - Try Without Signup
             </div>
-            <h1>Generate a Real Quote</h1>
-            <p>Describe any job or project. Works for contractors, designers, consultants, event planners - any service business.</p>
+            <h1>See Quoted in Action</h1>
+            <p>Pick a specialty to see a sample quote instantly, then try your own.</p>
+        </div>
+
+        <!-- DISC-162: Sample Quotes Section -->
+        <div class="sample-quotes-section" id="sampleQuotesSection">
+            <div class="specialty-grid" id="specialtyGrid">
+                <button class="specialty-btn" data-specialty="handyman">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+                    </svg>
+                    Handyman
+                </button>
+                <button class="specialty-btn" data-specialty="consultant">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                    Consultant
+                </button>
+                <button class="specialty-btn" data-specialty="event">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M8 2v4"/>
+                        <path d="M16 2v4"/>
+                        <rect x="3" y="4" width="18" height="18" rx="2"/>
+                        <path d="M3 10h18"/>
+                        <path d="M8 14h.01"/>
+                        <path d="M12 14h.01"/>
+                        <path d="M16 14h.01"/>
+                    </svg>
+                    Event Planner
+                </button>
+                <button class="specialty-btn" data-specialty="contractor">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                        <polyline points="9 22 9 12 15 12 15 22"/>
+                    </svg>
+                    General Contractor
+                </button>
+                <button class="specialty-btn" data-specialty="creative">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="13.5" cy="6.5" r="2.5"/>
+                        <path d="M17 3v10"/>
+                        <path d="M12 17H7A4 4 0 0 1 7 9h5"/>
+                        <path d="M7 21h10"/>
+                    </svg>
+                    Creative Services
+                </button>
+            </div>
+
+            <!-- Sample Quote Display (hidden until specialty selected) -->
+            <div class="sample-quote-display" id="sampleQuoteDisplay">
+                <div class="sample-quote-header">
+                    <h3 id="sampleQuoteTitle">Sample Quote</h3>
+                    <span class="sample-badge">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                        </svg>
+                        Sample
+                    </span>
+                </div>
+                <p class="sample-quote-description" id="sampleQuoteDescription">Job description here...</p>
+                <div class="sample-line-items" id="sampleLineItems">
+                    <!-- Line items inserted by JS -->
+                </div>
+                <div class="sample-total">
+                    <span class="sample-total-label">Estimated Total</span>
+                    <span class="sample-total-amount" id="sampleQuoteTotal">$0</span>
+                </div>
+
+                <!-- Try Your Own CTA -->
+                <div class="try-your-own">
+                    <h4>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                        </svg>
+                        Now try YOUR job
+                    </h4>
+                    <p>That was a sample. See what Quoted generates for your actual work.</p>
+                    <div class="try-your-own-buttons">
+                        <button class="try-own-btn" id="tryOwnVoiceBtn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                                <line x1="12" y1="19" x2="12" y2="23"/>
+                                <line x1="8" y1="23" x2="16" y2="23"/>
+                            </svg>
+                            Describe by Voice
+                        </button>
+                        <button class="try-own-btn secondary" id="tryOwnTextBtn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="17" y1="10" x2="3" y2="10"/>
+                                <line x1="21" y1="6" x2="3" y2="6"/>
+                                <line x1="21" y1="14" x2="3" y2="14"/>
+                                <line x1="17" y1="18" x2="3" y2="18"/>
+                            </svg>
+                            Type Description
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Learning Disclaimer -->
@@ -1960,11 +2331,69 @@
     </div>
 
     <script>
+        // DISC-162: Sample Quotes Data (pre-generated, no API call needed)
+        var sampleQuotes = {
+            handyman: {
+                title: "Furniture Assembly",
+                description: "Assemble 2 IKEA chairs and 1 bookshelf. Customer provides all furniture. Standard tools required.",
+                lineItems: [
+                    { name: "Labor - Furniture Assembly", amount: 120 },
+                    { name: "Chair Assembly (x2)", amount: 40 },
+                    { name: "Bookshelf Assembly", amount: 45 }
+                ],
+                total: 205
+            },
+            consultant: {
+                title: "Strategy Workshop",
+                description: "Half-day strategy workshop for a 5-person leadership team. Includes pre-session prep and follow-up summary.",
+                lineItems: [
+                    { name: "Workshop Facilitation (4 hours)", amount: 1600 },
+                    { name: "Pre-Session Preparation", amount: 400 },
+                    { name: "Executive Summary Document", amount: 350 }
+                ],
+                total: 2350
+            },
+            event: {
+                title: "Birthday Party Setup",
+                description: "Birthday party setup for 30 guests. Basic decor package with balloons, table settings, and banner.",
+                lineItems: [
+                    { name: "Event Setup & Breakdown", amount: 250 },
+                    { name: "Balloon Arrangements", amount: 85 },
+                    { name: "Table Decor (6 tables)", amount: 120 },
+                    { name: "Custom Banner", amount: 45 }
+                ],
+                total: 500
+            },
+            contractor: {
+                title: "Interior Door Installation",
+                description: "Install new interior door, standard size (80\" x 32\"). Includes door, hardware, and trim work.",
+                lineItems: [
+                    { name: "Labor - Door Installation", amount: 175 },
+                    { name: "Interior Door (standard)", amount: 95 },
+                    { name: "Hardware & Hinges", amount: 35 },
+                    { name: "Trim & Finishing", amount: 65 }
+                ],
+                total: 370
+            },
+            creative: {
+                title: "Logo Design Package",
+                description: "Logo design with 3 initial concepts and 2 rounds of revisions. Includes vector files and brand guide.",
+                lineItems: [
+                    { name: "Logo Concept Development (3)", amount: 350 },
+                    { name: "Revision Rounds (2)", amount: 150 },
+                    { name: "Vector File Package", amount: 75 },
+                    { name: "Mini Brand Guide", amount: 125 }
+                ],
+                total: 700
+            }
+        };
+
         // State
         var mediaRecorder = null;
         var audioChunks = [];
         var isRecording = false;
         var currentQuoteData = null;
+        var hasViewedSample = false;
 
         // DOM Elements
         var voiceTab = document.getElementById('voiceTab');
@@ -1978,6 +2407,156 @@
         var generateBtn = document.getElementById('generateBtn');
         var errorMessage = document.getElementById('errorMessage');
         var resultsSection = document.getElementById('resultsSection');
+
+        // DISC-162: Sample Quotes DOM Elements
+        var sampleQuoteDisplay = document.getElementById('sampleQuoteDisplay');
+        var sampleQuoteTitle = document.getElementById('sampleQuoteTitle');
+        var sampleQuoteDescription = document.getElementById('sampleQuoteDescription');
+        var sampleLineItems = document.getElementById('sampleLineItems');
+        var sampleQuoteTotal = document.getElementById('sampleQuoteTotal');
+        var inputSection = document.querySelector('.input-section');
+        var learningDisclaimer = document.querySelector('.learning-disclaimer');
+
+        // DISC-162: Sample Quotes Functionality
+        function displaySampleQuote(specialty) {
+            var quote = sampleQuotes[specialty];
+            if (!quote) return;
+
+            // Update title and description
+            sampleQuoteTitle.textContent = quote.title;
+            sampleQuoteDescription.textContent = quote.description;
+
+            // Clear and rebuild line items (safe DOM manipulation)
+            while (sampleLineItems.firstChild) {
+                sampleLineItems.removeChild(sampleLineItems.firstChild);
+            }
+
+            quote.lineItems.forEach(function(item) {
+                var itemEl = document.createElement('div');
+                itemEl.className = 'sample-line-item';
+
+                var nameEl = document.createElement('span');
+                nameEl.className = 'sample-line-item-name';
+                nameEl.textContent = item.name;
+
+                var amountEl = document.createElement('span');
+                amountEl.className = 'sample-line-item-amount';
+                amountEl.textContent = '$' + item.amount.toLocaleString();
+
+                itemEl.appendChild(nameEl);
+                itemEl.appendChild(amountEl);
+                sampleLineItems.appendChild(itemEl);
+            });
+
+            // Update total
+            sampleQuoteTotal.textContent = '$' + quote.total.toLocaleString();
+
+            // Show the sample quote display
+            sampleQuoteDisplay.classList.add('visible');
+            hasViewedSample = true;
+
+            // Track PostHog event
+            if (window.posthog) {
+                window.posthog.capture('sample_quote_viewed', {
+                    specialty: specialty,
+                    quote_title: quote.title,
+                    quote_total: quote.total,
+                    time_to_sample_ms: performance.now()
+                });
+            }
+
+            // Smooth scroll to sample quote
+            setTimeout(function() {
+                sampleQuoteDisplay.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
+        }
+
+        // Handle specialty button clicks
+        document.querySelectorAll('.specialty-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                var specialty = btn.dataset.specialty;
+
+                // Track specialty selected
+                if (window.posthog) {
+                    window.posthog.capture('sample_specialty_selected', {
+                        specialty: specialty,
+                        time_to_selection_ms: performance.now()
+                    });
+                }
+
+                // Update active state
+                document.querySelectorAll('.specialty-btn').forEach(function(b) {
+                    b.classList.remove('active');
+                });
+                btn.classList.add('active');
+
+                // Display the sample quote
+                displaySampleQuote(specialty);
+            });
+        });
+
+        // Handle "Try Your Own" buttons
+        function revealInputSection(mode) {
+            // Track custom input started
+            if (window.posthog) {
+                window.posthog.capture('custom_input_started', {
+                    input_method: mode,
+                    after_sample: hasViewedSample,
+                    time_to_custom_ms: performance.now()
+                });
+            }
+
+            // Show input section and learning disclaimer
+            if (inputSection) {
+                inputSection.classList.add('revealed');
+                inputSection.classList.remove('collapsed');
+            }
+            if (learningDisclaimer) {
+                learningDisclaimer.style.display = 'block';
+            }
+
+            // Scroll to input section
+            setTimeout(function() {
+                if (inputSection) {
+                    inputSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+
+                // If voice mode, activate voice tab
+                if (mode === 'voice') {
+                    voiceTab.click();
+                } else {
+                    textTab.click();
+                    // Focus the textarea
+                    setTimeout(function() {
+                        descriptionInput.focus();
+                    }, 300);
+                }
+            }, 100);
+        }
+
+        // Try Own Voice button
+        var tryOwnVoiceBtn = document.getElementById('tryOwnVoiceBtn');
+        if (tryOwnVoiceBtn) {
+            tryOwnVoiceBtn.addEventListener('click', function() {
+                revealInputSection('voice');
+            });
+        }
+
+        // Try Own Text button
+        var tryOwnTextBtn = document.getElementById('tryOwnTextBtn');
+        if (tryOwnTextBtn) {
+            tryOwnTextBtn.addEventListener('click', function() {
+                revealInputSection('text');
+            });
+        }
+
+        // Initially hide input section (only show sample quotes first)
+        if (inputSection) {
+            inputSection.classList.add('collapsed');
+        }
+        if (learningDisclaimer) {
+            learningDisclaimer.style.display = 'none';
+        }
 
         // DISC-136: Critical analytics - track page view and user engagement
         (function() {
@@ -2072,6 +2651,14 @@
                 voiceTab.classList.remove('active');
                 textContent.classList.add('active');
                 voiceContent.classList.remove('active');
+                // DISC-162: Also reveal the input section
+                if (inputSection) {
+                    inputSection.classList.add('revealed');
+                    inputSection.classList.remove('collapsed');
+                }
+                if (learningDisclaimer) {
+                    learningDisclaimer.style.display = 'block';
+                }
                 // Focus the textarea
                 setTimeout(function() {
                     descriptionInput.focus();
