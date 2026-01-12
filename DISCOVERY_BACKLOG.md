@@ -37,7 +37,7 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 | READY | 6 |
 | DISCOVERED | 17 |
 | COMPLETE | 7 |
-| DEPLOYED | 13 |
+| DEPLOYED | 14 |
 | **Active Total** | **43** |
 | Archived (DEPLOYED) | 100+ |
 
@@ -57,11 +57,11 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 | Ticket | Title | Deployed |
 |--------|-------|----------|
+| DISC-162 | Demo UX Overhaul - Sample Prompts v2 (Real API Flow) | 2026-01-12 |
 | DISC-150 | Referral Credit Redemption Mechanism | 2026-01-08 |
 | DISC-154 | Google Ads Creative Refresh - AI Learning + Tire Kicker Messaging | 2026-01-08 |
 | DISC-158/159 | Quote Edits Bug Fix + Floating Save UX Redesign | 2026-01-06 |
 | DISC-145 | Fresh Blog Content - 3 Articles (Pricing Psychology, Mistakes, Founder Story) | 2026-01-06 |
-| DISC-157 | Demo Tour Critical Fixes - Dialog Positioning + Scroll Fix | 2026-01-06 |
 
 *Full deployment history: See DISCOVERY_ARCHIVE.md*
 
@@ -128,7 +128,9 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 
 ---
 
-### DISC-162: Demo UX Overhaul - Sample Prompts v2 🎯 CONVERSION (IN PROGRESS)
+### DISC-162: Demo UX Overhaul - Sample Prompts v2 🎯 CONVERSION (DEPLOYED)
+
+**✅ Deployed 2026-01-12** via PR #56
 
 **Source**: Founder Request (Eddie, 2026-01-12)
 **Impact**: HIGH | **Effort**: M | **Score**: 2.5

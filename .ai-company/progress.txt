@@ -177,3 +177,55 @@ Target Metrics:
 - Measurement: Watch PostHog funnel over next 7 days
 
 TICKET_DEPLOYED: DISC-162
+
+=== 2026-01-12 - DISC-162 v2 DEPLOYED ===
+Working on: DISC-162 v2 - Sample Prompts Redesign (Real API Flow)
+Status: COMPLETE - All phases successful
+
+Why v2:
+- v1 showed static pre-generated quotes in parallel UI - founder didn't like it
+- v2 uses job-focused cards that trigger the REAL demo flow
+- Users experience the actual product, not a mockup
+
+Implementation Summary:
+- 5 job cards with title + preview (Furniture Assembly, Strategy Workshop, Birthday Party, Door Installation, Logo Design)
+- Transcript reveal on tap ("You'd say: ...")
+- Generate button triggers real /api/demo/quote API
+- Full demo experience: line items, clarifying questions, PDF download, share link
+- Header reminder: "When you sign up, Quoted interviews you to learn YOUR pricing"
+- Removed static sampleQuotes object and sample-quote-display section
+
+Design Document: docs/plans/2026-01-12-demo-sample-prompts-redesign.md
+
+Files Modified:
+- frontend/try.html - Replaced static sample quotes with job cards + real API flow
+
+PostHog Events:
+- sample_card_viewed (with job parameter)
+- sample_transcript_shown (with job parameter)
+- sample_quote_generated (with job and success parameters)
+
+Deployment Notes:
+- PR #56 created and merged via squash
+- Railway preview returned 404 (expected per BATON_PASS.md Session 7)
+- Production verification passed via Playwright MCP:
+  ✅ Demo page loads at /demo
+  ✅ 5 job cards visible with titles and previews
+  ✅ Furniture Assembly card tap reveals transcript correctly
+  ✅ Generate Quote triggers real API
+  ✅ Quote generated: $120 for Furniture Assembly Labor
+  ✅ Clarifying questions appear (4 questions about IKEA models, workspace, etc.)
+  ✅ Download PDF, Share Quote buttons available
+
+What I Learned:
+- Founder feedback is critical - v1 missed the mark despite meeting spec
+- Real API flow > static mockups for demo conversion
+- Job descriptions more relatable than trade labels
+- Transcript reveal pattern ("You'd say") sets clear expectations
+
+Target Metrics (same as v1):
+- Previous: 4.4% demo completion rate (96% drop-off)
+- Goal: 25%+ completion rate
+- v2 hypothesis: Real API experience will convert better than static mockups
+
+TICKET_DEPLOYED: DISC-162 v2
