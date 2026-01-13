@@ -902,7 +902,7 @@ async def mark_quote_as_sent(
         db = get_db_service()
 
         # Get contractor
-        contractor = await db.get_contractor_by_email(current_user["email"])
+        contractor = await db.get_contractor_by_user_id(current_user["id"])
         if not contractor:
             raise HTTPException(status_code=404, detail="Contractor not found")
 
