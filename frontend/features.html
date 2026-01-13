@@ -1,0 +1,1280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How to Use Quoted - Features Guide</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230a0a0a'/%3E%3Ctext x='16' y='23' font-family='serif' font-size='20' font-weight='600' fill='white' text-anchor='middle'%3EQ%3C/text%3E%3C/svg%3E">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%230a0a0a'/%3E%3Ctext x='90' y='125' font-family='serif' font-size='110' font-weight='600' fill='white' text-anchor='middle'%3EQ%3C/text%3E%3C/svg%3E">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Google Ads Conversion Tracking -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-17836503504"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'AW-17836503504');
+    </script>
+
+    <!-- PostHog Analytics -->
+    <script>
+        !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.async=!0,p.src=s.api_host+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="capture identify alias people.set people.set_once set_config register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled onFeatureFlags getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures getActiveMatchingSurveys getSurveys".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
+        {% if posthog_api_key %}
+        posthog.init('{{ posthog_api_key }}', {api_host: 'https://us.i.posthog.com'});
+        {% endif %}
+    </script>
+
+    <!-- Sentry Error Tracking -->
+    <script src="https://browser.sentry-cdn.com/8.38.0/bundle.tracing.min.js" crossorigin="anonymous"></script>
+    <script>
+        {% if sentry_dsn %}
+        Sentry.init({
+            dsn: '{{ sentry_dsn }}',
+            environment: '{{ environment }}' || 'development',
+            tracesSampleRate: 0.1,
+        });
+        {% endif %}
+    </script>
+
+    <style>
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #141414;
+            --bg-card: #1a1a1a;
+            --bg-elevated: #222222;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --text-muted: #666666;
+            --accent: #ffffff;
+            --border: rgba(255, 255, 255, 0.1);
+            --border-hover: rgba(255, 255, 255, 0.2);
+            --font-serif: 'Playfair Display', Georgia, serif;
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            font-size: 16px;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            padding-top: 80px;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 24px 40px;
+            background: rgba(10, 10, 10, 0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-family: var(--font-serif);
+            font-size: 1.5rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+
+        .logo span {
+            font-style: italic;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 24px;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9375rem;
+            transition: color 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: var(--text-primary);
+        }
+
+        .nav-cta {
+            padding: 12px 24px;
+            min-height: 44px;
+            background: transparent;
+            border: 1px solid var(--text-primary);
+            border-radius: 8px;
+            color: var(--text-primary);
+            text-decoration: none;
+            font-size: 0.9375rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-cta:hover {
+            background: var(--text-primary);
+            color: var(--bg-primary);
+        }
+
+        /* Container */
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 48px 40px 80px;
+        }
+
+        /* Header */
+        .page-header {
+            text-align: center;
+            margin-bottom: 64px;
+        }
+
+        .page-header h1 {
+            font-family: var(--font-serif);
+            font-size: 3rem;
+            margin-bottom: 16px;
+            font-weight: 600;
+        }
+
+        .page-header p {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+        }
+
+        /* Table of Contents */
+        .toc {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px 32px;
+            margin-bottom: 48px;
+        }
+
+        .toc h3 {
+            font-family: var(--font-serif);
+            font-size: 1.25rem;
+            margin-bottom: 16px;
+            color: var(--text-primary);
+        }
+
+        .toc-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            list-style: none;
+        }
+
+        .toc-list a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9375rem;
+            transition: color 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .toc-list a:hover {
+            color: var(--text-primary);
+        }
+
+        .toc-icon {
+            font-size: 1.125rem;
+        }
+
+        /* Feature Categories */
+        .feature-category {
+            margin-bottom: 48px;
+        }
+
+        .feature-category h2 {
+            font-family: var(--font-serif);
+            font-size: 1.75rem;
+            margin-bottom: 24px;
+            color: var(--text-primary);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .category-icon {
+            font-size: 1.5rem;
+        }
+
+        /* Feature Items */
+        .feature-item {
+            margin-bottom: 16px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+            background: var(--bg-card);
+            transition: border-color 0.3s ease;
+        }
+
+        .feature-item:hover {
+            border-color: var(--border-hover);
+        }
+
+        .feature-question {
+            width: 100%;
+            padding: 20px 24px;
+            min-height: 44px;
+            background: transparent;
+            border: none;
+            text-align: left;
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.3s ease;
+        }
+
+        .feature-question:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .feature-icon {
+            font-size: 1.5rem;
+            color: var(--text-secondary);
+            transition: transform 0.3s ease, color 0.3s ease;
+            flex-shrink: 0;
+            margin-left: 16px;
+        }
+
+        .feature-item.active .feature-icon {
+            transform: rotate(45deg);
+            color: var(--text-primary);
+        }
+
+        .feature-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease, padding 0.3s ease;
+            padding: 0 24px;
+            color: var(--text-secondary);
+        }
+
+        .feature-item.active .feature-answer {
+            max-height: 800px;
+            padding: 0 24px 24px 24px;
+        }
+
+        .feature-answer p {
+            margin-bottom: 12px;
+            line-height: 1.7;
+        }
+
+        .feature-answer p:last-child {
+            margin-bottom: 0;
+        }
+
+        .feature-answer strong {
+            color: var(--text-primary);
+        }
+
+        .feature-answer ul {
+            margin: 12px 0;
+            padding-left: 24px;
+        }
+
+        .feature-answer li {
+            margin-bottom: 8px;
+        }
+
+        .feature-answer code {
+            background: var(--bg-elevated);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        /* Keyboard Shortcut Styling */
+        .kbd {
+            display: inline-block;
+            padding: 4px 8px;
+            font-size: 0.75rem;
+            font-family: var(--font-sans);
+            font-weight: 500;
+            color: var(--text-primary);
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            margin: 0 2px;
+        }
+
+        /* Coming Soon Section */
+        .coming-soon {
+            margin-top: 64px;
+            padding: 48px;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+        }
+
+        .coming-soon h2 {
+            font-family: var(--font-serif);
+            font-size: 1.75rem;
+            margin-bottom: 24px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .coming-soon-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+        }
+
+        .coming-soon-item {
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .coming-soon-item h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .coming-soon-item p {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        /* CTA Section */
+        .cta-section {
+            margin-top: 64px;
+            padding: 48px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .cta-section h2 {
+            font-family: var(--font-serif);
+            font-size: 1.75rem;
+            margin-bottom: 16px;
+            font-weight: 600;
+        }
+
+        .cta-section p {
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+            font-size: 1.0625rem;
+        }
+
+        .cta-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px 32px;
+            min-height: 48px;
+            background: var(--text-primary);
+            border: 1px solid var(--text-primary);
+            border-radius: 8px;
+            color: var(--bg-primary);
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .cta-button:hover {
+            background: transparent;
+            color: var(--text-primary);
+        }
+
+        /* Footer */
+        footer {
+            padding: 40px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 48px;
+        }
+
+        .footer-logo {
+            font-family: var(--font-serif);
+            font-size: 1.25rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+
+        .footer-logo span {
+            font-style: italic;
+        }
+
+        .footer-text {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 24px;
+        }
+
+        .footer-link {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.875rem;
+            transition: color 0.3s ease;
+        }
+
+        .footer-link:hover {
+            color: var(--text-primary);
+        }
+
+        /* Responsive - Tablet (768px and below) */
+        @media (max-width: 768px) {
+            nav {
+                padding: 20px 24px;
+            }
+
+            .nav-links {
+                gap: 16px;
+            }
+
+            .nav-link {
+                display: none;
+            }
+
+            .container {
+                padding: 32px 24px 64px;
+            }
+
+            .page-header h1 {
+                font-size: 2rem;
+            }
+
+            .page-header p {
+                font-size: 1rem;
+            }
+
+            .toc {
+                padding: 20px 24px;
+            }
+
+            .toc-list {
+                grid-template-columns: 1fr;
+            }
+
+            .feature-category h2 {
+                font-size: 1.5rem;
+            }
+
+            .feature-question {
+                padding: 16px 20px;
+                font-size: 0.9375rem;
+            }
+
+            .feature-answer {
+                font-size: 0.9375rem;
+            }
+
+            .coming-soon {
+                padding: 32px 24px;
+            }
+
+            .coming-soon-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .cta-section {
+                padding: 32px 24px;
+            }
+
+            .cta-section h2 {
+                font-size: 1.5rem;
+            }
+
+            footer {
+                flex-direction: column;
+                gap: 16px;
+                text-align: center;
+            }
+
+            .footer-links {
+                flex-direction: column;
+                gap: 12px;
+            }
+        }
+
+        /* Responsive - Mobile (480px and below) */
+        @media (max-width: 480px) {
+            nav {
+                padding: 16px 20px;
+            }
+
+            .container {
+                padding: 24px 16px 48px;
+            }
+
+            .page-header h1 {
+                font-size: 1.75rem;
+            }
+
+            .feature-category h2 {
+                font-size: 1.25rem;
+            }
+
+            .feature-question {
+                padding: 14px 16px;
+                font-size: 0.875rem;
+            }
+
+            .feature-answer {
+                padding: 0 16px 16px 16px;
+                font-size: 0.875rem;
+            }
+
+            .feature-item.active .feature-answer {
+                padding: 0 16px 16px 16px;
+            }
+
+            .coming-soon {
+                padding: 24px 20px;
+            }
+
+            .cta-button {
+                padding: 14px 24px;
+                font-size: 0.875rem;
+            }
+        }
+
+        /* Responsive - iPhone SE (375px and below) */
+        @media (max-width: 375px) {
+            nav {
+                padding: 12px 16px;
+            }
+
+            .logo {
+                font-size: 1.25rem;
+            }
+
+            .container {
+                padding: 20px 12px 40px;
+            }
+
+            .page-header h1 {
+                font-size: 1.5rem;
+            }
+
+            .feature-category h2 {
+                font-size: 1.125rem;
+            }
+
+            .feature-question {
+                padding: 12px 14px;
+            }
+
+            .cta-section h2 {
+                font-size: 1.25rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <a href="/" class="logo">quoted<span>.it</span></a>
+        <div class="nav-links">
+            <a href="/blog/" class="nav-link">Blog</a>
+            <a href="/app" class="nav-link">App</a>
+            <a href="/app" class="nav-cta">Start Quoting</a>
+        </div>
+    </nav>
+
+    <!-- Content -->
+    <div class="container">
+        <!-- Header -->
+        <div class="page-header">
+            <h1>How to Use Quoted</h1>
+            <p>Discover all the features that help you quote faster and win more jobs</p>
+        </div>
+
+        <!-- Table of Contents -->
+        <div class="toc">
+            <h3>Jump to a Section</h3>
+            <ul class="toc-list">
+                <li><a href="#dashboard"><span class="toc-icon">&#127968;</span> Dashboard</a></li>
+                <li><a href="#quote-creation"><span class="toc-icon">&#128172;</span> Quote Creation</a></li>
+                <li><a href="#quote-management"><span class="toc-icon">&#128196;</span> Quote Management</a></li>
+                <li><a href="#customers"><span class="toc-icon">&#128101;</span> Customers</a></li>
+                <li><a href="#invoicing"><span class="toc-icon">&#128179;</span> Invoicing</a></li>
+                <li><a href="#ai-learning"><span class="toc-icon">&#129504;</span> AI Learning</a></li>
+                <li><a href="#tasks"><span class="toc-icon">&#9745;</span> Tasks & Reminders</a></li>
+                <li><a href="#settings"><span class="toc-icon">&#9881;</span> Account Settings</a></li>
+            </ul>
+        </div>
+
+        <!-- Dashboard -->
+        <div id="dashboard" class="feature-category">
+            <h2><span class="category-icon">&#127968;</span> Dashboard</h2>
+
+            <div class="feature-item">
+                <button class="feature-question" onclick="toggleFeature(this)">
+                    Overview & Quick Stats
+                    <span class="feature-icon">+</span>
+                </button>
+                <div class="feature-answer">
+                    <p>Your dashboard shows a quick overview of your quoting activity:</p>
+                    <ul>
+                        <li><strong>Quotes this month</strong> - Total quotes created</li>
+                        <li><strong>Total value</strong> - Combined value of all quotes</li>
+                        <li><strong>Pending quotes</strong> - Quotes awaiting customer response</li>
+                        <li><strong>Win rate</strong> - Percentage of quotes that convert to jobs</li>
+                    </ul>
+                    <p>Use these stats to track your business growth and identify patterns.</p>
+                </div>
+            </div>
+
+            <div class="feature-item">
+                <button class="feature-question" onclick="toggleFeature(this)">
+                    Voice Commands from Dashboard
+                    <span class="feature-icon">+</span>
+                </button>
+                <div class="feature-answer">
+                    <p>Create quotes without clicking - just tap the microphone and describe your job. The AI understands natural language like:</p>
+                    <ul>
+                        <li><em>"New quote for John Smith - painting the living room, about 400 square feet, needs primer and two coats"</em></li>
+                        <li><em>"Quote for furniture assembly at 123 Main St - two IKEA wardrobes and a bookshelf"</em></li>
+                        <li><em>"Bathroom remodel for Mary Johnson - replace vanity, install new faucet, and retile the shower floor"</em></li>
+                    </ul>
+                    <p>The more detail you provide, the more accurate your quote will be.</p>
+                </div>
+            </div>
+
+            <div class="feature-item">
+                <button class="feature-question" onclick="toggleFeature(this)">
+                    Task List & Reminders
+                    <span class="feature-icon">+</span>
+                </button>
+                <div class="feature-answer">
+                    <p>Your dashboard includes a task list to help you stay organized:</p>
+                    <ul>
+                        <li><strong>Follow-up reminders</strong> - Never forget to follow up on pending quotes</li>
+                        <li><strong>Job deadlines</strong> - Track when work is due</li>
+                        <li><strong>Custom tasks</strong> - Add your own to-dos</li>
+                    </ul>
+                    <p>Tasks can be marked complete with a single tap.</p>
+                </div>
+            </div>
+
+            <div class="feature-item">
+                <button class="feature-question" onclick="toggleFeature(this)">
+                    Recent Activity Feed
+                    <span class="feature-icon">+</span>
+                </button>
+                <div class="feature-answer">
+                    <p>See your recent quotes, customer interactions, and quote status changes at a glance. The activity feed shows:</p>
+                    <ul>
+                        <li>Quotes you've created</li>
+                        <li>Quotes that have been viewed by customers</li>
+                        <li>Quotes that have been accepted or declined</li>
+                        <li>Invoices that have been paid</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quote Creation -->
+        <div id="quote-creation" class="feature-category">
+            <h2><span class="category-icon">&#128172;</span> Quote Creation</h2>
+
+            <div class="feature-item">
+                <button class="feature-question" onclick="toggleFeature(this)">
+                    Voice Recording
+                    <span class="feature-icon">+</span>
+                </button>
+                <div class="feature-answer">
+                    <p>Tap the microphone button and describe the job in your own words. Quoted transcribes your voice and generates a professional quote in seconds.</p>
+                    <p><strong>Tips for better quotes:</strong></p>
+                    <ul>
+                        <li>Mention the customer name and location</li>
+                        <li>Describe the scope of work clearly</li>
+                        <li>Include specific materials if relevant</li>
+                        <li>Mention quantities and measurements</li>
+                    </ul>
+                    <p>Works on mobile too - quote from your truck on the job site!</p>
+                </div>
+            </div>
+
+            <div class="feature-item">
+                <button class="feature-question" onclick="toggleFeature(this)">
+                    Text Input
+                    <span class="feature-icon">+</span>
+                </button>
+                <div class="feature-answer">
+                    <p>Prefer typing? No problem. You can type your job description instead of speaking. The AI works the same way with text input.</p>
+                    <p>Use text input when you're in a noisy environment or prefer to be precise with your wording.</p>
+                </div>
+            </div>
+
+            <div class="feature-item">
+                <button class="feature-question" onclick="toggleFeature(this)">
+                    AI-Powered Pricing
+                    <span class="feature-icon">+</span>
+                </button>
+                <div class="feature-answer">
+                    <p>Quoted's AI uses your <strong>Pricing Brain</strong> to generate accurate estimates based on:</p>
+                    <ul>
+                        <li>Your hourly labor rate</li>
+                        <li>Your material markup percentage</li>
+                        <li>Your minimum job amount</li>
+                        <li>Patterns learned from your previous quotes</li>
+                    </ul>
+                    <p>The more you use Quoted, the smarter it gets at understanding your pricing.</p>
+                </div>
+            </div>
+
+            <div class="feature-item">
+                <button class="feature-question" onclick="toggleFeature(this)">
+                    Editing Line Items
+                    <span class="feature-icon">+</span>
+                </button>
+                <div class="feature-answer">
+                    <p>After generating a quote, you can edit any line item:</p>
+                    <ul>
+                        <li><strong>Tap a line item</strong> to enter edit mode</li>
+                        <li>Adjust the description, quantity, rate, or total</li>
+                        <li>Add new line items with the + button</li>
+                        <li>Remove items by tapping the delete icon</li>
+                    </ul>
+                    <p><strong>Every correction teaches the AI.</strong> When you edit pricing, Quoted learns your preferences and applies them to future quotes.</p>
+                </div>
+            </div>
+
+            <div class="feature-item">
+                <button class="feature-question" onclick="toggleFeature(this)">
+                    Keyboard Shortcuts
+                    <span class="feature-icon">+</span>
+                </button>
+                <div class="feature-answer">
+                    <p>Speed up your workflow with keyboard shortcuts (desktop only):</p>
+                    <ul>
+                        <li><span class="kbd">Cmd</span>+<span class="kbd">E</span> or <span class="kbd">Ctrl</span>+<span class="kbd">E</span> - Jump to first editable field</li>
+                        <li><span class="kbd">Cmd</span>+<span class="kbd">S</span> or <span class="kbd">Ctrl</span>+<span class="kbd">S</span> - Save changes</li>
+                        <li><span class="kbd">Esc</span> - Cancel editing / close modal</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quote Management -->
+        <div id="quote-management" class="feature-category">
+            <h2><span class="category-icon">&#128196;</span> Quote Management</h2>
+
+            <div class="feature-item">
+                <button class="feature-question" onclick="toggleFeature(this)">
+                    Sharing Quotes (Email & Link)
+                    <span class="feature-icon">+</span>
+                </button>
+                <div class="feature-answer">
+                    <p>Share your quotes with customers in multiple ways:</p>
+                    <ul>
+                        <li><strong>Share Link</strong> - Generate a shareable link your customer can view in their browser</li>
+                        <li><strong>Email Quote</strong> - Send directly from Quoted with a professional email template</li>
+                        <li><strong>Download PDF</strong> - Save the PDF and attach it to your own email or text</li>
+                    </ul>
+                    <p>When you share via email or link, Quoted automatically tracks when the quote is viewed.</p>
+                </div>
+            </div>
+
+            <div class="feature-item">
+                <button class="feature-question" onclick="toggleFeature(this)">
+                    Mark as Sent
+                    <span class="feature-icon">+</span>
+                </button>
+                <div class="feature-answer">
+                    <p>If you shared a quote outside of Quoted (via text message, in-person PDF, etc.), use the <strong>Mark as Sent</strong> button to update the quote status.</p>
+                    <p>This ensures your quote tracking is accurate and enables view notifications when the customer opens the link.</p>
+                </div>
+            </div>
+
+            <div class="feature-item">
+                <button class="feature-question" onclick="toggleFeature(this)">
+                    PDF Download
+                    <span class="feature-icon">+</span>
+                </button>
+                <div class="feature-answer">
+                    <p>Download a professional PDF of any quote. The PDF includes:</p>
+                    <ul>
+                        <li>Your business logo and contact info</li>
+                        <li>Customer name and address</li>
+                        <li>Itemized line items with quantities and pricing</li>
+                        <li>Total and any applicable terms</li>
+                    </ul>
+                    <p>PDFs are formatted to look great when printed or emailed.</p>
+                </div>
+            </div>
+
+            <div class="feature-item">
+                <button class="feature-question" onclick="toggleFeature(this)">
+                    Duplicate Quote
+                    <span class="feature-icon">+</span>
+                </button>
+                <div class="feature-answer">
+                    <p>Need to create a similar quote? Use <strong>Duplicate</strong> to copy an existing quote as a starting point.</p>
+                    <p>Perfect for:</p>
+                    <ul>
+                        <li>Repeat customers with similar jobs</li>
+                        <li>Creating variations of a quote (good/better/best pricing)</li>
+                        <li>Quickly adjusting for a similar scope of work</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="feature-item">
+                <button class="feature-question" onclick="toggleFeature(this)">
+                    Quote Status Tracking
+                    <span class="feature-icon">+</span>
+                </button>
+                <div class="feature-answer">
+                    <p>Track the status of every quote through its lifecycle:</p>
+                    <ul>
+                        <li><strong>Draft</strong> - Quote created but not yet sent</li>
+                        <li><strong>Sent</strong> - Quote has been shared with customer</li>
+                        <li><strong>Viewed</strong> - Customer has opened the quote (with view count)</li>
+                        <li><strong>Accepted</strong> - Customer has accepted the quote</li>
+                        <li><strong>Declined</strong> - Customer has declined</li>
+                    </ul>
+                    <p>You'll receive notifications when customers view your quotes, so you know the perfect time to follow up.</p>
+                </div>
+            </div>
+
+            <div class="feature-item">
+                <button class="feature-question" onclick="toggleFeature(this)">
+                    Delete Quote
+                    <span class="feature-icon">+</span>
+                </button>
+                <div class="feature-answer">
+                    <p>Delete quotes you no longer need. Deleted quotes are permanently removed and cannot be recovered.</p>
+                    <p><strong>Note:</strong> If a quote has been sent to a customer, consider keeping it for your records instead of deleting.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Customer Management -->
+        <div id="customers" class="feature-category">
+            <h2><span class="category-icon">&#128101;</span> Customers</h2>
+
+            <div class="feature-item">
+                <button class="feature-question" onclick="toggleFeature(this)">
+                    Customer Profiles
+                    <span class="feature-icon">+</span>
+                </button>
+                <div class="feature-answer">
+                    <p>Quoted automatically builds a customer database as you create quotes. Each customer profile includes:</p>
+                    <ul>
+                        <li>Name and contact information</li>
+                        <li>Address (auto-filled on future quotes)</li>
+                        <li>Quote history with that customer</li>
+                        <li>Total value of quotes and jobs</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="feature-item">
+                <button class="feature-question" onclick="toggleFeature(this)">
+                    Auto-Complete Customer Names
+                    <span class="feature-icon">+</span>
+                </button>
+                <div class="feature-answer">
+                    <p>When creating a new quote, start typing a customer name and Quoted will suggest matches from your existing customers.</p>
+                    <p>Selecting an existing customer automatically fills in their address and contact info.</p>
+                </div>
+            </div>
+
+            <div class="feature-item">
+                <button class="feature-question" onclick="toggleFeature(this)">
+                    Customer Quote History
+                    <span class="feature-icon">+</span>
+                </button>
+                <div class="feature-answer">
+                    <p>View all quotes for a specific customer in one place. Great for:</p>
+                    <ul>
+                        <li>Seeing what you've quoted them before</li>
+                        <li>Referencing past pricing for similar work</li>
+                        <li>Understanding repeat customer patterns</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Invoicing -->
+        <div id="invoicing" class="feature-category">
+            <h2><span class="category-icon">&#128179;</span> Invoicing</h2>
+
+            <div class="feature-item">
+                <button class="feature-question" onclick="toggleFeature(this)">
+                    Convert Quote to Invoice
+                    <span class="feature-icon">+</span>
+                </button>
+                <div class="feature-answer">
+                    <p>When a customer accepts a quote, convert it to an invoice with one click. The invoice inherits all line items and customer information from the quote.</p>
+                    <p>You can adjust the invoice before sending if the final scope changed from the original quote.</p>
+                </div>
+            </div>
+
+            <div class="feature-item">
+                <button class="feature-question" onclick="toggleFeature(this)">
+                    Invoice Tracking
+                    <span class="feature-icon">+</span>
+                </button>
+                <div class="feature-answer">
+                    <p>Track your invoices through their lifecycle:</p>
+                    <ul>
+                        <li><strong>Draft</strong> - Invoice created but not sent</li>
+                        <li><strong>Sent</strong> - Invoice shared with customer</li>
+                        <li><strong>Viewed</strong> - Customer has opened the invoice</li>
+                        <li><strong>Paid</strong> - Payment received</li>
+                        <li><strong>Overdue</strong> - Payment past due date</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="feature-item">
+                <button class="feature-question" onclick="toggleFeature(this)">
+                    Payment Tracking
+                    <span class="feature-icon">+</span>
+                </button>
+                <div class="feature-answer">
+                    <p>Mark invoices as paid when you receive payment. Your dashboard shows outstanding invoice totals so you always know what's owed to you.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Learning -->
+        <div id="ai-learning" class="feature-category">
+            <h2><span class="category-icon">&#129504;</span> AI Learning (Pricing Brain)</h2>
+
+            <div class="feature-item">
+                <button class="feature-question" onclick="toggleFeature(this)">
+                    How the AI Learns Your Pricing
+                    <span class="feature-icon">+</span>
+                </button>
+                <div class="feature-answer">
+                    <p>Your <strong>Pricing Brain</strong> learns from every quote you create and every correction you make. It builds a personalized pricing model that understands:</p>
+                    <ul>
+                        <li>How you price different types of work</li>
+                        <li>Your typical labor hours for common tasks</li>
+                        <li>Your material costs and markup patterns</li>
+                        <li>Job complexity factors that affect pricing</li>
+                    </ul>
+                    <p>The more you use Quoted, the smarter and more accurate it becomes.</p>
+                </div>
+            </div>
+
+            <div class="feature-item">
+                <button class="feature-question" onclick="toggleFeature(this)">
+                    Corrections Train the AI
+                    <span class="feature-icon">+</span>
+                </button>
+                <div class="feature-answer">
+                    <p>Every time you edit a quote, you're teaching the AI. For example:</p>
+                    <ul>
+                        <li>If you consistently increase labor hours for bathroom work, the AI learns to quote bathroom jobs higher</li>
+                        <li>If you reduce material costs for a certain product, the AI adjusts future estimates</li>
+                        <li>If you add line items the AI missed, it learns to include those next time</li>
+                    </ul>
+                    <p>Add a note when you make corrections to help the AI understand why.</p>
+                </div>
+            </div>
+
+            <div class="feature-item">
+                <button class="feature-question" onclick="toggleFeature(this)">
+                    Confidence Scores
+                    <span class="feature-icon">+</span>
+                </button>
+                <div class="feature-answer">
+                    <p>Each generated quote shows a confidence level indicating how certain the AI is about the pricing. Higher confidence means the AI has seen similar jobs before and is more likely to be accurate.</p>
+                    <p>Lower confidence quotes should be reviewed more carefully - these are jobs the AI is less familiar with.</p>
+                </div>
+            </div>
+
+            <div class="feature-item">
+                <button class="feature-question" onclick="toggleFeature(this)">
+                    Global Settings
+                    <span class="feature-icon">+</span>
+                </button>
+                <div class="feature-answer">
+                    <p>Configure your baseline pricing in <strong>Account > Pricing Brain > Global Settings</strong>:</p>
+                    <ul>
+                        <li><strong>Hourly labor rate</strong> - Your default rate per hour</li>
+                        <li><strong>Material markup</strong> - Percentage to add on top of material costs</li>
+                        <li><strong>Minimum job amount</strong> - Smallest quote you'll accept</li>
+                    </ul>
+                    <p>These settings form the foundation of your AI pricing model.</p>
+                </div>
+            </div>
+
+            <div class="feature-item">
+                <button class="feature-question" onclick="toggleFeature(this)">
+                    Pricing DNA Patterns
+                    <span class="feature-icon">+</span>
+                </button>
+                <div class="feature-answer">
+                    <p>View the patterns your AI has learned in the <strong>Pricing Brain</strong> section. You'll see insights like:</p>
+                    <ul>
+                        <li>Your average pricing for different job types</li>
+                        <li>Materials you commonly use</li>
+                        <li>Labor hour patterns</li>
+                        <li>Pricing adjustments you frequently make</li>
+                    </ul>
+                    <p>This transparency helps you understand how the AI thinks and spot any patterns you want to adjust.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tasks & Reminders -->
+        <div id="tasks" class="feature-category">
+            <h2><span class="category-icon">&#9745;</span> Tasks & Reminders</h2>
+
+            <div class="feature-item">
+                <button class="feature-question" onclick="toggleFeature(this)">
+                    Creating Tasks
+                    <span class="feature-icon">+</span>
+                </button>
+                <div class="feature-answer">
+                    <p>Add tasks from your dashboard to keep track of follow-ups, deadlines, and to-dos. Each task can include:</p>
+                    <ul>
+                        <li>Description of what needs to be done</li>
+                        <li>Due date</li>
+                        <li>Optional link to a related quote or customer</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="feature-item">
+                <button class="feature-question" onclick="toggleFeature(this)">
+                    Follow-Up Reminders
+                    <span class="feature-icon">+</span>
+                </button>
+                <div class="feature-answer">
+                    <p>Quoted can automatically create follow-up reminders for quotes that haven't received a response. Never let a hot lead go cold.</p>
+                    <p>Configure reminder timing in your account settings.</p>
+                </div>
+            </div>
+
+            <div class="feature-item">
+                <button class="feature-question" onclick="toggleFeature(this)">
+                    Completing Tasks
+                    <span class="feature-icon">+</span>
+                </button>
+                <div class="feature-answer">
+                    <p>Mark tasks complete with a single tap. Completed tasks are archived so you can see your history but they don't clutter your active list.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Account Settings -->
+        <div id="settings" class="feature-category">
+            <h2><span class="category-icon">&#9881;</span> Account Settings</h2>
+
+            <div class="feature-item">
+                <button class="feature-question" onclick="toggleFeature(this)">
+                    Logo Upload
+                    <span class="feature-icon">+</span>
+                </button>
+                <div class="feature-answer">
+                    <p>Upload your business logo to appear on all your quotes and invoices. Supported formats: PNG, JPG, SVG.</p>
+                    <p>For best results, use a logo with a transparent background and at least 200x200 pixels.</p>
+                </div>
+            </div>
+
+            <div class="feature-item">
+                <button class="feature-question" onclick="toggleFeature(this)">
+                    Business Information
+                    <span class="feature-icon">+</span>
+                </button>
+                <div class="feature-answer">
+                    <p>Configure your business details that appear on quotes and invoices:</p>
+                    <ul>
+                        <li>Business name</li>
+                        <li>Phone number</li>
+                        <li>Email address</li>
+                        <li>Physical address</li>
+                        <li>Website</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="feature-item">
+                <button class="feature-question" onclick="toggleFeature(this)">
+                    Terms & Conditions Template
+                    <span class="feature-icon">+</span>
+                </button>
+                <div class="feature-answer">
+                    <p>Set default terms and conditions that appear on all your quotes. Common inclusions:</p>
+                    <ul>
+                        <li>Payment terms (e.g., "50% deposit required")</li>
+                        <li>Quote validity period</li>
+                        <li>Warranty information</li>
+                        <li>Cancellation policy</li>
+                    </ul>
+                    <p>You can override these on individual quotes when needed.</p>
+                </div>
+            </div>
+
+            <div class="feature-item">
+                <button class="feature-question" onclick="toggleFeature(this)">
+                    Billing & Subscription
+                    <span class="feature-icon">+</span>
+                </button>
+                <div class="feature-answer">
+                    <p>Manage your subscription from <strong>Account > Billing</strong>:</p>
+                    <ul>
+                        <li>View current plan and usage</li>
+                        <li>Upgrade to annual (save 45%)</li>
+                        <li>Update payment method</li>
+                        <li>Download invoices</li>
+                        <li>Cancel subscription</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="feature-item">
+                <button class="feature-question" onclick="toggleFeature(this)">
+                    Referral Program
+                    <span class="feature-icon">+</span>
+                </button>
+                <div class="feature-answer">
+                    <p>Earn credits by referring other contractors to Quoted. Find your referral link in <strong>Account > Referrals</strong>.</p>
+                    <p>When someone signs up with your link and subscribes, you both get a discount on your next billing cycle.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Coming Soon Section -->
+        <div class="coming-soon">
+            <h2>Coming Soon</h2>
+            <div class="coming-soon-grid">
+                <div class="coming-soon-item">
+                    <h4>&#127911; Voice-Driven PDF Templates</h4>
+                    <p>Customize your quote appearance by describing what you want: "Make my logo bigger" or "Change the accent color to blue"</p>
+                </div>
+                <div class="coming-soon-item">
+                    <h4>&#128279; QuickBooks Integration</h4>
+                    <p>Sync your quotes and invoices directly with QuickBooks for seamless accounting</p>
+                </div>
+                <div class="coming-soon-item">
+                    <h4>&#9997; E-Signatures</h4>
+                    <p>Let customers accept quotes with a legally-binding electronic signature</p>
+                </div>
+                <div class="coming-soon-item">
+                    <h4>&#128233; Smart Follow-Up Emails</h4>
+                    <p>Automated, personalized follow-up sequences for pending quotes</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- CTA Section -->
+        <div class="cta-section">
+            <h2>Ready to Quote Faster?</h2>
+            <p>Join thousands of contractors who save hours every week with voice-powered quoting.</p>
+            <a href="/app" class="cta-button">Start Your Free Trial</a>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <a href="/" class="footer-logo">quoted<span>.it</span></a>
+        <span class="footer-text">2025 Quoted, Inc. All rights reserved.</span>
+        <div class="footer-links">
+            <a href="/blog/" class="footer-link">Blog</a>
+            <a href="/features" class="footer-link">Features</a>
+            <a href="/help" class="footer-link">Help</a>
+            <a href="/privacy" class="footer-link">Privacy</a>
+            <a href="/terms" class="footer-link">Terms</a>
+        </div>
+    </footer>
+
+    <!-- Feature Toggle Script -->
+    <script>
+        function toggleFeature(button) {
+            const featureItem = button.parentElement;
+            const isActive = featureItem.classList.contains('active');
+
+            // Close all other feature items
+            document.querySelectorAll('.feature-item').forEach(item => {
+                item.classList.remove('active');
+            });
+
+            // Toggle current item
+            if (!isActive) {
+                featureItem.classList.add('active');
+            }
+
+            // Track feature click
+            if (typeof posthog !== 'undefined') {
+                posthog.capture('feature_doc_clicked', {
+                    feature: button.textContent.trim().replace('+', '').trim()
+                });
+            }
+        }
+
+        // Track page view
+        if (typeof posthog !== 'undefined') {
+            posthog.capture('features_page_viewed');
+        }
+
+        // Handle anchor links - expand section when navigating via TOC
+        document.addEventListener('DOMContentLoaded', function() {
+            const hash = window.location.hash;
+            if (hash) {
+                const section = document.querySelector(hash);
+                if (section) {
+                    // Expand the first feature item in the section
+                    const firstItem = section.querySelector('.feature-item');
+                    if (firstItem) {
+                        setTimeout(() => {
+                            firstItem.classList.add('active');
+                        }, 300);
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
