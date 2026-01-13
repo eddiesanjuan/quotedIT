@@ -6257,6 +6257,8 @@
                 <div class="quote-actions" id="detailQuoteActions">
                     <button class="btn btn-primary" id="downloadDetailPdfBtn" onclick="downloadDetailPdf()">Download PDF</button>
                     <button class="btn btn-primary" onclick="openShareModal()">📤 Share</button>
+                    <button class="btn btn-secondary" id="markAsSentBtn" onclick="markQuoteAsSent()" style="display: none;">✓ Mark as Sent</button>
+                    <span class="sent-status-badge" id="sentStatusBadge" style="display: none; background: var(--success); color: white; padding: 8px 16px; border-radius: 8px; font-size: 0.875rem; font-weight: 500;">✓ Sent</span>
                     <button class="btn btn-success" id="createInvoiceBtn" onclick="createInvoiceFromQuote()" style="display: none;">📄 Create Invoice</button>
                     <button class="btn btn-secondary" onclick="duplicateQuote()">📋 Duplicate</button>
                     <button class="btn btn-secondary" onclick="backToQuoteList()">Back to My Quotes</button>
@@ -13606,6 +13608,17 @@
             // INNOV-1: Update outcome tracking section
             updateOutcomeTracking(quote);
 
+            // DISC-163: Show/hide Mark as Sent button based on status
+            const markAsSentBtn = document.getElementById('markAsSentBtn');
+            const sentStatusBadge = document.getElementById('sentStatusBadge');
+            if (quote.status === 'draft') {
+                markAsSentBtn.style.display = 'inline-flex';
+                sentStatusBadge.style.display = 'none';
+            } else {
+                markAsSentBtn.style.display = 'none';
+                sentStatusBadge.style.display = (quote.status === 'sent' || quote.status === 'viewed') ? 'inline-flex' : 'none';
+            }
+
             // Anthropic Showcase: Reset and pre-load explanation panel
             const expPanel = document.getElementById('explanationPanel');
             const expToggle = document.getElementById('explanationToggle');
@@ -18163,6 +18176,65 @@
         function closeShareModal() {
             document.getElementById('shareModal').style.display = 'none';
             document.getElementById('copySuccessMessage').style.display = 'none';
+        }
+
+        // DISC-163: Mark quote as sent (for external sharing via text, personal email, etc.)
+        async function markQuoteAsSent() {
+            if (!currentDetailQuote) return;
+
+            const btn = document.getElementById('markAsSentBtn');
+            const originalText = btn.textContent;
+            btn.textContent = 'Marking...';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch(`${API_BASE}/quotes/${currentDetailQuote.id}/mark-sent`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+
+                    // Update local state
+                    currentDetailQuote.status = 'sent';
+                    currentDetailQuote.sent_at = data.sent_at;
+
+                    // Update cache
+                    const cacheIndex = quotesCache.findIndex(q => q.id === currentDetailQuote.id);
+                    if (cacheIndex >= 0) {
+                        quotesCache[cacheIndex].status = 'sent';
+                        quotesCache[cacheIndex].sent_at = data.sent_at;
+                    }
+
+                    // Update UI - hide button, show badge
+                    btn.style.display = 'none';
+                    document.getElementById('sentStatusBadge').style.display = 'inline-flex';
+
+                    // Show success toast
+                    showToast('Quote marked as sent! You\'ll be notified when they view it.', 'success');
+
+                    // Track analytics
+                    {% if posthog_api_key %}
+                    if (window.posthog) {
+                        posthog.capture('quote_marked_sent', {
+                            quote_id: currentDetailQuote.id,
+                            method: 'manual'
+                        });
+                    }
+                    {% endif %}
+                } else {
+                    const error = await response.json();
+                    showToast(error.detail || 'Failed to mark quote as sent', 'error');
+                    btn.textContent = originalText;
+                    btn.disabled = false;
+                }
+            } catch (err) {
+                console.error('Error marking quote as sent:', err);
+                showToast('Failed to mark quote as sent', 'error');
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
         }
 
         function showShareTab(tab) {

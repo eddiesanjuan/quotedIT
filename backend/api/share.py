@@ -872,3 +872,89 @@ async def create_deposit_checkout(
     except Exception as e:
         print(f"Error creating deposit checkout: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============================================================================
+# Mark Quote as Sent (DISC-163)
+# ============================================================================
+
+class MarkSentResponse(BaseModel):
+    """Response for marking quote as sent."""
+    success: bool
+    message: str
+    sent_at: Optional[str] = None
+
+
+@router.post("/{quote_id}/mark-sent", response_model=MarkSentResponse)
+@limiter.limit("30/minute")
+async def mark_quote_as_sent(
+    request: Request,
+    quote_id: str,
+    current_user: dict = Depends(get_current_user),
+):
+    """
+    DISC-163: Mark a quote as sent externally.
+
+    For when contractors share quotes outside the app (text, personal email, etc.)
+    This enables view tracking and notifications for externally-sent quotes.
+    """
+    try:
+        db = get_db_service()
+
+        # Get contractor
+        contractor = await db.get_contractor_by_user_id(current_user["id"])
+        if not contractor:
+            raise HTTPException(status_code=404, detail="Contractor not found")
+
+        # Get quote and verify ownership
+        quote = await db.get_quote(quote_id)
+        if not quote:
+            raise HTTPException(status_code=404, detail="Quote not found")
+
+        if str(quote.contractor_id) != str(contractor.id):
+            raise HTTPException(status_code=403, detail="Not authorized")
+
+        # Check if already sent
+        if quote.status != "draft":
+            return MarkSentResponse(
+                success=True,
+                message=f"Quote already marked as {quote.status}",
+                sent_at=quote.sent_at.isoformat() if quote.sent_at else None,
+            )
+
+        # Update quote status
+        now = datetime.utcnow()
+        update_fields = {
+            "status": "sent",
+            "sent_at": now,
+        }
+
+        await db.update_quote(quote_id, **update_fields)
+
+        # Track analytics
+        try:
+            analytics_service.track_event(
+                user_id=str(current_user["id"]),
+                event_name="quote_marked_sent",
+                properties={
+                    "quote_id": quote_id,
+                    "contractor_id": str(contractor.id),
+                    "method": "manual",
+                    "job_type": quote.job_type,
+                    "total": quote.total or quote.subtotal or 0,
+                }
+            )
+        except Exception as e:
+            print(f"Warning: Failed to track mark_sent event: {e}")
+
+        return MarkSentResponse(
+            success=True,
+            message="Quote marked as sent",
+            sent_at=now.isoformat(),
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error marking quote as sent: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
