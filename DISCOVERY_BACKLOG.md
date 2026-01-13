@@ -1,6 +1,6 @@
 # Discovery Backlog
 
-**Last Updated**: 2026-01-12
+**Last Updated**: 2026-01-13
 **Source**: `/quoted-discover` autonomous discovery cycles
 
 ---
@@ -34,11 +34,11 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 | Status | Count |
 |--------|-------|
 | PR_PENDING | 0 |
-| READY | 7 |
+| READY | 8 |
 | DISCOVERED | 17 |
 | COMPLETE | 7 |
 | DEPLOYED | 14 |
-| **Active Total** | **44** |
+| **Active Total** | **45** |
 | Archived (DEPLOYED) | 100+ |
 
 **Just Deployed (2026-01-06)**: DISC-158 & DISC-159 (PR #50), DISC-157 (PRs #47, #48), DISC-145 (PR #49)
@@ -125,6 +125,32 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 4. Post during peak hours (Tuesday-Thursday 9am-11am EST)
 
 **Success Metric**: 5,000+ impressions; 150 demo views; 22 signups
+
+---
+
+### DISC-164: "How to Use Quoted" Features Documentation Page 📖 PRODUCT (READY)
+
+**Source**: Founder Request (Eddie, 2026-01-13)
+**Impact**: MEDIUM | **Effort**: M | **Score**: 1.0
+**Sprint Alignment**: User education - help users discover hidden features and understand full value
+
+**Problem**: Users don't know all the features Quoted offers. Dashboard voice commands, task management, AI Learning page, and many capabilities go undiscovered. Need a comprehensive "How to Use Quoted" page.
+
+**Proposed Work**:
+1. Create `features.html` page (similar structure to help.html)
+2. Document all major feature areas:
+   - **Dashboard** - Voice commands, task management, quick actions, overview stats
+   - **Quote Creation** - Voice recording, text input, AI pricing, editing line items
+   - **Quote Management** - Sharing (email/link), Mark as Sent, PDF download, duplicate, delete
+   - **Customer Management** - CRM, customer profiles, address book
+   - **Invoice System** - Quote-to-invoice conversion, payment tracking
+   - **AI Learning** - How pricing model improves, corrections, confidence scores, DNA patterns
+   - **Tasks & Reminders** - Task creation, reminders, task list management
+   - **Account Settings** - Logo upload, business info, terms & conditions templates
+3. Add navigation link (Help menu or footer)
+4. Include "coming soon" section for roadmap visibility
+
+**Success Metric**: Increased feature adoption; reduced support questions about "can Quoted do X?"
 
 ---
 
