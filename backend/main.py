@@ -304,6 +304,16 @@ if frontend_path.exists():
             "environment": settings.environment,
         })
 
+    @app.get("/features", response_class=HTMLResponse)
+    async def serve_features(request: Request):
+        """Serve the Features documentation page with injected config."""
+        return templates.TemplateResponse("features.html", {
+            "request": request,
+            "posthog_api_key": settings.posthog_api_key,
+            "sentry_dsn": settings.sentry_dsn,
+            "environment": settings.environment,
+        })
+
     @app.get("/start", response_class=HTMLResponse)
     async def serve_start(request: Request):
         """Serve the focused signup page - guided onboarding entry point."""
