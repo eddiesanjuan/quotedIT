@@ -34,11 +34,11 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 | Status | Count |
 |--------|-------|
 | PR_PENDING | 0 |
-| READY | 6 |
+| READY | 7 |
 | DISCOVERED | 17 |
 | COMPLETE | 7 |
 | DEPLOYED | 14 |
-| **Active Total** | **43** |
+| **Active Total** | **44** |
 | Archived (DEPLOYED) | 100+ |
 
 **Just Deployed (2026-01-06)**: DISC-158 & DISC-159 (PR #50), DISC-157 (PRs #47, #48), DISC-145 (PR #49)
@@ -186,6 +186,31 @@ To approve: Change status from DISCOVERED → READY (or use `/add-ticket`)
 **Impact**: HIGH | **Effort**: L-XL | **Score**: Strategic
 
 **Problem**: Contractors already use QuickBooks for accounting. Integration would make Quoted stickier.
+
+---
+
+### DISC-163: Quote Sent & Viewed Status Tracking 📧 PRODUCT (DEPLOYED)
+
+**✅ Deployed 2026-01-13** via PR #57
+
+**Source**: Founder Request (Eddie, 2026-01-12)
+**Impact**: HIGH | **Effort**: M | **Score**: 2.0
+**Sprint Alignment**: Core workflow - accurate status tracking enables follow-up automation
+
+**Problem**: No way to track when quotes are sent or viewed. Need both: (1) when contractor sends, and (2) when customer views - but only notify about views on quotes that were actually sent.
+
+**Implementation** (PR #57):
+Most tracking already existed - added the missing "Mark as Sent" button:
+- ✅ **Mark as Sent button** - For quotes shared externally (text, PDF email)
+- ✅ **Sent status badge** - Shows in quote detail view
+- ✅ **Backend endpoint** - `POST /quotes/{id}/mark-sent`
+- ✅ (pre-existing) Auto-mark sent on Share/Email
+- ✅ (pre-existing) View tracking and notifications
+- ✅ (pre-existing) View count badge in quote list
+
+**Success Metric**: Contractors know exactly when customers see their quotes; enables timely follow-up
+
+**Quote Lifecycle**: Draft → Sent → Viewed → Accepted/Declined
 
 ---
 
