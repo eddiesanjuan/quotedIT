@@ -3447,7 +3447,7 @@
 
                     var priceSpan = document.createElement('span');
                     priceSpan.className = 'pdf-thumb-item-price';
-                    priceSpan.textContent = formatCurrency(items[i].total || 0);
+                    priceSpan.textContent = formatCurrency(items[i].amount || 0);
 
                     itemEl.appendChild(nameSpan);
                     itemEl.appendChild(priceSpan);
