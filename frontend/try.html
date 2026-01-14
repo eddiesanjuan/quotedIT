@@ -3476,6 +3476,11 @@
                 .replace(/\b\w/g, function(l) { return l.toUpperCase(); });
         }
 
+        // DISC-165: Currency formatting helper
+        function formatCurrency(amount) {
+            return '$' + (amount || 0).toLocaleString();
+        }
+
         // DISC-165: PDF Preview Modal System
         var pdfModalOverlay = document.getElementById('pdfModalOverlay');
         var pdfModalIframe = document.getElementById('pdfModalIframe');
