@@ -1846,6 +1846,399 @@
                 justify-content: center;
             }
         }
+
+        /* DISC-165: PDF Preview Thumbnail */
+        .pdf-preview-section {
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border);
+        }
+
+        .pdf-preview-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .pdf-preview-header h3 {
+            font-family: var(--font-serif);
+            font-size: 1.25rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .pdf-preview-header svg {
+            width: 20px;
+            height: 20px;
+            color: var(--success);
+        }
+
+        .pdf-preview-container {
+            display: flex;
+            gap: 24px;
+            align-items: flex-start;
+        }
+
+        @media (max-width: 600px) {
+            .pdf-preview-container {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+
+        .pdf-thumbnail {
+            position: relative;
+            width: 180px;
+            min-width: 180px;
+            aspect-ratio: 8.5/11;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow:
+                0 4px 20px rgba(0, 0, 0, 0.3),
+                0 0 0 1px rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .pdf-thumbnail:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow:
+                0 8px 30px rgba(0, 0, 0, 0.4),
+                0 0 0 1px rgba(99, 102, 241, 0.4);
+        }
+
+        .pdf-thumbnail-content {
+            padding: 16px 12px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            color: #1a1a1a;
+            font-size: 0.65rem;
+        }
+
+        .pdf-thumb-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid #e5e5e5;
+        }
+
+        .pdf-thumb-logo {
+            font-family: var(--font-serif);
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .pdf-thumb-badge {
+            font-size: 0.5rem;
+            padding: 2px 4px;
+            background: rgba(245, 158, 11, 0.2);
+            color: #b45309;
+            border-radius: 2px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .pdf-thumb-title {
+            font-weight: 600;
+            font-size: 0.7rem;
+            color: #111;
+            margin-bottom: 6px;
+        }
+
+        .pdf-thumb-items {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            margin-bottom: 8px;
+        }
+
+        .pdf-thumb-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 3px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .pdf-thumb-item-name {
+            color: #444;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 70%;
+        }
+
+        .pdf-thumb-item-price {
+            color: #111;
+            font-weight: 500;
+        }
+
+        .pdf-thumb-more {
+            font-size: 7px;
+            color: #999;
+            font-style: italic;
+            padding-top: 2px;
+        }
+
+        .pdf-thumb-total {
+            margin-top: auto;
+            padding-top: 6px;
+            border-top: 2px solid #111;
+            display: flex;
+            justify-content: space-between;
+            font-weight: 700;
+            font-size: 0.75rem;
+        }
+
+        .pdf-thumb-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(99, 102, 241, 0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .pdf-thumbnail:hover .pdf-thumb-overlay {
+            opacity: 1;
+        }
+
+        .pdf-thumb-overlay svg {
+            width: 32px;
+            height: 32px;
+            color: white;
+            margin-bottom: 8px;
+        }
+
+        .pdf-thumb-overlay span {
+            color: white;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .pdf-preview-info {
+            flex: 1;
+        }
+
+        .pdf-preview-info h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .pdf-preview-info p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin-bottom: 16px;
+        }
+
+        .pdf-preview-features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .pdf-feature-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 6px 10px;
+            background: rgba(99, 102, 241, 0.1);
+            border-radius: 6px;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .pdf-feature-tag svg {
+            width: 12px;
+            height: 12px;
+            color: var(--success);
+        }
+
+        /* PDF Modal */
+        .pdf-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .pdf-modal-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .pdf-modal {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            max-height: 90vh;
+            background: var(--bg-card);
+            border-radius: 16px;
+            overflow: hidden;
+            transform: scale(0.95);
+            transition: transform 0.3s ease;
+        }
+
+        .pdf-modal-overlay.visible .pdf-modal {
+            transform: scale(1);
+        }
+
+        .pdf-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .pdf-modal-header h3 {
+            font-family: var(--font-serif);
+            font-size: 1.125rem;
+            font-weight: 500;
+        }
+
+        .pdf-modal-close {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .pdf-modal-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .pdf-modal-close svg {
+            width: 20px;
+            height: 20px;
+            color: var(--text-secondary);
+        }
+
+        .pdf-modal-body {
+            padding: 20px;
+            max-height: calc(90vh - 140px);
+            overflow-y: auto;
+        }
+
+        .pdf-modal-iframe {
+            width: 100%;
+            height: 60vh;
+            border: none;
+            border-radius: 8px;
+            background: white;
+        }
+
+        .pdf-modal-loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 300px;
+            color: var(--text-secondary);
+        }
+
+        .pdf-modal-loading .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 16px;
+        }
+
+        .pdf-modal-actions {
+            display: flex;
+            gap: 12px;
+            padding: 16px 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        .pdf-modal-actions button {
+            flex: 1;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-family: var(--font-sans);
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .pdf-modal-actions button svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .pdf-modal-download {
+            background: var(--text-primary);
+            color: var(--bg-primary);
+            border: none;
+        }
+
+        .pdf-modal-download:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
+        }
+
+        .pdf-modal-close-btn {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+        }
+
+        .pdf-modal-close-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+        }
+
+        @media (max-width: 600px) {
+            .pdf-modal {
+                max-height: 95vh;
+            }
+
+            .pdf-modal-body {
+                max-height: calc(95vh - 160px);
+            }
+
+            .pdf-modal-iframe {
+                height: 50vh;
+            }
+
+            .pdf-thumbnail {
+                width: 140px;
+                min-width: 140px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1889,25 +2282,25 @@
             </div>
 
             <div class="job-cards" id="jobCards">
-                <button class="job-card" data-job="furniture">
-                    <div class="job-card-title">Furniture Assembly</div>
-                    <div class="job-card-preview">2 IKEA chairs + bookshelf setup</div>
+                <button class="job-card" data-job="bathroom">
+                    <div class="job-card-title">Bathroom Remodel</div>
+                    <div class="job-card-preview">Tile, vanity, toilet, lighting - full renovation</div>
                 </button>
-                <button class="job-card" data-job="workshop">
-                    <div class="job-card-title">Strategy Workshop</div>
-                    <div class="job-card-preview">Half-day session for leadership team</div>
+                <button class="job-card" data-job="deck">
+                    <div class="job-card-title">Cedar Deck Build</div>
+                    <div class="job-card-preview">16x20 lakefront deck with pergola & stairs</div>
                 </button>
-                <button class="job-card" data-job="party">
-                    <div class="job-card-title">Birthday Party</div>
-                    <div class="job-card-preview">Setup and cleanup for 30 guests</div>
+                <button class="job-card" data-job="wedding">
+                    <div class="job-card-title">Wedding Photography</div>
+                    <div class="job-card-preview">10 hours, 2 photographers, album included</div>
                 </button>
-                <button class="job-card" data-job="door">
-                    <div class="job-card-title">Door Installation</div>
-                    <div class="job-card-preview">Interior door with frame and hardware</div>
+                <button class="job-card" data-job="kitchen">
+                    <div class="job-card-title">Kitchen Cabinet Refacing</div>
+                    <div class="job-card-preview">22 doors + drawer fronts, LED lighting</div>
                 </button>
-                <button class="job-card" data-job="logo">
-                    <div class="job-card-title">Logo Design</div>
-                    <div class="job-card-preview">Brand package with 3 concepts</div>
+                <button class="job-card" data-job="website">
+                    <div class="job-card-title">E-Commerce Website</div>
+                    <div class="job-card-preview">Shopify Plus migration, 450 SKUs</div>
                 </button>
             </div>
 
@@ -2099,14 +2492,6 @@
                     </div>
 
                     <div class="result-actions">
-                        <button class="action-btn primary" id="downloadPdfBtn">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                                <polyline points="7 10 12 15 17 10"/>
-                                <line x1="12" y1="15" x2="12" y2="3"/>
-                            </svg>
-                            Download PDF
-                        </button>
                         <button class="action-btn secondary" id="shareQuoteBtn">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <circle cx="18" cy="5" r="3"/>
@@ -2125,6 +2510,69 @@
                             </svg>
                             Try Another Quote
                         </button>
+                    </div>
+
+                    <!-- DISC-165: PDF Preview Section -->
+                    <div class="pdf-preview-section" id="pdfPreviewSection">
+                        <div class="pdf-preview-header">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                <path d="M14 2v6h6"/>
+                                <path d="M16 13H8"/>
+                                <path d="M16 17H8"/>
+                                <path d="M10 9H8"/>
+                            </svg>
+                            <h3>Your Professional PDF Quote</h3>
+                        </div>
+                        <div class="pdf-preview-container">
+                            <div class="pdf-thumbnail" id="pdfThumbnail" role="button" tabindex="0" aria-label="Click to view full PDF">
+                                <div class="pdf-thumbnail-content">
+                                    <div class="pdf-thumb-header">
+                                        <span class="pdf-thumb-logo">quoted.it</span>
+                                        <span class="pdf-thumb-badge">Demo</span>
+                                    </div>
+                                    <div class="pdf-thumb-title" id="pdfThumbTitle">Quote</div>
+                                    <div class="pdf-thumb-items" id="pdfThumbItems">
+                                        <!-- Line items will be dynamically populated -->
+                                    </div>
+                                    <div class="pdf-thumb-total">
+                                        <span>Total</span>
+                                        <span id="pdfThumbTotal">$0</span>
+                                    </div>
+                                </div>
+                                <div class="pdf-thumb-overlay">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                        <circle cx="12" cy="12" r="3"/>
+                                    </svg>
+                                    <span>View Full PDF</span>
+                                </div>
+                            </div>
+                            <div class="pdf-preview-info">
+                                <h4>Click to preview your quote</h4>
+                                <p>This is how your clients will see it. With Quoted, you get your own logo, contact info, and terms automatically included.</p>
+                                <div class="pdf-preview-features">
+                                    <span class="pdf-feature-tag">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <polyline points="20 6 9 17 4 12"/>
+                                        </svg>
+                                        Professional design
+                                    </span>
+                                    <span class="pdf-feature-tag">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <polyline points="20 6 9 17 4 12"/>
+                                        </svg>
+                                        8 templates
+                                    </span>
+                                    <span class="pdf-feature-tag">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <polyline points="20 6 9 17 4 12"/>
+                                        </svg>
+                                        Your branding
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- DISC-157: Tour restart capability -->
@@ -2298,14 +2746,50 @@
         <button class="tour-final-secondary" id="tourCloseBtn">Maybe later</button>
     </div>
 
+    <!-- DISC-165: PDF Preview Modal -->
+    <div class="pdf-modal-overlay" id="pdfModalOverlay">
+        <div class="pdf-modal">
+            <div class="pdf-modal-header">
+                <h3>Your Professional Quote</h3>
+                <button class="pdf-modal-close" id="pdfModalCloseTop" aria-label="Close modal">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="pdf-modal-body" id="pdfModalBody">
+                <div class="pdf-modal-loading" id="pdfModalLoading">
+                    <div class="spinner"></div>
+                    <span>Generating your professional PDF...</span>
+                </div>
+                <iframe class="pdf-modal-iframe" id="pdfModalIframe" style="display: none;"></iframe>
+            </div>
+            <div class="pdf-modal-actions">
+                <button class="pdf-modal-download" id="pdfModalDownload">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="7 10 12 15 17 10"/>
+                        <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    Download PDF
+                </button>
+                <button class="pdf-modal-close-btn" id="pdfModalCloseBottom">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // DISC-162 v2: Sample Prompts (transcripts for real API generation)
+        // DISC-165: Curated Sample Prompts - sophisticated scenarios that showcase AI intelligence
+        // Each prompt is designed to produce an impressive, detailed quote with multiple line items
         var samplePrompts = {
-            furniture: "I need help assembling 2 IKEA chairs and a bookshelf. Customer is providing the furniture, I just need my tools. Should take about 2 hours.",
-            workshop: "Strategy workshop for a tech startup. Half-day session with their leadership team, 6 people. Need to cover market positioning and Q2 planning.",
-            party: "Birthday party setup for a 10-year-old. Backyard party, about 30 kids. Need balloon arch, table setup, and cleanup after. 4 hours total.",
-            door: "Interior door installation. Customer bought a pre-hung door from Home Depot. Need to remove old door, install new one with new hardware. Standard 32-inch doorway.",
-            logo: "Logo design for a new coffee shop called Morning Ritual. They want something modern but warm. I'll provide 3 initial concepts with 2 rounds of revisions."
+            bathroom: "Bathroom remodel for the Hendersons at 847 Oak Lane. Ripping out existing tile floor, approximately 65 square feet, and replacing with large format porcelain tile in a herringbone pattern. Installing new floating vanity with quartz countertop, undermount sink, and wall-mounted faucet. Replacing standard toilet with comfort height elongated model. Adding recessed LED lighting and exhaust fan combo. Walls need skim coat before painting. Tight space - only 48 inches between vanity and toilet so need to account for that in the layout. Homeowner providing their own mirror and accessories.",
+            deck: "Cedar deck build for a lakefront property. Customer wants 16x20 foot main deck with integrated bench seating along the water side. Adding a 6x8 bump-out for their grill area with a pergola overhead. Stairs down to dock - about 8 risers with landing halfway because of the slope. Using hidden fastener system. Customer is concerned about the soil conditions near the water so we need to go deeper on the footings - probably 42 inches minimum. They want low-voltage post cap lighting on the stairs and pergola corners. Premium cedar - select tight knot for the decking, construction grade for the framing.",
+            wedding: "Wedding photography package for Sarah and James, October 12th ceremony at St. Michael's Church downtown, reception at The Estates vineyard 25 minutes away. 10 hour coverage starting from bride getting ready. Second photographer needed for the ceremony and first dance to capture both perspectives. Engagement session included - they want it at their alma mater campus. Deliverables include minimum 500 edited high-resolution images, online gallery with download rights, and a 20-page flush mount album with custom cover. They also want a same-day slideshow for the reception - about 50 images. Drone shots requested for the vineyard venue if weather permits.",
+            kitchen: "Full kitchen cabinet refacing for a mid-century modern home. 22 cabinet doors total plus 5 drawer fronts. Customer wants flat panel shaker style in white with soft-close hinges throughout. All existing hardware being replaced with brushed brass pulls - 128mm for drawers, 160mm for doors. Three uppers need to be converted to open shelving with floating bracket system. Also adding under-cabinet LED tape lighting with dimmer switch. Pantry cabinet door is oversized - 24 inches wide - needs custom sizing. Existing countertops and appliances staying in place, just covering them during work.",
+            website: "E-commerce website redesign for a specialty running shoe retailer. Currently on outdated platform, migrating to Shopify Plus. About 450 SKUs across 6 categories. Custom theme development with their brand guidelines - they have specific fonts and color palette. Need a shoe finder quiz that recommends products based on running style and foot type. Integration with their POS system for inventory sync. Adding Klaviyo for email marketing automation. Blog section with fitness content they'll manage themselves. Accessibility compliance required - WCAG 2.1 AA. Mobile-first since 70% of their traffic is mobile. Launch needs to be coordinated with their marketing campaign in 6 weeks."
         };
         var currentSelectedJob = null;
 
@@ -2929,9 +3413,60 @@
                 regenerateBtn.style.display = 'none';
             }
 
+            // DISC-165: Populate PDF preview thumbnail
+            populatePdfThumbnail(data);
+
             // Show results section
             resultsSection.classList.add('visible');
             resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        // DISC-165: PDF Preview Thumbnail Population
+        function populatePdfThumbnail(data) {
+            var thumbTitle = document.getElementById('pdfThumbTitle');
+            var thumbItems = document.getElementById('pdfThumbItems');
+            var thumbTotal = document.getElementById('pdfThumbTotal');
+
+            // Set title
+            if (thumbTitle) {
+                thumbTitle.textContent = formatJobType(data.job_type || 'Quote');
+            }
+
+            // Clear and populate line items (max 4 for thumbnail)
+            if (thumbItems) {
+                clearChildren(thumbItems);
+                var items = data.line_items || [];
+                var maxItems = Math.min(items.length, 4);
+                for (var i = 0; i < maxItems; i++) {
+                    var itemEl = document.createElement('div');
+                    itemEl.className = 'pdf-thumb-item';
+
+                    var nameSpan = document.createElement('span');
+                    nameSpan.className = 'pdf-thumb-item-name';
+                    nameSpan.textContent = items[i].name || 'Item';
+
+                    var priceSpan = document.createElement('span');
+                    priceSpan.className = 'pdf-thumb-item-price';
+                    priceSpan.textContent = formatCurrency(items[i].total || 0);
+
+                    itemEl.appendChild(nameSpan);
+                    itemEl.appendChild(priceSpan);
+                    thumbItems.appendChild(itemEl);
+                }
+
+                // Show "and X more..." if there are more items
+                if (items.length > maxItems) {
+                    var moreEl = document.createElement('div');
+                    moreEl.className = 'pdf-thumb-more';
+                    moreEl.textContent = '+ ' + (items.length - maxItems) + ' more items...';
+                    thumbItems.appendChild(moreEl);
+                }
+            }
+
+            // Set total
+            if (thumbTotal) {
+                thumbTotal.textContent = formatCurrency(data.total || data.subtotal || 0);
+            }
         }
 
         function formatJobType(jobType) {
@@ -2941,14 +3476,44 @@
                 .replace(/\b\w/g, function(l) { return l.toUpperCase(); });
         }
 
-        // Download PDF
-        document.getElementById('downloadPdfBtn').addEventListener('click', async function() {
+        // DISC-165: PDF Preview Modal System
+        var pdfModalOverlay = document.getElementById('pdfModalOverlay');
+        var pdfModalIframe = document.getElementById('pdfModalIframe');
+        var pdfModalLoading = document.getElementById('pdfModalLoading');
+        var pdfThumbnail = document.getElementById('pdfThumbnail');
+        var pdfModalDownload = document.getElementById('pdfModalDownload');
+        var pdfModalCloseTop = document.getElementById('pdfModalCloseTop');
+        var pdfModalCloseBottom = document.getElementById('pdfModalCloseBottom');
+        var currentPdfBlob = null;
+        var currentPdfFilename = null;
+
+        // Open PDF modal when thumbnail is clicked
+        if (pdfThumbnail) {
+            pdfThumbnail.addEventListener('click', openPdfModal);
+            pdfThumbnail.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    openPdfModal();
+                }
+            });
+        }
+
+        async function openPdfModal() {
             if (!currentQuoteData) return;
 
-            var btn = this;
-            btn.disabled = true;
-            var originalText = btn.textContent;
-            btn.textContent = 'Generating PDF...';
+            // Track PDF preview opened
+            if (window.posthog) {
+                window.posthog.capture('pdf_preview_opened', {
+                    job_type: currentQuoteData.job_type,
+                    total: currentQuoteData.total || currentQuoteData.subtotal
+                });
+            }
+
+            // Show modal with loading state
+            pdfModalOverlay.classList.add('visible');
+            pdfModalLoading.style.display = 'flex';
+            pdfModalIframe.style.display = 'none';
+            document.body.style.overflow = 'hidden';
 
             try {
                 var response = await fetch('/api/demo/pdf', {
@@ -2967,28 +3532,87 @@
 
                 var data = await response.json();
 
-                // Convert base64 to blob and download
+                // Convert base64 to blob
                 var byteCharacters = atob(data.pdf_base64);
                 var byteNumbers = new Array(byteCharacters.length);
                 for (var i = 0; i < byteCharacters.length; i++) {
                     byteNumbers[i] = byteCharacters.charCodeAt(i);
                 }
                 var byteArray = new Uint8Array(byteNumbers);
-                var blob = new Blob([byteArray], { type: 'application/pdf' });
+                currentPdfBlob = new Blob([byteArray], { type: 'application/pdf' });
+                currentPdfFilename = data.filename || 'demo-quote.pdf';
 
-                var url = URL.createObjectURL(blob);
-                var a = document.createElement('a');
-                a.href = url;
-                a.download = data.filename || 'demo-quote.pdf';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
+                // Display in iframe
+                var url = URL.createObjectURL(currentPdfBlob);
+                pdfModalIframe.src = url;
+                pdfModalLoading.style.display = 'none';
+                pdfModalIframe.style.display = 'block';
+
+                // Track PDF generated successfully
+                if (window.posthog) {
+                    window.posthog.capture('pdf_preview_loaded', {
+                        job_type: currentQuoteData.job_type
+                    });
+                }
             } catch (err) {
+                closePdfModal();
                 showError('Failed to generate PDF. Please try again.');
-            } finally {
-                btn.disabled = false;
-                btn.textContent = originalText;
+            }
+        }
+
+        function closePdfModal() {
+            pdfModalOverlay.classList.remove('visible');
+            document.body.style.overflow = '';
+            // Clean up iframe src to release blob URL
+            if (pdfModalIframe.src) {
+                URL.revokeObjectURL(pdfModalIframe.src);
+                pdfModalIframe.src = '';
+            }
+        }
+
+        function downloadPdf() {
+            if (!currentPdfBlob) return;
+
+            var url = URL.createObjectURL(currentPdfBlob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = currentPdfFilename || 'demo-quote.pdf';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            // Track download
+            if (window.posthog) {
+                window.posthog.capture('pdf_downloaded', {
+                    job_type: currentQuoteData ? currentQuoteData.job_type : null,
+                    source: 'modal'
+                });
+            }
+        }
+
+        // Modal close handlers
+        if (pdfModalCloseTop) {
+            pdfModalCloseTop.addEventListener('click', closePdfModal);
+        }
+        if (pdfModalCloseBottom) {
+            pdfModalCloseBottom.addEventListener('click', closePdfModal);
+        }
+        if (pdfModalOverlay) {
+            pdfModalOverlay.addEventListener('click', function(e) {
+                if (e.target === pdfModalOverlay) {
+                    closePdfModal();
+                }
+            });
+        }
+        if (pdfModalDownload) {
+            pdfModalDownload.addEventListener('click', downloadPdf);
+        }
+
+        // Close modal on escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && pdfModalOverlay.classList.contains('visible')) {
+                closePdfModal();
             }
         });
 
@@ -3396,10 +4020,10 @@
                 demoNote: 'Start your free trial to unlock editing and learning'
             },
             {
-                target: '#downloadPdfBtn',
+                target: '#pdfThumbnail',
                 badge: 'Instant Delivery',
                 title: 'Professional PDFs',
-                body: 'Download beautiful PDF quotes instantly. {{8 templates + your logo}}. Send to clients in seconds, not hours.',
+                body: 'Click to preview and download beautiful PDF quotes instantly. {{8 templates + your logo}}. Send to clients in seconds.',
                 preview: null
             },
             {
