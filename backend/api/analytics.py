@@ -5,15 +5,15 @@ Handles analytics data collection from frontend:
 - Exit intent survey submissions
 - Conversion funnel data (DISC-138)
 
-No authentication required for data collection endpoints.
-Founder-only endpoints require auth.
+P0-6 Security: Business metrics endpoints restricted to founder only.
+Public endpoints: exit-survey (data collection), google-ads-webhook (secret auth)
 """
 
 import hashlib
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 
-from fastapi import APIRouter, HTTPException, Request, Depends
+from fastapi import APIRouter, HTTPException, Request, Depends, status
 from pydantic import BaseModel
 from slowapi import Limiter
 from slowapi.util import get_remote_address
@@ -23,6 +23,7 @@ from ..services.funnel_analytics import FunnelAnalyticsService
 from ..services.google_ads_scripts import GoogleAdsScriptsService, generate_google_ads_script
 from ..services.database import async_session_factory
 from ..services.logging import get_api_logger
+from ..services.auth import get_current_user
 from ..config import settings
 
 logger = get_api_logger()
@@ -31,6 +32,32 @@ router = APIRouter()
 
 # Rate limiter - prevent abuse
 limiter = Limiter(key_func=get_remote_address)
+
+
+# ============================================================================
+# P0-6: Founder-Only Authentication
+# ============================================================================
+
+async def get_founder_user(
+    user: dict = Depends(get_current_user),
+) -> dict:
+    """
+    Dependency that ensures the current user is the founder.
+
+    P0-6 Security: Business metrics (conversion rates, traffic data, ad spend)
+    should NEVER be publicly accessible. Only the founder can view these.
+
+    Checks if user's email matches settings.founder_email.
+    """
+    if user["email"] != settings.founder_email:
+        logger.warning(
+            f"Non-founder user {user['email']} attempted to access analytics endpoint"
+        )
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="This endpoint is restricted to administrators"
+        )
+    return user
 
 
 class ExitSurveyRequest(BaseModel):
@@ -150,7 +177,8 @@ class TrafficSourcesResponse(BaseModel):
 async def get_conversion_funnel(
     request: Request,
     days: int = 7,
-    utm_source: Optional[str] = None
+    utm_source: Optional[str] = None,
+    founder: dict = Depends(get_founder_user),
 ):
     """
     Get conversion funnel data.
@@ -158,12 +186,11 @@ async def get_conversion_funnel(
     Returns step-by-step funnel from landing page to signup.
     Requires PostHog read API key for full visibility.
 
+    P0-6 Security: Restricted to founder only (business metrics).
+
     Args:
         days: Number of days to analyze (default: 7)
         utm_source: Optional UTM source filter (e.g., "google")
-
-    Note: This is a public endpoint for MVP. In production,
-    should be restricted to founder/admin accounts.
     """
     try:
         async with async_session_factory() as db:
@@ -200,12 +227,15 @@ async def get_conversion_funnel(
 @router.get("/traffic-sources", response_model=TrafficSourcesResponse)
 async def get_traffic_sources(
     request: Request,
-    days: int = 7
+    days: int = 7,
+    founder: dict = Depends(get_founder_user),
 ):
     """
     Get traffic breakdown by UTM source.
 
     Requires PostHog read API key.
+
+    P0-6 Security: Restricted to founder only (business metrics).
 
     Args:
         days: Number of days to analyze (default: 7)
@@ -234,12 +264,17 @@ class TrafficAnomalyResponse(BaseModel):
 
 
 @router.get("/traffic-check", response_model=TrafficAnomalyResponse)
-async def check_traffic_anomalies(request: Request):
+async def check_traffic_anomalies(
+    request: Request,
+    founder: dict = Depends(get_founder_user),
+):
     """
     Check for traffic anomalies (spikes and drops).
 
     Compares current traffic to 7-day baseline.
     Returns any detected issues that need attention.
+
+    P0-6 Security: Restricted to founder only (business metrics).
 
     Use this to quickly diagnose traffic problems.
     """
@@ -299,12 +334,17 @@ class GoogleAdsResponse(BaseModel):
 
 
 @router.get("/google-ads", response_model=GoogleAdsResponse)
-async def get_google_ads_status(request: Request):
+async def get_google_ads_status(
+    request: Request,
+    founder: dict = Depends(get_founder_user),
+):
     """
     Get Google Ads performance summary.
 
     Requires Google Ads API credentials to be configured.
     Returns metrics, anomalies, and AI recommendations.
+
+    P0-6 Security: Restricted to founder only (ad spend/performance data).
     """
     try:
         from ..services.google_ads_analytics import get_google_ads_summary
@@ -398,12 +438,17 @@ async def google_ads_webhook(
 
 
 @router.get("/google-ads-scripts", response_model=GoogleAdsScriptsResponse)
-async def get_google_ads_scripts_status(request: Request):
+async def get_google_ads_scripts_status(
+    request: Request,
+    founder: dict = Depends(get_founder_user),
+):
     """
     Get Google Ads performance from Scripts data.
 
     Returns metrics, anomalies, and recommendations based on
     data pushed from Google Ads Scripts.
+
+    P0-6 Security: Restricted to founder only (ad spend/performance data).
     """
     snapshot = GoogleAdsScriptsService.get_latest_snapshot()
 
@@ -437,12 +482,17 @@ async def get_google_ads_scripts_status(request: Request):
 
 
 @router.get("/google-ads-script-code")
-async def get_google_ads_script_code(request: Request):
+async def get_google_ads_script_code(
+    request: Request,
+    founder: dict = Depends(get_founder_user),
+):
     """
     Get the JavaScript code to paste into Google Ads Scripts.
 
     This generates the script with your webhook URL and secret.
     Copy this into Google Ads → Tools & Settings → Scripts.
+
+    P0-6 Security: Restricted to founder only (exposes webhook secret).
     """
     # Determine the webhook URL based on environment
     if settings.environment == "production":

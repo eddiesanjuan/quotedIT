@@ -20,7 +20,7 @@ class Settings(BaseSettings):
 
     # App
     app_name: str = "Quoted"
-    app_version: str = "0.1.0"
+    app_version: str = "0.1.1"
     debug: bool = True
     environment: str = "development"  # development, production
     frontend_url: str = "https://quoted.it.com"  # For generating shareable referral links
