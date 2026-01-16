@@ -499,18 +499,17 @@ async def run_daily_health_check():
 
             # Send alert email
             error_list = "\n".join(f"• {e}" for e in errors)
-            await email_service._send_email(
+            await email_service.send_email(
                 to_email=settings.founder_email,
                 subject="[Quoted] ALERT: Daily Health Check Failed",
-                html=f"""
+                body=f"""
                     <h1 style="color: #ef4444;">⚠️ Health Check Failed</h1>
                     <p>The daily quote health check found issues:</p>
                     <pre style="background: #1a1a1a; padding: 16px; border-radius: 8px; color: #ef4444;">
 {error_list}
                     </pre>
                     <p>Please investigate immediately.</p>
-                """,
-                text=f"Health Check Failed\n\n{error_list}\n\nPlease investigate immediately."
+                """
             )
         else:
             logger.info("Daily health check passed - all systems operational")

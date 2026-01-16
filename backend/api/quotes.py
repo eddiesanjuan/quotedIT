@@ -1513,8 +1513,9 @@ async def get_quote_explanation(
         if "difficult" in transcription_lower or "complex" in transcription_lower:
             voice_signals["complexity"] = "high"
 
-    # Get contractor DNA patterns
-    contractor_dna = pricing_model.contractor_dna if pricing_model else {}
+    # Get contractor DNA patterns (stored in pricing_knowledge JSON)
+    pricing_knowledge = pricing_model.pricing_knowledge if pricing_model else {}
+    contractor_dna = pricing_knowledge.get("contractor_dna", {}) if pricing_knowledge else {}
 
     # Calculate confidence for context
     service = PricingConfidenceService()

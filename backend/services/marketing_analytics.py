@@ -151,7 +151,7 @@ class MarketingAnalyticsService:
         Returns:
             Dict with total counts
         """
-        from ..models.database import Contractor, Quote
+        from ..models.database import Contractor, Quote, User
 
         # Total signups
         total_signups = await db.execute(
@@ -163,11 +163,11 @@ class MarketingAnalyticsService:
             select(func.count(Quote.id))
         )
 
-        # Paying users (subscription_tier != 'trial')
+        # Paying users (plan_tier != 'trial') - subscription data is on User model
         paying_users = await db.execute(
-            select(func.count(Contractor.id)).where(
-                Contractor.subscription_tier != 'trial'
-            )
+            select(func.count(Contractor.id))
+            .join(User, Contractor.user_id == User.id)
+            .where(User.plan_tier != 'trial')
         )
 
         return {

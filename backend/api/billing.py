@@ -361,11 +361,10 @@ async def handle_payment_failed(db: AsyncSession, invoice_data: dict, logger) ->
                 </a>
             """
 
-            await EmailService._send_email(
+            await EmailService.send_email(
                 to_email=settings.founder_email,
                 subject=f"[Quoted] Payment Failed: {business_name}",
-                html=founder_alert_html,
-                text=f"Payment failed for {business_name} ({customer_email}). Amount: {amount_formatted}"
+                body=founder_alert_html
             )
             logger.info(f"Founder alerted about payment failure for {customer_email}")
         except Exception as e:
