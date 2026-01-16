@@ -20,6 +20,7 @@ from apscheduler.triggers.cron import CronTrigger
 from sqlalchemy import select, and_
 
 from .logging import get_logger
+from .advisory_locks import wrap_with_lock
 
 logger = get_logger("quoted.scheduler")
 
@@ -661,7 +662,14 @@ async def check_quote_followups():
 
 
 def start_scheduler():
-    """Initialize and start the background scheduler."""
+    """
+    Initialize and start the background scheduler.
+
+    P0-1 FIX: All jobs are wrapped with Postgres advisory locks to prevent
+    duplicate execution when running with multiple workers (--workers 4).
+    Each job acquires a lock before execution; if another worker already
+    holds the lock, the job is skipped.
+    """
     global scheduler
 
     if scheduler is not None and scheduler.running:
@@ -671,8 +679,9 @@ def start_scheduler():
     scheduler = AsyncIOScheduler()
 
     # Task reminders - every 5 minutes
+    # P0-1: Wrapped with advisory lock to prevent duplicate execution
     scheduler.add_job(
-        check_task_reminders,
+        wrap_with_lock("task_reminders", check_task_reminders),
         trigger=IntervalTrigger(minutes=5),
         id="task_reminders",
         replace_existing=True,
@@ -680,8 +689,9 @@ def start_scheduler():
     )
 
     # Quote follow-ups - daily at 9am UTC (4am EST)
+    # P0-1: Wrapped with advisory lock to prevent duplicate execution
     scheduler.add_job(
-        check_quote_followups,
+        wrap_with_lock("quote_followups", check_quote_followups),
         trigger=CronTrigger(hour=9, minute=0),
         id="quote_followups",
         replace_existing=True,
@@ -689,8 +699,9 @@ def start_scheduler():
     )
 
     # INNOV-3: Smart follow-up engine - every 15 minutes
+    # P0-1: Wrapped with advisory lock to prevent duplicate execution
     scheduler.add_job(
-        run_smart_followups,
+        wrap_with_lock("smart_followups", run_smart_followups),
         trigger=IntervalTrigger(minutes=15),
         id="smart_followups",
         replace_existing=True,
@@ -698,8 +709,9 @@ def start_scheduler():
     )
 
     # INNOV-6: Invoice payment reminders - daily at 10am UTC
+    # P0-1: Wrapped with advisory lock to prevent duplicate execution
     scheduler.add_job(
-        check_invoice_reminders,
+        wrap_with_lock("invoice_reminders", check_invoice_reminders),
         trigger=CronTrigger(hour=10, minute=0),
         id="invoice_reminders",
         replace_existing=True,
@@ -707,8 +719,9 @@ def start_scheduler():
     )
 
     # DISC-141: Daily marketing report - daily at 8am UTC (3am EST)
+    # P0-1: Wrapped with advisory lock to prevent duplicate execution
     scheduler.add_job(
-        run_marketing_report,
+        wrap_with_lock("marketing_report", run_marketing_report),
         trigger=CronTrigger(hour=8, minute=0),
         id="marketing_report",
         replace_existing=True,
@@ -716,8 +729,9 @@ def start_scheduler():
     )
 
     # DISC-137: Daily exit survey digest - daily at 8:30am UTC (3:30am EST)
+    # P0-1: Wrapped with advisory lock to prevent duplicate execution
     scheduler.add_job(
-        run_exit_survey_digest,
+        wrap_with_lock("exit_survey_digest", run_exit_survey_digest),
         trigger=CronTrigger(hour=8, minute=30),
         id="exit_survey_digest",
         replace_existing=True,
@@ -725,8 +739,9 @@ def start_scheduler():
     )
 
     # DISC-139: Hourly traffic spike alerts - every hour at :30
+    # P0-1: Wrapped with advisory lock to prevent duplicate execution
     scheduler.add_job(
-        run_traffic_spike_check,
+        wrap_with_lock("traffic_spike_check", run_traffic_spike_check),
         trigger=CronTrigger(minute=30),
         id="traffic_spike_check",
         replace_existing=True,
@@ -734,8 +749,9 @@ def start_scheduler():
     )
 
     # DISC-147: Feedback drip - daily at 2pm UTC (9am EST)
+    # P0-1: Wrapped with advisory lock to prevent duplicate execution
     scheduler.add_job(
-        run_feedback_drip,
+        wrap_with_lock("feedback_drip", run_feedback_drip),
         trigger=CronTrigger(hour=14, minute=0),
         id="feedback_drip",
         replace_existing=True,
@@ -743,8 +759,9 @@ def start_scheduler():
     )
 
     # DISC-161: Trial reminders - daily at 11am UTC (6am EST)
+    # P0-1: Wrapped with advisory lock to prevent duplicate execution
     scheduler.add_job(
-        check_trial_reminders,
+        wrap_with_lock("trial_reminders", check_trial_reminders),
         trigger=CronTrigger(hour=11, minute=0),
         id="trial_reminders",
         replace_existing=True,
@@ -752,8 +769,9 @@ def start_scheduler():
     )
 
     # DISC-148: Daily health check - daily at 6am UTC (1am EST)
+    # P0-1: Wrapped with advisory lock to prevent duplicate execution
     scheduler.add_job(
-        run_daily_health_check,
+        wrap_with_lock("daily_health_check", run_daily_health_check),
         trigger=CronTrigger(hour=6, minute=0),
         id="daily_health_check",
         replace_existing=True,
@@ -767,8 +785,9 @@ def start_scheduler():
         run_daily_monitoring_summary,
     )
 
+    # P0-1: Wrapped with advisory lock to prevent duplicate execution
     scheduler.add_job(
-        run_critical_health_checks,
+        wrap_with_lock("monitoring_critical_health", run_critical_health_checks),
         trigger=IntervalTrigger(minutes=15),
         id="monitoring_critical_health",
         replace_existing=True,
@@ -776,8 +795,9 @@ def start_scheduler():
     )
 
     # DISC-140: Monitoring Agent - Business metrics check hourly at :45
+    # P0-1: Wrapped with advisory lock to prevent duplicate execution
     scheduler.add_job(
-        run_business_metrics_check,
+        wrap_with_lock("monitoring_business_metrics", run_business_metrics_check),
         trigger=CronTrigger(minute=45),
         id="monitoring_business_metrics",
         replace_existing=True,
@@ -785,8 +805,9 @@ def start_scheduler():
     )
 
     # DISC-140: Monitoring Agent - Daily summary at 8:15am UTC (after marketing report)
+    # P0-1: Wrapped with advisory lock to prevent duplicate execution
     scheduler.add_job(
-        run_daily_monitoring_summary,
+        wrap_with_lock("monitoring_daily_summary", run_daily_monitoring_summary),
         trigger=CronTrigger(hour=8, minute=15),
         id="monitoring_daily_summary",
         replace_existing=True,
