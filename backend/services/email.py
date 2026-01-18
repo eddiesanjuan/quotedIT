@@ -1815,5 +1815,118 @@ class EmailService:
             raise
 
 
+    @staticmethod
+    async def send_personal_checkin_email(
+        to_email: str,
+        owner_name: Optional[str],
+        business_name: str,
+        has_created_quote: bool = False,
+        offer_extended_trial: bool = True
+    ) -> Dict[str, Any]:
+        """
+        Send a personal check-in email from Eddie to users who haven't engaged.
+
+        This is for one-time personal outreach to early users.
+        Replies go directly to eddie@granular.tools.
+
+        Args:
+            to_email: User's email
+            owner_name: User's name
+            business_name: Business name
+            has_created_quote: Whether they've created a quote
+            offer_extended_trial: Whether to offer extended trial
+
+        Returns:
+            Resend API response
+        """
+        name = owner_name if owner_name else business_name
+        greeting = f"Hi {name}," if name else "Hi there,"
+
+        if not has_created_quote:
+            # User signed up but never created a quote
+            subject = f"Hey {name} - quick question"
+            body_content = """
+                <p style="color: #e0e0e0; font-size: 16px; line-height: 1.7;">
+                    I noticed you signed up for Quoted but haven't created your first quote yet. I wanted to personally reach out and see if there's anything I can help with.
+                </p>
+
+                <p style="color: #e0e0e0; font-size: 16px; line-height: 1.7;">
+                    A few things I'm curious about:
+                </p>
+
+                <ul style="color: #e0e0e0; line-height: 2;">
+                    <li>Did you run into any issues during setup?</li>
+                    <li>Is there a feature you were hoping to find that we don't have?</li>
+                    <li>Just been busy? (I totally get it - contractor life is hectic)</li>
+                </ul>
+
+                <p style="color: #e0e0e0; font-size: 16px; line-height: 1.7;">
+                    Seriously - just hit reply and let me know. I read every single response and I genuinely want to make Quoted something that helps your business.
+                </p>
+            """
+
+            if offer_extended_trial:
+                body_content += """
+                <div style="background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%); padding: 20px; border-radius: 12px; border-left: 4px solid #22c55e; margin: 24px 0;">
+                    <div style="font-size: 1.1rem; color: #22c55e; font-weight: 600; margin-bottom: 8px;">Extended Trial Offer</div>
+                    <div style="color: #e0e0e0;">If you need more time to try things out, just reply to this email and I'll extend your trial - no questions asked.</div>
+                </div>
+                """
+        else:
+            # User created a quote but hasn't been active
+            subject = f"How's Quoted working for you, {name}?"
+            body_content = """
+                <p style="color: #e0e0e0; font-size: 16px; line-height: 1.7;">
+                    I saw you've been using Quoted and I wanted to check in personally. How's it going?
+                </p>
+
+                <p style="color: #e0e0e0; font-size: 16px; line-height: 1.7;">
+                    I'm always looking for feedback on how to make this better for contractors. If there's anything that's not working well for you, or something you wish it did differently - I'd love to hear it.
+                </p>
+
+                <p style="color: #e0e0e0; font-size: 16px; line-height: 1.7;">
+                    Just reply to this email. I read everything personally.
+                </p>
+            """
+
+        content = f"""
+            <p style="color: #e0e0e0; font-size: 16px; line-height: 1.7;">
+                {greeting}
+            </p>
+
+            {body_content}
+
+            <p style="color: #a0a0a0; font-size: 14px; margin-top: 32px;">
+                Thanks,<br>
+                <strong style="color: #ffffff;">Eddie</strong><br>
+                <span style="color: #666;">Founder, Quoted</span><br>
+                <span style="color: #666; font-size: 12px;">P.S. - This isn't an automated email. I'm a real person and I actually want to hear from you.</span>
+            </p>
+        """
+
+        html = EmailService._get_base_template().replace('{content}', content)
+
+        plain_text = f"{greeting}\n\nI noticed you signed up for Quoted and wanted to reach out personally. Is there anything I can help with? Just reply to this email.\n\nThanks,\nEddie\nFounder, Quoted"
+
+        try:
+            loop = asyncio.get_event_loop()
+            response = await loop.run_in_executor(
+                None,
+                partial(resend.Emails.send, {
+                    "from": "Eddie from Quoted <hello@quoted.it.com>",
+                    "to": to_email,
+                    "reply_to": "eddie@granular.tools",
+                    "subject": subject,
+                    "html": html,
+                    "text": plain_text,
+                })
+            )
+            logger.info(f"Personal check-in email sent to {to_email}")
+            return response
+        except Exception as e:
+            logger.error(f"Failed to send personal check-in email to {to_email}", exc_info=True)
+            raise
+
+
 # Convenience instance
 email_service = EmailService()

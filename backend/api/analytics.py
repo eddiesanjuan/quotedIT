@@ -517,3 +517,229 @@ async def get_google_ads_script_code(
             "7. Set frequency to 'Daily' and save"
         ]
     }
+
+
+# ============================================================================
+# User Outreach - Personal Follow-Up Emails
+# ============================================================================
+
+
+class UserOutreachResponse(BaseModel):
+    """Response for user outreach operations."""
+    total_users: int
+    users_without_quotes: int
+    users_with_quotes: int
+    emails_sent: int
+    skipped: int
+    errors: List[str]
+
+
+class UserListResponse(BaseModel):
+    """Response listing users for outreach."""
+    total_users: int
+    users: List[Dict[str, Any]]
+
+
+@router.get("/outreach/users", response_model=UserListResponse)
+async def list_users_for_outreach(
+    request: Request,
+    founder: dict = Depends(get_founder_user),
+):
+    """
+    List all users and their engagement status.
+
+    Shows which users have created quotes and which haven't,
+    to help decide who to send personal outreach to.
+
+    P0-6 Security: Restricted to founder only.
+    """
+    from sqlalchemy import select, func
+    from ..models.database import User, Contractor, Quote
+
+    try:
+        async with async_session_factory() as db:
+            # Get all contractors with their quote counts
+            result = await db.execute(
+                select(
+                    Contractor.id,
+                    Contractor.business_name,
+                    Contractor.owner_name,
+                    Contractor.email,
+                    Contractor.created_at,
+                    User.email.label("user_email"),
+                    User.plan_tier,
+                    User.trial_ends_at,
+                    func.count(Quote.id).label("quote_count")
+                )
+                .join(User, Contractor.user_id == User.id)
+                .outerjoin(Quote, Quote.contractor_id == Contractor.id)
+                .group_by(Contractor.id, User.id)
+                .order_by(Contractor.created_at.desc())
+            )
+            rows = result.all()
+
+            users = []
+            for row in rows:
+                users.append({
+                    "contractor_id": row.id,
+                    "business_name": row.business_name,
+                    "owner_name": row.owner_name,
+                    "email": row.email or row.user_email,
+                    "created_at": row.created_at.isoformat() if row.created_at else None,
+                    "plan_tier": row.plan_tier,
+                    "trial_ends_at": row.trial_ends_at.isoformat() if row.trial_ends_at else None,
+                    "quote_count": row.quote_count,
+                    "has_created_quote": row.quote_count > 0
+                })
+
+            return UserListResponse(
+                total_users=len(users),
+                users=users
+            )
+
+    except Exception as e:
+        logger.error(f"Failed to list users for outreach: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to list users"
+        )
+
+
+class SendOutreachRequest(BaseModel):
+    """Request to send outreach emails."""
+    send_to_all: bool = False  # If true, send to all users without quotes
+    user_emails: Optional[List[str]] = None  # Specific emails to send to
+    dry_run: bool = True  # Preview without sending
+
+
+@router.post("/outreach/send", response_model=UserOutreachResponse)
+async def send_personal_outreach(
+    request: Request,
+    outreach_request: SendOutreachRequest,
+    founder: dict = Depends(get_founder_user),
+):
+    """
+    Send personal check-in emails to users.
+
+    By default (dry_run=True), this shows who would receive emails.
+    Set dry_run=False to actually send emails.
+
+    Options:
+    - send_to_all=True: Send to all users who haven't created a quote
+    - user_emails=[...]: Send to specific email addresses
+
+    P0-6 Security: Restricted to founder only.
+
+    Emails:
+    - Come from "Eddie from Quoted <hello@quoted.it.com>"
+    - Reply-to: eddie@granular.tools
+    - Include offer to extend trial
+    """
+    import asyncio
+    from sqlalchemy import select, func
+    from ..models.database import User, Contractor, Quote
+    from ..services.email import EmailService
+
+    errors = []
+    emails_sent = 0
+    skipped = 0
+
+    try:
+        async with async_session_factory() as db:
+            # Build query for users
+            query = (
+                select(
+                    Contractor.id,
+                    Contractor.business_name,
+                    Contractor.owner_name,
+                    Contractor.email,
+                    User.email.label("user_email"),
+                    func.count(Quote.id).label("quote_count")
+                )
+                .join(User, Contractor.user_id == User.id)
+                .outerjoin(Quote, Quote.contractor_id == Contractor.id)
+                .group_by(Contractor.id, User.id)
+            )
+
+            result = await db.execute(query)
+            rows = result.all()
+
+            users_without_quotes = []
+            users_with_quotes = []
+
+            for row in rows:
+                user_data = {
+                    "business_name": row.business_name,
+                    "owner_name": row.owner_name,
+                    "email": row.email or row.user_email,
+                    "quote_count": row.quote_count
+                }
+                if row.quote_count == 0:
+                    users_without_quotes.append(user_data)
+                else:
+                    users_with_quotes.append(user_data)
+
+            # Determine who to send to
+            targets = []
+
+            if outreach_request.send_to_all:
+                targets = users_without_quotes
+            elif outreach_request.user_emails:
+                all_users = users_without_quotes + users_with_quotes
+                for email in outreach_request.user_emails:
+                    user = next((u for u in all_users if u["email"] == email), None)
+                    if user:
+                        targets.append(user)
+                    else:
+                        errors.append(f"User not found: {email}")
+
+            if outreach_request.dry_run:
+                # Just report what would happen
+                return UserOutreachResponse(
+                    total_users=len(rows),
+                    users_without_quotes=len(users_without_quotes),
+                    users_with_quotes=len(users_with_quotes),
+                    emails_sent=0,
+                    skipped=len(targets),  # In dry run, show who would be sent
+                    errors=[f"DRY RUN - Would send to {len(targets)} users: {[t['email'] for t in targets]}"]
+                )
+
+            # Actually send emails
+            email_service = EmailService()
+
+            for user in targets:
+                try:
+                    if not user["email"]:
+                        skipped += 1
+                        continue
+
+                    await email_service.send_personal_checkin_email(
+                        to_email=user["email"],
+                        owner_name=user["owner_name"],
+                        business_name=user["business_name"],
+                        has_created_quote=user["quote_count"] > 0,
+                        offer_extended_trial=True
+                    )
+                    emails_sent += 1
+
+                    # Rate limit: Resend allows 2 req/sec
+                    await asyncio.sleep(0.6)
+
+                except Exception as e:
+                    errors.append(f"Failed to send to {user['email']}: {str(e)}")
+
+            return UserOutreachResponse(
+                total_users=len(rows),
+                users_without_quotes=len(users_without_quotes),
+                users_with_quotes=len(users_with_quotes),
+                emails_sent=emails_sent,
+                skipped=skipped,
+                errors=errors
+            )
+
+    except Exception as e:
+        logger.error(f"Failed to send outreach emails: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to send outreach emails: {str(e)}"
+        )
