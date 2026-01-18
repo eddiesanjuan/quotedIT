@@ -289,6 +289,11 @@ if frontend_path.exists():
         """Serve the Privacy Policy page."""
         return FileResponse(frontend_path / "privacy.html")
 
+    @app.get("/outreach")
+    async def serve_outreach():
+        """Serve the User Outreach admin page (founder-only, auth checked client-side)."""
+        return FileResponse(frontend_path / "outreach.html")
+
     @app.get("/use-cases")
     async def serve_use_cases():
         """Serve the Use Cases page - industry examples and demos."""
